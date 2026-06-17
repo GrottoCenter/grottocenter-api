@@ -6,39 +6,23 @@
  *
  * Each entrance becomes a <Placemark> with:
  * - <name> from the document's name field
- * - <Point><coordinates>lon,lat,alt</coordinates></Point>
- * - <ExtendedData> with <Data> elements for all document fields plus url
+ * - <Point><coordinates>lon,lat[,alt]</coordinates></Point>
+ * - <ExtendedData> with <Data> elements for all document fields plus grottocenterUrl
+ *
+ * Documents are pre-mapped by the controller: when field selection is active,
+ * only aliased fields (plus id, latitude, longitude) are present. The serializer
+ * excludes geometry/id fields from <ExtendedData> to honour the field-selection contract.
  */
+
+const { escapeXml } = require('./xml-utils');
 
 const contentType = 'application/vnd.google-earth.kml+xml';
 const fileExtension = 'kml';
 
 /**
- * Convert a value to a plain string suitable for XML text content.
- * Objects and arrays are JSON-serialized; primitives are coerced with String().
- *
- * @param {*} value - Any value from a document field
- * @returns {string} String representation
+ * Fields used for geometry construction that should not appear in <ExtendedData>.
  */
-const toStringValue = (value) => {
-  if (value == null) return '';
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
-};
-
-/**
- * Escape special XML characters in text content.
- *
- * @param {*} value - Value to escape (coerced to string via toStringValue)
- * @returns {string} XML-safe string
- */
-const escapeXml = (value) =>
-  toStringValue(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+const GEOMETRY_FIELDS = ['id', 'latitude', 'longitude', 'altitude', 'name'];
 
 /**
  * Produce the KML document opening: XML declaration, <kml> root with
@@ -60,43 +44,37 @@ const prologue = (timestamp) =>
  *
  * @param {Array} documents - Filtered entrance documents (no sensitive, no null coords)
  * @param {boolean} _isFirst - Unused for KML (XML elements concatenate without separators)
- * @param {Array|null} fieldMapping - Optional array of {key, alias} for field selection/renaming
  * @returns {string} KML Placemark elements
  */
-const serializeBatch = (documents, _isFirst, fieldMapping = null) =>
+const serializeBatch = (documents, _isFirst) =>
   documents
     .map((doc) => {
       const name = doc.name != null ? doc.name : '';
       const lon = doc.longitude;
       const lat = doc.latitude;
-      const alt = doc.altitude != null ? doc.altitude : 0;
       const url = `https://grottocenter.org/ui/entrances/${doc.id}`;
 
-      let dataEntries;
-      if (fieldMapping) {
-        dataEntries = fieldMapping
-          .map(({ key, alias }) =>
-            key in doc
-              ? `<Data name="${escapeXml(alias)}"><value>${escapeXml(doc[key])}</value></Data>`
-              : ''
-          )
-          .join('');
-      } else {
-        dataEntries = Object.keys(doc)
-          .map(
-            (key) =>
-              `<Data name="${escapeXml(key)}"><value>${escapeXml(
-                doc[key]
-              )}</value></Data>`
-          )
-          .join('');
-      }
+      // Omit altitude when unknown rather than defaulting to 0 (sea level)
+      const coords =
+        doc.altitude != null
+          ? `${escapeXml(String(lon))},${escapeXml(String(lat))},${escapeXml(String(doc.altitude))}`
+          : `${escapeXml(String(lon))},${escapeXml(String(lat))}`;
 
-      const urlData = `<Data name="url"><value>${escapeXml(url)}</value></Data>`;
+      const dataEntries = Object.keys(doc)
+        .filter((key) => !GEOMETRY_FIELDS.includes(key))
+        .map(
+          (key) =>
+            `<Data name="${escapeXml(key)}"><value>${escapeXml(
+              doc[key]
+            )}</value></Data>`
+        )
+        .join('');
+
+      const urlData = `<Data name="grottocenterUrl"><value>${escapeXml(url)}</value></Data>`;
 
       return `<Placemark>
 <name>${escapeXml(name)}</name>
-<Point><coordinates>${lon},${lat},${alt}</coordinates></Point>
+<Point><coordinates>${coords}</coordinates></Point>
 <ExtendedData>${dataEntries}${urlData}</ExtendedData>
 </Placemark>`;
     })

@@ -5,26 +5,21 @@
  * Produces GPX 1.1 output with the standard namespace and schema location.
  *
  * All text content is XML-escaped to prevent injection of invalid characters.
+ *
+ * Documents are pre-mapped by the controller: when field selection is active,
+ * only aliased fields (plus id, latitude, longitude) are present. The serializer
+ * excludes geometry/id fields from <desc> to honour the field-selection contract.
  */
+
+const { escapeXml, toStringValue } = require('./xml-utils');
 
 const contentType = 'application/gpx+xml';
 const fileExtension = 'gpx';
 
 /**
- * Escapes special XML characters in text content.
- *
- * @param {string} str - Raw string to escape
- * @returns {string} XML-safe string
+ * Fields used for geometry/waypoint construction that should not appear in <desc>.
  */
-const escapeXml = (str) => {
-  const s = String(str);
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-};
+const GEOMETRY_FIELDS = ['latitude', 'longitude', 'altitude', 'name', 'id'];
 
 /**
  * Produces the GPX XML declaration, root element with namespace and schema
@@ -47,39 +42,15 @@ const prologue = (timestamp) =>
   '</metadata>\n';
 
 /**
- * Convert a value to a plain string for display in <desc>.
- * Objects and arrays are JSON-serialized; primitives use String().
- *
- * @param {*} value - Any document field value
- * @returns {string} Human-readable string representation
- */
-const toDisplayValue = (value) => {
-  if (value == null) return '';
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
-};
-
-/**
  * Build a <desc> element containing document fields as plain text lines.
  *
  * @param {object} doc - Entrance document from Typesense
- * @param {Array|null} fieldMapping - Optional array of {key, alias} for field selection/renaming
  * @returns {string} XML <desc> element, or empty string if no fields to show
  */
-const buildDesc = (doc, fieldMapping) => {
-  let lines;
-  if (fieldMapping) {
-    lines = fieldMapping
-      .filter(({ key }) => key in doc)
-      .map(({ key, alias }) => `${alias}: ${toDisplayValue(doc[key])}`);
-  } else {
-    lines = Object.keys(doc)
-      .filter(
-        (key) =>
-          !['latitude', 'longitude', 'altitude', 'name', 'id'].includes(key)
-      )
-      .map((key) => `${key}: ${toDisplayValue(doc[key])}`);
-  }
+const buildDesc = (doc) => {
+  const lines = Object.keys(doc)
+    .filter((key) => !GEOMETRY_FIELDS.includes(key))
+    .map((key) => `${key}: ${toStringValue(doc[key])}`);
   if (lines.length === 0) return '';
   return `<desc>${escapeXml(lines.join('\n'))}</desc>\n`;
 };
@@ -88,10 +59,9 @@ const buildDesc = (doc, fieldMapping) => {
  * Serializes a single entrance document into a GPX waypoint element.
  *
  * @param {object} doc - Entrance document from Typesense
- * @param {Array|null} fieldMapping - Optional array of {key, alias} for field selection/renaming
  * @returns {string} XML string of a <wpt> element
  */
-const serializeWaypoint = (doc, fieldMapping) => {
+const serializeWaypoint = (doc) => {
   const name = doc.name != null ? doc.name : '';
   const url = `https://grottocenter.org/ui/entrances/${doc.id}`;
 
@@ -102,7 +72,7 @@ const serializeWaypoint = (doc, fieldMapping) => {
   }
 
   wpt += `<name>${escapeXml(String(name))}</name>\n`;
-  wpt += buildDesc(doc, fieldMapping);
+  wpt += buildDesc(doc);
   wpt += `<link href="${escapeXml(url)}"><text>View on Grottocenter</text></link>\n`;
   wpt += '</wpt>\n';
 
@@ -114,14 +84,13 @@ const serializeWaypoint = (doc, fieldMapping) => {
  *
  * @param {Array} documents - Array of filtered entrance documents
  * @param {boolean} _isFirst - Unused for GPX (XML elements concatenated)
- * @param {Array|null} fieldMapping - Optional array of {key, alias} for field selection/renaming in <desc>
  * @returns {string} Concatenated <wpt> XML elements
  */
-const serializeBatch = (documents, _isFirst, fieldMapping = null) => {
+const serializeBatch = (documents, _isFirst) => {
   if (documents.length === 0) {
     return '';
   }
-  return documents.map((doc) => serializeWaypoint(doc, fieldMapping)).join('');
+  return documents.map((doc) => serializeWaypoint(doc)).join('');
 };
 
 /**
