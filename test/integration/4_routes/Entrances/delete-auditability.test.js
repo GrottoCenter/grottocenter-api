@@ -270,12 +270,12 @@ describe('Entrance features', () => {
       );
       should(hLocation.rows[0].cnt).be.aboveOrEqual(1);
 
-      // Verify h_location FK was nulled (entrance was deleted, not merged)
+      // Verify h_location FK was preserved (entrance was deleted, not merged)
       const hLocationFk = await CommonService.query(
         'SELECT id_entrance FROM h_location WHERE id = $1',
         [location.id]
       );
-      should(hLocationFk.rows[0].id_entrance).be.null();
+      should(hLocationFk.rows[0].id_entrance).equal(entrance.id);
 
       const hDescription = await CommonService.query(
         'SELECT COUNT(*)::integer AS cnt FROM h_description WHERE id = $1',
