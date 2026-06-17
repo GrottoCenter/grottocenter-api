@@ -180,57 +180,72 @@ module.exports = async (req, res) => {
       ),
     ]);
 
-    // Clean up FK references to this entrance in history tables.
-    // H-rows are preserved for auditability — only the FK is nulled/reassigned
-    // so the hard delete of t_entrance can proceed.
+    // Clean up FK references to this entrance in T-models (secondary 'exit' FK)
+    // and, when merging, reassign H-model references to the surviving entrance.
+    //
+    // When NOT merging (pure delete), h_ rows intentionally keep their original
+    // id_entrance value. The FK constraints have been dropped (see migration
+    // 1_2026_05_05_drop_history_parent_fk.sql), so orphaned references are safe
+    // and preserve full traceability for audit purposes.
+    //
     // Raw SQL is required because Waterline silently fails on composite-PK models.
     //
     // IMPORTANT: This block must cover every h_ table that has an id_entrance
     // or id_exit column. If a new sub-entity type is added to subEntityDelete
     // above, a matching h_ UPDATE must be added here.
-    await Promise.all([
-      // T-models: secondary 'exit' FK
+    const tModelExitUpdates = [
       TDescription.update({ exit: entranceId }).set({ exit: target }),
       TRigging.update({ exit: entranceId }).set({ exit: target }),
       TComment.update({ exit: entranceId }).set({ exit: target }),
-      // H-models: all entrance/exit references
-      CommonService.query(
-        'UPDATE h_location SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_description SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_description SET id_exit = $1 WHERE id_exit = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_rigging SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_rigging SET id_exit = $1 WHERE id_exit = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_comment SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_comment SET id_exit = $1 WHERE id_exit = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_history SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-      CommonService.query(
-        'UPDATE h_name SET id_entrance = $1 WHERE id_entrance = $2',
-        [target, entranceId]
-      ),
-    ]);
+    ];
+
+    if (shouldMergeInto) {
+      // Reassign h_ references to the merge target
+      await Promise.all([
+        ...tModelExitUpdates,
+        CommonService.query(
+          'UPDATE h_location SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_description SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_description SET id_exit = $1 WHERE id_exit = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_rigging SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_rigging SET id_exit = $1 WHERE id_exit = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_comment SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_comment SET id_exit = $1 WHERE id_exit = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_history SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+        CommonService.query(
+          'UPDATE h_name SET id_entrance = $1 WHERE id_entrance = $2',
+          [target, entranceId]
+        ),
+      ]);
+    } else {
+      // Pure delete: only null the T-model exit FKs (already nullable).
+      // H-rows keep their original id_entrance — the FK constraint is gone,
+      // so orphaned references won't block the hard delete.
+      await Promise.all(tModelExitUpdates);
+    }
 
     if (entrance.documents.length > 0) {
       if (shouldMergeInto) {
