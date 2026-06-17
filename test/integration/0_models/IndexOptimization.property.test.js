@@ -57,6 +57,14 @@ const DEAD_INDEXES = [
   { table: 't_entrance', name: 'idx_t_entrance_of_interest' },
   { table: 't_entrance', name: 'idx_t_entrance_country_active' },
   { table: 'h_name', name: 'idx_h_name_id' },
+  { table: 't_time_series', name: 'idx_time_series_date_range' },
+  { table: 't_quantity_kind', name: 'idx_quantity_kind_code' },
+  { table: 't_message', name: 'idx_t_message_sender' },
+  { table: 't_point', name: 'idx_point_geom' },
+  {
+    table: 't_time_series_quality_log',
+    name: 'idx_tsql_time_series',
+  },
 ];
 
 /**
@@ -83,7 +91,7 @@ describe('IndexOptimization - Property 8: required indexes exist', () => {
 /**
  * Property 9: All dead indexes removed after migration.
  * Encodes: the migration script drops every dead index identified in diagnostics.
- * Covers: all 7 dead indexes with 0 scans over the diagnostic window.
+ * Covers: all 15 dead indexes with 0 scans over the diagnostic window.
  */
 describe('IndexOptimization - Property 9: dead indexes removed', () => {
   DEAD_INDEXES.forEach(({ table, name }) => {
