@@ -91,12 +91,13 @@ describe('Feature: geo-export-search-results, Property 9: KML structural validit
 /**
  * Property 10: KML coordinate format
  *
- * Placemark coordinates are `lon,lat,alt` with alt=0 if absent.
+ * Placemark coordinates are `lon,lat,alt` when altitude is known,
+ * or `lon,lat` when altitude is null (omitted rather than defaulting to 0).
  *
  * Validates: Requirements 4.2
  */
 describe('Feature: geo-export-search-results, Property 10: KML coordinate format', () => {
-  it('should format coordinates as lon,lat,alt with alt=0 when absent', function coordinateFormat() {
+  it('should format coordinates as lon,lat,alt when altitude known, lon,lat when absent', function coordinateFormat() {
     this.timeout(30000);
     fc.assert(
       fc.property(entranceDocumentArrayArbitrary, (docs) => {
@@ -115,8 +116,10 @@ describe('Feature: geo-export-search-results, Property 10: KML coordinate format
         should(coordMatches.length).equal(filtered.length);
 
         filtered.forEach((doc, i) => {
-          const expectedAlt = doc.altitude != null ? doc.altitude : 0;
-          const expectedCoords = `${doc.longitude},${doc.latitude},${expectedAlt}`;
+          const expectedCoords =
+            doc.altitude != null
+              ? `${doc.longitude},${doc.latitude},${doc.altitude}`
+              : `${doc.longitude},${doc.latitude}`;
           const actual = coordMatches[i].replace(/<\/?coordinates>/g, '');
           should(actual).equal(expectedCoords);
         });
@@ -157,14 +160,18 @@ describe('Feature: geo-export-search-results, Property 11: KML exclusion of inva
           ) {
             // If this doc has valid coords but is sensitive, verify its exact coords aren't in output
             if (doc.latitude != null && doc.longitude != null) {
-              const alt = doc.altitude != null ? doc.altitude : 0;
-              const excludedCoords = `${doc.longitude},${doc.latitude},${alt}`;
+              const excludedCoords =
+                doc.altitude != null
+                  ? `${doc.longitude},${doc.latitude},${doc.altitude}`
+                  : `${doc.longitude},${doc.latitude}`;
               // Only assert if this exact coord string doesn't also belong to a valid doc
-              const validDocHasSameCoords = filtered.some(
-                (d) =>
-                  `${d.longitude},${d.latitude},${d.altitude != null ? d.altitude : 0}` ===
-                  excludedCoords
-              );
+              const validDocHasSameCoords = filtered.some((d) => {
+                const validCoords =
+                  d.altitude != null
+                    ? `${d.longitude},${d.latitude},${d.altitude}`
+                    : `${d.longitude},${d.latitude}`;
+                return validCoords === excludedCoords;
+              });
               if (!validDocHasSameCoords) {
                 const found = coordMatches.some((m) =>
                   m.includes(excludedCoords)
@@ -183,18 +190,27 @@ describe('Feature: geo-export-search-results, Property 11: KML exclusion of inva
 /**
  * Property 12: KML Placemark data completeness
  *
- * Each Placemark has <name>, <ExtendedData> with Data for all fields + url.
+ * Each Placemark has <name>, <ExtendedData> with Data for all non-geometry
+ * fields plus grottocenterUrl. Geometry fields (id, latitude, longitude, altitude, name) are
+ * excluded from <ExtendedData> as they are represented in the <Point> and <name> elements.
  *
  * Validates: Requirements 4.4, 4.5, 11.5
  */
 describe('Feature: geo-export-search-results, Property 12: KML Placemark data completeness', () => {
-  it('should include name and ExtendedData with all fields plus url in each Placemark', function completeness() {
+  it('should include name and ExtendedData with non-geometry fields plus grottocenterUrl in each Placemark', function completeness() {
     this.timeout(30000);
     fc.assert(
       fc.property(entranceDocumentArrayArbitrary, (docs) => {
         const filtered = filterDocuments(docs);
         if (filtered.length === 0) return;
 
+        const geometryFields = [
+          'id',
+          'latitude',
+          'longitude',
+          'altitude',
+          'name',
+        ];
         const timestamp = new Date().toISOString();
         const output =
           kml.prologue(timestamp) +
@@ -214,14 +230,22 @@ describe('Feature: geo-export-search-results, Property 12: KML Placemark data co
           // Has <ExtendedData>
           should(pm).match(/<ExtendedData>/);
 
-          // Has Data elements for each doc field
+          // Has Data elements for each non-geometry doc field
           Object.keys(doc).forEach((key) => {
-            const dataPattern = new RegExp(`<Data name="${key}">`);
-            should(pm).match(dataPattern);
+            if (!geometryFields.includes(key)) {
+              const dataPattern = new RegExp(`<Data name="${key}">`);
+              should(pm).match(dataPattern);
+            }
           });
 
-          // Has url Data element
-          should(pm).match(/<Data name="url">/);
+          // Geometry fields should NOT appear in ExtendedData
+          geometryFields.forEach((key) => {
+            const dataPattern = new RegExp(`<Data name="${key}">`);
+            should(pm).not.match(dataPattern);
+          });
+
+          // Has grottocenterUrl Data element
+          should(pm).match(/<Data name="grottocenterUrl">/);
           const expectedUrl = `https://grottocenter.org/ui/entrances/${doc.id}`;
           should(pm).containEql(expectedUrl);
         });

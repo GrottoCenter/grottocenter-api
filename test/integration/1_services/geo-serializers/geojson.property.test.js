@@ -169,18 +169,21 @@ describe('Feature: geo-export-search-results, Property 5: GeoJSON exclusion of i
 /**
  * Property 6: GeoJSON Feature properties completeness
  *
- * Each Feature's properties contains all original doc fields plus url.
+ * Each Feature's properties contains all original doc fields (excluding
+ * geometry fields: id, latitude, longitude) plus a grottocenterUrl property.
+ * Geometry fields are represented in the Feature geometry, not in properties.
  *
  * Validates: Requirements 3.4, 11.4
  */
 describe('Feature: geo-export-search-results, Property 6: GeoJSON Feature properties completeness', () => {
-  it('should include all doc fields plus url in each Feature properties', function completeness() {
+  it('should include non-geometry doc fields plus grottocenterUrl in each Feature properties', function completeness() {
     this.timeout(30000);
     fc.assert(
       fc.property(entranceDocumentArrayArbitrary, (docs) => {
         const filtered = filterDocuments(docs);
         if (filtered.length === 0) return;
 
+        const geometryFields = ['id', 'latitude', 'longitude', 'altitude'];
         const timestamp = new Date().toISOString();
         const output =
           geojson.prologue(timestamp) +
@@ -191,17 +194,21 @@ describe('Feature: geo-export-search-results, Property 6: GeoJSON Feature proper
         filtered.forEach((doc, i) => {
           const props = parsed.features[i].properties;
 
-          // All original doc fields with defined values are present
-          // (JSON.stringify drops undefined values, which is correct)
+          // All non-geometry doc fields with defined values are present
           Object.keys(doc).forEach((key) => {
-            if (doc[key] !== undefined) {
+            if (doc[key] !== undefined && !geometryFields.includes(key)) {
               should(props).have.property(key);
               should(props[key]).deepEqual(doc[key]);
             }
           });
 
-          // url property present and correct
-          should(props.url).equal(
+          // Geometry fields should NOT appear in properties
+          geometryFields.forEach((key) => {
+            should(props).not.have.property(key);
+          });
+
+          // grottocenterUrl property present and correct
+          should(props.grottocenterUrl).equal(
             `https://grottocenter.org/ui/entrances/${doc.id}`
           );
         });

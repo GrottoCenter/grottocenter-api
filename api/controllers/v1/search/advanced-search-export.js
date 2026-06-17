@@ -89,6 +89,40 @@ const GEO_FORMATS = ['geojson', 'kml', 'gpx'];
 const BATCH_SIZE = 1000;
 const MAX_NB_ROW_EXPORT = 10000;
 
+/**
+ * Validate columns and columnsName arrays.
+ * Returns an error message string if invalid, or null if valid.
+ *
+ * @param {Array} columns - Column keys
+ * @param {Array|null} columnsName - Column display names (optional for geo formats)
+ * @param {object} options
+ * @param {boolean} options.requireColumnsName - Whether columnsName is mandatory
+ * @returns {string|null} Error message or null
+ */
+function validateColumns(columns, columnsName, { requireColumnsName }) {
+  const hasColumns = Array.isArray(columns) && columns.length > 0;
+  const hasColumnsName = Array.isArray(columnsName) && columnsName.length > 0;
+
+  if (!hasColumns) {
+    return 'columns must be a non-empty array';
+  }
+  if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
+    return 'each element in columns must be a non-empty string';
+  }
+  if (requireColumnsName && !hasColumnsName) {
+    return 'columnsName must be a non-empty array';
+  }
+  if (hasColumnsName) {
+    if (columns.length !== columnsName.length) {
+      return 'columns and columnsName must have the same length';
+    }
+    if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
+      return 'each element in columnsName must be a non-empty string';
+    }
+  }
+  return null;
+}
+
 module.exports = async (req, res) => {
   const format = req.param('format') || 'csv';
   const entity = req.param('entity') ?? '';
@@ -115,30 +149,15 @@ module.exports = async (req, res) => {
   const columns = req.param('columns');
   const columnsName = req.param('columnsName');
 
-  // For geo formats, columns/columnsName are optional (when absent, all fields are included).
-  // When provided, they must pass the same validation as CSV.
   const hasColumns = Array.isArray(columns) && columns.length > 0;
   const hasColumnsName = Array.isArray(columnsName) && columnsName.length > 0;
 
   if (!isGeoFormat) {
-    if (!hasColumns) {
-      res.badRequest('columns must be a non-empty array');
-      return;
-    }
-    if (!hasColumnsName) {
-      res.badRequest('columnsName must be a non-empty array');
-      return;
-    }
-    if (columns.length !== columnsName.length) {
-      res.badRequest('columns and columnsName must have the same length');
-      return;
-    }
-    if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
-      res.badRequest('each element in columns must be a non-empty string');
-      return;
-    }
-    if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
-      res.badRequest('each element in columnsName must be a non-empty string');
+    const error = validateColumns(columns, columnsName, {
+      requireColumnsName: true,
+    });
+    if (error) {
+      res.badRequest(error);
       return;
     }
   }
@@ -146,25 +165,16 @@ module.exports = async (req, res) => {
   // For geo formats with columns provided, validate and build field mapping
   let fieldMapping = null;
   if (isGeoFormat && hasColumns) {
-    if (!columns.every((c) => typeof c === 'string' && c.length > 0)) {
-      res.badRequest('each element in columns must be a non-empty string');
+    const error = validateColumns(columns, columnsName, {
+      requireColumnsName: false,
+    });
+    if (error) {
+      res.badRequest(error);
       return;
     }
     if (hasColumnsName) {
-      if (columns.length !== columnsName.length) {
-        res.badRequest('columns and columnsName must have the same length');
-        return;
-      }
-      if (!columnsName.every((c) => typeof c === 'string' && c.length > 0)) {
-        res.badRequest(
-          'each element in columnsName must be a non-empty string'
-        );
-        return;
-      }
-      // Map each column key to its display alias
       fieldMapping = columns.map((key, i) => ({ key, alias: columnsName[i] }));
     } else {
-      // columns provided without aliases — use key names as-is
       fieldMapping = columns.map((key) => ({ key, alias: key }));
     }
   }
@@ -212,14 +222,13 @@ module.exports = async (req, res) => {
         break;
       }
 
-      if (results.found > MAX_NB_ROW_EXPORT) {
-        if (!hasSentHeader) {
-          res.badRequest(
-            `To be exported a search cannot contain more than ${MAX_NB_ROW_EXPORT} results`
-          );
-          return;
-        }
-        break;
+      // Total result count check — only meaningful on the first page
+      // (results.found is constant across pages).
+      if (!hasSentHeader && results.found > MAX_NB_ROW_EXPORT) {
+        res.badRequest(
+          `To be exported a search cannot contain more than ${MAX_NB_ROW_EXPORT} results`
+        );
+        return;
       }
 
       if (!hasSentHeader) {
@@ -246,13 +255,16 @@ module.exports = async (req, res) => {
             latitude: doc.latitude,
             longitude: doc.longitude,
           };
+          if (doc.altitude != null) {
+            mapped.altitude = doc.altitude;
+          }
           fieldMapping.forEach(({ key, alias }) => {
             mapped[alias] = resolveField(doc, key);
           });
           return mapped;
         });
       }
-      res.write(serializer.serializeBatch(docsToSerialize, isFirst, null));
+      res.write(serializer.serializeBatch(docsToSerialize, isFirst));
       isFirst = false;
 
       if (documents.length < BATCH_SIZE) break;
@@ -306,14 +318,13 @@ module.exports = async (req, res) => {
       break;
     }
 
-    if (results.found > MAX_NB_ROW_EXPORT) {
-      if (!hasSentHeader) {
-        res.badRequest(
-          `To be exported a search cannot contain more than ${MAX_NB_ROW_EXPORT} results`
-        );
-        return;
-      }
-      break;
+    // Total result count check — only meaningful on the first page
+    // (results.found is constant across pages).
+    if (!hasSentHeader && results.found > MAX_NB_ROW_EXPORT) {
+      res.badRequest(
+        `To be exported a search cannot contain more than ${MAX_NB_ROW_EXPORT} results`
+      );
+      return;
     }
 
     if (!hasSentHeader) {
@@ -329,7 +340,7 @@ module.exports = async (req, res) => {
     const documents = results.hits.map((e) => e.document);
     res.write(documentsToCSV(documents, columns));
 
-    if (documents.length !== BATCH_SIZE) break;
+    if (documents.length < BATCH_SIZE) break;
     page += 1;
   }
 

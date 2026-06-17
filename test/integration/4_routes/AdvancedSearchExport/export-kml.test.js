@@ -141,7 +141,7 @@ describe('Geo Export - KML', () => {
         });
     });
 
-    it('should default altitude to 0 when absent', (done) => {
+    it('should omit altitude from coordinates when absent', (done) => {
       const SearchService = require('../../../../api/services/SearchService');
       sinon.stub(SearchService, 'collectionSearch').resolves({
         hits: [
@@ -165,7 +165,7 @@ describe('Geo Export - KML', () => {
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
-          should(res.text).match(/<coordinates>2,45,0<\/coordinates>/);
+          should(res.text).match(/<coordinates>2,45<\/coordinates>/);
           return done();
         });
     });

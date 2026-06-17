@@ -141,7 +141,7 @@ describe('Geo Export - GeoJSON', () => {
           should(geojson.features[0].type).equal('Feature');
           should(geojson.features[0].geometry.type).equal('Point');
           should(geojson.features[0].geometry.coordinates).eql([2.0, 45.0]);
-          should(geojson.features[0].properties.url).equal(
+          should(geojson.features[0].properties.grottocenterUrl).equal(
             'https://grottocenter.org/ui/entrances/1'
           );
           return done();
@@ -232,8 +232,8 @@ describe('Geo Export - GeoJSON', () => {
           // Aliased fields present
           should(props).have.property('Nom', 'Cave A');
           should(props).have.property('Pays', 'FR');
-          // url always present
-          should(props).have.property('url');
+          // grottocenterUrl always present
+          should(props).have.property('grottocenterUrl');
           // Original keys and unselected fields absent
           should(props).not.have.property('name');
           should(props).not.have.property('country');
