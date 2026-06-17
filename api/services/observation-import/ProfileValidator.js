@@ -2,6 +2,7 @@ const { COMPONENT_TYPES } = require('./TimestampConverter');
 const isBlank = require('../../utils/isBlank');
 const isNonBlankString = require('../../utils/isNonBlankString');
 const isValidId = require('../../utils/isValidId');
+const { validateStringLengths } = require('../../utils/stringLengthValidation');
 
 const VALID_NUMBER_LOCALES = ['en', 'fr'];
 const VALID_DATA_QUALITIES = ['raw', 'validated', 'suspect', 'rejected'];
@@ -279,6 +280,16 @@ const validate = (profile) => {
       );
     }
   }
+
+  // 11. String field length validation against model maxLength constraints.
+  //     Catches length violations early (before the DB transaction) so users
+  //     get a 400 instead of a 500.
+  const lengthErrors = validateStringLengths({
+    observationName: { value: profile.observationName, maxLength: 200 },
+    pointLabel: { value: profile.pointLabel, maxLength: 200 },
+    documentTitle: { value: profile.documentTitle, maxLength: 300 },
+  });
+  lengthErrors.forEach((err) => errors.push(err.message));
 
   return errors;
 };

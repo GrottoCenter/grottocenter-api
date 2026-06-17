@@ -1,3 +1,5 @@
+const { validateStringLength } = require('./stringLengthValidation');
+
 const NAME_MAX_LENGTH = 200;
 
 /**
@@ -8,10 +10,8 @@ const NAME_MAX_LENGTH = 200;
  * @returns {string|null} Error message or null
  */
 const validateNameLength = (name) => {
-  if (name && name.length > NAME_MAX_LENGTH) {
-    return `Name is too long (${name.length} characters). Maximum is ${NAME_MAX_LENGTH}.`;
-  }
-  return null;
+  const error = validateStringLength('Name', name, NAME_MAX_LENGTH);
+  return error ? error.message : null;
 };
 
 module.exports = { NAME_MAX_LENGTH, validateNameLength };
