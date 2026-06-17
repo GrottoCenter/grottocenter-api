@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { pipeline, Duplex, Readable } = require('stream');
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 const CommonService = require('../services/CommonService');
 const FileService = require('../services/FileService');
 const syncUtils = require('./utils');
@@ -176,7 +176,7 @@ async function makeDbSync(isFileExportEnabled = true) {
       sails.log.warn('[dbSync] DB sync aborded, no azure credentials supplied');
       return;
     }
-    archive = archiver('zip');
+    archive = new ZipArchive();
     const { promise } = pipelineAsync(
       archive,
       // fs.createWriteStream(syncUtils.EXPORT_FILE_NAME) // For debug
