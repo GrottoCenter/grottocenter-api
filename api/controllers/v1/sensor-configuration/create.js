@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
     detectionLimitMin: detectionLimitMin ?? null,
     detectionLimitMax: detectionLimitMax ?? null,
     label: label || null,
-    substance: substance || null,
+    substance: SensorConfigurationService.normalizeSubstance(substance),
     author: req.token.id,
     dateInscription: new Date(),
   };

@@ -32,9 +32,22 @@ const validateSubstance = (substance, quantityKindCode) => {
   return null;
 };
 
+/**
+ * Normalizes a substance value by trimming whitespace.
+ * Returns null for null/undefined input.
+ *
+ * @param {string|null|undefined} substance
+ * @returns {string|null}
+ */
+const normalizeSubstance = (substance) => {
+  if (substance == null) return null;
+  return substance.trim() || null;
+};
+
 module.exports = {
   SUBSTANCE_REQUIRING_CODES,
   isSubstanceRequired,
+  normalizeSubstance,
   validateSubstance,
 
   /**

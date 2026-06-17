@@ -37,12 +37,16 @@ INSERT INTO t_quantity_kind (id, code, url, symbol_si, display_symbol, si_to_dis
   (14, 'Turbidity', 'http://qudt.org/vocab/quantitykind/Turbidity', 'NTU', 'NTU', 1, 0),
   (15, 'RedoxPotential', 'http://qudt.org/vocab/quantitykind/ElectricPotential', 'V', 'mV', 1000, 0),
   (16, 'Resistivity', 'http://qudt.org/vocab/quantitykind/Resistivity', 'Ω·m', 'Ω·cm', 100, 0),
-  (17, 'Concentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
-  (18, 'LightIntensity', 'http://qudt.org/vocab/quantitykind/Illuminance', 'lx', 'lx', 1, 0),
-  (19, 'AirVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
-  (20, 'WaterVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
-  (21, 'RadonConcentration', 'http://qudt.org/vocab/quantitykind/ActivityConcentration', 'Bq/m³', 'Bq/m³', 1, 0),
-  (22, 'IsotopeDelta', 'http://qudt.org/vocab/quantitykind/DimensionlessRatio', '1', '‰', 1000, 0)
+  (17, 'NitrateConcentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
+  (18, 'NitriteConcentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
+  (19, 'AmmoniumConcentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
+  (20, 'PhosphateConcentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
+  (21, 'SilicateConcentration', 'http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration', 'mol/L', 'µM', 1000000, 0),
+  (22, 'LightIntensity', 'http://qudt.org/vocab/quantitykind/Illuminance', 'lx', 'lx', 1, 0),
+  (23, 'AirVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
+  (24, 'WaterVelocity', 'http://qudt.org/vocab/quantitykind/Speed', 'm/s', 'm/s', 1, 0),
+  (25, 'RadonConcentration', 'http://qudt.org/vocab/quantitykind/ActivityConcentration', 'Bq/m³', 'Bq/m³', 1, 0),
+  (26, 'IsotopeDelta', 'http://qudt.org/vocab/quantitykind/DimensionlessRatio', '1', '‰', 1000, 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================

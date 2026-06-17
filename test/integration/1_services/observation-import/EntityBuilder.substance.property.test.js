@@ -161,7 +161,7 @@ describe('EntityBuilder - Property 7: Substance propagation to profile metadata'
           const col = result.columnMappings[0];
 
           should(col).have.property('metadata');
-          should(col.metadata).have.property('substance', substance);
+          should(col.metadata).have.property('substance', substance.trim());
         }
       ),
       { numRuns: 100 }
@@ -311,8 +311,8 @@ describe('EntityBuilder - Property 5: Denormalized substance propagation', () =>
           const ts = tracker.timeSeriesCreated[0];
 
           should(ts.substance).equal(
-            substance,
-            `Expected substance "${substance}", got "${ts.substance}"`
+            substance ? substance.trim() : null,
+            `Expected substance "${substance ? substance.trim() : null}", got "${ts.substance}"`
           );
         }
       ),
