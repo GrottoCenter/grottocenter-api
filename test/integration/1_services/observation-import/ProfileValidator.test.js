@@ -472,6 +472,121 @@ describe('ProfileValidator', () => {
   });
 
   // -------------------------------------------------------------------------
+  // String field length validation
+  // -------------------------------------------------------------------------
+  describe('string field length validation', () => {
+    it('should return an error when observationName exceeds 200 characters', () => {
+      const profile = {
+        ...validBase(),
+        observationName: 'a'.repeat(201),
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('observationName'))).be.true(
+        `Expected observationName length error, got: ${JSON.stringify(errors)}`
+      );
+      should(
+        errors.some((e) => e.includes('exceeds maximum length of 200'))
+      ).be.true();
+    });
+
+    it('should accept observationName at exactly 200 characters', () => {
+      const profile = {
+        ...validBase(),
+        observationName: 'a'.repeat(200),
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('observationName'))).be.false(
+        `200-char observationName should be valid, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should return an error when pointLabel exceeds 200 characters', () => {
+      const profile = {
+        ...validBase(),
+        pointLabel: 'b'.repeat(201),
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('pointLabel'))).be.true(
+        `Expected pointLabel length error, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should accept pointLabel at exactly 200 characters', () => {
+      const profile = {
+        ...validBase(),
+        pointLabel: 'b'.repeat(200),
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(
+        errors.some(
+          (e) => e.includes('pointLabel') && e.includes('exceeds maximum')
+        )
+      ).be.false(
+        `200-char pointLabel should be valid, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should return an error when documentTitle exceeds 300 characters', () => {
+      const profile = {
+        ...validBase(),
+        documentTitle: 'c'.repeat(301),
+        documentLanguage: 'eng',
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('documentTitle'))).be.true(
+        `Expected documentTitle length error, got: ${JSON.stringify(errors)}`
+      );
+      should(
+        errors.some((e) => e.includes('exceeds maximum length of 300'))
+      ).be.true();
+    });
+
+    it('should accept documentTitle at exactly 300 characters', () => {
+      const profile = {
+        ...validBase(),
+        documentTitle: 'c'.repeat(300),
+        documentLanguage: 'eng',
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(
+        errors.some(
+          (e) => e.includes('documentTitle') && e.includes('exceeds maximum')
+        )
+      ).be.false(
+        `300-char documentTitle should be valid, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should not validate length when string fields are null or undefined', () => {
+      const profile = {
+        ...validBase(),
+        observationName: null,
+        pointLabel: undefined,
+        documentTitle: null,
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('exceeds maximum'))).be.false(
+        `Null/undefined fields should not trigger length errors, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should accumulate multiple length errors at once', () => {
+      const profile = {
+        ...validBase(),
+        observationName: 'a'.repeat(250),
+        pointLabel: 'b'.repeat(201),
+        documentTitle: 'c'.repeat(350),
+        documentLanguage: 'eng',
+      };
+      const errors = ProfileValidator.validate(profile);
+      const lengthErrors = errors.filter((e) =>
+        e.includes('exceeds maximum length')
+      );
+      should(lengthErrors.length).equal(3);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Error accumulation: multiple errors returned together
   // -------------------------------------------------------------------------
   describe('error accumulation', () => {
