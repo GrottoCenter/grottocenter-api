@@ -8333,6 +8333,7 @@ components:
         substance:
           type: string
           maxLength: 100
+          nullable: true
           description: >-
             Chemical species or isotope identifier (e.g. "NO₃⁻", "δ¹⁸O").
             Required when quantityKind is Concentration or IsotopeDelta.

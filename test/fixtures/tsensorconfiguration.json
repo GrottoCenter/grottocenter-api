@@ -49,6 +49,7 @@
     "quantityKind": 3,
     "unit": 3,
     "label": "Channel 3 - δ¹⁸O Isotope Delta",
+    "substance": null,
     "precisionUpper": 0.1,
     "precisionLower": -0.1,
     "resolution": 0.01,

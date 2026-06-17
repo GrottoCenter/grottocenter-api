@@ -5,6 +5,10 @@
  * Since the test database does not run the full DDL script (Waterline's
  * migrate:drop only creates tables), we create the view inline and verify
  * its column structure and label logic.
+ *
+ * NOTE: The `geom` column from the production view is intentionally excluded
+ * to keep the test view minimal — the test DB lacks PostGIS extensions
+ * required for spatial functions.
  */
 const should = require('should');
 

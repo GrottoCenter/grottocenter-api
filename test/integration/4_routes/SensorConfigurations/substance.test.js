@@ -204,6 +204,26 @@ describe('SensorConfiguration features', () => {
           .set('Accept', 'application/json')
           .expect(400, done);
       });
+
+      it('should accept PATCH { substance: null } on a non-substance-requiring QK (no-op)', (done) => {
+        supertest(sails.hooks.http.app)
+          .patch(
+            `/api/v1/devices/${DEVICE_ID}/configurations/${configWithoutSubstance.id}`
+          )
+          .send({ substance: null })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200)
+          .end((err, res) => {
+            if (err) return done(err);
+            const { body: config } = res;
+
+            should(config.id).equal(configWithoutSubstance.id);
+            should(config.substance).be.null();
+            return done();
+          });
+      });
     });
 
     describe('Find returns substance', () => {

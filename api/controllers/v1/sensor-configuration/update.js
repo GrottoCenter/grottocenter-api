@@ -102,7 +102,10 @@ module.exports = async (req, res) => {
     effectiveQkCode = resolvedQuantityKind.code;
   } else {
     const qk = await TQuantityKind.findOne({ id: config.quantityKind });
-    effectiveQkCode = qk?.code;
+    if (!qk) {
+      return res.serverError('Could not resolve existing quantity kind.');
+    }
+    effectiveQkCode = qk.code;
   }
 
   // 7d. Substance validation
@@ -150,7 +153,8 @@ module.exports = async (req, res) => {
   if (shouldAutoClear) {
     updateData.substance = null;
   } else if (substance !== undefined) {
-    updateData.substance = substance;
+    updateData.substance =
+      SensorConfigurationService.normalizeSubstance(substance);
   }
 
   // 9. Update the record

@@ -22,6 +22,7 @@
 
 const FileService = require('../FileService');
 const PartitionManager = require('./PartitionManager');
+const { normalizeSubstance } = require('../SensorConfigurationService');
 
 const BATCH_SIZE = 1000;
 
@@ -81,7 +82,7 @@ const buildProfileWithMetadata = (
           : null,
         unit: unit ? { id: unit.id, symbol: unit.symbol } : null,
         medium: medium ? { id: medium.id, code: medium.code } : null,
-        substance: sc.substance || null,
+        substance: normalizeSubstance(sc.substance),
       },
     };
   }),
@@ -203,7 +204,9 @@ const processColumn = async ({
   }
 
   const mediumCode = medium ? medium.code : null;
-  const substance = sensorConfig ? sensorConfig.substance || null : null;
+  const substance = sensorConfig
+    ? normalizeSubstance(sensorConfig.substance)
+    : null;
 
   const timeSeriesData = {
     observation: observation.id,

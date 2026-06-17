@@ -196,7 +196,6 @@ CREATE TABLE IF NOT EXISTS t_sensor_configuration (
   resolution numeric,
   detection_limit_min numeric,
   detection_limit_max numeric,
-  substance varchar(100) NULL,
   is_deleted bool NOT NULL DEFAULT false,
   CONSTRAINT t_sensor_configuration_pk PRIMARY KEY (id),
   CONSTRAINT t_sensor_configuration_t_device_fk FOREIGN KEY (id_device) REFERENCES t_device(id),
@@ -229,7 +228,6 @@ CREATE TABLE IF NOT EXISTS t_time_series (
   quantity_kind_code varchar(100) NOT NULL,
   unit_symbol varchar(20) NOT NULL,
   medium_code varchar(100),
-  substance varchar(100) NULL,
   timezone_offset varchar(50),
   is_deleted bool NOT NULL DEFAULT false,
   CONSTRAINT t_time_series_pk PRIMARY KEY (id),
@@ -386,21 +384,11 @@ SELECT
   ts.id AS time_series_id,
   ts.quantity_kind_code,
   ts.unit_symbol,
-  ts.substance,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || ts.unit_symbol || ')'
-    ELSE ts.quantity_kind_code || ' (' || ts.unit_symbol || ')'
-  END AS quantity_unit,
+  ts.quantity_kind_code || ' (' || ts.unit_symbol || ')' AS quantity_unit,
   qk.symbol_si AS unit_si,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || qk.symbol_si || ')'
-    ELSE ts.quantity_kind_code || ' (' || qk.symbol_si || ')'
-  END AS quantity_unit_si,
+  ts.quantity_kind_code || ' (' || qk.symbol_si || ')' AS quantity_unit_si,
   qk.display_symbol AS unit_display,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || qk.display_symbol || ')'
-    ELSE ts.quantity_kind_code || ' (' || qk.display_symbol || ')'
-  END AS quantity_unit_display,
+  ts.quantity_kind_code || ' (' || qk.display_symbol || ')' AS quantity_unit_display,
   ts.medium_code,
   ts.data_quality,
   ts.sampling_interval_seconds,
