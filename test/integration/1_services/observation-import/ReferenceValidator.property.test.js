@@ -171,6 +171,7 @@ function installStubs(
       sensorConfigMap.set(id, {
         id,
         quantityKind: { id: 1, code: 'temperature' },
+        unit: { id: 1, siToDisplayFactor: '1', siToDisplayOffset: '-273.15' },
       });
     }
   });
@@ -468,7 +469,14 @@ describe('ReferenceValidator - Property 13: Reference validation completeness', 
     const caverMap = new Map([[3, { id: 3 }]]);
     const mediumMap = new Map([[5, { id: 5 }]]);
     const sensorConfigMap = new Map([
-      [10, { id: 10, quantityKind: { id: 1, code: 'temperature' } }],
+      [
+        10,
+        {
+          id: 10,
+          quantityKind: { id: 1, code: 'temperature' },
+          unit: { id: 1, siToDisplayFactor: '1', siToDisplayOffset: '-273.15' },
+        },
+      ],
     ]);
 
     sinon.stub(TCave, 'findOne').callsFake((criteria) => ({

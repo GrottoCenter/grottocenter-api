@@ -40,7 +40,13 @@ const quantityKindRecordArb = fc.record({
   code: fc.string({ minLength: 1, maxLength: 20 }),
   url: fc.webUrl(),
   symbolSi: fc.string({ minLength: 1, maxLength: 10 }),
-  displaySymbol: fc.string({ minLength: 1, maxLength: 10 }),
+});
+
+/** A unit object as returned from TUnit.find() */
+const unitRecordArb = fc.record({
+  id: idArb,
+  code: fc.string({ minLength: 1, maxLength: 20 }),
+  symbol: fc.string({ minLength: 1, maxLength: 10 }),
   siToDisplayFactor: fc.double({
     min: -1e4,
     max: 1e4,
@@ -53,13 +59,6 @@ const quantityKindRecordArb = fc.record({
     noNaN: true,
     noDefaultInfinity: true,
   }),
-});
-
-/** A unit object as returned from TUnit.find() */
-const unitRecordArb = fc.record({
-  id: idArb,
-  code: fc.string({ minLength: 1, maxLength: 20 }),
-  symbol: fc.string({ minLength: 1, maxLength: 10 }),
 });
 
 /** A sensor configuration record as returned from Waterline populate (IDs for qk/unit) */
@@ -395,18 +394,6 @@ describe('DeviceService - Property 6: Soft-deleted configs excluded from device 
                   'symbolSi',
                   expectedQk.symbolSi
                 );
-                should(config.quantityKind).have.property(
-                  'displaySymbol',
-                  expectedQk.displaySymbol
-                );
-                should(config.quantityKind).have.property(
-                  'siToDisplayFactor',
-                  expectedQk.siToDisplayFactor
-                );
-                should(config.quantityKind).have.property(
-                  'siToDisplayOffset',
-                  expectedQk.siToDisplayOffset
-                );
               }
 
               if (expectedUnit) {
@@ -416,6 +403,14 @@ describe('DeviceService - Property 6: Soft-deleted configs excluded from device 
                 should(config.unit).have.property(
                   'symbol',
                   expectedUnit.symbol
+                );
+                should(config.unit).have.property(
+                  'siToDisplayFactor',
+                  expectedUnit.siToDisplayFactor
+                );
+                should(config.unit).have.property(
+                  'siToDisplayOffset',
+                  expectedUnit.siToDisplayOffset
                 );
               }
             });

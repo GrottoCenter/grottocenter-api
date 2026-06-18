@@ -5,7 +5,7 @@
  * Uses fast-check to verify Property 6: SI conversion formula correctness.
  *
  * Property 6: SI conversion formula correctness
- * For any measurement value V and quantity kind with non-zero siToDisplayFactor F
+ * For any measurement value V and unit with non-zero siToDisplayFactor F
  * and siToDisplayOffset O:
  *   - value_si = (V - O) / F
  *   - Reverse: V_reconstructed = value_si * F + O SHALL equal V (within floating-point tolerance)
@@ -78,12 +78,12 @@ describe('SIConverter - Property 6: SI conversion formula correctness', () => {
           const expectedSi = (V - O) / F;
           if (!Number.isFinite(expectedSi)) return;
 
-          const quantityKind = {
+          const unit = {
             siToDisplayFactor: F,
             siToDisplayOffset: O,
           };
 
-          const valueSi = SIConverter.toSI(V, quantityKind);
+          const valueSi = SIConverter.toSI(V, unit);
 
           // 1. Check forward formula
           should(valueSi).be.approximately(
@@ -115,8 +115,8 @@ describe('SIConverter - Property 6: SI conversion formula correctness', () => {
         measurementValueArb, // V
         offsetArb, // O
         (V, O) => {
-          const quantityKind = { siToDisplayFactor: 0, siToDisplayOffset: O };
-          should(() => SIConverter.toSI(V, quantityKind)).throw(
+          const unit = { siToDisplayFactor: 0, siToDisplayOffset: O };
+          should(() => SIConverter.toSI(V, unit)).throw(
             /zero|factor/i,
             `Expected error for zero factor with V=${V}, O=${O}`
           );

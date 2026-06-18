@@ -8310,12 +8310,6 @@ components:
               type: string
             symbolSi:
               type: string
-            displaySymbol:
-              type: string
-            siToDisplayFactor:
-              type: number
-            siToDisplayOffset:
-              type: number
         unit:
           type: object
           properties:
@@ -8325,6 +8319,16 @@ components:
               type: string
             symbol:
               type: string
+            siToDisplayFactor:
+              type: number
+              description: >-
+                Multiplication factor to convert from SI to display unit.
+                value_display = value_si * siToDisplayFactor + siToDisplayOffset
+            siToDisplayOffset:
+              type: number
+              description: >-
+                Additive offset to convert from SI to display unit.
+                value_display = value_si * siToDisplayFactor + siToDisplayOffset
         label:
           type: string
           nullable: true

@@ -4,6 +4,8 @@
  * Converts measurement values from the sensor's display unit to SI units
  * using the formula: value_si = (value - siToDisplayOffset) / siToDisplayFactor
  *
+ * Conversion factors live on the unit (TUnit.siToDisplayFactor, TUnit.siToDisplayOffset).
+ *
  * Supports locale-aware number parsing:
  *   - French locale ("fr"): commas are decimal separators → replace before parseFloat
  *   - English locale (default): dots are decimal separators → parseFloat directly
@@ -15,31 +17,31 @@
  * Converts a single display-unit value to SI units.
  *
  * @param {number} value - Raw measurement value in display unit
- * @param {Object} quantityKind - { siToDisplayFactor, siToDisplayOffset }
+ * @param {Object} unit - { siToDisplayFactor, siToDisplayOffset }
  * @returns {number} value in SI units
  * @throws {Error} if siToDisplayFactor is zero
  */
-const toSI = (value, quantityKind) => {
+const toSI = (value, unit) => {
   // Coerce to Number because Waterline returns numeric columns as strings
   // when the model declares type: 'string' with columnType: 'numeric'.
-  const factor = Number(quantityKind.siToDisplayFactor);
-  const offset = Number(quantityKind.siToDisplayOffset);
+  const factor = Number(unit.siToDisplayFactor);
+  const offset = Number(unit.siToDisplayOffset);
 
-  // 3.9. Factor validity check: catch zero, NaN (from null/undefined), and ±Infinity
+  // Factor validity check: catch zero, NaN (from null/undefined), and ±Infinity
   if (!factor || !Number.isFinite(factor)) {
     throw new Error(
-      `Invalid SI conversion: siToDisplayFactor is not a valid finite number (got ${quantityKind.siToDisplayFactor}).`
+      `Invalid SI conversion: siToDisplayFactor is not a valid finite number (got ${unit.siToDisplayFactor}).`
     );
   }
 
   // Offset validity check: NaN or Infinity would corrupt all calculations
   if (!Number.isFinite(offset)) {
     throw new Error(
-      `Invalid SI conversion: siToDisplayOffset is not a valid finite number (got ${quantityKind.siToDisplayOffset}).`
+      `Invalid SI conversion: siToDisplayOffset is not a valid finite number (got ${unit.siToDisplayOffset}).`
     );
   }
 
-  // 3.8. Formula: value_si = (value - siToDisplayOffset) / siToDisplayFactor
+  // Formula: value_si = (value - siToDisplayOffset) / siToDisplayFactor
   return (value - offset) / factor;
 };
 
@@ -52,7 +54,6 @@ const toSI = (value, quantityKind) => {
  * @throws {Error} if the parsed value is NaN
  */
 const parseLocaleNumber = (rawString, numberLocale) => {
-  // 3.10. Locale-aware number parsing
   let value;
   if (numberLocale === 'fr') {
     // French locale: commas are decimal separators → replace ALL commas with dots.
@@ -80,8 +81,8 @@ const parseLocaleNumber = (rawString, numberLocale) => {
  * Converts all measurement values in parsed rows to SI units.
  *
  * @param {string[][]} rows - Parsed rows (string values)
- * @param {Map<number, {quantityKind: {siToDisplayFactor, siToDisplayOffset}}>} sensorConfigMap
- *   Map of columnIndex → sensorConfig
+ * @param {Map<number, {unit: {siToDisplayFactor, siToDisplayOffset}}>} sensorConfigMap
+ *   Map of columnIndex → sensorConfig (with unit populated)
  * @param {number[]} columnIndices - Original column indices in rows
  *   (after excluded-column filtering). Used to map columnIndex → row position.
  * @param {Object} profile - Profile (for numberLocale)
@@ -90,7 +91,7 @@ const parseLocaleNumber = (rawString, numberLocale) => {
  *   they reference the original file line number.
  * @returns {{ measurements: Array<{columnIndex: number, value: number, valueSi: number}[]>, skippedMeasurements: number }}
  *   Per-row measurement arrays and count of skipped empty cells
- * @throws {Error} if siToDisplayFactor is zero for any quantity kind
+ * @throws {Error} if siToDisplayFactor is zero for any unit
  */
 const convertAll = (
   rows,
@@ -135,7 +136,7 @@ const convertAll = (
           `Measurement conversion failed at row ${rowIdx + 1 + rowOffset}, column index ${colIndex}: ${err.message}`
         );
       }
-      const valueSi = toSI(value, sensorConfig.quantityKind);
+      const valueSi = toSI(value, sensorConfig.unit);
       acc.push({ columnIndex: colIndex, value, valueSi });
       return acc;
     }, [])

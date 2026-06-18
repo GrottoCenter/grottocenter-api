@@ -44,7 +44,13 @@ const quantityKindObjectArb = fc.record({
   code: fc.string({ minLength: 1, maxLength: 20 }),
   url: fc.webUrl(),
   symbolSi: fc.string({ minLength: 1, maxLength: 10 }),
-  displaySymbol: fc.string({ minLength: 1, maxLength: 10 }),
+});
+
+/** A populated unit object */
+const unitObjectArb = fc.record({
+  id: idArb,
+  code: fc.string({ minLength: 1, maxLength: 20 }),
+  symbol: fc.string({ minLength: 1, maxLength: 10 }),
   siToDisplayFactor: fc.double({
     min: -1e4,
     max: 1e4,
@@ -57,13 +63,6 @@ const quantityKindObjectArb = fc.record({
     noNaN: true,
     noDefaultInfinity: true,
   }),
-});
-
-/** A populated unit object */
-const unitObjectArb = fc.record({
-  id: idArb,
-  code: fc.string({ minLength: 1, maxLength: 20 }),
-  symbol: fc.string({ minLength: 1, maxLength: 10 }),
 });
 
 /** A date or null */
@@ -195,21 +194,9 @@ describe('toSensorConfiguration - Property 5: Device find populates configuratio
           'symbolSi',
           source.quantityKind.symbolSi
         );
-        should(result.quantityKind).have.property(
-          'displaySymbol',
-          source.quantityKind.displaySymbol
-        );
-        should(result.quantityKind).have.property(
-          'siToDisplayFactor',
-          source.quantityKind.siToDisplayFactor
-        );
-        should(result.quantityKind).have.property(
-          'siToDisplayOffset',
-          source.quantityKind.siToDisplayOffset
-        );
 
         // No extra fields leaked through
-        should(Object.keys(result.quantityKind)).have.length(7);
+        should(Object.keys(result.quantityKind)).have.length(4);
       }),
       { numRuns: 100 }
     );
@@ -227,14 +214,22 @@ describe('toSensorConfiguration - Property 5: Device find populates configuratio
       fc.property(sourceArb, (source) => {
         const result = toSensorConfiguration(source);
 
-        // unit must be a full object with all 3 fields
+        // unit must be a full object with all 5 fields
         should(result.unit).be.an.Object();
         should(result.unit).have.property('id', source.unit.id);
         should(result.unit).have.property('code', source.unit.code);
         should(result.unit).have.property('symbol', source.unit.symbol);
+        should(result.unit).have.property(
+          'siToDisplayFactor',
+          source.unit.siToDisplayFactor
+        );
+        should(result.unit).have.property(
+          'siToDisplayOffset',
+          source.unit.siToDisplayOffset
+        );
 
         // No extra fields leaked through
-        should(Object.keys(result.unit)).have.length(3);
+        should(Object.keys(result.unit)).have.length(5);
       }),
       { numRuns: 100 }
     );

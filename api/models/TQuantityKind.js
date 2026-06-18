@@ -2,6 +2,9 @@
  * TQuantityKind.js
  *
  * @description :: Lookup table for physical quantity kinds (QUDT aligned)
+ *
+ * Quantity kinds describe WHAT is measured (Temperature, Pressure, Concentration).
+ * Conversion factors now live on TUnit (HOW the measurement is expressed).
  */
 
 module.exports = {
@@ -36,33 +39,6 @@ module.exports = {
       allowNull: false,
       columnName: 'symbol_si',
       maxLength: 20,
-    },
-
-    displaySymbol: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'display_symbol',
-      maxLength: 20,
-    },
-
-    // Declared as type: 'string' because Waterline returns PostgreSQL `numeric`
-    // columns as strings to avoid JavaScript floating-point precision loss.
-    // Consumers (e.g. SIConverter) must coerce with Number() before arithmetic.
-    siToDisplayFactor: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'si_to_display_factor',
-      columnType: 'numeric',
-      defaultsTo: '1',
-    },
-
-    // See siToDisplayFactor comment above — same rationale.
-    siToDisplayOffset: {
-      type: 'string',
-      allowNull: false,
-      columnName: 'si_to_display_offset',
-      columnType: 'numeric',
-      defaultsTo: '0',
     },
   },
 };
