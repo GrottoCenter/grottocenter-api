@@ -72,11 +72,16 @@ module.exports = {
       maxLength: 300,
     },
 
-    substance: {
+    substanceLabel: {
       type: 'string',
       allowNull: true,
-      columnName: 'substance',
+      columnName: 'substance_label',
       maxLength: 100,
+    },
+
+    substance: {
+      model: 'TSubstance',
+      columnName: 'id_substance',
     },
 
     // Audit fields

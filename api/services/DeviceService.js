@@ -34,33 +34,41 @@ module.exports = {
 
     if (!device) return null;
 
-    // Deep-populate quantityKind and unit for each non-deleted configuration
+    // Deep-populate quantityKind, unit, and substance for each non-deleted configuration
     if (device.configurations && device.configurations.length > 0) {
       const activeConfigs = device.configurations.filter((c) => !c.isDeleted);
 
-      // Collect unique quantityKind and unit IDs
+      // Collect unique quantityKind, unit, and substance IDs
       const qkIds = [
         ...new Set(activeConfigs.map((c) => c.quantityKind).filter(Boolean)),
       ];
       const unitIds = [
         ...new Set(activeConfigs.map((c) => c.unit).filter(Boolean)),
       ];
+      const substanceIds = [
+        ...new Set(activeConfigs.map((c) => c.substance).filter(Boolean)),
+      ];
 
       // Batch-fetch referenced records
-      const [quantityKinds, units] = await Promise.all([
+      const [quantityKinds, units, substances] = await Promise.all([
         qkIds.length > 0 ? TQuantityKind.find({ id: qkIds }) : [],
         unitIds.length > 0 ? TUnit.find({ id: unitIds }) : [],
+        substanceIds.length > 0 ? TSubstance.find({ id: substanceIds }) : [],
       ]);
 
       // Build lookup maps
       const qkMap = Object.fromEntries(quantityKinds.map((qk) => [qk.id, qk]));
       const unitMap = Object.fromEntries(units.map((u) => [u.id, u]));
+      const substanceMap = Object.fromEntries(substances.map((s) => [s.id, s]));
 
       // Attach populated objects to each config
       device.configurations = activeConfigs.map((config) => ({
         ...config,
         quantityKind: qkMap[config.quantityKind] || config.quantityKind,
         unit: unitMap[config.unit] || config.unit,
+        substance: config.substance
+          ? substanceMap[config.substance] || config.substance
+          : null,
       }));
     } else {
       device.configurations = [];

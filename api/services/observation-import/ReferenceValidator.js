@@ -16,7 +16,7 @@ const isBlank = require('../../utils/isBlank');
  * @property {Object|null}      cave          - Resolved TCave record (or null)
  * @property {Object}           license       - Resolved TLicense record
  * @property {Map<number,Object>} media       - Map of mediumId → TMedium record
- * @property {Map<number,Object>} sensorConfigs - Map of sensorConfigurationId → TSensorConfiguration (with quantityKind populated)
+ * @property {Map<number,Object>} sensorConfigs - Map of sensorConfigurationId → TSensorConfiguration (with quantityKind, unit, and substance populated)
  */
 
 /**
@@ -154,6 +154,7 @@ const validate = async (profile) => {
       TSensorConfiguration.findOne({ id: sensorConfigId })
         .populate('quantityKind')
         .populate('unit')
+        .populate('substance')
         .then((sensorConfig) => {
           if (!sensorConfig) {
             errors.push(

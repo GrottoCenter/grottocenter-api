@@ -22,7 +22,6 @@
 
 const FileService = require('../FileService');
 const PartitionManager = require('./PartitionManager');
-const { normalizeSubstance } = require('../SensorConfigurationService');
 
 const BATCH_SIZE = 1000;
 
@@ -82,7 +81,7 @@ const buildProfileWithMetadata = (
           : null,
         unit: unit ? { id: unit.id, symbol: unit.symbol } : null,
         medium: medium ? { id: medium.id, code: medium.code } : null,
-        substance: normalizeSubstance(sc.substance),
+        substance: sc.substanceLabel ?? null,
       },
     };
   }),
@@ -204,9 +203,23 @@ const processColumn = async ({
   }
 
   const mediumCode = medium ? medium.code : null;
-  const substance = sensorConfig
-    ? normalizeSubstance(sensorConfig.substance)
-    : null;
+
+  // Resolve substance FK and label from sensorConfig.
+  // sensorConfig.substance may be:
+  //   - a populated object (has .id and .name)
+  //   - an integer (just the FK)
+  //   - null/undefined (no substance)
+  let substanceFk = null;
+  let substanceLabel = null;
+  if (sensorConfig && sensorConfig.substance != null) {
+    if (typeof sensorConfig.substance === 'object') {
+      substanceFk = sensorConfig.substance.id;
+      substanceLabel = sensorConfig.substance.name || null;
+    } else {
+      substanceFk = sensorConfig.substance;
+      substanceLabel = sensorConfig.substanceLabel ?? null;
+    }
+  }
 
   const timeSeriesData = {
     observation: observation.id,
@@ -222,7 +235,8 @@ const processColumn = async ({
     quantityKindCode,
     unitSymbol,
     timezoneOffset: profile.timezone || null,
-    substance,
+    substance: substanceFk,
+    substanceLabel,
   };
 
   if (medium) {

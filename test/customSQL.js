@@ -27,6 +27,7 @@ SELECT SETVAL('public.t_device_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_dev
 SELECT SETVAL('public.t_sensor_configuration_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_sensor_configuration;
 SELECT SETVAL('public.t_quantity_kind_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_quantity_kind;
 SELECT SETVAL('public.t_unit_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_unit;
+SELECT SETVAL('public.t_substance_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_substance;
 `;
 
 const ALTER_MASSIF_COLUMN_GEOG_POLYGON = `
@@ -162,6 +163,10 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_last_update
   ON v_bibliographic_metadata(last_update);
 CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
   ON v_bibliographic_metadata USING gin(list_sets);
+
+-- Substance reference table indexes
+CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_idx ON t_substance (name);
+CREATE INDEX IF NOT EXISTS t_substance_external_id_idx ON t_substance (external_id);
 
 -- History table indexes
 CREATE INDEX IF NOT EXISTS idx_h_document_id_massif ON h_document(id_massif);

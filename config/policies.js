@@ -300,6 +300,10 @@ module.exports.policies = {
   'v1/subject/find-all': true,
   'v1/subject/search': true,
 
+  // Substance
+  'v1/substance/find': true,
+  'v1/substance/create': 'tokenAuth',
+
   // Miscellaneous
   'v1/convert/convert': true,
   'v1/file-format/find-all': true,

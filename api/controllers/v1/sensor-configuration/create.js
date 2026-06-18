@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
   const label = req.param('label');
-  const substance = req.param('substance');
+  const idSubstance = req.param('idSubstance');
 
   // Validate label length
   if (label && label.length > 300) {
@@ -58,10 +58,11 @@ module.exports = async (req, res) => {
   }
 
   // Validate substance
-  const substanceError = SensorConfigurationService.validateSubstance(
-    substance,
-    existingQuantityKind.code
-  );
+  const { error: substanceError, substance } =
+    await SensorConfigurationService.validateSubstance(
+      idSubstance != null ? Number(idSubstance) : null,
+      existingQuantityKind.code
+    );
   if (substanceError) {
     return res.badRequest(substanceError);
   }
@@ -77,7 +78,8 @@ module.exports = async (req, res) => {
     detectionLimitMin: detectionLimitMin ?? null,
     detectionLimitMax: detectionLimitMax ?? null,
     label: label || null,
-    substance: SensorConfigurationService.normalizeSubstance(substance),
+    substance: idSubstance != null ? Number(idSubstance) : null,
+    substanceLabel: substance ? substance.name : null,
     author: req.token.id,
     dateInscription: new Date(),
   };

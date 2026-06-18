@@ -19,6 +19,7 @@ module.exports = [
   'tdevice',
   'tquantitykind',
   'tunit',
+  'tsubstance',
   'tsensorconfiguration',
   'tname',
   'tgrotto',

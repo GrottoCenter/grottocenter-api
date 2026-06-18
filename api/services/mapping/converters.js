@@ -682,7 +682,17 @@ const c = {
           }
         : source.unit,
     label: source.label,
-    substance: source.substance ?? null,
+    substance:
+      source.substance instanceof Object
+        ? {
+            id: source.substance.id,
+            name: source.substance.name,
+            formula: source.substance.formula || null,
+            casNumber: source.substance.casNumber || null,
+            externalId: source.substance.externalId || null,
+            externalSource: source.substance.externalSource || null,
+          }
+        : source.substance || null,
     precisionUpper: source.precisionUpper,
     precisionLower: source.precisionLower,
     resolution: source.resolution,

@@ -457,6 +457,10 @@ module.exports.routes = {
   'POST /api/v1/devices/:deviceId/configurations/:id/restore':
     'v1/sensor-configuration/restore',
 
+  // Substance
+  'GET /api/v1/substances': 'v1/substance/find',
+  'POST /api/v1/substances': 'v1/substance/create',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

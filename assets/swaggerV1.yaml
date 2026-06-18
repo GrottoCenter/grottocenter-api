@@ -62,6 +62,8 @@ tags:
     description: Per-channel sensor configuration management (nested under devices)
   - name: Observation
     description: Scientific observation data import
+  - name: Substances
+    description: Substance reference table for chemical species and isotopes
 
 paths:
   '/health':
@@ -6378,6 +6380,70 @@ paths:
         '500':
           description: Internal server error
 
+  '/substances':
+    get:
+      tags:
+        - Substances
+      summary: Search substances
+      description: >-
+        Search the substance reference table. Returns all substances when no search
+        parameter is provided. When a search string is provided (min 2 characters),
+        returns matching local results. For authenticated users, if local results are
+        empty, falls back to PubChem autocomplete. Public access (no auth required for
+        local results).
+      parameters:
+        - name: search
+          in: query
+          description: Search string (minimum 2 characters).
+          required: false
+          schema:
+            type: string
+            minLength: 2
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Substance'
+        '400':
+          description: Search string is less than 2 characters.
+
+    post:
+      tags:
+        - Substances
+      summary: Create a substance
+      description: >-
+        Create a new substance or return an existing one if the name already exists
+        (case-insensitive match). Requires authentication.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubstanceCreate'
+      responses:
+        '201':
+          description: Substance created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Substance'
+        '200':
+          description: Existing substance returned (duplicate name).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Substance'
+        '400':
+          description: Validation error (missing name or name exceeds 200 characters).
+        '401':
+          description: Authentication required.
+
 components:
 
   parameters:
@@ -8269,6 +8335,12 @@ components:
           description: >-
             Chemical species or isotope identifier (e.g. "NO₃⁻", "δ¹⁸O").
             Required for Concentration or IsotopeDelta quantity kinds, forbidden otherwise.
+        idSubstance:
+          type: integer
+          nullable: true
+          description: >-
+            Foreign key to the substance reference table. When set, substanceLabel
+            is automatically denormalized from the referenced substance record.
         precisionUpper:
           type: number
           nullable: true
@@ -8338,6 +8410,14 @@ components:
             Chemical species or isotope identifier (e.g. "NO₃⁻", "δ¹⁸O").
             Required when quantityKind is Concentration or IsotopeDelta.
             Must not be provided for other quantity kinds.
+        idSubstance:
+          type: integer
+          nullable: true
+          description: >-
+            Foreign key to the substance reference table. When provided,
+            the substance label is automatically denormalized from the referenced
+            substance record. Required when quantityKind is Concentration or
+            IsotopeDelta.
 
     SensorConfigurationUpdate:
       type: object
@@ -8376,3 +8456,74 @@ components:
             (after applying any quantityKind change in the same request) is Concentration or
             IsotopeDelta. Set to null to clear. Automatically cleared when quantityKind changes
             to a non-substance-requiring type.
+        idSubstance:
+          type: integer
+          nullable: true
+          description: >-
+            Foreign key to the substance reference table. Set to null to clear.
+            Automatically cleared when quantityKind changes to a non-substance-requiring type.
+            When set, the substance label is automatically denormalized from the referenced
+            substance record.
+
+    Substance:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 200
+          description: Display name of the substance (unique, case-insensitive).
+        formula:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Chemical formula (e.g. "NO₃⁻", "Ca²⁺").
+        casNumber:
+          type: string
+          maxLength: 20
+          nullable: true
+          description: CAS registry number.
+        externalId:
+          type: string
+          maxLength: 50
+          nullable: true
+          description: Identifier in the external registry (e.g. PubChem CID).
+        externalSource:
+          type: string
+          maxLength: 50
+          nullable: true
+          description: Name of the external registry (e.g. "PubChem").
+        author:
+          type: integer
+          description: ID of the caver who created this substance record.
+        dateInscription:
+          type: string
+          format: date-time
+          description: Timestamp when the substance was created.
+
+    SubstanceCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: Display name of the substance (must be unique, case-insensitive).
+        formula:
+          type: string
+          maxLength: 100
+          description: Chemical formula (optional).
+        casNumber:
+          type: string
+          maxLength: 20
+          description: CAS registry number (optional).
+        externalId:
+          type: string
+          maxLength: 50
+          description: Identifier in the external registry (optional).
+        externalSource:
+          type: string
+          maxLength: 50
+          description: Name of the external registry (optional, defaults to "PubChem" when externalId is provided).

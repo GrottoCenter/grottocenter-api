@@ -23,19 +23,19 @@ SELECT
   ts.id AS time_series_id,
   ts.quantity_kind_code,
   ts.unit_symbol,
-  ts.substance,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || ts.unit_symbol || ')'
+  ts.substance_label,
+  CASE WHEN ts.substance_label IS NOT NULL
+    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || ts.unit_symbol || ')'
     ELSE ts.quantity_kind_code || ' (' || ts.unit_symbol || ')'
   END AS quantity_unit,
   qk.symbol_si AS unit_si,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || qk.symbol_si || ')'
+  CASE WHEN ts.substance_label IS NOT NULL
+    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || qk.symbol_si || ')'
     ELSE ts.quantity_kind_code || ' (' || qk.symbol_si || ')'
   END AS quantity_unit_si,
   qk.display_symbol AS unit_display,
-  CASE WHEN ts.substance IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance || '] (' || qk.display_symbol || ')'
+  CASE WHEN ts.substance_label IS NOT NULL
+    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || qk.display_symbol || ')'
     ELSE ts.quantity_kind_code || ' (' || qk.display_symbol || ')'
   END AS quantity_unit_display,
   ts.medium_code,
@@ -68,12 +68,12 @@ describe('v_measurement_wide substance columns', () => {
     await CommonService.query('DROP VIEW IF EXISTS v_measurement_wide_test;');
   });
 
-  it('should include substance column in the view definition', async () => {
+  it('should include substance_label column in the view definition', async () => {
     const result = await CommonService.query(
-      "SELECT column_name FROM information_schema.columns WHERE table_name = 'v_measurement_wide_test' AND column_name = 'substance';"
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'v_measurement_wide_test' AND column_name = 'substance_label';"
     );
     should(result.rows).have.length(1);
-    should(result.rows[0].column_name).equal('substance');
+    should(result.rows[0].column_name).equal('substance_label');
   });
 
   it('should include quantity_unit column', async () => {
@@ -127,13 +127,13 @@ describe('v_measurement_wide substance columns', () => {
     `);
     const obsId = obs.rows[0].id;
 
-    // Create a time series with substance
+    // Create a time series with substance_label
     const ts = await CommonService.query(`
       INSERT INTO t_time_series (
         id_observation, id_sensor_configuration, id_author,
         date_inscription, start_date, end_date, measurement_count,
         min_value, max_value, data_quality, quantity_kind_code,
-        unit_symbol, substance, is_deleted
+        unit_symbol, substance_label, is_deleted
       ) VALUES (
         ${obsId}, 4, 1, NOW(), NOW(), NOW(), 1,
         0.5, 0.5, 'raw', 'Concentration',
@@ -150,14 +150,14 @@ describe('v_measurement_wide substance columns', () => {
 
     // Query the view
     const viewResult = await CommonService.query(`
-      SELECT quantity_unit, quantity_unit_si, quantity_unit_display, substance
+      SELECT quantity_unit, quantity_unit_si, quantity_unit_display, substance_label
       FROM v_measurement_wide_test
       WHERE time_series_id = ${tsId};
     `);
 
     should(viewResult.rows.length).be.above(0);
     const row = viewResult.rows[0];
-    should(row.substance).equal('NO₃⁻');
+    should(row.substance_label).equal('NO₃⁻');
     should(row.quantity_unit).equal('Concentration [NO₃⁻] (µM)');
 
     // Cleanup
@@ -203,7 +203,7 @@ describe('v_measurement_wide substance columns', () => {
         id_observation, id_sensor_configuration, id_author,
         date_inscription, start_date, end_date, measurement_count,
         min_value, max_value, data_quality, quantity_kind_code,
-        unit_symbol, substance, is_deleted
+        unit_symbol, substance_label, is_deleted
       ) VALUES (
         ${obsId}, 1, 1, NOW(), NOW(), NOW(), 1,
         20.0, 20.0, 'raw', 'Temperature',
@@ -220,14 +220,14 @@ describe('v_measurement_wide substance columns', () => {
 
     // Query the view
     const viewResult = await CommonService.query(`
-      SELECT quantity_unit, substance
+      SELECT quantity_unit, substance_label
       FROM v_measurement_wide_test
       WHERE time_series_id = ${tsId};
     `);
 
     should(viewResult.rows.length).be.above(0);
     const row = viewResult.rows[0];
-    should(row.substance).equal(null);
+    should(row.substance_label).equal(null);
     should(row.quantity_unit).equal('Temperature (°C)');
 
     // Cleanup

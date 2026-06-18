@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Nitrate",
+    "formula": "NO3-",
+    "casNumber": "14797-55-8",
+    "externalId": "943",
+    "externalSource": "PubChem",
+    "author": 1,
+    "dateInscription": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Calcium",
+    "formula": "Ca2+",
+    "casNumber": null,
+    "externalId": null,
+    "externalSource": null,
+    "author": 1,
+    "dateInscription": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "δ¹⁸O",
+    "formula": null,
+    "casNumber": null,
+    "externalId": null,
+    "externalSource": null,
+    "author": 1,
+    "dateInscription": "2024-01-15T10:00:00.000Z"
+  }
+]
