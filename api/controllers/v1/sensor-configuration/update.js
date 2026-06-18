@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
   const detectionLimitMin = req.param('detectionLimitMin');
   const detectionLimitMax = req.param('detectionLimitMax');
   const label = req.param('label');
-  const substance = req.param('substance');
+  const idSubstance = req.param('idSubstance');
 
   // 4. If no recognized updatable field is present → 400
   const hasUpdatableField =
@@ -40,11 +40,11 @@ module.exports = async (req, res) => {
     detectionLimitMin !== undefined ||
     detectionLimitMax !== undefined ||
     label !== undefined ||
-    substance !== undefined;
+    idSubstance !== undefined;
 
   if (!hasUpdatableField) {
     return res.badRequest(
-      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax, label, substance).'
+      'You must provide at least one updatable field (quantityKind, unit, precisionUpper, precisionLower, resolution, detectionLimitMin, detectionLimitMax, label, idSubstance).'
     );
   }
 
@@ -109,14 +109,17 @@ module.exports = async (req, res) => {
   }
 
   // 7d. Substance validation
-  if (substance !== undefined) {
-    const substanceError = SensorConfigurationService.validateSubstance(
-      substance,
-      effectiveQkCode
-    );
+  let validatedSubstance = null;
+  if (idSubstance !== undefined) {
+    const { error: substanceError, substance } =
+      await SensorConfigurationService.validateSubstance(
+        idSubstance != null ? Number(idSubstance) : null,
+        effectiveQkCode
+      );
     if (substanceError) {
       return res.badRequest(substanceError);
     }
+    validatedSubstance = substance;
   } else if (
     quantityKind !== undefined &&
     SensorConfigurationService.isSubstanceRequired(effectiveQkCode) &&
@@ -132,7 +135,7 @@ module.exports = async (req, res) => {
     quantityKind !== undefined &&
     !SensorConfigurationService.isSubstanceRequired(effectiveQkCode) &&
     config.substance != null &&
-    substance === undefined;
+    idSubstance === undefined;
 
   // 8. Build update set: only provided fields + reviewer/dateReviewed
   const updateData = {
@@ -152,9 +155,12 @@ module.exports = async (req, res) => {
   if (label !== undefined) updateData.label = label || null;
   if (shouldAutoClear) {
     updateData.substance = null;
-  } else if (substance !== undefined) {
-    updateData.substance =
-      SensorConfigurationService.normalizeSubstance(substance);
+    updateData.substanceLabel = null;
+  } else if (idSubstance !== undefined) {
+    updateData.substance = idSubstance != null ? Number(idSubstance) : null;
+    updateData.substanceLabel = validatedSubstance
+      ? validatedSubstance.name
+      : null;
   }
 
   // 9. Update the record

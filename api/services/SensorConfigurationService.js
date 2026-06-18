@@ -1,3 +1,5 @@
+const SubstanceService = require('./SubstanceService');
+
 /**
  * Codes of quantity kinds that require the substance field.
  */
@@ -11,43 +13,50 @@ const SUBSTANCE_REQUIRING_CODES = ['Concentration', 'IsotopeDelta'];
 const isSubstanceRequired = (code) => SUBSTANCE_REQUIRING_CODES.includes(code);
 
 /**
- * Validates substance field against the effective quantity kind.
- * Returns an error message string or null if valid.
+ * Validates idSubstance against the effective quantity kind code.
+ * Verifies that the referenced substance exists via SubstanceService.findById.
  *
- * @param {string|null|undefined} substance - The substance value from the request
+ * @param {number|null|undefined} idSubstance - The substance ID from the request
  * @param {string} quantityKindCode - The effective quantity kind code
- * @returns {string|null} Error message or null
+ * @returns {Promise<{error: string|null, substance: Object|null}>}
  */
-const validateSubstance = (substance, quantityKindCode) => {
-  if (substance != null && substance.length > 100) {
-    return 'The substance must not exceed 100 characters.';
-  }
+const validateSubstance = async (idSubstance, quantityKindCode) => {
   if (isSubstanceRequired(quantityKindCode)) {
-    if (substance == null || substance.trim().length === 0) {
-      return 'Substance is required for Concentration or IsotopeDelta quantity kinds.';
+    if (idSubstance == null) {
+      return {
+        error:
+          'Substance is required for Concentration or IsotopeDelta quantity kinds.',
+        substance: null,
+      };
     }
-  } else if (substance != null) {
-    return 'Substance is only valid for Concentration or IsotopeDelta quantity kinds.';
+  } else if (idSubstance != null) {
+    return {
+      error:
+        'Substance is only valid for Concentration or IsotopeDelta quantity kinds.',
+      substance: null,
+    };
   }
-  return null;
-};
 
-/**
- * Normalizes a substance value by trimming whitespace.
- * Returns null for null/undefined input.
- *
- * @param {string|null|undefined} substance
- * @returns {string|null}
- */
-const normalizeSubstance = (substance) => {
-  if (substance == null) return null;
-  return substance.trim() || null;
+  // If idSubstance is null and not required, valid with no substance
+  if (idSubstance == null) {
+    return { error: null, substance: null };
+  }
+
+  // Verify the referenced substance exists
+  const substance = await SubstanceService.findById(idSubstance);
+  if (!substance) {
+    return {
+      error: 'The referenced substance does not exist.',
+      substance: null,
+    };
+  }
+
+  return { error: null, substance };
 };
 
 module.exports = {
   SUBSTANCE_REQUIRING_CODES,
   isSubstanceRequired,
-  normalizeSubstance,
   validateSubstance,
 
   /**
@@ -61,7 +70,8 @@ module.exports = {
       .populate('author')
       .populate('reviewer')
       .populate('quantityKind')
-      .populate('unit');
+      .populate('unit')
+      .populate('substance');
     return config || null;
   },
 };

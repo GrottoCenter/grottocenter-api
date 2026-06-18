@@ -112,19 +112,19 @@ function installStubs({ timeSeriesBaseId }) {
 // Validates: Requirements 7.2, 7.3
 //
 // For any sensor configuration resolved during import, buildProfileWithMetadata
-// SHALL include the sensor config's substance value (or null) in the column
+// SHALL include the sensor config's substanceLabel value (or null) in the column
 // metadata object under the key "substance".
 // ---------------------------------------------------------------------------
 
 describe('EntityBuilder - Property 7: Substance propagation to profile metadata', () => {
-  it('should include substance in column metadata when sensor config has non-null substance', function () {
+  it('should include substanceLabel in column metadata when sensor config has non-null substanceLabel', function () {
     this.timeout(10000);
     fc.assert(
       fc.property(
         fc
           .string({ minLength: 1, maxLength: 100 })
           .filter((s) => s.trim().length > 0),
-        (substance) => {
+        (substanceLabel) => {
           const sensorConfigId = 42;
           const profile = {
             columnMappings: [
@@ -141,7 +141,7 @@ describe('EntityBuilder - Property 7: Substance propagation to profile metadata'
                 sensorConfigId,
                 {
                   id: sensorConfigId,
-                  substance,
+                  substanceLabel,
                   quantityKind: { id: 17, code: 'Concentration' },
                   unit: { id: 1, symbol: '°C' },
                 },
@@ -161,14 +161,14 @@ describe('EntityBuilder - Property 7: Substance propagation to profile metadata'
           const col = result.columnMappings[0];
 
           should(col).have.property('metadata');
-          should(col.metadata).have.property('substance', substance.trim());
+          should(col.metadata).have.property('substance', substanceLabel);
         }
       ),
       { numRuns: 100 }
     );
   });
 
-  it('should include substance as null in column metadata when sensor config has null substance', function () {
+  it('should include substanceLabel as null in column metadata when sensor config has null substanceLabel', function () {
     this.timeout(10000);
     fc.assert(
       fc.property(fc.constant(null), () => {
@@ -188,7 +188,7 @@ describe('EntityBuilder - Property 7: Substance propagation to profile metadata'
               sensorConfigId,
               {
                 id: sensorConfigId,
-                substance: null,
+                substanceLabel: null,
                 quantityKind: { id: 1, code: 'Temperature' },
                 unit: { id: 1, symbol: '°C' },
               },
@@ -217,12 +217,15 @@ describe('EntityBuilder - Property 7: Substance propagation to profile metadata'
 
 // ---------------------------------------------------------------------------
 // Property 5: Denormalized substance propagation
-// Validates: Requirements 6.1, 6.3
+// Validates: Requirements 5.4, 5.5, 10.2, 10.3, 10.4
 //
-// For any sensor configuration with a substance value (including null),
-// when a time series is created referencing that configuration, the substance
-// column on the t_time_series record SHALL equal the sensor configuration's
-// substance value.
+// For any sensor configuration:
+//  - If substance FK is a populated object: time series gets substance.id as FK
+//    and substance.name as substanceLabel
+//  - If substance FK is an integer: time series gets that integer as FK and
+//    sensorConfig.substanceLabel as substanceLabel
+//  - If substance FK is null/undefined: time series gets null for both substance
+//    and substanceLabel
 // ---------------------------------------------------------------------------
 
 describe('EntityBuilder - Property 5: Denormalized substance propagation', () => {
@@ -230,18 +233,16 @@ describe('EntityBuilder - Property 5: Denormalized substance propagation', () =>
     sinon.restore();
   });
 
-  it('should set time series substance to the sensor config substance value', async function () {
+  it('should propagate substance FK and label from populated object on sensor config', async function () {
     this.timeout(60000);
 
     await fc.assert(
       fc.asyncProperty(
-        fc.oneof(
-          fc
-            .string({ minLength: 1, maxLength: 100 })
-            .filter((s) => s.trim().length > 0),
-          fc.constant(null)
-        ),
-        async (substance) => {
+        fc.integer({ min: 1, max: 9999 }), // substanceId
+        fc
+          .string({ minLength: 1, maxLength: 100 })
+          .filter((s) => s.trim().length > 0), // substanceName
+        async (substanceId, substanceName) => {
           const sensorConfigId = 101;
           const timestamps = [new Date(1000000), new Date(2000000)];
 
@@ -273,9 +274,10 @@ describe('EntityBuilder - Property 5: Denormalized substance propagation', () =>
               sensorConfigId,
               {
                 id: sensorConfigId,
-                substance,
+                substance: { id: substanceId, name: substanceName },
+                substanceLabel: substanceName,
                 unit: { id: 11, symbol: '°C' },
-                quantityKind: { id: 21, code: 'Temperature' },
+                quantityKind: { id: 21, code: 'Concentration' },
               },
             ],
           ]);
@@ -311,8 +313,196 @@ describe('EntityBuilder - Property 5: Denormalized substance propagation', () =>
           const ts = tracker.timeSeriesCreated[0];
 
           should(ts.substance).equal(
-            substance ? substance.trim() : null,
-            `Expected substance "${substance ? substance.trim() : null}", got "${ts.substance}"`
+            substanceId,
+            `Expected substance FK ${substanceId}, got ${ts.substance}`
+          );
+          should(ts.substanceLabel).equal(
+            substanceName,
+            `Expected substanceLabel "${substanceName}", got "${ts.substanceLabel}"`
+          );
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should propagate substance FK and use substanceLabel when substance is an integer', async function () {
+    this.timeout(60000);
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.integer({ min: 1, max: 9999 }), // substanceId (integer FK)
+        fc
+          .string({ minLength: 1, maxLength: 100 })
+          .filter((s) => s.trim().length > 0), // substanceLabel
+        async (substanceId, substanceLabel) => {
+          const sensorConfigId = 101;
+          const timestamps = [new Date(1000000), new Date(2000000)];
+
+          const measurements = timestamps.map(() => [
+            { columnIndex: 1, value: 1.5, valueSi: 3.0 },
+          ]);
+          const parsedData = { rows: [], timestamps, measurements };
+
+          const profile = {
+            timezone: 'UTC',
+            caveId: 1,
+            pointLabel: 'Test Point',
+            authorId: 7,
+            licenseId: 1,
+            dataQuality: 'raw',
+            columnMappings: [
+              { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+              {
+                columnIndex: 1,
+                role: 'measurement',
+                sensorConfigurationId: sensorConfigId,
+                mediumId: 201,
+              },
+            ],
+          };
+
+          const sensorConfigs = new Map([
+            [
+              sensorConfigId,
+              {
+                id: sensorConfigId,
+                substance: substanceId, // integer FK, not populated
+                substanceLabel,
+                unit: { id: 11, symbol: '°C' },
+                quantityKind: { id: 21, code: 'Concentration' },
+              },
+            ],
+          ]);
+          const media = new Map([[201, { id: 201, code: 'water' }]]);
+
+          const resolvedEntities = {
+            cave: { id: 1 },
+            license: { id: 1 },
+            author: { id: 7 },
+            media,
+            sensorConfigs,
+          };
+
+          const tracker = installStubs({ timeSeriesBaseId: 300 });
+
+          try {
+            await EntityBuilder.build({
+              parsedData,
+              profile,
+              resolvedEntities,
+              file: {
+                buffer: Buffer.from(''),
+                originalname: 'data.csv',
+                size: 0,
+              },
+              requestAuthorId: 7,
+            });
+          } finally {
+            sinon.restore();
+          }
+
+          should(tracker.timeSeriesCreated.length).equal(1);
+          const ts = tracker.timeSeriesCreated[0];
+
+          should(ts.substance).equal(
+            substanceId,
+            `Expected substance FK ${substanceId}, got ${ts.substance}`
+          );
+          should(ts.substanceLabel).equal(
+            substanceLabel,
+            `Expected substanceLabel "${substanceLabel}", got "${ts.substanceLabel}"`
+          );
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should set both substance and substanceLabel to null when sensor config has no substance FK', async function () {
+    this.timeout(60000);
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.oneof(fc.constant(null), fc.constant(undefined)),
+        async (substanceValue) => {
+          const sensorConfigId = 101;
+          const timestamps = [new Date(1000000), new Date(2000000)];
+
+          const measurements = timestamps.map(() => [
+            { columnIndex: 1, value: 1.5, valueSi: 3.0 },
+          ]);
+          const parsedData = { rows: [], timestamps, measurements };
+
+          const profile = {
+            timezone: 'UTC',
+            caveId: 1,
+            pointLabel: 'Test Point',
+            authorId: 7,
+            licenseId: 1,
+            dataQuality: 'raw',
+            columnMappings: [
+              { columnIndex: 0, role: 'timestamp', timestampType: 'datetime' },
+              {
+                columnIndex: 1,
+                role: 'measurement',
+                sensorConfigurationId: sensorConfigId,
+                mediumId: 201,
+              },
+            ],
+          };
+
+          const scData = {
+            id: sensorConfigId,
+            substanceLabel: 'Some old label',
+            unit: { id: 11, symbol: '°C' },
+            quantityKind: { id: 21, code: 'Temperature' },
+          };
+          // Only set the substance field if it's explicitly null (not undefined)
+          if (substanceValue === null) {
+            scData.substance = null;
+          }
+          // If undefined, we omit it entirely to test that case
+
+          const sensorConfigs = new Map([[sensorConfigId, scData]]);
+          const media = new Map([[201, { id: 201, code: 'water' }]]);
+
+          const resolvedEntities = {
+            cave: { id: 1 },
+            license: { id: 1 },
+            author: { id: 7 },
+            media,
+            sensorConfigs,
+          };
+
+          const tracker = installStubs({ timeSeriesBaseId: 300 });
+
+          try {
+            await EntityBuilder.build({
+              parsedData,
+              profile,
+              resolvedEntities,
+              file: {
+                buffer: Buffer.from(''),
+                originalname: 'data.csv',
+                size: 0,
+              },
+              requestAuthorId: 7,
+            });
+          } finally {
+            sinon.restore();
+          }
+
+          should(tracker.timeSeriesCreated.length).equal(1);
+          const ts = tracker.timeSeriesCreated[0];
+
+          should(ts.substance).equal(
+            null,
+            `Expected substance FK null, got ${ts.substance}`
+          );
+          should(ts.substanceLabel).equal(
+            null,
+            `Expected substanceLabel null, got "${ts.substanceLabel}"`
           );
         }
       ),

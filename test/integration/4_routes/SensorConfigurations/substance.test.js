@@ -9,6 +9,8 @@ describe('SensorConfiguration features', () => {
     const CONCENTRATION_QK = 4; // Concentration (substance-requiring)
     const TEMPERATURE_QK = 1; // Temperature (non-substance)
     const VALID_UNIT = 1;
+    const VALID_SUBSTANCE_ID = 1; // Nitrate (from tsubstance fixture)
+    const NON_EXISTENT_SUBSTANCE_ID = 99999;
 
     before(async () => {
       adminToken = await AuthTokenService.getRawBearerAdminToken();
@@ -23,13 +25,13 @@ describe('SensorConfiguration features', () => {
         );
       });
 
-      it('should create successfully with valid substance for Concentration QK', (done) => {
+      it('should create successfully with valid idSubstance for Concentration QK', (done) => {
         supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
           .send({
             quantityKind: CONCENTRATION_QK,
             unit: VALID_UNIT,
-            substance: 'NO₃⁻',
+            idSubstance: VALID_SUBSTANCE_ID,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -40,7 +42,9 @@ describe('SensorConfiguration features', () => {
             const { body: config } = res;
 
             should(config).have.property('id');
-            should(config.substance).equal('NO₃⁻');
+            should(config.substance).be.an.Object();
+            should(config.substance).have.property('id', VALID_SUBSTANCE_ID);
+            should(config.substance).have.property('name', 'Nitrate');
             should(config.quantityKind).be.an.Object();
             should(config.quantityKind).have.property('id', CONCENTRATION_QK);
 
@@ -74,13 +78,13 @@ describe('SensorConfiguration features', () => {
           });
       });
 
-      it('should return 400 when substance exceeds 100 characters', (done) => {
+      it('should return 400 when idSubstance references a non-existent substance', (done) => {
         supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
           .send({
             quantityKind: CONCENTRATION_QK,
             unit: VALID_UNIT,
-            substance: 'x'.repeat(101),
+            idSubstance: NON_EXISTENT_SUBSTANCE_ID,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -88,7 +92,7 @@ describe('SensorConfiguration features', () => {
           .expect(400, done);
       });
 
-      it('should return 400 when Concentration QK and substance is missing', (done) => {
+      it('should return 400 when Concentration QK and idSubstance is missing', (done) => {
         supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
           .send({
@@ -101,13 +105,13 @@ describe('SensorConfiguration features', () => {
           .expect(400, done);
       });
 
-      it('should return 400 when Temperature QK and substance is provided', (done) => {
+      it('should return 400 when Temperature QK and idSubstance is provided', (done) => {
         supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
           .send({
             quantityKind: TEMPERATURE_QK,
             unit: VALID_UNIT,
-            substance: 'H₂O',
+            idSubstance: VALID_SUBSTANCE_ID,
           })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
@@ -125,7 +129,8 @@ describe('SensorConfiguration features', () => {
           device: DEVICE_ID,
           quantityKind: CONCENTRATION_QK,
           unit: VALID_UNIT,
-          substance: 'NO₃⁻',
+          substance: VALID_SUBSTANCE_ID,
+          substanceLabel: 'Nitrate',
           author: 1,
           dateInscription: new Date(),
         }).fetch();
@@ -135,6 +140,7 @@ describe('SensorConfiguration features', () => {
           quantityKind: TEMPERATURE_QK,
           unit: VALID_UNIT,
           substance: null,
+          substanceLabel: null,
           author: 1,
           dateInscription: new Date(),
         }).fetch();
@@ -151,12 +157,12 @@ describe('SensorConfiguration features', () => {
         }
       });
 
-      it('should update substance on a config with Concentration QK', (done) => {
+      it('should update idSubstance on a config with Concentration QK', (done) => {
         supertest(sails.hooks.http.app)
           .patch(
             `/api/v1/devices/${DEVICE_ID}/configurations/${configWithSubstance.id}`
           )
-          .send({ substance: 'PO₄³⁻' })
+          .send({ idSubstance: 2 }) // Calcium
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -166,7 +172,9 @@ describe('SensorConfiguration features', () => {
             const { body: config } = res;
 
             should(config.id).equal(configWithSubstance.id);
-            should(config.substance).equal('PO₄³⁻');
+            should(config.substance).be.an.Object();
+            should(config.substance).have.property('id', 2);
+            should(config.substance).have.property('name', 'Calcium');
             return done();
           });
       });
@@ -205,12 +213,12 @@ describe('SensorConfiguration features', () => {
           .expect(400, done);
       });
 
-      it('should accept PATCH { substance: null } on a non-substance-requiring QK (no-op)', (done) => {
+      it('should accept PATCH { idSubstance: null } on a non-substance-requiring QK (no-op)', (done) => {
         supertest(sails.hooks.http.app)
           .patch(
             `/api/v1/devices/${DEVICE_ID}/configurations/${configWithoutSubstance.id}`
           )
-          .send({ substance: null })
+          .send({ idSubstance: null })
           .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
@@ -227,7 +235,7 @@ describe('SensorConfiguration features', () => {
     });
 
     describe('Find returns substance', () => {
-      // Fixture config 5 has substance: "NO₃⁻" with Concentration QK
+      // Fixture config 5 has substance: 1 (Nitrate) with Concentration QK
       const CONFIG_WITH_SUBSTANCE = 5;
 
       it('should return substance field in find response', (done) => {
@@ -243,7 +251,9 @@ describe('SensorConfiguration features', () => {
             const { body: config } = res;
 
             should(config).have.property('id', CONFIG_WITH_SUBSTANCE);
-            should(config).have.property('substance', 'NO₃⁻');
+            should(config.substance).be.an.Object();
+            should(config.substance).have.property('id', 1);
+            should(config.substance).have.property('name', 'Nitrate');
             should(config.quantityKind).be.an.Object();
             should(config.quantityKind).have.property('code', 'Concentration');
             return done();

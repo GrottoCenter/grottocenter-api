@@ -128,11 +128,16 @@ module.exports = {
       maxLength: 100,
     },
 
-    substance: {
+    substanceLabel: {
       type: 'string',
       allowNull: true,
-      columnName: 'substance',
-      maxLength: 100,
+      columnName: 'substance_label',
+      maxLength: 200,
+    },
+
+    substance: {
+      model: 'TSubstance',
+      columnName: 'id_substance',
     },
 
     timezoneOffset: {
