@@ -3,36 +3,24 @@
     "id": 1,
     "code": "Temperature",
     "url": "http://qudt.org/vocab/quantitykind/Temperature",
-    "symbolSi": "K",
-    "displaySymbol": "°C",
-    "siToDisplayFactor": "1",
-    "siToDisplayOffset": "-273.15"
+    "symbolSi": "K"
   },
   {
     "id": 2,
     "code": "Pressure",
     "url": "http://qudt.org/vocab/quantitykind/Pressure",
-    "symbolSi": "Pa",
-    "displaySymbol": "hPa",
-    "siToDisplayFactor": "0.01",
-    "siToDisplayOffset": "0"
+    "symbolSi": "Pa"
   },
   {
     "id": 3,
     "code": "IsotopeDelta",
     "url": "http://qudt.org/vocab/quantitykind/DimensionlessRatio",
-    "symbolSi": "1",
-    "displaySymbol": "‰",
-    "siToDisplayFactor": "1000",
-    "siToDisplayOffset": "0"
+    "symbolSi": "1"
   },
   {
     "id": 4,
     "code": "Concentration",
     "url": "http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration",
-    "symbolSi": "mol/L",
-    "displaySymbol": "µM",
-    "siToDisplayFactor": "1000000",
-    "siToDisplayOffset": "0"
+    "symbolSi": "mol/L"
   }
 ]

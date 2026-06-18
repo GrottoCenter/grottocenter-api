@@ -668,9 +668,6 @@ const c = {
             code: source.quantityKind.code,
             url: source.quantityKind.url,
             symbolSi: source.quantityKind.symbolSi,
-            displaySymbol: source.quantityKind.displaySymbol,
-            siToDisplayFactor: source.quantityKind.siToDisplayFactor,
-            siToDisplayOffset: source.quantityKind.siToDisplayOffset,
           }
         : source.quantityKind,
     unit:
@@ -679,6 +676,8 @@ const c = {
             id: source.unit.id,
             code: source.unit.code,
             symbol: source.unit.symbol,
+            siToDisplayFactor: source.unit.siToDisplayFactor,
+            siToDisplayOffset: source.unit.siToDisplayOffset,
           }
         : source.unit,
     label: source.label,

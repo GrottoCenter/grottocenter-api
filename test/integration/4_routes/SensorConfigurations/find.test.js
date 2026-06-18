@@ -33,15 +33,14 @@ describe('SensorConfiguration features', () => {
           should(config.quantityKind).have.property('code');
           should(config.quantityKind).have.property('url');
           should(config.quantityKind).have.property('symbolSi');
-          should(config.quantityKind).have.property('displaySymbol');
-          should(config.quantityKind).have.property('siToDisplayFactor');
-          should(config.quantityKind).have.property('siToDisplayOffset');
 
           // unit should be a populated object
           should(config.unit).be.an.Object();
           should(config.unit).have.property('id', 1);
           should(config.unit).have.property('code');
           should(config.unit).have.property('symbol');
+          should(config.unit).have.property('siToDisplayFactor');
+          should(config.unit).have.property('siToDisplayOffset');
 
           // author should be a populated simple caver
           should(config.author).be.an.Object();

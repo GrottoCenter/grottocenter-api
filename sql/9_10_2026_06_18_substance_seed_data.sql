@@ -45,7 +45,7 @@ VALUES
   ('δ¹⁸O',             NULL,          NULL,          NULL,      NULL,      1),
   ('δ²H',              NULL,          NULL,          NULL,      NULL,      1),
   ('δ¹³C',             NULL,          NULL,          NULL,      NULL,      1)
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (LOWER(name)) DO NOTHING;
 
 -- ============================================================
 -- Link existing sensor configurations and time series to

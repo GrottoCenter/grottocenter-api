@@ -690,7 +690,7 @@ describe('SIConverter', () => {
         [
           1,
           {
-            quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: -273.15 },
+            unit: { siToDisplayFactor: 1, siToDisplayOffset: -273.15 },
           },
         ],
       ]);
@@ -723,7 +723,7 @@ describe('SIConverter', () => {
         [
           1,
           {
-            quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: -273.15 },
+            unit: { siToDisplayFactor: 1, siToDisplayOffset: -273.15 },
           },
         ],
       ]);
@@ -763,8 +763,8 @@ describe('SIConverter', () => {
       // After exclusion, row has values [ts, m1, m2] at positions 0,1,2
       // columnIndices = [0, 1, 2]
       const sensorConfigMap = new Map([
-        [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
-        [2, { quantityKind: { siToDisplayFactor: 100, siToDisplayOffset: 0 } }],
+        [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+        [2, { unit: { siToDisplayFactor: 100, siToDisplayOffset: 0 } }],
       ]);
       const rows = [
         ['2024-01-15 08:00:00', '10.0', '50.0'],
@@ -804,8 +804,8 @@ describe('SIConverter', () => {
     it('should throw when sensorConfigMap columns are not present in columnIndices', () => {
       // sensorConfigMap has col 5 but it's not in columnIndices (was excluded)
       const sensorConfigMap = new Map([
-        [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
-        [5, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+        [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+        [5, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
       ]);
       const rows = [['ts_value', '42.0']];
       const columnIndices = [0, 1]; // col 5 not present
@@ -816,9 +816,9 @@ describe('SIConverter', () => {
       ).throw(/Measurement column index 5 not found in parsed data/);
     });
 
-    it('should throw if a quantity kind has zero factor', () => {
+    it('should throw if a unit has zero factor', () => {
       const sensorConfigMap = new Map([
-        [1, { quantityKind: { siToDisplayFactor: 0, siToDisplayOffset: 0 } }],
+        [1, { unit: { siToDisplayFactor: 0, siToDisplayOffset: 0 } }],
       ]);
       const rows = [['42.0']];
       const columnIndices = [1];
@@ -913,7 +913,7 @@ describe('TimestampConverter - rowOffset parameter', () => {
 describe('SIConverter - rowOffset parameter', () => {
   it('should report the correct file-line number when rowOffset is non-zero', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     // rowOffset=2, bad row at data index 0 → file line = 0 + 1 + 2 = row 3
     const rows = [['not-a-number']];
@@ -940,7 +940,7 @@ describe('SIConverter - rowOffset parameter', () => {
 
   it('should report the correct file-line for a later row with rowOffset', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     // rowOffset=3, bad row at data index 1 → file line = 1 + 1 + 3 = row 5
     const rows = [['10.0'], ['xyz']];
@@ -966,7 +966,7 @@ describe('SIConverter - rowOffset parameter', () => {
 
   it('should report row 1 when rowOffset is 0 and bad row is at index 0', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     const rows = [['abc']];
     const columnIndices = [1];
@@ -997,7 +997,7 @@ describe('SIConverter - rowOffset parameter', () => {
 describe('SIConverter - empty and whitespace cell handling', () => {
   it('should skip empty cells and return skippedMeasurements count', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     // 3 rows: first has value, second is empty, third has value
     const rows = [['10.0'], [''], ['20.0']];
@@ -1022,7 +1022,7 @@ describe('SIConverter - empty and whitespace cell handling', () => {
 
   it('should treat whitespace-only cells as empty (sensor gap)', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     const rows = [['  '], ['\t'], [' \t ']];
     const columnIndices = [1];
@@ -1043,8 +1043,8 @@ describe('SIConverter - empty and whitespace cell handling', () => {
 
   it('should count skips across multiple measurement columns', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
-      [2, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [2, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     // Row with col1 present but col2 empty
     const rows = [
@@ -1070,7 +1070,7 @@ describe('SIConverter - empty and whitespace cell handling', () => {
 
   it('should return skippedMeasurements=0 when no cells are empty', () => {
     const sensorConfigMap = new Map([
-      [1, { quantityKind: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
+      [1, { unit: { siToDisplayFactor: 1, siToDisplayOffset: 0 } }],
     ]);
     const rows = [['10.0'], ['20.0']];
     const columnIndices = [1];

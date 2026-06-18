@@ -92,15 +92,14 @@ describe('Device features', () => {
             code: 'test-temp',
             url: 'http://test.example.com/temp',
             symbolSi: 'K',
-            displaySymbol: '°C',
-            siToDisplayFactor: 1,
-            siToDisplayOffset: -273.15,
           }).fetch();
           quantityKindId = quantityKind.id;
 
           const unit = await TUnit.create({
             code: 'test-kelvin',
             symbol: 'K',
+            siToDisplayFactor: '1',
+            siToDisplayOffset: '0',
           }).fetch();
           unitId = unit.id;
 

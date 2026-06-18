@@ -2,26 +2,36 @@
   {
     "id": 1,
     "code": "DEG_C",
-    "symbol": "°C"
+    "symbol": "°C",
+    "siToDisplayFactor": "1",
+    "siToDisplayOffset": "-273.15"
   },
   {
     "id": 2,
     "code": "HPA",
-    "symbol": "hPa"
+    "symbol": "hPa",
+    "siToDisplayFactor": "0.01",
+    "siToDisplayOffset": "0"
   },
   {
     "id": 3,
     "code": "PER_MIL",
-    "symbol": "‰"
+    "symbol": "‰",
+    "siToDisplayFactor": "1000",
+    "siToDisplayOffset": "0"
   },
   {
     "id": 18,
     "code": "micromole",
-    "symbol": "µM"
+    "symbol": "µM",
+    "siToDisplayFactor": "1000000",
+    "siToDisplayOffset": "0"
   },
   {
     "id": 29,
     "code": "per_mil",
-    "symbol": "‰"
+    "symbol": "‰",
+    "siToDisplayFactor": "1000",
+    "siToDisplayOffset": "0"
   }
 ]
