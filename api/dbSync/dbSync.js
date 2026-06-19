@@ -173,7 +173,7 @@ async function makeDbSync(isFileExportEnabled = true) {
   let archiveP;
   if (isFileExportEnabled) {
     if (!FileService.isCredentials) {
-      sails.log.warn('[dbSync] DB sync aborded, no azure credentials supplied');
+      sails.log.warn('[dbSync] DB sync aborted, no azure credentials supplied');
       return;
     }
     archive = new ZipArchive();
