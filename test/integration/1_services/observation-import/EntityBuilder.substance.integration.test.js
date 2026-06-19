@@ -17,8 +17,16 @@ CREATE OR REPLACE VIEW v_measurement_wide_test AS
 SELECT
   m.id AS measurement_id,
   m.value,
-  m.value_si,
-  m.value_si * du.factor_to_si + du.offset_to_si AS value_display,
+  CASE WHEN iu.dimension = du.dimension
+    THEN m.value_si
+    ELSE NULL
+  END AS value_si,
+  CASE WHEN iu.dimension = du.dimension
+    THEN m.value_si * du.factor_to_si + du.offset_to_si
+    ELSE NULL
+  END AS value_display,
+  iu.dimension AS import_dimension,
+  du.dimension AS display_dimension,
   m.timestamp,
   ts.id AS time_series_id,
   ts.quantity_kind_code,
@@ -56,6 +64,7 @@ JOIN t_observation o ON o.id = ts.id_observation
 LEFT JOIN t_point p ON p.id = o.id_point
 LEFT JOIN t_quantity_kind qk ON qk.code = ts.quantity_kind_code
 LEFT JOIN t_unit du ON du.id = qk.id_display_unit
+LEFT JOIN t_unit iu ON iu.symbol = ts.unit_symbol
 WHERE o.is_deleted = false
   AND ts.is_deleted = false;
 `;

@@ -93,6 +93,7 @@ describe('Device features', () => {
             symbol: 'K',
             siToDisplayFactor: '1',
             siToDisplayOffset: '0',
+            dimension: 'temperature',
           }).fetch();
           unitId = unit.id;
 

@@ -367,5 +367,57 @@ columns:
   python_date_format: null
   datetime_format: null
   extra: {}
+- column_name: id_substance
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: INTEGER
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
+- column_name: substance_label
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: VARCHAR(200)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
+- column_name: import_dimension
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: VARCHAR(50)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
+- column_name: display_dimension
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: VARCHAR(50)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
 version: 1.0.0
 database_uuid: fe17d436-4c72-475f-9db4-871ed305b379
