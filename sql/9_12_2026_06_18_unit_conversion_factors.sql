@@ -126,12 +126,49 @@ UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'per_mil';
 -- ============================================================
 -- 3. Drop v_measurement_wide (depends on columns we're removing)
 --    then remove conversion columns from t_quantity_kind
+--    and add id_display_unit FK (preferred human-friendly unit per QK)
 -- ============================================================
 DROP VIEW IF EXISTS v_measurement_wide;
 
 ALTER TABLE t_quantity_kind DROP COLUMN IF EXISTS display_symbol;
 ALTER TABLE t_quantity_kind DROP COLUMN IF EXISTS si_to_display_factor;
 ALTER TABLE t_quantity_kind DROP COLUMN IF EXISTS si_to_display_offset;
+
+-- Add the display unit FK (the canonical human-friendly unit for each QK)
+ALTER TABLE t_quantity_kind ADD COLUMN IF NOT EXISTS id_display_unit integer NULL;
+ALTER TABLE t_quantity_kind
+  DROP CONSTRAINT IF EXISTS t_quantity_kind_t_unit_fk;
+ALTER TABLE t_quantity_kind
+  ADD CONSTRAINT t_quantity_kind_t_unit_fk
+    FOREIGN KEY (id_display_unit) REFERENCES t_unit(id);
+
+-- Populate display unit for each quantity kind
+-- (IDs reference the pre-compaction state: after 9_08, before this migration's step 4)
+UPDATE t_quantity_kind SET id_display_unit = 1  WHERE code = 'Temperature';          -- °C
+UPDATE t_quantity_kind SET id_display_unit = 2  WHERE code = 'RelativeHumidity';     -- %
+UPDATE t_quantity_kind SET id_display_unit = 3  WHERE code = 'AtmosphericPressure';  -- hPa
+UPDATE t_quantity_kind SET id_display_unit = 4  WHERE code = 'CO2Concentration';     -- ppm (will be deleted in step 4)
+UPDATE t_quantity_kind SET id_display_unit = 5  WHERE code = 'WaterLevel';           -- m
+UPDATE t_quantity_kind SET id_display_unit = 24 WHERE code = 'WaterFlow';            -- m³/s
+UPDATE t_quantity_kind SET id_display_unit = 7  WHERE code = 'Conductivity';         -- µS/cm
+UPDATE t_quantity_kind SET id_display_unit = 8  WHERE code = 'pH';                   -- pH
+UPDATE t_quantity_kind SET id_display_unit = 10 WHERE code = 'Precipitation';        -- mm
+UPDATE t_quantity_kind SET id_display_unit = 1  WHERE code = 'DewPointTemperature';  -- °C
+UPDATE t_quantity_kind SET id_display_unit = 16 WHERE code = 'DissolvedOxygen';      -- mg/L (will be deleted in step 4)
+UPDATE t_quantity_kind SET id_display_unit = 16 WHERE code = 'TotalDissolvedSolids'; -- mg/L (will be deleted in step 4)
+UPDATE t_quantity_kind SET id_display_unit = 21 WHERE code = 'Salinity';             -- PSU
+UPDATE t_quantity_kind SET id_display_unit = 19 WHERE code = 'Turbidity';            -- NTU
+UPDATE t_quantity_kind SET id_display_unit = 22 WHERE code = 'RedoxPotential';       -- mV
+UPDATE t_quantity_kind SET id_display_unit = 20 WHERE code = 'Resistivity';          -- Ω·cm
+UPDATE t_quantity_kind SET id_display_unit = 18 WHERE code = 'Concentration';        -- µM
+UPDATE t_quantity_kind SET id_display_unit = 25 WHERE code = 'LightIntensity';       -- lx
+UPDATE t_quantity_kind SET id_display_unit = 27 WHERE code = 'AirVelocity';          -- m/s
+UPDATE t_quantity_kind SET id_display_unit = 27 WHERE code = 'WaterVelocity';        -- m/s
+UPDATE t_quantity_kind SET id_display_unit = 26 WHERE code = 'RadonConcentration';   -- Bq/m³ (will be deleted in step 4)
+UPDATE t_quantity_kind SET id_display_unit = 29 WHERE code = 'IsotopeDelta';         -- ‰
+
+-- Now make it NOT NULL (all rows populated)
+ALTER TABLE t_quantity_kind ALTER COLUMN id_display_unit SET NOT NULL;
 
 -- ============================================================
 -- 4. Consolidate remaining substance-specific QKs into
@@ -260,14 +297,16 @@ ALTER TABLE t_sensor_configuration
 
 -- ============================================================
 -- 5. Recreate v_measurement_wide using t_unit conversion factors
---    instead of t_quantity_kind (which no longer has them)
+--    instead of t_quantity_kind (which no longer has them).
+--    quantity_unit_display now uses the QK's canonical display unit
+--    (e.g., always °C for Temperature, regardless of import unit).
 -- ============================================================
 CREATE VIEW v_measurement_wide AS
 SELECT
   m.id AS measurement_id,
   m.value,
   m.value_si,
-  m.value_si * u.factor_to_si + u.offset_to_si AS value_display,
+  m.value_si * du.factor_to_si + du.offset_to_si AS value_display,
   m.timestamp,
   ts.id AS time_series_id,
   ts.quantity_kind_code,
@@ -283,10 +322,10 @@ SELECT
     THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || qk.symbol_si || ')'
     ELSE ts.quantity_kind_code || ' (' || qk.symbol_si || ')'
   END AS quantity_unit_si,
-  u.symbol AS unit_display,
+  du.symbol AS unit_display,
   CASE WHEN ts.substance_label IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || u.symbol || ')'
-    ELSE ts.quantity_kind_code || ' (' || u.symbol || ')'
+    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || du.symbol || ')'
+    ELSE ts.quantity_kind_code || ' (' || du.symbol || ')'
   END AS quantity_unit_display,
   ts.medium_code,
   ts.data_quality,
@@ -309,7 +348,7 @@ JOIN t_time_series ts ON ts.id = m.id_time_series
 JOIN t_observation o ON o.id = ts.id_observation
 LEFT JOIN t_point p ON p.id = o.id_point
 LEFT JOIN t_quantity_kind qk ON qk.code = ts.quantity_kind_code
-LEFT JOIN t_unit u ON u.symbol = ts.unit_symbol
+LEFT JOIN t_unit du ON du.id = qk.id_display_unit
 WHERE o.is_deleted = false
   AND ts.is_deleted = false;
 

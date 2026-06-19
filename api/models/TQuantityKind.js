@@ -4,7 +4,8 @@
  * @description :: Lookup table for physical quantity kinds (QUDT aligned)
  *
  * Quantity kinds describe WHAT is measured (Temperature, Pressure, Concentration).
- * Conversion factors now live on TUnit (HOW the measurement is expressed).
+ * Conversion factors live on TUnit (HOW the measurement is expressed).
+ * Each QK has a preferred display unit for human-friendly presentation.
  */
 
 module.exports = {
@@ -39,6 +40,11 @@ module.exports = {
       allowNull: false,
       columnName: 'symbol_si',
       maxLength: 20,
+    },
+
+    displayUnit: {
+      model: 'TUnit',
+      columnName: 'id_display_unit',
     },
   },
 };

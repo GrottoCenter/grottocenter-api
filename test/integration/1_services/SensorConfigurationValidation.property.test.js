@@ -40,6 +40,7 @@ const quantityKindRecordArb = fc.record({
   code: fc.string({ minLength: 1, maxLength: 20 }),
   url: fc.webUrl(),
   symbolSi: fc.string({ minLength: 1, maxLength: 10 }),
+  displayUnit: idArb,
 });
 
 /** A unit object as returned from TUnit.find() */
