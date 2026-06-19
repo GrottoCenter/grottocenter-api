@@ -284,10 +284,23 @@ const validate = (profile) => {
   // 11. String field length validation against model maxLength constraints.
   //     Catches length violations early (before the DB transaction) so users
   //     get a 400 instead of a 500.
+  //     We trim observationName and documentTitle before measuring because
+  //     EntityBuilder trims them before saving — validating the raw value
+  //     would produce false positives for strings with trailing whitespace.
+  const trimIfString = (v) => (typeof v === 'string' ? v.trim() : v);
   const lengthErrors = validateStringLengths({
-    observationName: { value: profile.observationName, maxLength: 200 },
-    pointLabel: { value: profile.pointLabel, maxLength: 200 },
-    documentTitle: { value: profile.documentTitle, maxLength: 300 },
+    observationName: {
+      value: trimIfString(profile.observationName),
+      maxLength: 200, // TName.name maxLength
+    },
+    pointLabel: {
+      value: profile.pointLabel, // not trimmed by EntityBuilder
+      maxLength: 200, // TPoint.label maxLength
+    },
+    documentTitle: {
+      value: trimIfString(profile.documentTitle),
+      maxLength: 300, // TDescription.title maxLength
+    },
   });
   lengthErrors.forEach((err) => errors.push(err.message));
 
