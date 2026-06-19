@@ -165,7 +165,7 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
   ON v_bibliographic_metadata USING gin(list_sets);
 
 -- Substance reference table indexes
-CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_idx ON t_substance (name);
+CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_lower_idx ON t_substance (LOWER(name));
 CREATE INDEX IF NOT EXISTS t_substance_external_id_idx ON t_substance (external_id);
 
 -- History table indexes

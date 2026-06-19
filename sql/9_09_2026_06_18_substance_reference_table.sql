@@ -19,18 +19,17 @@ CREATE TABLE IF NOT EXISTS t_substance (
   formula varchar(100),
   cas_number varchar(20),
   external_id varchar(50),
-  external_source varchar(50) DEFAULT 'PubChem',
+  external_source varchar(50) DEFAULT NULL,
   id_author integer NOT NULL,
   date_inscription timestamp NOT NULL DEFAULT now(),
   CONSTRAINT t_substance_pk PRIMARY KEY (id),
-  CONSTRAINT t_substance_name_key UNIQUE (name),
   CONSTRAINT t_substance_t_caver_fk FOREIGN KEY (id_author) REFERENCES t_caver(id)
 );
 
 -- ============================================================
 -- 2. Indexes
 -- ============================================================
-CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_idx ON t_substance (name);
+CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_lower_idx ON t_substance (LOWER(name));
 CREATE INDEX IF NOT EXISTS t_substance_external_id_idx ON t_substance (external_id);
 
 COMMIT;
@@ -40,6 +39,8 @@ COMMIT;
 --    v_measurement_wide depends on t_time_series.substance,
 --    so we drop and recreate the view around the rename.
 -- ============================================================
+BEGIN;
+
 DROP VIEW IF EXISTS v_measurement_wide;
 
 ALTER TABLE t_sensor_configuration RENAME COLUMN substance TO substance_label;
@@ -135,3 +136,5 @@ ALTER TABLE t_time_series
 ALTER TABLE t_time_series
   ADD CONSTRAINT t_time_series_t_substance_fk
   FOREIGN KEY (id_substance) REFERENCES t_substance(id);
+
+COMMIT;
