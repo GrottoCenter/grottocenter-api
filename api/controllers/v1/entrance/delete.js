@@ -26,7 +26,8 @@ async function hardDestroy(model, criteria) {
 /**
  * Delete sub-entities linked to an entrance.
  * History (h_) rows are intentionally NOT touched — they are preserved
- * for auditability with FK references nulled via raw SQL separately.
+ * for auditability; in merge paths the FK is reassigned via raw SQL,
+ * in delete paths the original value is kept as an orphaned reference.
  *
  * IMPORTANT: When adding a new sub-entity type here, also add a matching
  * h_ UPDATE in the raw SQL block below (search for "h_location" to find it).
