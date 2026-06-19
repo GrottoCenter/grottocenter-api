@@ -33,6 +33,10 @@ describe('SensorConfiguration features', () => {
           should(config.quantityKind).have.property('code');
           should(config.quantityKind).have.property('url');
           should(config.quantityKind).have.property('symbolSi');
+          should(config.quantityKind).have.property('displayUnit');
+          should(config.quantityKind.displayUnit).be.an.Object();
+          should(config.quantityKind.displayUnit).have.property('id');
+          should(config.quantityKind.displayUnit).have.property('symbol');
 
           // unit should be a populated object
           should(config.unit).be.an.Object();

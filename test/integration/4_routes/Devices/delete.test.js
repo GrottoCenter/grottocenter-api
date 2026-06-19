@@ -88,13 +88,6 @@ describe('Device features', () => {
           deviceWithConfigId = device.id;
 
           // Create supporting records for sensor configuration
-          const quantityKind = await TQuantityKind.create({
-            code: 'test-temp',
-            url: 'http://test.example.com/temp',
-            symbolSi: 'K',
-          }).fetch();
-          quantityKindId = quantityKind.id;
-
           const unit = await TUnit.create({
             code: 'test-kelvin',
             symbol: 'K',
@@ -102,6 +95,14 @@ describe('Device features', () => {
             siToDisplayOffset: '0',
           }).fetch();
           unitId = unit.id;
+
+          const quantityKind = await TQuantityKind.create({
+            code: 'test-temp',
+            url: 'http://test.example.com/temp',
+            symbolSi: 'K',
+            displayUnit: unitId,
+          }).fetch();
+          quantityKindId = quantityKind.id;
 
           // Create a sensor configuration referencing the device
           const sensorConfig = await TSensorConfiguration.create({

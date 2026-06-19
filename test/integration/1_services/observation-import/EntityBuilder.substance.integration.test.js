@@ -18,7 +18,7 @@ SELECT
   m.id AS measurement_id,
   m.value,
   m.value_si,
-  m.value_si * u.factor_to_si + u.offset_to_si AS value_display,
+  m.value_si * du.factor_to_si + du.offset_to_si AS value_display,
   m.timestamp,
   ts.id AS time_series_id,
   ts.quantity_kind_code,
@@ -33,10 +33,10 @@ SELECT
     THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || qk.symbol_si || ')'
     ELSE ts.quantity_kind_code || ' (' || qk.symbol_si || ')'
   END AS quantity_unit_si,
-  u.symbol AS unit_display,
+  du.symbol AS unit_display,
   CASE WHEN ts.substance_label IS NOT NULL
-    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || u.symbol || ')'
-    ELSE ts.quantity_kind_code || ' (' || u.symbol || ')'
+    THEN ts.quantity_kind_code || ' [' || ts.substance_label || '] (' || du.symbol || ')'
+    ELSE ts.quantity_kind_code || ' (' || du.symbol || ')'
   END AS quantity_unit_display,
   ts.medium_code,
   ts.data_quality,
@@ -55,7 +55,7 @@ JOIN t_time_series ts ON ts.id = m.id_time_series
 JOIN t_observation o ON o.id = ts.id_observation
 LEFT JOIN t_point p ON p.id = o.id_point
 LEFT JOIN t_quantity_kind qk ON qk.code = ts.quantity_kind_code
-LEFT JOIN t_unit u ON u.symbol = ts.unit_symbol
+LEFT JOIN t_unit du ON du.id = qk.id_display_unit
 WHERE o.is_deleted = false
   AND ts.is_deleted = false;
 `;

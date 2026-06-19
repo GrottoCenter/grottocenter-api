@@ -8310,6 +8310,18 @@ components:
               type: string
             symbolSi:
               type: string
+            displayUnit:
+              type: object
+              description: >-
+                Canonical human-friendly display unit for this quantity kind
+                (e.g., °C for Temperature, hPa for Pressure).
+              properties:
+                id:
+                  type: integer
+                code:
+                  type: string
+                symbol:
+                  type: string
         unit:
           type: object
           properties:

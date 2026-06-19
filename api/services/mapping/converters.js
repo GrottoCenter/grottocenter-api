@@ -668,6 +668,14 @@ const c = {
             code: source.quantityKind.code,
             url: source.quantityKind.url,
             symbolSi: source.quantityKind.symbolSi,
+            displayUnit:
+              source.quantityKind.displayUnit instanceof Object
+                ? {
+                    id: source.quantityKind.displayUnit.id,
+                    code: source.quantityKind.displayUnit.code,
+                    symbol: source.quantityKind.displayUnit.symbol,
+                  }
+                : source.quantityKind.displayUnit,
           }
         : source.quantityKind,
     unit:

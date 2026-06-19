@@ -72,6 +72,19 @@ module.exports = {
       .populate('quantityKind')
       .populate('unit')
       .populate('substance');
-    return config || null;
+    if (!config) return null;
+
+    // Waterline doesn't support nested populates, so manually resolve
+    // the quantityKind's displayUnit FK to the full unit object.
+    if (config.quantityKind && config.quantityKind.displayUnit) {
+      const displayUnit = await TUnit.findOne({
+        id: config.quantityKind.displayUnit,
+      });
+      if (displayUnit) {
+        config.quantityKind.displayUnit = displayUnit;
+      }
+    }
+
+    return config;
   },
 };

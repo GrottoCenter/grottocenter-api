@@ -38,12 +38,17 @@ const simpleCaverArb = fc.record({
   nickname: fc.string({ minLength: 1, maxLength: 30 }),
 });
 
-/** A populated quantityKind object */
+/** A populated quantityKind object (with nested displayUnit) */
 const quantityKindObjectArb = fc.record({
   id: idArb,
   code: fc.string({ minLength: 1, maxLength: 20 }),
   url: fc.webUrl(),
   symbolSi: fc.string({ minLength: 1, maxLength: 10 }),
+  displayUnit: fc.record({
+    id: idArb,
+    code: fc.string({ minLength: 1, maxLength: 20 }),
+    symbol: fc.string({ minLength: 1, maxLength: 10 }),
+  }),
 });
 
 /** A populated unit object */
@@ -179,7 +184,7 @@ describe('toSensorConfiguration - Property 5: Device find populates configuratio
       fc.property(sourceArb, (source) => {
         const result = toSensorConfiguration(source);
 
-        // quantityKind must be a full object with all 7 fields
+        // quantityKind must be a full object with all fields
         should(result.quantityKind).be.an.Object();
         should(result.quantityKind).have.property('id', source.quantityKind.id);
         should(result.quantityKind).have.property(
@@ -194,9 +199,23 @@ describe('toSensorConfiguration - Property 5: Device find populates configuratio
           'symbolSi',
           source.quantityKind.symbolSi
         );
+        should(result.quantityKind).have.property('displayUnit');
+        should(result.quantityKind.displayUnit).be.an.Object();
+        should(result.quantityKind.displayUnit).have.property(
+          'id',
+          source.quantityKind.displayUnit.id
+        );
+        should(result.quantityKind.displayUnit).have.property(
+          'code',
+          source.quantityKind.displayUnit.code
+        );
+        should(result.quantityKind.displayUnit).have.property(
+          'symbol',
+          source.quantityKind.displayUnit.symbol
+        );
 
         // No extra fields leaked through
-        should(Object.keys(result.quantityKind)).have.length(4);
+        should(Object.keys(result.quantityKind)).have.length(5);
       }),
       { numRuns: 100 }
     );

@@ -61,6 +61,28 @@ module.exports = {
       const unitMap = Object.fromEntries(units.map((u) => [u.id, u]));
       const substanceMap = Object.fromEntries(substances.map((s) => [s.id, s]));
 
+      // Resolve displayUnit on each quantityKind from the unit map,
+      // fetching any missing display units not already in the batch.
+      const displayUnitIds = [
+        ...new Set(
+          quantityKinds
+            .map((qk) => qk.displayUnit)
+            .filter((id) => id && !unitMap[id])
+        ),
+      ];
+      if (displayUnitIds.length > 0) {
+        const displayUnits = await TUnit.find({ id: displayUnitIds });
+        displayUnits.forEach((u) => {
+          unitMap[u.id] = u;
+        });
+      }
+      quantityKinds.forEach((qk) => {
+        if (qk.displayUnit && unitMap[qk.displayUnit]) {
+          // eslint-disable-next-line no-param-reassign
+          qk.displayUnit = unitMap[qk.displayUnit];
+        }
+      });
+
       // Attach populated objects to each config
       device.configurations = activeConfigs.map((config) => ({
         ...config,
