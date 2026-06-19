@@ -270,12 +270,42 @@ describe('Entrance features', () => {
       );
       should(hLocation.rows[0].cnt).be.aboveOrEqual(1);
 
-      // Verify h_location FK was preserved (entrance was deleted, not merged)
+      // Verify h_ FKs were preserved (entrance was deleted, not merged)
       const hLocationFk = await CommonService.query(
         'SELECT id_entrance FROM h_location WHERE id = $1',
         [location.id]
       );
       should(hLocationFk.rows[0].id_entrance).equal(entrance.id);
+
+      const hDescriptionFk = await CommonService.query(
+        'SELECT id_entrance FROM h_description WHERE id = $1',
+        [description.id]
+      );
+      should(hDescriptionFk.rows[0].id_entrance).equal(entrance.id);
+
+      const hRiggingFk = await CommonService.query(
+        'SELECT id_entrance FROM h_rigging WHERE id = $1',
+        [rigging.id]
+      );
+      should(hRiggingFk.rows[0].id_entrance).equal(entrance.id);
+
+      const hCommentFk = await CommonService.query(
+        'SELECT id_entrance FROM h_comment WHERE id = $1',
+        [comment.id]
+      );
+      should(hCommentFk.rows[0].id_entrance).equal(entrance.id);
+
+      const hHistoryFk = await CommonService.query(
+        'SELECT id_entrance FROM h_history WHERE id = $1',
+        [history.id]
+      );
+      should(hHistoryFk.rows[0].id_entrance).equal(entrance.id);
+
+      const hNameFk = await CommonService.query(
+        'SELECT id_entrance FROM h_name WHERE id = $1',
+        [name.id]
+      );
+      should(hNameFk.rows[0].id_entrance).equal(entrance.id);
 
       const hDescription = await CommonService.query(
         'SELECT COUNT(*)::integer AS cnt FROM h_description WHERE id = $1',
