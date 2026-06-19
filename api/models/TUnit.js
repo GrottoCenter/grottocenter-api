@@ -6,6 +6,10 @@
  * Conversion semantics:
  *   value_display = value_si * siToDisplayFactor + siToDisplayOffset
  *   value_si = (value_display - siToDisplayOffset) / siToDisplayFactor
+ *
+ * The `dimension` field groups units that are physically interconvertible
+ * (e.g., °C, °F, K all have dimension 'temperature'). Units in different
+ * dimensions cannot be meaningfully converted to each other.
  */
 
 module.exports = {
@@ -53,6 +57,16 @@ module.exports = {
       columnName: 'offset_to_si',
       columnType: 'numeric',
       defaultsTo: '0',
+    },
+
+    // Physical dimension grouping. Units with the same dimension are
+    // interconvertible via their SI factors. Units with different dimensions
+    // cannot be meaningfully converted (e.g., mg/L ↛ µM without molar mass).
+    dimension: {
+      type: 'string',
+      allowNull: false,
+      columnName: 'dimension',
+      maxLength: 50,
     },
   },
 };

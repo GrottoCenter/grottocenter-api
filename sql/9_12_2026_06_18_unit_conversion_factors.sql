@@ -20,10 +20,11 @@
 BEGIN;
 
 -- ============================================================
--- 1. Add conversion columns to t_unit
+-- 1. Add conversion columns and dimension to t_unit
 -- ============================================================
 ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS factor_to_si numeric NOT NULL DEFAULT 1;
 ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS offset_to_si numeric NOT NULL DEFAULT 0;
+ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS dimension varchar(50) NOT NULL DEFAULT 'dimensionless';
 
 -- ============================================================
 -- 2. Populate t_unit conversion factors from known mappings
@@ -122,6 +123,57 @@ UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'decibel';
 
 -- per_mil (‰): V_display = V_si * 1000
 UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'per_mil';
+
+-- ============================================================
+-- 2b. Populate dimension for each unit
+--
+-- Units with the same dimension are physically interconvertible
+-- via their SI factors. Units in different dimensions cannot be
+-- meaningfully converted (e.g., mg/L cannot become µM without
+-- knowing the substance's molar mass).
+-- ============================================================
+
+-- Temperature dimension (all convert to/from Kelvin)
+UPDATE t_unit SET dimension = 'temperature' WHERE code IN ('degree_celsius', 'kelvin', 'degree_fahrenheit');
+
+-- Pressure dimension (all convert to/from Pascal)
+UPDATE t_unit SET dimension = 'pressure' WHERE code IN ('hectopascal', 'millibar', 'pascal', 'kilopascal');
+
+-- Length dimension (all convert to/from meter)
+UPDATE t_unit SET dimension = 'length' WHERE code IN ('meter', 'millimeter', 'centimeter');
+
+-- Volume flow rate dimension (all convert to/from m³/s)
+UPDATE t_unit SET dimension = 'volume_flow_rate' WHERE code IN ('liter_per_second', 'cubic_meter_per_second');
+
+-- Electrical conductivity dimension (all convert to/from S/m)
+UPDATE t_unit SET dimension = 'conductivity' WHERE code IN ('microsiemens_per_centimeter');
+
+-- Velocity dimension (all convert to/from m/s)
+UPDATE t_unit SET dimension = 'velocity' WHERE code IN ('meter_per_second');
+
+-- Electric potential dimension (all convert to/from V)
+UPDATE t_unit SET dimension = 'electric_potential' WHERE code IN ('millivolt');
+
+-- Resistivity dimension (all convert to/from Ω·m)
+UPDATE t_unit SET dimension = 'resistivity' WHERE code IN ('ohm_centimeter');
+
+-- Illuminance dimension (all convert to/from lux)
+UPDATE t_unit SET dimension = 'illuminance' WHERE code IN ('lux');
+
+-- Activity concentration dimension (Bq/m³)
+UPDATE t_unit SET dimension = 'activity_concentration' WHERE code IN ('becquerel_per_cubic_meter');
+
+-- Molar concentration dimension (all convert to/from mol/L)
+UPDATE t_unit SET dimension = 'molar_concentration' WHERE code IN ('micromole');
+
+-- Mass concentration dimension (all convert to/from mg/L)
+UPDATE t_unit SET dimension = 'mass_concentration' WHERE code IN ('milligram_per_liter', 'microgram_per_liter');
+
+-- Dimensionless ratio (all convert to/from 1)
+UPDATE t_unit SET dimension = 'dimensionless_ratio' WHERE code IN ('percent', 'parts_per_million', 'per_mil');
+
+-- Dimensionless (no conversion, identity)
+UPDATE t_unit SET dimension = 'dimensionless' WHERE code IN ('ph_unit', 'practical_salinity_unit', 'nephelometric_turbidity_unit', 'event_count', 'decibel');
 
 -- ============================================================
 -- 3. Drop v_measurement_wide (depends on columns we're removing)
@@ -298,15 +350,26 @@ ALTER TABLE t_sensor_configuration
 -- ============================================================
 -- 5. Recreate v_measurement_wide using t_unit conversion factors
 --    instead of t_quantity_kind (which no longer has them).
---    quantity_unit_display now uses the QK's canonical display unit
+--    quantity_unit_display uses the QK's canonical display unit
 --    (e.g., always °C for Temperature, regardless of import unit).
+--    value_display is only computed when the import unit and the
+--    display unit share the same dimension (physically meaningful
+--    conversion). Otherwise value_display is NULL.
 -- ============================================================
 CREATE VIEW v_measurement_wide AS
 SELECT
   m.id AS measurement_id,
   m.value,
-  m.value_si,
-  m.value_si * du.factor_to_si + du.offset_to_si AS value_display,
+  CASE WHEN iu.dimension = du.dimension
+    THEN m.value_si
+    ELSE NULL
+  END AS value_si,
+  CASE WHEN iu.dimension = du.dimension
+    THEN m.value_si * du.factor_to_si + du.offset_to_si
+    ELSE NULL
+  END AS value_display,
+  iu.dimension AS import_dimension,
+  du.dimension AS display_dimension,
   m.timestamp,
   ts.id AS time_series_id,
   ts.quantity_kind_code,
@@ -349,6 +412,7 @@ JOIN t_observation o ON o.id = ts.id_observation
 LEFT JOIN t_point p ON p.id = o.id_point
 LEFT JOIN t_quantity_kind qk ON qk.code = ts.quantity_kind_code
 LEFT JOIN t_unit du ON du.id = qk.id_display_unit
+LEFT JOIN t_unit iu ON iu.symbol = ts.unit_symbol
 WHERE o.is_deleted = false
   AND ts.is_deleted = false;
 
