@@ -13,6 +13,7 @@ describe('DbSync', () => {
     let setMetadataStub;
     let createCollectionStub;
     let switchAliasStub;
+    let importDocumentsStub;
     let isCredentialsOriginal;
 
     before(() => {
@@ -39,7 +40,7 @@ describe('DbSync', () => {
       createCollectionStub = sinon
         .stub(typesense, 'createTimestampedCollection')
         .resolves('test-collection');
-      sinon.stub(typesense, 'importDocuments').resolves();
+      importDocumentsStub = sinon.stub(typesense, 'importDocuments').resolves();
       switchAliasStub = sinon
         .stub(typesense, 'switchCollectionAlias')
         .resolves();
@@ -77,6 +78,45 @@ describe('DbSync', () => {
       // All 7 entities have search config
       should(createCollectionStub.callCount).equal(7);
       should(switchAliasStub.callCount).equal(7);
+      // importDocuments is not called when query returns 0 rows
+      should(importDocumentsStub.called).be.false();
+    });
+  });
+
+  describe('makeDbSync with file export disabled', () => {
+    let queryStub;
+    let uploadStub;
+    let setMetadataStub;
+    let isCredentialsOriginal;
+
+    before(() => {
+      isCredentialsOriginal = FileService.isCredentials;
+    });
+
+    beforeEach(() => {
+      queryStub = sinon.stub(CommonService, 'query').resolves({
+        rowCount: 0,
+        rows: [],
+      });
+
+      FileService.isCredentials = true;
+      uploadStub = sinon
+        .stub(FileService.dbExport, 'upload')
+        .returns(new stream.PassThrough());
+      setMetadataStub = sinon
+        .stub(FileService.dbExport, 'setMetadata')
+        .resolves();
+
+      sinon
+        .stub(typesense, 'createTimestampedCollection')
+        .resolves('test-collection');
+      sinon.stub(typesense, 'importDocuments').resolves();
+      sinon.stub(typesense, 'switchCollectionAlias').resolves();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      FileService.isCredentials = isCredentialsOriginal;
     });
 
     it('should skip file export when isFileExportEnabled is false', async () => {
