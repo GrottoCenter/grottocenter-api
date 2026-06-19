@@ -1,6 +1,6 @@
 const { validateStringLength } = require('./stringLengthValidation');
 
-const NAME_MAX_LENGTH = 200;
+const NAME_MAX_LENGTH = 200; // TName.name maxLength
 
 /**
  * Validates that a name string does not exceed the DB column limit.

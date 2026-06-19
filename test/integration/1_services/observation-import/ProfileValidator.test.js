@@ -570,6 +570,60 @@ describe('ProfileValidator', () => {
       );
     });
 
+    it('should not trigger length errors for whitespace-only strings', () => {
+      const profile = {
+        ...validBase(),
+        observationName: '   ',
+        pointLabel: '   ',
+        documentTitle: '   ',
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(errors.some((e) => e.includes('exceeds maximum'))).be.false(
+        `Whitespace-only fields should not trigger length errors, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should validate observationName and documentTitle after trimming (no false positives from trailing whitespace)', () => {
+      // 199 chars + 2 trailing spaces = 201 raw chars but 199 trimmed chars
+      const profile = {
+        ...validBase(),
+        observationName: `${'a'.repeat(199)}  `,
+        documentTitle: `${'c'.repeat(299)}  `,
+        documentLanguage: 'eng',
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(
+        errors.some(
+          (e) => e.includes('observationName') && e.includes('exceeds maximum')
+        )
+      ).be.false(
+        `Trimmed observationName (199 chars) should be valid, got: ${JSON.stringify(errors)}`
+      );
+      should(
+        errors.some(
+          (e) => e.includes('documentTitle') && e.includes('exceeds maximum')
+        )
+      ).be.false(
+        `Trimmed documentTitle (299 chars) should be valid, got: ${JSON.stringify(errors)}`
+      );
+    });
+
+    it('should NOT trim pointLabel before validating (EntityBuilder does not trim it)', () => {
+      // 199 chars + 2 trailing spaces = 201 raw chars — should still trigger error
+      const profile = {
+        ...validBase(),
+        pointLabel: `${'b'.repeat(199)}  `,
+      };
+      const errors = ProfileValidator.validate(profile);
+      should(
+        errors.some(
+          (e) => e.includes('pointLabel') && e.includes('exceeds maximum')
+        )
+      ).be.true(
+        `Raw pointLabel (201 chars) should trigger length error, got: ${JSON.stringify(errors)}`
+      );
+    });
+
     it('should accumulate multiple length errors at once', () => {
       const profile = {
         ...validBase(),
