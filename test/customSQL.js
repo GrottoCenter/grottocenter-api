@@ -168,6 +168,10 @@ CREATE INDEX IF NOT EXISTS idx_v_biblio_sets
 CREATE UNIQUE INDEX IF NOT EXISTS t_substance_name_lower_idx ON t_substance (LOWER(name));
 CREATE INDEX IF NOT EXISTS t_substance_external_id_idx ON t_substance (external_id);
 
+-- Unit symbol uniqueness (required for symbol-based joins in views)
+ALTER TABLE t_unit DROP CONSTRAINT IF EXISTS t_unit_symbol_key;
+ALTER TABLE t_unit ADD CONSTRAINT t_unit_symbol_key UNIQUE (symbol);
+
 -- History table indexes
 CREATE INDEX IF NOT EXISTS idx_h_document_id_massif ON h_document(id_massif);
 `;

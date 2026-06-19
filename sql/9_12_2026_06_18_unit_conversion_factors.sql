@@ -8,13 +8,9 @@
 -- not the quantity kind. A unit knows how to convert itself to/from
 -- SI regardless of which physical quantity is being measured.
 --
--- Semantics on t_unit (unchanged column names for DB compatibility):
---   value_display = value_si * factor_to_si + offset_to_si
---   value_si = (value_display - offset_to_si) / factor_to_si
---
--- Note: The DB column names factor_to_si / offset_to_si are historical.
--- The application layer exposes them as siToDisplayFactor / siToDisplayOffset
--- which correctly describes the direction: FROM SI TO display unit.
+-- Semantics on t_unit:
+--   value_display = value_si * si_to_display_factor + si_to_display_offset
+--   value_si = (value_display - si_to_display_offset) / si_to_display_factor
 -- ============================================================
 
 BEGIN;
@@ -22,107 +18,112 @@ BEGIN;
 -- ============================================================
 -- 1. Add conversion columns and dimension to t_unit
 -- ============================================================
-ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS factor_to_si numeric NOT NULL DEFAULT 1;
-ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS offset_to_si numeric NOT NULL DEFAULT 0;
+ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS si_to_display_factor numeric NOT NULL DEFAULT 1;
+ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS si_to_display_offset numeric NOT NULL DEFAULT 0;
 ALTER TABLE t_unit ADD COLUMN IF NOT EXISTS dimension varchar(50) NOT NULL DEFAULT 'dimensionless';
+
+-- Enforce symbol uniqueness (required for symbol-based joins in the view)
+ALTER TABLE t_unit DROP CONSTRAINT IF EXISTS t_unit_symbol_key;
+ALTER TABLE t_unit ADD CONSTRAINT t_unit_symbol_key UNIQUE (symbol);
 
 -- ============================================================
 -- 2. Populate t_unit conversion factors from known mappings
 --
--- The naming convention: factor_to_si / offset_to_si
--- Formula: value_display = value_si * factor_to_si + offset_to_si
--- Inverse: value_si = (value_display - offset_to_si) / factor_to_si
+-- The naming convention: si_to_display_factor / si_to_display_offset
+-- Formula: value_display = value_si * si_to_display_factor + si_to_display_offset
+-- Inverse: value_si = (value_display - si_to_display_offset) / si_to_display_factor
 -- ============================================================
 
 -- degree_celsius (°C): T_display = T_si * 1 + (-273.15)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = -273.15 WHERE code = 'degree_celsius';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = -273.15 WHERE code = 'degree_celsius';
 
 -- percent (%): V_display = V_si * 100
-UPDATE t_unit SET factor_to_si = 100, offset_to_si = 0 WHERE code = 'percent';
+UPDATE t_unit SET si_to_display_factor = 100, si_to_display_offset = 0 WHERE code = 'percent';
 
 -- hectopascal (hPa): P_display = P_si * 0.01
-UPDATE t_unit SET factor_to_si = 0.01, offset_to_si = 0 WHERE code = 'hectopascal';
+UPDATE t_unit SET si_to_display_factor = 0.01, si_to_display_offset = 0 WHERE code = 'hectopascal';
 
 -- parts_per_million (ppm): C_display = C_si * 1000000
-UPDATE t_unit SET factor_to_si = 1000000, offset_to_si = 0 WHERE code = 'parts_per_million';
+UPDATE t_unit SET si_to_display_factor = 1000000, si_to_display_offset = 0 WHERE code = 'parts_per_million';
 
 -- meter (m): identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'meter';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'meter';
 
 -- liter_per_second (L/s): Q_display = Q_si * 1000 (m³/s → L/s)
-UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'liter_per_second';
+UPDATE t_unit SET si_to_display_factor = 1000, si_to_display_offset = 0 WHERE code = 'liter_per_second';
 
 -- microsiemens_per_centimeter (µS/cm): σ_display = σ_si * 10000 (S/m → µS/cm)
-UPDATE t_unit SET factor_to_si = 10000, offset_to_si = 0 WHERE code = 'microsiemens_per_centimeter';
+UPDATE t_unit SET si_to_display_factor = 10000, si_to_display_offset = 0 WHERE code = 'microsiemens_per_centimeter';
 
 -- ph_unit: identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'ph_unit';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'ph_unit';
 
 -- kelvin (K): identity (SI unit itself)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'kelvin';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'kelvin';
 
 -- millimeter (mm): L_display = L_si * 1000 (m → mm)
-UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'millimeter';
+UPDATE t_unit SET si_to_display_factor = 1000, si_to_display_offset = 0 WHERE code = 'millimeter';
 
 -- event_count: identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'event_count';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'event_count';
 
 -- degree_fahrenheit (°F): T_display = T_si * 1.8 + (-459.67)
 -- Formula from K: °F = K × 9/5 − 459.67
-UPDATE t_unit SET factor_to_si = 1.8, offset_to_si = -459.67 WHERE code = 'degree_fahrenheit';
+UPDATE t_unit SET si_to_display_factor = 1.8, si_to_display_offset = -459.67 WHERE code = 'degree_fahrenheit';
 
 -- millibar (mbar): P_display = P_si * 0.01 (same as hPa)
-UPDATE t_unit SET factor_to_si = 0.01, offset_to_si = 0 WHERE code = 'millibar';
+UPDATE t_unit SET si_to_display_factor = 0.01, si_to_display_offset = 0 WHERE code = 'millibar';
 
 -- pascal (Pa): identity (SI unit)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'pascal';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'pascal';
 
 -- kilopascal (kPa): P_display = P_si * 0.001
-UPDATE t_unit SET factor_to_si = 0.001, offset_to_si = 0 WHERE code = 'kilopascal';
+UPDATE t_unit SET si_to_display_factor = 0.001, si_to_display_offset = 0 WHERE code = 'kilopascal';
 
 -- milligram_per_liter (mg/L): identity for mass concentration
--- (SI for mass concentration is kg/m³ = g/L, but mg/L is the conventional SI-adjacent unit here)
--- In the current system, DissolvedOxygen and TotalDissolvedSolids use mg/L as both SI and display
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'milligram_per_liter';
+-- NOTE: Strict SI for mass concentration is kg/m³, but mg/L is the conventional
+-- unit used universally in water chemistry. value_si for mass_concentration units
+-- is therefore in mg/L (not kg/m³) — a pragmatic choice matching domain practice.
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'milligram_per_liter';
 
 -- microgram_per_liter (µg/L): C_display = C_si * 1000 (mg/L → µg/L)
-UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'microgram_per_liter';
+UPDATE t_unit SET si_to_display_factor = 1000, si_to_display_offset = 0 WHERE code = 'microgram_per_liter';
 
 -- micromole (µM): C_display = C_si * 1000000 (mol/L → µM)
-UPDATE t_unit SET factor_to_si = 1000000, offset_to_si = 0 WHERE code = 'micromole';
+UPDATE t_unit SET si_to_display_factor = 1000000, si_to_display_offset = 0 WHERE code = 'micromole';
 
 -- nephelometric_turbidity_unit (NTU): identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'nephelometric_turbidity_unit';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'nephelometric_turbidity_unit';
 
 -- ohm_centimeter (Ω·cm): ρ_display = ρ_si * 100 (Ω·m → Ω·cm)
-UPDATE t_unit SET factor_to_si = 100, offset_to_si = 0 WHERE code = 'ohm_centimeter';
+UPDATE t_unit SET si_to_display_factor = 100, si_to_display_offset = 0 WHERE code = 'ohm_centimeter';
 
 -- practical_salinity_unit (PSU): identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'practical_salinity_unit';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'practical_salinity_unit';
 
 -- millivolt (mV): V_display = V_si * 1000 (V → mV)
-UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'millivolt';
+UPDATE t_unit SET si_to_display_factor = 1000, si_to_display_offset = 0 WHERE code = 'millivolt';
 
 -- centimeter (cm): L_display = L_si * 100 (m → cm)
-UPDATE t_unit SET factor_to_si = 100, offset_to_si = 0 WHERE code = 'centimeter';
+UPDATE t_unit SET si_to_display_factor = 100, si_to_display_offset = 0 WHERE code = 'centimeter';
 
 -- cubic_meter_per_second (m³/s): identity (SI unit)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'cubic_meter_per_second';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'cubic_meter_per_second';
 
 -- lux (lx): identity (SI unit)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'lux';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'lux';
 
 -- becquerel_per_cubic_meter (Bq/m³): identity
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'becquerel_per_cubic_meter';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'becquerel_per_cubic_meter';
 
 -- meter_per_second (m/s): identity (SI unit)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'meter_per_second';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'meter_per_second';
 
 -- decibel (dB): identity (dimensionless ratio)
-UPDATE t_unit SET factor_to_si = 1, offset_to_si = 0 WHERE code = 'decibel';
+UPDATE t_unit SET si_to_display_factor = 1, si_to_display_offset = 0 WHERE code = 'decibel';
 
 -- per_mil (‰): V_display = V_si * 1000
-UPDATE t_unit SET factor_to_si = 1000, offset_to_si = 0 WHERE code = 'per_mil';
+UPDATE t_unit SET si_to_display_factor = 1000, si_to_display_offset = 0 WHERE code = 'per_mil';
 
 -- ============================================================
 -- 2b. Populate dimension for each unit
@@ -220,6 +221,12 @@ UPDATE t_quantity_kind SET id_display_unit = 26 WHERE code = 'RadonConcentration
 UPDATE t_quantity_kind SET id_display_unit = 29 WHERE code = 'IsotopeDelta';         -- ‰
 
 -- Now make it NOT NULL (all rows populated)
+-- Defensive: if any QK was missed above, default to the SI unit approach
+-- (use the first unit whose symbol matches the QK's symbol_si).
+UPDATE t_quantity_kind qk
+  SET id_display_unit = (SELECT u.id FROM t_unit u WHERE u.symbol = qk.symbol_si LIMIT 1)
+  WHERE qk.id_display_unit IS NULL;
+
 ALTER TABLE t_quantity_kind ALTER COLUMN id_display_unit SET NOT NULL;
 
 -- ============================================================
@@ -365,7 +372,7 @@ SELECT
     ELSE NULL
   END AS value_si,
   CASE WHEN iu.dimension = du.dimension
-    THEN m.value_si * du.factor_to_si + du.offset_to_si
+    THEN m.value_si * du.si_to_display_factor + du.si_to_display_offset
     ELSE NULL
   END AS value_display,
   iu.dimension AS import_dimension,

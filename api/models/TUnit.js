@@ -45,7 +45,7 @@ module.exports = {
     siToDisplayFactor: {
       type: 'string',
       allowNull: false,
-      columnName: 'factor_to_si',
+      columnName: 'si_to_display_factor',
       columnType: 'numeric',
       defaultsTo: '1',
     },
@@ -54,7 +54,7 @@ module.exports = {
     siToDisplayOffset: {
       type: 'string',
       allowNull: false,
-      columnName: 'offset_to_si',
+      columnName: 'si_to_display_offset',
       columnType: 'numeric',
       defaultsTo: '0',
     },
