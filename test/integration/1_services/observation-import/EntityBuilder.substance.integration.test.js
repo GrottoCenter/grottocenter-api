@@ -22,7 +22,7 @@ SELECT
     ELSE NULL
   END AS value_si,
   CASE WHEN iu.dimension = du.dimension
-    THEN m.value_si * du.factor_to_si + du.offset_to_si
+    THEN m.value_si * du.si_to_display_factor + du.si_to_display_offset
     ELSE NULL
   END AS value_display,
   iu.dimension AS import_dimension,
