@@ -19,6 +19,7 @@ services:
     entrypoint: ["/app/docker-entrypoint.sh"]
     environment:
       - SUPERSET_SECRET_KEY=grottocenter_local_dev_secret_key_change_in_prod
+      - SUPERSET_SSO_SECRET=aR4nd0mSs0DevSalt_change_in_prod
       - SQLALCHEMY_DATABASE_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@dbserver:5432/${POSTGRES_DATABASE}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -33,8 +34,14 @@ services:
     networks:
       - default
       - grottocenter_default
+    # Volume mounts override Dockerfile COPY for hot-reloading during development.
+    # In production, files are baked into the image via COPY in the Dockerfile.
     volumes:
       - ../docker/superset/superset_config.py:/app/pythonpath/superset_config.py
+      - ../docker/superset/gc_security_manager.py:/app/pythonpath/gc_security_manager.py
+      - ../docker/superset/jti_store.py:/app/pythonpath/jti_store.py
+      - ../docker/superset/gc_creator_permissions.py:/app/pythonpath/gc_creator_permissions.py
+      - ../docker/superset/templates:/app/pythonpath/templates
       - ../docker/superset/docker-entrypoint.sh:/app/docker-entrypoint.sh
       - ../docker/superset/export:/app/superset-export
 

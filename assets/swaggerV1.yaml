@@ -64,6 +64,8 @@ tags:
     description: Scientific observation data import
   - name: Substances
     description: Substance reference table for chemical species and isotopes
+  - name: SSO
+    description: Single Sign-On token issuance for external product integration
 
 paths:
   '/health':
@@ -6443,6 +6445,52 @@ paths:
           description: Validation error (missing name or name exceeds 200 characters).
         '401':
           description: Authentication required.
+
+  '/sso/auth-token':
+    post:
+      tags:
+        - SSO
+      summary: Issue SSO authentication token
+      description: >-
+        Issues a short-lived JWT (30-second TTL) for cross-origin authentication with
+        an external product. The token is signed with a product-specific secret and
+        includes a synthetic email (no real PII). The front-end submits this token to
+        the target product's SSO login endpoint via a hidden POST form.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product
+              properties:
+                product:
+                  type: string
+                  enum:
+                    - superset
+                  description: Target product identifier. Determines which signing secret is used.
+      responses:
+        '200':
+          description: SSO token issued successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Signed JWT (30s TTL) for the target product.
+        '400':
+          description: The product field is missing, empty, or not a supported product.
+        '401':
+          description: Bearer token is missing, invalid, expired, or has been revoked.
+        '403':
+          description: Access denied (user account not found).
+        '500':
+          description: The signing secret is not configured for the requested product (server misconfiguration).
 
 components:
 

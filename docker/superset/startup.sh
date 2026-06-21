@@ -15,5 +15,9 @@ superset fab create-admin \
 echo "==> Initializing Superset..."
 superset init
 
+# Used by production (Dockerfile CMD runs startup.sh)
+echo "==> Ensuring GC_Creator role exists with correct permissions..."
+python /app/pythonpath/gc_creator_permissions.py
+
 echo "==> Starting server..."
 exec /usr/bin/run-server.sh

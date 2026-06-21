@@ -2,9 +2,26 @@
 Superset configuration for Grottocenter local development.
 """
 import os
+from datetime import timedelta
 
 # Security
 SECRET_KEY = os.environ.get('SUPERSET_SECRET_KEY', 'grottocenter_local_dev_secret_key_change_in_prod')
+
+# ============================================================
+# Custom Security Manager (SSO via GC API)
+# ============================================================
+try:
+    from gc_security_manager import GrottocenterSecurityManager
+    CUSTOM_SECURITY_MANAGER = GrottocenterSecurityManager
+except ImportError:
+    pass  # SSO module not available (e.g., local dev without image rebuild)
+
+# SSO secret for verifying tokens from GC API (must match SSO_SALT_SUPERSET on API side).
+# Set via env var in docker-compose (local dev) or Azure App Settings (production).
+SUPERSET_SSO_SECRET = os.environ.get('SUPERSET_SSO_SECRET', '')
+
+# Session lifetime: 1 hour (for SSO-provisioned users)
+PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
 
 # ============================================================
 # Branding

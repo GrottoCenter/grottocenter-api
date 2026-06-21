@@ -304,6 +304,9 @@ module.exports.policies = {
   'v1/substance/find': true,
   'v1/substance/create': 'tokenAuth',
 
+  // SSO
+  'v1/sso/auth-token': 'tokenAuth',
+
   // Miscellaneous
   'v1/convert/convert': true,
   'v1/file-format/find-all': true,
