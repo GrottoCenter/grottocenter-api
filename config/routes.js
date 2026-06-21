@@ -461,6 +461,9 @@ module.exports.routes = {
   'GET /api/v1/substances': 'v1/substance/find',
   'POST /api/v1/substances': 'v1/substance/create',
 
+  // SSO
+  'POST /api/v1/sso/auth-token': 'v1/sso/auth-token',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

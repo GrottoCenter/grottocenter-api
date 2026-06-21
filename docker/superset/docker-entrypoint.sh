@@ -25,6 +25,10 @@ superset fab create-admin \
 echo "==> Initializing Superset..."
 superset init
 
+# Used by local dev (docker-compose.superset.yml overrides CMD with this entrypoint)
+echo "==> Ensuring GC_Creator role exists with correct permissions..."
+python /app/pythonpath/gc_creator_permissions.py
+
 # Import dashboard if export directory exists and DB is fresh
 if [ -d "$EXPORT_DIR/dashboards" ]; then
   # Work on a copy so we don't mutate the volume-mounted source
