@@ -46,9 +46,9 @@ TOKEN_MAX_AGE_SECONDS = 30
 GC_CREATOR_ROLE_NAME = "GC_Creator"
 
 
-def _render_error(reason: str) -> tuple[str, int]:
+def _render_error(reason: str, status_code: int = 400) -> tuple[str, int]:
     """Render the SSO error page with the given reason."""
-    return render_template_string(_ERROR_TEMPLATE, reason=reason), 400
+    return render_template_string(_ERROR_TEMPLATE, reason=reason), status_code
 
 
 class GrottocenterSecurityManager(SupersetSecurityManager):
@@ -91,7 +91,7 @@ class GrottocenterSecurityManager(SupersetSecurityManager):
         sso_secret = current_app.config.get("SUPERSET_SSO_SECRET", "").strip()
         if not sso_secret:
             logger.error("SUPERSET_SSO_SECRET is not configured")
-            return _render_error("An unexpected error occurred.")
+            return _render_error("An unexpected error occurred.", status_code=500)
 
         # 3. Verify JWT signature and audience
         try:
@@ -161,6 +161,8 @@ class GrottocenterSecurityManager(SupersetSecurityManager):
                 )
                 return None
 
+            # "Caver" fallback: buildPayload coerces null/empty caver.name to '',
+            # so empty first_name means the caver has no name set in GC.
             user = self.add_user(
                 username=email,
                 first_name=first_name or "Caver",
@@ -176,15 +178,15 @@ class GrottocenterSecurityManager(SupersetSecurityManager):
             # Update name if changed (never modify roles)
             changed = False
             if user.first_name != first_name:
+                # "Caver" fallback: buildPayload coerces null/empty caver.name to '',
+                # so empty first_name means the caver has no name set in GC.
                 user.first_name = first_name or "Caver"
                 changed = True
             if user.last_name != last_name:
                 user.last_name = last_name or ""
                 changed = True
             if changed:
-                from superset.extensions import db
-
-                db.session.commit()
+                self.update_user(user)
                 logger.info(f"SSO: Updated name for Superset user '{email}'")
 
         return user
