@@ -38,13 +38,13 @@ function resolveSalt(product) {
     };
   }
 
-  const envVarName = PRODUCT_REGISTRY[product];
-  if (!envVarName) {
+  if (!Object.hasOwn(PRODUCT_REGISTRY, product)) {
     return {
       error: `Product '${product}' is not supported.`,
       status: 400,
     };
   }
+  const envVarName = PRODUCT_REGISTRY[product];
 
   const salt = process.env[envVarName];
   if (!salt || !salt.trim()) {
