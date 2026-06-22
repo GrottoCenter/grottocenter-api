@@ -145,6 +145,8 @@ describe('SsoService', () => {
     });
 
     it('should return error when salt is not configured', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
       delete process.env.SSO_SALT_SUPERSET;
       const caver = { id: 1, name: 'Test', surname: 'User' };
       const result = SsoService.issueToken(caver, 'superset');
@@ -152,6 +154,7 @@ describe('SsoService', () => {
       should(result.error).be.a.String();
       should(result.status).equal(500);
       should(result.token).be.undefined();
+      process.env.NODE_ENV = originalEnv;
     });
   });
 });

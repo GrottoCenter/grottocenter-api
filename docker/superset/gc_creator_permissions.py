@@ -113,24 +113,27 @@ def ensure_role_with_permissions():
             role = security_manager.add_role(ROLE_NAME)
             print(f"Created role '{ROLE_NAME}'")
 
-        # Clear existing permissions (whitelist = start fresh)
-        role.permissions = []
-
-        # Add each whitelisted permission
-        added = 0
+        # Collect permission-view objects first (may trigger queries),
+        # then assign them all at once to avoid autoflush conflicts.
+        desired_pvs = []
         skipped = 0
         for perm_name, view_name in GC_CREATOR_PERMISSIONS:
             pv = security_manager.find_permission_view_menu(perm_name, view_name)
             if pv:
-                role.permissions.append(pv)
-                added += 1
+                desired_pvs.append(pv)
             else:
                 # Permission/view might not exist in this Superset version
                 skipped += 1
 
+        # Replace permissions in a no_autoflush block to prevent the sequence
+        # conflict that occurs when SQLAlchemy interleaves DELETE (clear) and
+        # INSERT (append) with mid-loop query flushes.
+        with db.session.no_autoflush:
+            role.permissions = desired_pvs
+
         db.session.commit()
         print(
-            f"Role '{ROLE_NAME}': {added} permissions set, "
+            f"Role '{ROLE_NAME}': {len(desired_pvs)} permissions set, "
             f"{skipped} skipped (not found in this Superset version)"
         )
 
