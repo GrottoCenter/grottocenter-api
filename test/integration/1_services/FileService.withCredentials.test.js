@@ -2,7 +2,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const stream = require('stream');
-const azureBlob = require('@azure/storage-blob');
 const FileService = require('../../../api/services/FileService');
 
 // Create mocks
@@ -25,11 +24,6 @@ const mockContainerClient = { getBlockBlobClient: mockGetBlockBlobClient };
 
 const mockSASQuery = { toString: () => 'sig=mockedsas&se=2024' };
 const mockGenerateSAS = sinon.stub().returns(mockSASQuery);
-
-// Stub the generateBlobSASQueryParameters function
-sinon
-  .stub(azureBlob, 'generateBlobSASQueryParameters')
-  .callsFake(mockGenerateSAS);
 
 describe('FileService with Azure credentials', () => {
   before(() => {
