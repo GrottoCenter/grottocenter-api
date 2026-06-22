@@ -29,6 +29,18 @@ class JtiStore:
         with self._lock:
             self._store[jti] = time.time()
 
+    def add_if_new(self, jti: str) -> bool:
+        """Atomically check and add a jti. Returns True if added, False if already present.
+
+        This avoids the TOCTOU race between separate contains() + add() calls.
+        """
+        with self._lock:
+            self._evict_stale()
+            if jti in self._store:
+                return False
+            self._store[jti] = time.time()
+            return True
+
     def _evict_stale(self) -> None:
         """Remove entries older than the TTL."""
         now = time.time()

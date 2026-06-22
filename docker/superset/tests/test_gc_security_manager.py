@@ -42,7 +42,7 @@ class TestJwtVerification:
 
     def test_valid_token_decodes_successfully(self):
         token = _make_token()
-        decoded = jwt.decode(token, TEST_SECRET, algorithms=["HS256"], options={"verify_aud": False, "verify_sub": False})
+        decoded = jwt.decode(token, TEST_SECRET, algorithms=["HS256"], audience="superset", options={"verify_sub": False})
         assert decoded["sub"] == 42
         assert decoded["aud"] == "superset"
         assert decoded["email"] == "42@grottocenter.org"
@@ -50,26 +50,26 @@ class TestJwtVerification:
     def test_invalid_signature_raises(self):
         token = _make_token(secret="wrong-secret")
         with pytest.raises(jwt.InvalidSignatureError):
-            jwt.decode(token, TEST_SECRET, algorithms=["HS256"], options={"verify_aud": False, "verify_sub": False})
+            jwt.decode(token, TEST_SECRET, algorithms=["HS256"], audience="superset", options={"verify_sub": False})
 
     def test_expired_token_raises(self):
         token = _make_token(exp_offset=-10)
         with pytest.raises(jwt.ExpiredSignatureError):
-            jwt.decode(token, TEST_SECRET, algorithms=["HS256"], options={"verify_aud": False, "verify_sub": False})
+            jwt.decode(token, TEST_SECRET, algorithms=["HS256"], audience="superset", options={"verify_sub": False})
 
     def test_wrong_audience_detected(self):
         payload = dict(VALID_PAYLOAD)
         payload["aud"] = "not-superset"
         token = _make_token(payload=payload)
-        decoded = jwt.decode(token, TEST_SECRET, algorithms=["HS256"], options={"verify_aud": False, "verify_sub": False})
-        assert decoded["aud"] != "superset"
+        with pytest.raises(jwt.InvalidAudienceError):
+            jwt.decode(token, TEST_SECRET, algorithms=["HS256"], audience="superset", options={"verify_sub": False})
 
     def test_iat_freshness_check(self):
         """Token with iat older than 30s should be considered expired."""
         payload = dict(VALID_PAYLOAD)
         payload["iat"] = int(time.time()) - 60  # 60s ago
         token = _make_token(payload=payload, exp_offset=120)
-        decoded = jwt.decode(token, TEST_SECRET, algorithms=["HS256"], options={"verify_aud": False, "verify_exp": False, "verify_sub": False})
+        decoded = jwt.decode(token, TEST_SECRET, algorithms=["HS256"], audience="superset", options={"verify_exp": False, "verify_sub": False})
         assert (time.time() - decoded["iat"]) > 30
 
 

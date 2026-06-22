@@ -55,7 +55,7 @@ class TestProperty6JwtVerificationGate:
         token = _sign(payload, secret=secret)
         decoded = jwt.decode(
             token, secret, algorithms=["HS256"],
-            options={"verify_aud": False, "verify_sub": False}
+            audience="superset", options={"verify_sub": False}
         )
         assert decoded["aud"] == "superset"
         assert (time.time() - decoded["iat"]) <= 30
@@ -69,21 +69,21 @@ class TestProperty6JwtVerificationGate:
         with pytest.raises(jwt.InvalidSignatureError):
             jwt.decode(
                 token, verify_secret, algorithms=["HS256"],
-                options={"verify_aud": False, "verify_sub": False}
+                audience="superset", options={"verify_sub": False}
             )
 
     @settings(max_examples=100)
     @given(payload=valid_payload_st, wrong_aud=non_superset_aud_st)
     def test_wrong_audience_rejected(self, payload, wrong_aud):
-        """Tokens with non-superset audience are rejected at application level."""
+        """Tokens with non-superset audience are rejected by PyJWT."""
         payload_copy = dict(payload)
         payload_copy["aud"] = wrong_aud
         token = _sign(payload_copy)
-        decoded = jwt.decode(
-            token, TEST_SECRET, algorithms=["HS256"],
-            options={"verify_aud": False, "verify_sub": False}
-        )
-        assert decoded["aud"] != "superset"
+        with pytest.raises(jwt.InvalidAudienceError):
+            jwt.decode(
+                token, TEST_SECRET, algorithms=["HS256"],
+                audience="superset", options={"verify_sub": False}
+            )
 
 
 class TestProperty7ReplaySingleUse:
