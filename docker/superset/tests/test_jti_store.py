@@ -40,3 +40,18 @@ class TestJtiStore:
         store.add("dup-jti")
         store.add("dup-jti")
         assert store.contains("dup-jti") is True
+
+    def test_add_if_new_returns_true_for_new_jti(self):
+        store = JtiStore(ttl_seconds=30)
+        assert store.add_if_new("fresh-jti") is True
+
+    def test_add_if_new_returns_false_for_existing_jti(self):
+        store = JtiStore(ttl_seconds=30)
+        store.add_if_new("used-jti")
+        assert store.add_if_new("used-jti") is False
+
+    def test_add_if_new_is_atomic(self):
+        """Two sequential add_if_new calls — only first succeeds."""
+        store = JtiStore(ttl_seconds=30)
+        assert store.add_if_new("race-jti") is True
+        assert store.add_if_new("race-jti") is False

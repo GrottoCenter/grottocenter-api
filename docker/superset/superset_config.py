@@ -18,6 +18,8 @@ except ImportError:
 
 # SSO secret for verifying tokens from GC API (must match SSO_SALT_SUPERSET on API side).
 # Set via env var in docker-compose (local dev) or Azure App Settings (production).
+# Empty string is intentional fallback — gc_security_manager rejects all tokens if unset,
+# which is fail-safe. For local dev, docker-compose.superset.yml passes this env var.
 SUPERSET_SSO_SECRET = os.environ.get('SUPERSET_SSO_SECRET', '')
 
 # Session lifetime: 1 hour (for SSO-provisioned users)

@@ -33,24 +33,33 @@ describe('SsoService', () => {
     });
 
     it('should return error 500 when env var is not set', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
       delete process.env.SSO_SALT_SUPERSET;
       const result = SsoService.resolveSalt('superset');
       should(result.error).be.a.String();
       should(result.status).equal(500);
+      process.env.NODE_ENV = originalEnv;
     });
 
     it('should return error 500 when env var is empty', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
       process.env.SSO_SALT_SUPERSET = '';
       const result = SsoService.resolveSalt('superset');
       should(result.error).be.a.String();
       should(result.status).equal(500);
+      process.env.NODE_ENV = originalEnv;
     });
 
     it('should return error 500 when env var is whitespace only', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
       process.env.SSO_SALT_SUPERSET = '   ';
       const result = SsoService.resolveSalt('superset');
       should(result.error).be.a.String();
       should(result.status).equal(500);
+      process.env.NODE_ENV = originalEnv;
     });
 
     it('should return salt for valid product with configured env var', () => {

@@ -34,7 +34,11 @@ except FileNotFoundError:
         "</body></html>"
     )
 
-# Module-level JTI store (shared across requests within the same process)
+# Module-level JTI store (shared across requests within the same process).
+# LIMITATION: In multi-worker deployments (Gunicorn with >1 worker), each worker
+# has its own JTI store. A token consumed by worker A can be replayed on worker B.
+# For the current traffic volume and 30s TTL, this is an acceptable risk.
+# If replay protection needs to be absolute, replace with Redis SET NX EX.
 _jti_store = JtiStore(ttl_seconds=30)
 
 EXPECTED_AUDIENCE = "superset"
@@ -89,39 +93,39 @@ class GrottocenterSecurityManager(SupersetSecurityManager):
             logger.error("SUPERSET_SSO_SECRET is not configured")
             return _render_error("An unexpected error occurred.")
 
-        # 3. Verify JWT signature
+        # 3. Verify JWT signature and audience
         try:
             payload = jwt.decode(
                 token_str,
                 sso_secret,
                 algorithms=["HS256"],
-                options={"verify_exp": True, "verify_aud": False, "verify_sub": False},
+                audience=EXPECTED_AUDIENCE,
+                options={"verify_exp": True, "verify_sub": False},
             )
         except jwt.ExpiredSignatureError:
             return _render_error("The authentication token has expired.")
+        except jwt.InvalidAudienceError:
+            return _render_error("This token is not intended for this service.")
         except jwt.InvalidTokenError:
             return _render_error("The authentication token is invalid.")
 
-        # 4. Verify audience
-        if payload.get("aud") != EXPECTED_AUDIENCE:
-            return _render_error("This token is not intended for this service.")
-
-        # 5. Verify iat freshness (within 30s)
+        # 4. Verify iat freshness (within 30s).
+        # Defense-in-depth: PyJWT's verify_exp already rejects tokens past their
+        # exp (which is iat + 30), but this manual check guards against tokens
+        # where exp was manipulated independently of iat.
         iat = payload.get("iat")
         if iat is None or (time.time() - iat) > TOKEN_MAX_AGE_SECONDS:
             return _render_error("The authentication token has expired.")
 
-        # 6. Check JTI for replay
+        # 5. Check JTI for replay (atomic check-and-add to avoid TOCTOU race)
         jti = payload.get("jti")
         if not jti:
             return _render_error("The authentication token is invalid.")
 
-        if _jti_store.contains(jti):
+        if not _jti_store.add_if_new(jti):
             return _render_error("This token has already been used.")
 
-        _jti_store.add(jti)
-
-        # 7. JIT provision or update user
+        # 6. JIT provision or update user
         email = payload.get("email", "")
         first_name = payload.get("firstName", "")
         last_name = payload.get("lastName", "")
@@ -133,10 +137,10 @@ class GrottocenterSecurityManager(SupersetSecurityManager):
         if user is None:
             return _render_error("Service configuration error. Please contact support.")
 
-        # 8. Establish session
+        # 7. Establish session
         login_user(user)
 
-        # 9. Redirect to landing page
+        # 8. Redirect to landing page
         return redirect("/superset/welcome/")
 
     def _jit_provision_user(self, email: str, first_name: str, last_name: str):
