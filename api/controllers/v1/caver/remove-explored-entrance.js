@@ -2,7 +2,7 @@ const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
   const caverId = req.param('caverId');
-  const caveId = req.param('caveId');
+  const entranceId = req.param('entranceId');
 
   const hasAdminRight = RightService.hasGroup(
     req.token?.groups,
@@ -18,12 +18,12 @@ module.exports = async (req, res) => {
     !hasModeratorRight &&
     req.token.id !== parseInt(caverId, 10)
   ) {
-    return res.forbidden('You can only manage your own explored caves.');
+    return res.forbidden('You can only manage your own explored entrances.');
   }
 
-  const cave = await TCave.findOne({ id: caveId });
-  if (!cave || cave.isDeleted) {
-    return res.notFound(`Cave with id ${caveId} not found.`);
+  const entrance = await TEntrance.findOne({ id: entranceId });
+  if (!entrance || entrance.isDeleted) {
+    return res.notFound(`Entrance with id ${entranceId} not found.`);
   }
 
   const caver = await TCaver.findOne({ id: caverId });
@@ -33,23 +33,25 @@ module.exports = async (req, res) => {
 
   // Check if a relationship exists
   const existingQuery = `
-    SELECT 1 FROM j_caver_cave_explorer
-    WHERE id_cave = $1 AND id_caver = $2
+    SELECT 1 FROM j_caver_entrance_explorer
+    WHERE id_entrance = $1 AND id_caver = $2
   `;
   const existingResult = await sails.sendNativeQuery(existingQuery, [
-    caveId,
+    entranceId,
     caverId,
   ]);
 
   if (existingResult.rows.length === 0) {
-    return res.badRequest('Caver is not exploring this cave.');
+    return res.notFound(
+      'Caver is not registered as an explorer of this entrance.'
+    );
   }
 
   // Remove the relationship
   const deleteQuery = `
-    DELETE FROM j_caver_cave_explorer
-    WHERE id_cave = $1 AND id_caver = $2
+    DELETE FROM j_caver_entrance_explorer
+    WHERE id_entrance = $1 AND id_caver = $2
   `;
-  await sails.sendNativeQuery(deleteQuery, [caveId, caverId]);
+  await sails.sendNativeQuery(deleteQuery, [entranceId, caverId]);
   return res.status(204).send();
 };
