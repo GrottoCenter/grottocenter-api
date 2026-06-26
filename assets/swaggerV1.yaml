@@ -5260,6 +5260,19 @@ paths:
         '500':
           description: Internal server error
 
+  '/massifs/count':
+    get:
+      tags:
+        - massifs
+      description: Get the total number of massifs.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
   '/massifs':
     post:
       tags:

@@ -246,6 +246,7 @@ module.exports.routes = {
   'GET /api/organizations/findAll': 'v1/organization/find-all',
 
   // Massif
+  'GET /api/v1/massifs/count': 'v1/massif/count',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
   'POST /api/v1/massifs': 'v1/massif/create',
   'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
