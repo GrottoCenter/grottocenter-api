@@ -45,7 +45,6 @@ module.exports = async (req, res) => {
     const params = {
       controllerMethod: 'BibliographicMetadataController.getCount',
       searchedItem: 'count of bibliographic records',
-      notFoundMessage: 'No records found matching the criteria',
     };
 
     return ControllerService.treat(req, null, response, params, res);
