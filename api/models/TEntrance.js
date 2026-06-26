@@ -288,6 +288,12 @@ module.exports = {
       via: 'entrance',
     },
 
+    explorerCavers: {
+      collection: 'TCaver',
+      via: 'entrance',
+      through: 'JCaverEntranceExplorer',
+    },
+
     redirectTo: {
       type: 'number',
       allowNull: true,
