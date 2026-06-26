@@ -7,7 +7,6 @@ module.exports = async (req, res) => {
   });
   const params = {
     controllerMethod: 'PartnerController.count',
-    notFoundMessage: 'Problem while getting number of official partners.',
   };
   return ControllerService.treat(req, null, { count }, params, res);
 };
