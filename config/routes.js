@@ -144,6 +144,10 @@ module.exports.routes = {
     'v1/entrance/add-document',
   'DELETE /api/v1/entrances/:id': 'v1/entrance/delete',
   'POST /api/v1/entrances/:id/restore': 'v1/entrance/restore',
+  'PUT /api/v1/entrances/:entranceId/cavers/:caverId':
+    'v1/caver/add-explored-entrance',
+  'DELETE /api/v1/entrances/:entranceId/cavers/:caverId':
+    'v1/caver/remove-explored-entrance',
 
   // Notification
   'GET /api/v1/notifications/unread/count': 'v1/notification/count-unread',
@@ -166,10 +170,6 @@ module.exports.routes = {
     'v1/organization/add-explored-cave',
   'DELETE /api/v1/caves/:caveId/organizations/:organizationId':
     'v1/organization/remove-explored-cave',
-  'PUT /api/v1/entrances/:entranceId/cavers/:caverId':
-    'v1/caver/add-explored-entrance',
-  'DELETE /api/v1/entrances/:entranceId/cavers/:caverId':
-    'v1/caver/remove-explored-entrance',
   /**
    * @deprecated use api/v1/caves instead
    */

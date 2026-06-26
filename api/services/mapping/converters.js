@@ -116,7 +116,6 @@ const c = {
 
     // Convert collections
     listParser('exploredEntrances', c.toSimpleEntrance);
-    listParser('exploredNetworks', c.toSimpleCave);
     listParser('groups', (group) => group);
     listParser('documents', c.toSimpleDocument);
     listParser('grottos', c.toSimpleOrganization, 'organizations');

@@ -7517,10 +7517,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Entrance'
-        exploredNetworks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Cave'
         groups:
           type: array
           items:
