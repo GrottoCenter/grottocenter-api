@@ -112,8 +112,8 @@ describe('Cave features', () => {
           });
       });
 
-      it('should return 200 when latitude and longitude are empty strings', (done) => {
-        supertest(sails.hooks.http.app)
+      it('should return 200 when latitude and longitude are empty strings', async () => {
+        await supertest(sails.hooks.http.app)
           .put(`/api/v1/caves/${caveId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -122,20 +122,17 @@ describe('Cave features', () => {
             latitude: '',
             longitude: '',
           })
-          .expect(200)
-          .end(async (err) => {
-            if (err) return done(err);
-            // latitude/longitude are deprecated on TCave and not exposed
-            // by the toCave converter, so verify at the DB level.
-            const cave = await TCave.findOne(caveId);
-            should(cave.latitude).equal(null);
-            should(cave.longitude).equal(null);
-            return done();
-          });
+          .expect(200);
+
+        // latitude/longitude are deprecated on TCave and not exposed
+        // by the toCave converter, so verify at the DB level.
+        const cave = await TCave.findOne(caveId);
+        should(cave.latitude).equal(null);
+        should(cave.longitude).equal(null);
       });
 
-      it('should return code 200 on name update', (done) => {
-        supertest(sails.hooks.http.app)
+      it('should return code 200 on name update', async () => {
+        await supertest(sails.hooks.http.app)
           .put(`/api/v1/caves/${caveId}`)
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')
@@ -146,14 +143,11 @@ describe('Cave features', () => {
               language: 'fra',
             },
           })
-          .expect(200)
-          .end(async (err) => {
-            if (err) return done(err);
-            const populatedCave = await TCave.findOne(caveId).populate('names');
-            should(populatedCave.names[0].name).equal('new cave name');
-            should(populatedCave.names[0].language).equal('fra');
-            return done();
-          });
+          .expect(200);
+
+        const populatedCave = await TCave.findOne(caveId).populate('names');
+        should(populatedCave.names[0].name).equal('new cave name');
+        should(populatedCave.names[0].language).equal('fra');
       });
     });
   });

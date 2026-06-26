@@ -1,0 +1,17 @@
+[
+  {
+    "grotto": 1,
+    "country": "FR",
+    "author": 1
+  },
+  {
+    "grotto": 2,
+    "country": "FR",
+    "author": 1
+  },
+  {
+    "grotto": 3,
+    "country": "ES",
+    "author": 3
+  }
+]

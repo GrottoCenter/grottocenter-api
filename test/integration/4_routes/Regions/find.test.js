@@ -33,6 +33,7 @@ describe('Region features', () => {
           should(region).have.properties(REGION_PROPERTIES);
           should(region.id).not.be.empty();
           should(region.name).not.be.empty();
+          should(region).have.property('organizations');
           return done();
         });
     });

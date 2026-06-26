@@ -595,9 +595,10 @@ const c = {
     descriptions: toList('descriptions', source, c.toSimpleDescription),
     documents: toList('documents', source, c.toSimpleDocument),
     networks: toList('networks', source, c.toSimpleCave),
-    // Flat array from getGuidelinesForEntity, unlike the cave/entrance
-    // converters which receive a grouped object ({ country, region, massif }).
     guidelines: toList('guidelines', source, c.toSimpleGuideline),
+    organizations: toList('organizations', source, c.toManagingOrganization, {
+      filterDeleted: false,
+    }),
   }),
 
   toSimpleMassif: (source) => ({
@@ -654,6 +655,25 @@ const c = {
     return result;
   },
 
+  // Schema for an entry in a geographic entity's `organizations` list, as built
+  // by GeoAssociationService.getFormattedOrganizations. Defining it here (rather
+  // than passing the service shape through verbatim) keeps the output schema
+  // enforced at the converter level, like every other collection. A soft-deleted
+  // managing organization is reduced to a redirect stub per Requirement 6.3, so
+  // callers must use { filterDeleted: false } with toList to keep those entries.
+  toManagingOrganization: (source) =>
+    source.isDeleted
+      ? {
+          id: source.id,
+          isDeleted: true,
+          redirectTo: source.redirectTo ?? null,
+        }
+      : {
+          id: source.id,
+          name: source.name ?? null,
+          language: source.language ?? null,
+        },
+
   toSimpleOrganization: (source) => ({
     id: source.id,
     name: getMainName(source),
@@ -704,6 +724,44 @@ const c = {
       meta,
     }),
     partnerNetworks: toList('partnerNetworks', source, c.toSimpleCave),
+    managedCountries:
+      source.managedCountries?.map((country) => ({
+        id: country.id,
+        nativeName: country.nativeName,
+        enName: country.enName,
+        frName: country.frName,
+        esName: country.esName,
+        deName: country.deName,
+        bgName: country.bgName,
+        itName: country.itName,
+        caName: country.caName,
+        nlName: country.nlName,
+        rsName: country.rsName,
+      })) || [],
+    managedRegions:
+      source.managedRegions?.map((region) => ({
+        id: region.id,
+        name: region.name,
+        nameEn: region.nameEn,
+        nameFr: region.nameFr,
+        nameEs: region.nameEs,
+        nameDe: region.nameDe,
+        nameBg: region.nameBg,
+        nameIt: region.nameIt,
+        nameCa: region.nameCa,
+        nameNl: region.nameNl,
+      })) || [],
+    managedMassifs:
+      source.managedMassifs?.map((massif) => ({
+        id: massif.id,
+        names:
+          massif.names?.map((n) => ({
+            id: n.id,
+            name: n.name,
+            isMain: n.isMain,
+            language: n.language,
+          })) || [],
+      })) || [],
   }),
 
   toSensorConfiguration: (source) => ({

@@ -109,6 +109,12 @@ CREATE INDEX IF NOT EXISTS idx_j_document_entrance_document ON j_document_entran
 CREATE INDEX IF NOT EXISTS idx_t_description_document ON t_description(id_document) WHERE id_document IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_description_entrance ON t_description(id_entrance) WHERE id_entrance IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_description_cave ON t_description(id_cave) WHERE id_cave IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_j_organization_country_grotto ON j_organization_country(id_grotto);
+CREATE INDEX IF NOT EXISTS idx_j_organization_country_country ON j_organization_country(id_country);
+CREATE INDEX IF NOT EXISTS idx_j_organization_region_grotto ON j_organization_region(id_grotto);
+CREATE INDEX IF NOT EXISTS idx_j_organization_region_region ON j_organization_region(id_region);
+CREATE INDEX IF NOT EXISTS idx_j_organization_massif_grotto ON j_organization_massif(id_grotto);
+CREATE INDEX IF NOT EXISTS idx_j_organization_massif_massif ON j_organization_massif(id_massif);
 
 -- Additional test-specific indexes
 CREATE INDEX IF NOT EXISTS idx_t_entrance_geom_public

@@ -589,4 +589,69 @@ describe('Converters Service', () => {
       should(result.parent).equal('PARENT');
     });
   });
+
+  describe('toManagingOrganization()', () => {
+    it('should map an active organization to {id, name, language}', () => {
+      const result = converters.toManagingOrganization({
+        id: 5,
+        name: 'Speleo Club',
+        language: 'fra',
+      });
+      should(result).eql({ id: 5, name: 'Speleo Club', language: 'fra' });
+    });
+
+    it('should null out missing name/language on an active organization', () => {
+      const result = converters.toManagingOrganization({ id: 5 });
+      should(result).eql({ id: 5, name: null, language: null });
+    });
+
+    it('should map a soft-deleted organization to a redirect stub', () => {
+      const result = converters.toManagingOrganization({
+        id: 7,
+        isDeleted: true,
+        redirectTo: 42,
+        // name/language must be dropped for a deleted organization
+        name: 'Should not appear',
+        language: 'fra',
+      });
+      should(result).eql({ id: 7, isDeleted: true, redirectTo: 42 });
+    });
+
+    it('should default redirectTo to null when absent on a deleted organization', () => {
+      const result = converters.toManagingOrganization({
+        id: 7,
+        isDeleted: true,
+      });
+      should(result).eql({ id: 7, isDeleted: true, redirectTo: null });
+    });
+  });
+
+  describe('toMassif() organizations', () => {
+    // Guards the filterDeleted:false path: soft-deleted managing organizations
+    // must survive as redirect stubs (Requirement 6.3) rather than being
+    // dropped by toList's default filtering, alongside active ones.
+    it('should keep both active and soft-deleted organizations', () => {
+      const result = converters.toMassif({
+        id: 1,
+        organizations: [
+          { id: 5, name: 'Active Org', language: 'fra' },
+          { id: 7, isDeleted: true, redirectTo: 42 },
+        ],
+      });
+      should(result.organizations).eql([
+        { id: 5, name: 'Active Org', language: 'fra' },
+        { id: 7, isDeleted: true, redirectTo: 42 },
+      ]);
+    });
+
+    it('should return an empty array when organizations is undefined', () => {
+      const result = converters.toMassif({ id: 1 });
+      should(result.organizations).eql([]);
+    });
+
+    it('should return an empty array when organizations is empty', () => {
+      const result = converters.toMassif({ id: 1, organizations: [] });
+      should(result.organizations).eql([]);
+    });
+  });
 });

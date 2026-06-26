@@ -24,6 +24,7 @@ describe('Country features', () => {
           should(country).have.properties(COUNTRY_PROPERTIES);
           should(country.id).not.be.empty();
           should(country.nativeName).not.be.empty();
+          should(country).have.property('organizations');
           return done();
         });
     });

@@ -189,5 +189,23 @@ module.exports = {
       via: 'grotto',
       through: 'JDocumentGrottoAuthor',
     },
+
+    managedCountries: {
+      collection: 'TCountry',
+      via: 'grotto',
+      through: 'JOrganizationCountry',
+    },
+
+    managedRegions: {
+      collection: 'TISO31662',
+      via: 'grotto',
+      through: 'JOrganizationRegion',
+    },
+
+    managedMassifs: {
+      collection: 'TMassif',
+      via: 'grotto',
+      through: 'JOrganizationMassif',
+    },
   },
 };

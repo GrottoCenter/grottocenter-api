@@ -34,7 +34,10 @@ module.exports = {
       .populate('country')
       .populate('documents')
       .populate('exploredCaves')
-      .populate('partnerCaves');
+      .populate('partnerCaves')
+      .populate('managedCountries')
+      .populate('managedRegions')
+      .populate('managedMassifs');
 
     if (!organization) return null;
 
@@ -49,6 +52,7 @@ module.exports = {
         'cave'
       ),
       NameService.setNames([organization], 'grotto'),
+      NameService.setNames(organization.managedMassifs, 'massif'),
     ]);
 
     // Split caves between entrances and networks (cave)

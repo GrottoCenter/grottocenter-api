@@ -25,6 +25,9 @@ const ORGANIZATION_PROPERTIES = [
   'region',
   'url',
   'yearBirth',
+  'managedCountries',
+  'managedRegions',
+  'managedMassifs',
 ];
 
 describe('Organization features', () => {

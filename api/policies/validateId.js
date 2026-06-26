@@ -18,9 +18,15 @@ const isValidId = (value) => {
 module.exports = (req, res, next) => {
   // Validate all route params that look like IDs
   const params = req.params || {};
-  const idParams = Object.entries(params).filter(
-    ([k]) => k === 'id' || k.endsWith('Id')
-  );
+  const action = req.options && req.options.action ? req.options.action : '';
+  const isCountryOrRegionRoute =
+    action.startsWith('v1/country/') || action.startsWith('v1/region/');
+
+  const idParams = Object.entries(params).filter(([k]) => {
+    if (k === 'countryId' || k === 'regionId') return false;
+    if (k === 'id' && isCountryOrRegionRoute) return false;
+    return k === 'id' || k.endsWith('Id');
+  });
 
   for (const [, value] of idParams) {
     if (!isValidId(value)) {
@@ -31,7 +37,7 @@ module.exports = (req, res, next) => {
   // Fallback: also check req.param('id') for query-based IDs
   if (idParams.length === 0) {
     const id = req.param('id');
-    if (id !== undefined && !isValidId(id)) {
+    if (id !== undefined && !isCountryOrRegionRoute && !isValidId(id)) {
       return res.notFound(`Invalid ID: ${id}`);
     }
   }

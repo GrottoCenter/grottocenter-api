@@ -95,5 +95,11 @@ module.exports = {
       via: 'massif',
       through: 'JGuidelineMassif',
     },
+
+    organizations: {
+      collection: 'TGrotto',
+      via: 'massif',
+      through: 'JOrganizationMassif',
+    },
   },
 };

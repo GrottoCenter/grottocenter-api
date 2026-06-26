@@ -2588,6 +2588,77 @@ paths:
         '404':
           description: Region not found in the specified country
 
+  '/countries/{countryId}/regions/{regionId}/organizations/{organizationId}':
+    put:
+      tags:
+        - regions
+      description: Associate an organization with a region.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: regionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully associated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  organizationId:
+                    type: integer
+        '400':
+          description: Bad request
+        '401':
+          description: Authentication required
+        '404':
+          description: Region or organization not found
+    delete:
+      tags:
+        - regions
+      description: Remove the association between an organization and a region.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: regionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully removed association
+        '401':
+          description: Authentication required
+        '404':
+          description: Association or region not found
+
   '/countries/{countryId}/regions/{regionId}/statistics':
     get:
       tags:
@@ -5408,6 +5479,67 @@ paths:
         '404':
           description: Massif not found
 
+  '/massifs/{id}/organizations/{organizationId}':
+    put:
+      tags:
+        - massifs
+      description: Associate an organization with a massif.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully associated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  organizationId:
+                    type: integer
+        '400':
+          description: Bad request
+        '401':
+          description: Authentication required
+        '404':
+          description: Massif or organization not found
+    delete:
+      tags:
+        - massifs
+      description: Remove the association between an organization and a massif.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully removed association
+        '401':
+          description: Authentication required
+        '404':
+          description: Association or massif not found
+
   '/massifs/{id}/statistics':
     get:
       tags:
@@ -5785,6 +5917,71 @@ paths:
                   $ref: '#/components/schemas/Country'
         '404':
           description: Resource not found
+
+  '/countries/{id}/organizations/{organizationId}':
+    put:
+      tags:
+        - countries
+      description: Associate an organization with a country.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: FR
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully associated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  organizationId:
+                    type: integer
+        '400':
+          description: Bad request
+        '401':
+          description: Authentication required
+        '404':
+          description: Country or organization not found
+    delete:
+      tags:
+        - countries
+      description: Remove the association between an organization and a country.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Country ID (ISO 2-letter code)
+          required: true
+          schema:
+            type: string
+            example: FR
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successfully removed association
+        '401':
+          description: Authentication required
+        '404':
+          description: Association or country not found
 
   '/countries/{id}/statistics':
     get:
@@ -7438,6 +7635,22 @@ components:
           type: string
         numeric:
           type: integer
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              language:
+                type: string
+              isDeleted:
+                type: boolean
+              redirectTo:
+                type: integer
+                nullable: true
 
     Data-quality-info:
       type: object
@@ -8114,6 +8327,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cave'
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              language:
+                type: string
+              isDeleted:
+                type: boolean
+              redirectTo:
+                type: integer
+                nullable: true
 
     StructuredError:
       type: object
@@ -8459,6 +8688,78 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cave'
+        managedCountries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              nativeName:
+                type: string
+              enName:
+                type: string
+              frName:
+                type: string
+              esName:
+                type: string
+              deName:
+                type: string
+              bgName:
+                type: string
+              itName:
+                type: string
+              caName:
+                type: string
+              nlName:
+                type: string
+              rsName:
+                type: string
+        managedRegions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              nameEn:
+                type: string
+              nameFr:
+                type: string
+              nameEs:
+                type: string
+              nameDe:
+                type: string
+              nameBg:
+                type: string
+              nameIt:
+                type: string
+              nameCa:
+                type: string
+              nameNl:
+                type: string
+        managedMassifs:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              names:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    isMain:
+                      type: boolean
+                    language:
+                      type: string
         id:
           type: integer
         isOfficialPartner:
@@ -8517,6 +8818,22 @@ components:
           type: boolean
         name:
           type: string
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              language:
+                type: string
+              isDeleted:
+                type: boolean
+              redirectTo:
+                type: integer
+                nullable: true
 
     ResetPasswordToken:
       properties:
