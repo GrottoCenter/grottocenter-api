@@ -83,12 +83,10 @@ describe('CaverService', () => {
       should(caver.grottos.length).equal(2);
       should(caver.grottos).containDeep([{ id: 1 }, { id: 2 }]);
       should(caver.groups).containDeep([{ id: 1 }]);
-      should(caver.exploredNetworks.length).equal(1);
-      should(caver.exploredNetworks[0].entrances.length).equal(2);
-      should(caver.exploredNetworks[0].entrances).containDeep([
-        { id: 4 },
-        { id: 5 },
-      ]);
+      should(caver.exploredEntrances.length).equal(2);
+      should(caver.exploredEntrances).containDeep([{ id: 4 }, { id: 5 }]);
+      should.not.exist(caver.exploredCaves);
+      should.not.exist(caver.exploredNetworks);
       should(caver.language).equal('fra');
       should.not.exist(caver.password);
       should.not.exist(caver.activationCode);

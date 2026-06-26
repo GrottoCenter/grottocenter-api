@@ -29,6 +29,7 @@ module.exports = [
   'tcave',
   'tentrance',
   'jcavercaveexplorer',
+  'jcaverentranceexplorer',
   'jcaverregionsubscription',
   'tmassif',
   'thistory',

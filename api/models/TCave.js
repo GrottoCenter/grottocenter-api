@@ -128,12 +128,6 @@ module.exports = {
       through: 'JGrottoCaveExplorer',
     },
 
-    explorerCavers: {
-      collection: 'TCaver',
-      via: 'cave',
-      through: 'JCaverCaveExplorer',
-    },
-
     partneringGrottos: {
       collection: 'TGrotto',
       via: 'cave',

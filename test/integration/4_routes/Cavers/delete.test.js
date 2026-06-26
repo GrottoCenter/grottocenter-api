@@ -77,21 +77,21 @@ describe('Caver features', () => {
     it('should merge source caver data into target and delete source', async () => {
       // Verify source caver exists and has data before merge
       const sourceBefore = await TCaver.findOne(102)
-        .populate('exploredCaves')
+        .populate('exploredEntrances')
         .populate('documents')
         .populate('subscribedToRegions');
       should(sourceBefore).not.be.null();
-      should(sourceBefore.exploredCaves).have.length(1);
+      should(sourceBefore.exploredEntrances).have.length(2);
       should(sourceBefore.documents).have.length(1);
       should(sourceBefore.subscribedToRegions).have.length(1);
 
       // Verify target caver before merge
       const targetBefore = await TCaver.findOne(103)
-        .populate('exploredCaves')
+        .populate('exploredEntrances')
         .populate('documents')
         .populate('subscribedToRegions');
       should(targetBefore).not.be.null();
-      should(targetBefore.exploredCaves).have.length(1);
+      should(targetBefore.exploredEntrances).have.length(1);
       should(targetBefore.documents).have.length(1);
       should(targetBefore.subscribedToRegions).have.length(0);
 
@@ -111,14 +111,16 @@ describe('Caver features', () => {
 
       // Verify target caver received the merged data
       const targetAfter = await TCaver.findOne(103)
-        .populate('exploredCaves')
+        .populate('exploredEntrances')
         .populate('documents')
         .populate('subscribedToRegions');
       should(targetAfter).not.be.null();
-      // Target should have its own cave (4) + source's cave (3)
-      should(targetAfter.exploredCaves).have.length(2);
-      const exploredCaveIds = targetAfter.exploredCaves.map((c) => c.id);
-      should(exploredCaveIds).containDeep([3, 4]);
+      // Target should have its own entrance (6) + source's entrances (4, 5)
+      should(targetAfter.exploredEntrances).have.length(3);
+      const exploredEntranceIds = targetAfter.exploredEntrances.map(
+        (e) => e.id
+      );
+      should(exploredEntranceIds).containDeep([4, 5, 6]);
       // Target should have its own document (4) + source's document (3)
       should(targetAfter.documents).have.length(2);
       const documentIds = targetAfter.documents.map((d) => d.id);

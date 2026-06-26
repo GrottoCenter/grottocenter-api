@@ -9,7 +9,6 @@ const CAVER_PROPERTIES = [
   'id',
   'documents',
   'exploredEntrances',
-  'exploredNetworks',
   'organizations',
   'groups',
   'language',
@@ -86,9 +85,6 @@ describe('Caver features', () => {
           caver.exploredEntrances.forEach((entrance) => {
             should(entrance).have.properties('names');
           });
-          caver.exploredNetworks.forEach((network) => {
-            should(network).have.properties('names');
-          });
           caver.organizations.forEach((organization) => {
             should(organization).have.properties('name');
           });
@@ -112,9 +108,6 @@ describe('Caver features', () => {
           });
           caver.exploredEntrances.forEach((entrance) => {
             should(entrance).have.properties('name');
-          });
-          caver.exploredNetworks.forEach((network) => {
-            should(network).have.properties('name');
           });
           caver.organizations.forEach((organization) => {
             should(organization).have.properties('name');
