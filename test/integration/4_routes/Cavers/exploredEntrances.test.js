@@ -155,6 +155,13 @@ describe('Caver explored entrances features', () => {
         .expect(404, done);
     });
 
+    it('should return 404 on non-existing caver', (done) => {
+      supertest(sails.hooks.http.app)
+        .delete(`/api/v1/entrances/${testEntrance.id}/cavers/987654321`)
+        .set('Authorization', moderatorToken)
+        .expect(404, done);
+    });
+
     it('should return 404 when relationship does not exist', async () => {
       // Remove the relationship first
       await sails.sendNativeQuery(

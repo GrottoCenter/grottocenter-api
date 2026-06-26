@@ -158,13 +158,12 @@ module.exports = async (req, res) => {
     linkedEntitiesDeleteOrMerge('subscribedToRegions'),
     linkedEntitiesDeleteOrMerge('grottos'),
     linkedEntitiesDeleteOrMerge('documents', allDocumentIds),
+    // Clean up legacy j_caver_cave_explorer rows (table preserved, no Waterline association)
+    CommonService.query(
+      'DELETE FROM j_caver_cave_explorer WHERE id_caver = $1',
+      [caverId]
+    ),
   ]);
-
-  // Clean up legacy j_caver_cave_explorer rows (table preserved, no Waterline association)
-  await CommonService.query(
-    'DELETE FROM j_caver_cave_explorer WHERE id_caver = $1',
-    [caverId]
-  );
 
   await TCaver.destroyOne({ id: caverId });
 
