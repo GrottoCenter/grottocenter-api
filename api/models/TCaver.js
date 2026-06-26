@@ -191,12 +191,6 @@ module.exports = {
       through: 'JCaverGroup',
     },
 
-    exploredCaves: {
-      collection: 'TCave',
-      via: 'caver',
-      through: 'JCaverCaveExplorer',
-    },
-
     exploredEntrances: {
       collection: 'TEntrance',
       via: 'caver',

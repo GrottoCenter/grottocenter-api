@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const RightService = require('../../../services/RightService');
 const { toCaver } = require('../../../services/mapping/converters');
 const CaverService = require('../../../services/CaverService');
+const CommonService = require('../../../services/CommonService');
 
 const DEFAULT_DELETED_CAVER_ID = 8;
 
@@ -38,7 +39,7 @@ module.exports = async (req, res) => {
   let mergeIntoEntity;
   if (shouldMergeInto) {
     mergeIntoEntity = await TCaver.findOne(mergeIntoId)
-      .populate('exploredCaves')
+      .populate('exploredEntrances')
       .populate('groups')
       .populate('subscribedToCountries')
       .populate('subscribedToMassifs')
@@ -150,7 +151,7 @@ module.exports = async (req, res) => {
     : null;
 
   await Promise.all([
-    linkedEntitiesDeleteOrMerge('exploredCaves'),
+    linkedEntitiesDeleteOrMerge('exploredEntrances'),
     linkedEntitiesDeleteOrMerge('groups'),
     linkedEntitiesDeleteOrMerge('subscribedToCountries'),
     linkedEntitiesDeleteOrMerge('subscribedToMassifs'),
@@ -158,6 +159,12 @@ module.exports = async (req, res) => {
     linkedEntitiesDeleteOrMerge('grottos'),
     linkedEntitiesDeleteOrMerge('documents', allDocumentIds),
   ]);
+
+  // Clean up legacy j_caver_cave_explorer rows (table preserved, no Waterline association)
+  await CommonService.query(
+    'DELETE FROM j_caver_cave_explorer WHERE id_caver = $1',
+    [caverId]
+  );
 
   await TCaver.destroyOne({ id: caverId });
 

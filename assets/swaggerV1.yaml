@@ -928,62 +928,64 @@ paths:
         '403':
           description: You are not authorized to remove a caver from a group.
 
-  '/caves/{caveId}/cavers/{caverId}':
+  '/entrances/{entranceId}/cavers/{caverId}':
     put:
       tags:
-        - caves
+        - entrances
         - cavers
-      description: Add a caver as a cave explorer. Users can only add caves to their own profile. Moderators and administrators can add caves to any user's profile.
+      description: Add a caver as an entrance explorer. Users can only add entrances to their own profile. Moderators and administrators can add entrances to any user's profile.
       parameters:
-        - name: caveId
+        - name: entranceId
           in: path
-          description: Cave id to add the explorer to.
+          description: Entrance id to add the explorer to.
           required: true
           schema:
             type: string
         - name: caverId
           in: path
-          description: Caver id to be added as cave explorer.
+          description: Caver id to be added as entrance explorer.
           required: true
           schema:
             type: string
       responses:
         '204':
           description: Successful operation
-        '400':
-          description: Cave not found or caver is already exploring this cave.
         '401':
           description: Authentication required.
         '403':
-          description: You can only manage your own explored caves (unless you are a moderator or administrator).
+          description: You can only manage your own explored entrances (unless you are a moderator or administrator).
+        '404':
+          description: Entrance or caver not found.
+        '409':
+          description: Caver is already registered as an explorer of this entrance.
 
     delete:
       tags:
-        - caves
+        - entrances
         - cavers
-      description: Remove a caver as a cave explorer. Users can only remove caves from their own profile. Moderators and administrators can remove caves from any user's profile.
+      description: Remove a caver as an entrance explorer. Users can only remove entrances from their own profile. Moderators and administrators can remove entrances from any user's profile.
       parameters:
-        - name: caveId
+        - name: entranceId
           in: path
-          description: Cave id to remove the explorer from.
+          description: Entrance id to remove the explorer from.
           required: true
           schema:
             type: string
         - name: caverId
           in: path
-          description: Caver id to be removed as cave explorer.
+          description: Caver id to be removed as entrance explorer.
           required: true
           schema:
             type: string
       responses:
         '204':
           description: Successful operation
-        '400':
-          description: Cave not found or caver is not exploring this cave.
         '401':
           description: Authentication required.
         '403':
-          description: You can only manage your own explored caves (unless you are a moderator or administrator).
+          description: You can only manage your own explored entrances (unless you are a moderator or administrator).
+        '404':
+          description: Entrance, caver, or explorer relationship not found.
 
   '/cavers/{caverId}/organizations/{organizationId}':
     put:

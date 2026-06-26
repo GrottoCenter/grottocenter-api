@@ -51,8 +51,8 @@ describe('Entrance features', () => {
         isOfInterest: false,
       }).fetch();
 
-      // Link explorer caver to entrance (j_caver_cave_explorer via cave)
-      await TCave.addToCollection(cave.id, 'explorerCavers', [1]);
+      // Link explorer caver to entrance (j_caver_entrance_explorer)
+      await TEntrance.addToCollection(entrance.id, 'explorerCavers', [1]);
 
       // Link exploring organization to cave (j_grotto_cave_explorer)
       await TCave.addToCollection(cave.id, 'exploringGrottos', [
@@ -233,8 +233,8 @@ describe('Entrance features', () => {
 
       // Junction tables should be cleaned up
       const caverExplorer = await CommonService.query(
-        'SELECT COUNT(*)::integer AS cnt FROM j_caver_cave_explorer WHERE id_cave = $1',
-        [cave.id]
+        'SELECT COUNT(*)::integer AS cnt FROM j_caver_entrance_explorer WHERE id_entrance = $1',
+        [entrance.id]
       );
       should(caverExplorer.rows[0].cnt).equal(0);
 
