@@ -233,6 +233,7 @@ module.exports.policies = {
   'v1/country/remove-organization': ['tokenAuth', 'validateId'],
 
   // Massif
+  'v1/massif/count': true,
   'v1/massif/find': ['validateId'],
   'v1/massif/get-statistics': true,
   'v1/massif/get-entrances-data-quality': true,
