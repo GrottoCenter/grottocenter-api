@@ -47,6 +47,7 @@ describe('Massif features', () => {
           should(massif).not.have.property('entrances');
           should(massif.geogPolygon).equal(massifPolygon.geoJson1ToString);
           should(massif.name).not.be.empty();
+          should(massif).have.property('organizations');
 
           return done();
         });

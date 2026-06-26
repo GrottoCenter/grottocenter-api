@@ -147,5 +147,11 @@ module.exports = {
       via: 'region',
       through: 'JGuidelineRegion',
     },
+
+    organizations: {
+      collection: 'TGrotto',
+      via: 'region',
+      through: 'JOrganizationRegion',
+    },
   },
 };

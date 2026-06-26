@@ -131,5 +131,11 @@ module.exports = {
       via: 'country',
       through: 'JGuidelineCountry',
     },
+
+    organizations: {
+      collection: 'TGrotto',
+      via: 'country',
+      through: 'JOrganizationCountry',
+    },
   },
 };

@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const GuidelineService = require('../../../services/GuidelineService');
 const { toSimpleGuideline } = require('../../../services/mapping/converters');
 const { toList } = require('../../../services/mapping/utils');
+const GeoAssociationService = require('../../../services/GeoAssociationService');
 
 module.exports = async (req, res) => {
   const { countryId } = req.params;
@@ -20,9 +21,16 @@ module.exports = async (req, res) => {
       'region',
       isoCode
     );
+
+    const organizations = await GeoAssociationService.getFormattedOrganizations(
+      'region',
+      isoCode
+    );
+
     const formattedRegion = {
       ...region,
       guidelines: toList('guidelines', { guidelines }, toSimpleGuideline),
+      organizations,
     };
 
     return ControllerService.treat(

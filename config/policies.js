@@ -229,6 +229,8 @@ module.exports.policies = {
   'v1/country/get-entrances-data-quality': true,
   'v1/country/subscribe': 'tokenAuth',
   'v1/country/unsubscribe': 'tokenAuth',
+  'v1/country/set-organization': ['tokenAuth', 'validateId'],
+  'v1/country/remove-organization': ['tokenAuth', 'validateId'],
 
   // Massif
   'v1/massif/find': ['validateId'],
@@ -245,6 +247,8 @@ module.exports.policies = {
   'v1/massif/preview-sensitive': 'tokenAuth',
   'v1/massif/add-document': 'tokenAuth',
   'v1/massif/unlink-document': 'tokenAuth',
+  'v1/massif/set-organization': ['tokenAuth', 'validateId'],
+  'v1/massif/remove-organization': ['tokenAuth', 'validateId'],
 
   // Name
   'v1/name/set-as-main': 'tokenAuth',
@@ -302,6 +306,8 @@ module.exports.policies = {
   'v1/region/get-entrances-data-quality': true,
   'v1/region/subscribe': 'tokenAuth',
   'v1/region/unsubscribe': 'tokenAuth',
+  'v1/region/set-organization': ['tokenAuth', 'validateId'],
+  'v1/region/remove-organization': ['tokenAuth', 'validateId'],
 
   // Search
   'v1/search/quick-search': true,

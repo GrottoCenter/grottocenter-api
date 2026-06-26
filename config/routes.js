@@ -211,6 +211,10 @@ module.exports.routes = {
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
   'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
   'GET /api/v1/countries/count': 'v1/country/count',
+  'PUT /api/v1/countries/:id/organizations/:organizationId':
+    'v1/country/set-organization',
+  'DELETE /api/v1/countries/:id/organizations/:organizationId':
+    'v1/country/remove-organization',
 
   // Region
   'GET /api/v1/countries/:countryId/regions/:regionId':
@@ -222,6 +226,10 @@ module.exports.routes = {
   'GET /api/v1/countries/:countryId/regions/:regionId/statistics':
     'v1/region/get-statistics',
   'GET /api/v1/countries/:countryId/regions/count': 'v1/region/count',
+  'PUT /api/v1/countries/:countryId/regions/:regionId/organizations/:organizationId':
+    'v1/region/set-organization',
+  'DELETE /api/v1/countries/:countryId/regions/:regionId/organizations/:organizationId':
+    'v1/region/remove-organization',
 
   // Organization
   'GET /api/v1/organizations/count': 'v1/organization/count',
@@ -245,6 +253,10 @@ module.exports.routes = {
   'PUT /api/v1/massifs/:id': 'v1/massif/update',
   'GET /api/v1/massifs/:id/statistics': 'v1/massif/get-statistics',
   'DELETE /api/v1/massifs/:id': 'v1/massif/delete',
+  'PUT /api/v1/massifs/:id/organizations/:organizationId':
+    'v1/massif/set-organization',
+  'DELETE /api/v1/massifs/:id/organizations/:organizationId':
+    'v1/massif/remove-organization',
   'POST /api/v1/massifs/:id/restore': 'v1/massif/restore',
   'POST /api/v1/massifs/:id/mark-sensitive': 'v1/massif/mark-sensitive',
   'POST /api/v1/massifs/:id/unmark-sensitive': 'v1/massif/unmark-sensitive',
