@@ -29,19 +29,6 @@ const query = `
 
 async function* processRows(source) {
   for await (const rows of source) {
-    // Keep until frontend migrates from entrances.length to nbEntrances
-    const joins = [
-      {
-        table: 't_entrance',
-        foreignField: 'id_cave',
-        rows,
-        localField: 'entrances',
-        fields: ['id'],
-        transform: (e) => e.id,
-      },
-    ];
-
-    await Promise.all(joins.map((e) => exportUtils.joinMany(e)));
     for (const row of rows) yield row;
   }
 }
