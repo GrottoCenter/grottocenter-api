@@ -197,6 +197,12 @@ module.exports = {
       through: 'JCaverCaveExplorer',
     },
 
+    exploredEntrances: {
+      collection: 'TEntrance',
+      via: 'caver',
+      through: 'JCaverEntranceExplorer',
+    },
+
     subscribedToMassifs: {
       collection: 'TMassif',
       via: 'caver',

@@ -91,6 +91,8 @@ CREATE INDEX IF NOT EXISTS idx_t_rigging_entrance ON t_rigging(id_entrance) WHER
 CREATE INDEX IF NOT EXISTS idx_t_rigging_cave ON t_rigging(id_cave) WHERE id_cave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS j_caver_cave_explorer_id_caver_idx ON j_caver_cave_explorer (id_caver);
 CREATE INDEX IF NOT EXISTS j_caver_cave_explorer_id_cave_idx ON j_caver_cave_explorer (id_cave);
+CREATE INDEX IF NOT EXISTS j_caver_entrance_explorer_id_caver_idx ON j_caver_entrance_explorer (id_caver);
+CREATE INDEX IF NOT EXISTS j_caver_entrance_explorer_id_entrance_idx ON j_caver_entrance_explorer (id_entrance);
 CREATE INDEX IF NOT EXISTS idx_document_id_parent ON t_document(id_parent) WHERE id_parent IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
 CREATE INDEX IF NOT EXISTS idx_t_document_type ON t_document(id_type);
