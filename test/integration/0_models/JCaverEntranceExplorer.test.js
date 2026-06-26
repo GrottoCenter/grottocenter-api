@@ -30,6 +30,14 @@ describe('JCaverEntranceExplorer model associations', () => {
   });
 
   after(async () => {
+    // Clear any lingering junction rows first (idempotent — safe if already gone)
+    if (testCaver && testEntrance) {
+      await TCaver.removeFromCollection(
+        testCaver.id,
+        'exploredEntrances',
+        testEntrance.id
+      );
+    }
     if (testEntrance) await TEntrance.destroyOne({ id: testEntrance.id });
     if (testCave) await TCave.destroyOne({ id: testCave.id });
     if (testCaver) await TCaver.destroyOne({ id: testCaver.id });

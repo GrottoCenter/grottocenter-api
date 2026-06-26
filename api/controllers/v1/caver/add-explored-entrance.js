@@ -31,28 +31,22 @@ module.exports = async (req, res) => {
     return res.notFound(`Caver with id ${caverId} not found.`);
   }
 
-  // Check if a relationship already exists
-  const existingQuery = `
-    SELECT 1 FROM j_caver_entrance_explorer
-    WHERE id_entrance = $1 AND id_caver = $2
+  // Atomic upsert: INSERT with ON CONFLICT eliminates the TOCTOU race
+  const insertQuery = `
+    INSERT INTO j_caver_entrance_explorer (id_entrance, id_caver)
+    VALUES ($1, $2)
+    ON CONFLICT (id_entrance, id_caver) DO NOTHING
   `;
-  const existingResult = await sails.sendNativeQuery(existingQuery, [
+  const result = await sails.sendNativeQuery(insertQuery, [
     entranceId,
     caverId,
   ]);
 
-  if (existingResult.rows.length > 0) {
+  if (result.rowCount === 0) {
     return res.conflict(
       'Caver is already registered as an explorer of this entrance.'
     );
   }
-
-  // Create the relationship
-  const insertQuery = `
-    INSERT INTO j_caver_entrance_explorer (id_entrance, id_caver)
-    VALUES ($1, $2)
-  `;
-  await sails.sendNativeQuery(insertQuery, [entranceId, caverId]);
 
   return res.status(204).send();
 };
