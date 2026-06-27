@@ -41,8 +41,8 @@ module.exports = {
       QUEUE_NAME,
       {
         newJobCheckInterval: 2000,
-        teamSize: 4,
-        teamConcurrency: 1,
+        teamSize: 1,
+        teamConcurrency: 4,
       },
       module.exports.processChunk
     );
@@ -170,14 +170,13 @@ module.exports = {
 
   /**
    * Process chunk jobs (pg-boss v12 passes an array).
+   * With teamSize:1, the array always has exactly one job and pg-boss
+   * stores the return value as the job's output.
    * @param {object[]} jobs
    */
   async processChunk(jobs) {
     const jobList = Array.isArray(jobs) ? jobs : [jobs];
-    for (const job of jobList) {
-      // eslint-disable-next-line no-await-in-loop
-      await module.exports.processOneChunk(job);
-    }
+    return module.exports.processOneChunk(jobList[0]);
   },
 
   /**
