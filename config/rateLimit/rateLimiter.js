@@ -134,6 +134,13 @@ module.exports = {
         return true;
       }
 
+      // Removing an entrance from a user's exploration list is a low-risk
+      // self-service action (tokenAuth already ensures ownership). Skip the
+      // restrictive DELETE rate limit so users can freely manage their list.
+      if (/^\/api\/v1\/entrances\/\d+\/cavers\/\d+$/.test(req.path)) {
+        return true;
+      }
+
       // Third-party origins are always limited (handled by generalRateLimit)
       if (req.token && req.headers.origin !== sails.config.custom.baseUrl) {
         sails.log.error(
