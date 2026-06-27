@@ -132,6 +132,9 @@ build-info.json
 # Temporary test output
 *.tmp
 
+# Local file uploads (dev environment, replaces Azure Blob Storage)
+.local-uploads/
+
 # Test database snapshot stamp
 test/.snapshot-stamp
 

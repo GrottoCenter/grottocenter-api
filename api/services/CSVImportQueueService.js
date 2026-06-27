@@ -464,13 +464,6 @@ module.exports = {
   async generateAndUploadReports(batchId, successes, duplicates, failures) {
     const reportUrls = { success: null, duplicates: null, failures: null };
 
-    if (!FileService.isCredentials) {
-      sails.log.warn(
-        'CSVImportQueueService: Azure credentials not configured, skipping report upload'
-      );
-      return reportUrls;
-    }
-
     const prefix = `csv-import-reports/${batchId}`;
 
     if (successes.length > 0) {
