@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "Primești acest email din cauza abonamentului tău la masivul %s.",
 	"You are receiving this email because you are the author of this document.": "Primiți acest email deoarece sunteți autorul acestui document.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Contul dvs. este acum blocat și nu poate fi utilizat pentru autentificare. Un alt administrator trebuie să deblocheze manual contul dvs. înainte ca accesul să poată fi restabilit.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Contul dvs. de administrator Grottocenter a fost blocat din cauza prea multor încercări consecutive de autentificare eșuate."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Contul dvs. de administrator Grottocenter a fost blocat din cauza prea multor încercări consecutive de autentificare eșuate.",
+	"CSV Import Complete": "Import CSV finalizat",
+	"Your CSV entrance import has finished processing.": "Importul CSV al intrărilor s-a finalizat.",
+	"Summary": "Rezumat",
+	"Successes": "Reușite",
+	"Duplicates": "Duplicate",
+	"Failures": "Eșecuri",
+	"Download Reports": "Descarcă rapoartele",
+	"Successful imports": "Importuri reușite",
+	"Links expire in 7 days.": "Linkurile expiră în 7 zile.",
+	"Batch ID": "ID lot"
 }

@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "Anda menerima email ini karena langganan Anda ke massif %s.",
 	"You are receiving this email because you are the author of this document.": "Anda menerima email ini karena Anda adalah penulis dokumen ini.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Akun Anda sekarang terkunci dan tidak dapat digunakan untuk login. Administrator lain harus membuka blokir akun Anda secara manual sebelum akses dapat dipulihkan.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Akun administrator Grottocenter Anda telah diblokir karena terlalu banyak percobaan login gagal berturut-turut."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Akun administrator Grottocenter Anda telah diblokir karena terlalu banyak percobaan login gagal berturut-turut.",
+	"CSV Import Complete": "Impor CSV selesai",
+	"Your CSV entrance import has finished processing.": "Impor CSV pintu masuk Anda telah selesai diproses.",
+	"Summary": "Ringkasan",
+	"Successes": "Berhasil",
+	"Duplicates": "Duplikat",
+	"Failures": "Gagal",
+	"Download Reports": "Unduh laporan",
+	"Successful imports": "Impor berhasil",
+	"Links expire in 7 days.": "Tautan kedaluwarsa dalam 7 hari.",
+	"Batch ID": "ID batch"
 }

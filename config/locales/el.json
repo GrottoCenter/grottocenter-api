@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "Λαμβάνετε αυτό το email λόγω της συνδρομής σας στον όρεινό όγκο %s.",
 	"You are receiving this email because you are the author of this document.": "Λαμβάνετε αυτό το email επειδή είστε ο συγγραφέας αυτού του εγγράφου.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Ο λογαριασμός σας είναι πλέον κλειδωμένος και δεν μπορεί να χρησιμοποιηθεί για σύνδεση. Ένας άλλος διαχειριστής πρέπει να ξεκλειδώσει χειροκίνητα τον λογαριασμό σας πριν αποκατασταθεί η πρόσβαση.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Ο λογαριασμός διαχειριστή σας στο Grottocenter έχει αποκλειστεί λόγω πάρα πολλών διαδοχικών αποτυχημένων προσπαθειών σύνδεσης."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Ο λογαριασμός διαχειριστή σας στο Grottocenter έχει αποκλειστεί λόγω πάρα πολλών διαδοχικών αποτυχημένων προσπαθειών σύνδεσης.",
+	"CSV Import Complete": "Η εισαγωγή CSV ολοκληρώθηκε",
+	"Your CSV entrance import has finished processing.": "Η εισαγωγή CSV εισόδων ολοκληρώθηκε.",
+	"Summary": "Περίληψη",
+	"Successes": "Επιτυχίες",
+	"Duplicates": "Διπλότυπα",
+	"Failures": "Αποτυχίες",
+	"Download Reports": "Λήψη αναφορών",
+	"Successful imports": "Επιτυχείς εισαγωγές",
+	"Links expire in 7 days.": "Οι σύνδεσμοι λήγουν σε 7 ημέρες.",
+	"Batch ID": "ID παρτίδας"
 }
