@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "Получавате този имейл поради вашия абонамент за масива %s.",
 	"You are receiving this email because you are the author of this document.": "Получавате този имейл, защото сте автор на този документ.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Вашият акаунт вече е заключен и не може да се използва за влизане. Друг администратор трябва ръчно да отблокира акаунта ви, преди достъпът да бъде възстановен.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Вашият администраторски акаунт в Grottocenter е блокиран поради твърде много последователни неуспешни опити за влизане."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Вашият администраторски акаунт в Grottocenter е блокиран поради твърде много последователни неуспешни опити за влизане.",
+	"CSV Import Complete": "CSV импортът е завършен",
+	"Your CSV entrance import has finished processing.": "Вашият CSV импорт на входове е завършен.",
+	"Summary": "Резюме",
+	"Successes": "Успешни",
+	"Duplicates": "Дубликати",
+	"Failures": "Грешки",
+	"Download Reports": "Изтегляне на отчети",
+	"Successful imports": "Успешни импорти",
+	"Links expire in 7 days.": "Линковете изтичат след 7 дни.",
+	"Batch ID": "ID на партида"
 }

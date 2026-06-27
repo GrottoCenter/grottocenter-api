@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "U ontvangt deze e-mail vanwege uw abonnement op het bergmassief %s.",
 	"You are receiving this email because you are the author of this document.": "U ontvangt deze e-mail omdat u de auteur bent van dit document.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Uw account is nu vergrendeld en kan niet worden gebruikt om in te loggen. Een andere beheerder moet uw account handmatig deblokkeren voordat de toegang kan worden hersteld.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Uw Grottocenter-beheerdersaccount is geblokkeerd vanwege te veel opeenvolgende mislukte inlogpogingen."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Uw Grottocenter-beheerdersaccount is geblokkeerd vanwege te veel opeenvolgende mislukte inlogpogingen.",
+	"CSV Import Complete": "CSV-import voltooid",
+	"Your CSV entrance import has finished processing.": "Uw CSV-import van ingangen is voltooid.",
+	"Summary": "Samenvatting",
+	"Successes": "Geslaagd",
+	"Duplicates": "Duplicaten",
+	"Failures": "Mislukt",
+	"Download Reports": "Rapporten downloaden",
+	"Successful imports": "Geslaagde imports",
+	"Links expire in 7 days.": "Links verlopen na 7 dagen.",
+	"Batch ID": "Batch-ID"
 }

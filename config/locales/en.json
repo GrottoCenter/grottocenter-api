@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "You are receiving this email because of your subscription to the massif %s.",
 	"You are receiving this email because you are the author of this document.": "You are receiving this email because you are the author of this document.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.",
+	"CSV Import Complete": "CSV Import Complete",
+	"Your CSV entrance import has finished processing.": "Your CSV entrance import has finished processing.",
+	"Summary": "Summary",
+	"Successes": "Successes",
+	"Duplicates": "Duplicates",
+	"Failures": "Failures",
+	"Download Reports": "Download Reports",
+	"Successful imports": "Successful imports",
+	"Links expire in 7 days.": "Links expire in 7 days.",
+	"Batch ID": "Batch ID"
 }

@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "أنت تتلقى هذا البريد الإلكتروني بسبب اشتراكك في الكتلة الجبلية %s.",
 	"You are receiving this email because you are the author of this document.": "أنت تتلقى هذا البريد الإلكتروني لأنك مؤلف هذه الوثيقة.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "حسابك مقفل الآن ولا يمكن استخدامه لتسجيل الدخول. يجب على مسؤول آخر إلغاء حظر حسابك يدوياً قبل استعادة الوصول.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "تم حظر حساب المسؤول الخاص بك في Grottocenter بسبب عدد كبير من محاولات تسجيل الدخول الفاشلة المتتالية."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "تم حظر حساب المسؤول الخاص بك في Grottocenter بسبب عدد كبير من محاولات تسجيل الدخول الفاشلة المتتالية.",
+	"CSV Import Complete": "اكتمل استيراد CSV",
+	"Your CSV entrance import has finished processing.": "تم الانتهاء من معالجة استيراد المداخل عبر CSV.",
+	"Summary": "ملخص",
+	"Successes": "ناجحة",
+	"Duplicates": "مكررة",
+	"Failures": "فاشلة",
+	"Download Reports": "تحميل التقارير",
+	"Successful imports": "عمليات استيراد ناجحة",
+	"Links expire in 7 days.": "تنتهي صلاحية الروابط خلال 7 أيام.",
+	"Batch ID": "معرف الدفعة"
 }

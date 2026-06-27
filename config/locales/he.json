@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "אתה מקבל את האימייל הזה בשל המנוי שלך למסיף הרים %s.",
 	"You are receiving this email because you are the author of this document.": "אתה מקבל את האימייל הזה כי אתה מחבר המסמך הזה.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "החשבון שלך נעול כעת ולא ניתן להשתמש בו להתחברות. מנהל אחר צריך לבטל את החסימה של החשבון שלך באופן ידני לפני שניתן יהיה לשחזר את הגישה.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "חשבון המנהל שלך ב-Grottocenter נחסם עקב ניסיונות התחברות כושלים רצופים רבים מדי."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "חשבון המנהל שלך ב-Grottocenter נחסם עקב ניסיונות התחברות כושלים רצופים רבים מדי.",
+	"CSV Import Complete": "ייבוא CSV הושלם",
+	"Your CSV entrance import has finished processing.": "ייבוא הכניסות מ-CSV הסתיים.",
+	"Summary": "סיכום",
+	"Successes": "הצלחות",
+	"Duplicates": "כפילויות",
+	"Failures": "כשלונות",
+	"Download Reports": "הורד דוחות",
+	"Successful imports": "ייבוא מוצלח",
+	"Links expire in 7 days.": "הקישורים יפוגו בעוד 7 ימים.",
+	"Batch ID": "מזהה אצווה"
 }

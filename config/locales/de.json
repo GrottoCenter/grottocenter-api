@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "Sie erhalten diese E-Mail aufgrund Ihres Abonnements für das Massiv %s.",
 	"You are receiving this email because you are the author of this document.": "Sie erhalten diese E-Mail, weil Sie der Autor dieses Dokuments sind.",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "Ihr Konto ist jetzt gesperrt und kann nicht mehr zur Anmeldung verwendet werden. Ein anderer Administrator muss Ihr Konto manuell entsperren, bevor der Zugang wiederhergestellt werden kann.",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Ihr Grottocenter-Administratorkonto wurde aufgrund zu vieler aufeinanderfolgender fehlgeschlagener Anmeldeversuche gesperrt."
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "Ihr Grottocenter-Administratorkonto wurde aufgrund zu vieler aufeinanderfolgender fehlgeschlagener Anmeldeversuche gesperrt.",
+	"CSV Import Complete": "CSV-Import abgeschlossen",
+	"Your CSV entrance import has finished processing.": "Ihr CSV-Import von Eingängen ist abgeschlossen.",
+	"Summary": "Zusammenfassung",
+	"Successes": "Erfolge",
+	"Duplicates": "Duplikate",
+	"Failures": "Fehler",
+	"Download Reports": "Berichte herunterladen",
+	"Successful imports": "Erfolgreiche Importe",
+	"Links expire in 7 days.": "Links verfallen in 7 Tagen.",
+	"Batch ID": "Batch-ID"
 }

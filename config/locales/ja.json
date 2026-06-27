@@ -56,5 +56,15 @@
 	"You are receiving this email because of your subscription to the massif %s.": "山塊 %s への購読により、このメールを受け取っています。",
 	"You are receiving this email because you are the author of this document.": "あなたがこの文書の著者であるため、このメールを受け取っています。",
 	"Your account is now locked and cannot be used to log in. Another administrator must manually unban your account before access can be restored.": "アカウントはロックされ、ログインに使用できなくなりました。アクセスを復元するには、別の管理者が手動でアカウントのブロックを解除する必要があります。",
-	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "連続したログイン失敗が多すぎたため、Grottocenter管理者アカウントが停止されました。"
+	"Your Grottocenter administrator account has been banned due to too many consecutive failed login attempts.": "連続したログイン失敗が多すぎたため、Grottocenter管理者アカウントが停止されました。",
+	"CSV Import Complete": "CSVインポート完了",
+	"Your CSV entrance import has finished processing.": "CSVエントランスインポートの処理が完了しました。",
+	"Summary": "概要",
+	"Successes": "成功",
+	"Duplicates": "重複",
+	"Failures": "失敗",
+	"Download Reports": "レポートをダウンロード",
+	"Successful imports": "インポート成功",
+	"Links expire in 7 days.": "リンクは7日後に期限切れになります。",
+	"Batch ID": "バッチID"
 }
