@@ -291,6 +291,22 @@ describe('Rate Limiter', () => {
           await agent.delete('/test').expect(200);
         }
       });
+
+      it('should skip rate limiting for explored entrance DELETE route', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.deleteRateLimit);
+        app.delete(
+          '/api/v1/entrances/:entranceId/cavers/:caverId',
+          (req, res) => res.status(200).send('ok')
+        );
+
+        const agent = supertest.agent(app);
+        // Send more than the user delete limit — all should pass
+        for (let i = 0; i < TEST_USER_DELETE_LIMIT + 5; i += 1) {
+          await agent.delete('/api/v1/entrances/42/cavers/7').expect(200);
+        }
+      });
     });
   });
 });
