@@ -1,38 +1,12 @@
 const should = require('should');
 const fc = require('fast-check');
-
-/**
- * Inline replica of the formatNetworks grouping logic for property testing.
- * This allows us to test the pure function independently of the SQL layer.
- */
-const formatNetworks = (rows) => {
-  const networksMap = new Map();
-
-  for (const row of rows) {
-    if (!networksMap.has(row.id)) {
-      networksMap.set(row.id, {
-        id: row.id,
-        name: row.name,
-        longitude: Number(row.longitude),
-        latitude: Number(row.latitude),
-        entrances: [],
-      });
-    }
-    networksMap.get(row.id).entrances.push({
-      id: row.entrance_id,
-      name: row.entrance_name || null,
-      latitude: Number(row.entrance_latitude),
-      longitude: Number(row.entrance_longitude),
-    });
-  }
-
-  return Array.from(networksMap.values());
-};
+const { formatNetworks } = require('../../../api/services/GeoLocService');
 
 /**
  * Arbitrary: generate a set of flat rows as would come from the SQL query.
- * Each network has 2+ entrances. The centroid (longitude/latitude) is the
- * average of entrance coordinates — replicated here to match the window function.
+ * Each network has 2+ entrances with unique IDs (matching SQL primary key
+ * guarantee). The centroid (longitude/latitude) is the average of entrance
+ * coordinates — replicated here to match the window function.
  */
 const networkRowsArbitrary = fc
   .array(
@@ -40,7 +14,7 @@ const networkRowsArbitrary = fc
       caveName: fc.option(fc.string({ minLength: 1, maxLength: 50 }), {
         nil: undefined,
       }),
-      entrances: fc.array(
+      entrances: fc.uniqueArray(
         fc.record({
           id: fc.integer({ min: 1, max: 100000 }),
           name: fc.option(fc.string({ minLength: 1, maxLength: 50 }), {
@@ -49,7 +23,7 @@ const networkRowsArbitrary = fc
           latitude: fc.double({ min: -90, max: 90, noNaN: true }),
           longitude: fc.double({ min: -180, max: 180, noNaN: true }),
         }),
-        { minLength: 2, maxLength: 10 }
+        { minLength: 2, maxLength: 10, selector: (e) => e.id }
       ),
     }),
     { minLength: 1, maxLength: 5 }

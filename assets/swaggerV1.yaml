@@ -5111,6 +5111,7 @@ paths:
                       description: Cave ID
                     name:
                       type: string
+                      nullable: true
                       description: Network name (cave name or first entrance name)
                     longitude:
                       type: number

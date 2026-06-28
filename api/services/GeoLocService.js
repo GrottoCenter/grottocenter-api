@@ -109,7 +109,13 @@ const NETWORKS_IN_BOUNDS = `
   FROM qualifying_networks AS qn
   INNER JOIN t_cave AS c ON c.id = qn.cave_id
   INNER JOIN t_entrance AS en ON en.id_cave = c.id
-  LEFT JOIN t_name AS nc ON nc.id_cave = c.id AND nc.is_main = true AND nc.is_deleted = false
+  LEFT JOIN LATERAL (
+    SELECT n.name
+    FROM t_name AS n
+    WHERE n.id_cave = c.id AND n.is_main = true AND n.is_deleted = false
+    ORDER BY n.id ASC
+    LIMIT 1
+  ) AS nc ON true
   LEFT JOIN t_name AS ne ON ne.id_entrance = en.id AND ne.is_main = true AND ne.is_deleted = false
   LEFT JOIN LATERAL (
     SELECT n2.name
@@ -121,7 +127,7 @@ const NETWORKS_IN_BOUNDS = `
   ) AS nc_first_ent ON nc.name IS NULL
   WHERE en.is_sensitive = false
     AND en.is_deleted = false
-  ORDER BY c.id, en.id;
+  ORDER BY c.id, en.id
 `;
 
 const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
@@ -289,6 +295,7 @@ const checkAndGetMassifParam = async (req, res) => {
 // ====================================
 
 module.exports = {
+  formatNetworks,
   checkAndGetMassifParam,
   checkAndGetCoordinatesParams: (req) => {
     let errorMessage = '';
