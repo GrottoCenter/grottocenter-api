@@ -204,6 +204,44 @@ describe('Converters Service', () => {
       const result = converters.toSimpleCave(source);
       should(result.exploringOrganizations).be.undefined();
     });
+
+    it('should extract entrance IDs from Waterline objects', () => {
+      const source = {
+        id: 1,
+        entrances: [
+          { id: 5, name: 'Entrance A' },
+          { id: 6, name: 'Entrance B' },
+        ],
+      };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).deepEqual([5, 6]);
+    });
+
+    it('should pass through plain entrance IDs (Typesense format)', () => {
+      const source = {
+        id: 1,
+        nbEntrances: 3,
+        entrances: [20, 21, 25877],
+      };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).deepEqual([20, 21, 25877]);
+    });
+
+    it('should pass through string entrance IDs', () => {
+      const source = {
+        id: 1,
+        nbEntrances: 2,
+        entrances: ['20', '21'],
+      };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).deepEqual(['20', '21']);
+    });
+
+    it('should return undefined entrances when field is absent', () => {
+      const source = { id: 1, nbEntrances: 0 };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).be.undefined();
+    });
   });
 
   describe('toDocument()', () => {
