@@ -237,6 +237,21 @@ describe('Converters Service', () => {
       should(result.entrances).deepEqual(['20', '21']);
     });
 
+    it('should filter out null entries from entrances array', () => {
+      const source = {
+        id: 1,
+        entrances: [{ id: 5 }, null, { id: 6 }, undefined],
+      };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).deepEqual([5, 6]);
+    });
+
+    it('should return an empty array when entrances is empty', () => {
+      const source = { id: 1, entrances: [] };
+      const result = converters.toSimpleCave(source);
+      should(result.entrances).deepEqual([]);
+    });
+
     it('should return undefined entrances when field is absent', () => {
       const source = { id: 1, nbEntrances: 0 };
       const result = converters.toSimpleCave(source);
