@@ -7089,6 +7089,45 @@ paths:
         '500':
           description: The signing secret is not configured for the requested product (server misconfiguration).
 
+  '/notifications/read':
+    put:
+      tags:
+        - notifications
+      summary: Batch mark notifications as read
+      description: >-
+        Marks multiple notifications as read for the authenticated user.
+        If `ids` is provided and non-empty, only those specific notifications are marked as read.
+        If `ids` is omitted or empty, all unread notifications for the authenticated user are marked as read.
+        Already-read notifications in the list are silently skipped (idempotent).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  description: >-
+                    Specific notification IDs to mark as read. If omitted or empty,
+                    all unread notifications for the authenticated user are marked as read.
+                    Maximum 1000 IDs per request.
+                  example: [1, 2, 3]
+      responses:
+        '204':
+          description: Notifications successfully marked as read.
+        '400':
+          description: Invalid request body (ids must be an array of positive integers).
+        '401':
+          description: Bearer token not found or invalid.
+        '403':
+          description: One or more notification IDs do not belong to the authenticated user.
+
 components:
 
   parameters:

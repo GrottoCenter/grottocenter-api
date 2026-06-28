@@ -268,6 +268,7 @@ module.exports.policies = {
   'v1/notification/count-unread': 'tokenAuth',
   'v1/notification/find-all': 'tokenAuth',
   'v1/notification/mark-as-read': 'tokenAuth',
+  'v1/notification/mark-as-read-batch': 'tokenAuth',
 
   // Organizations
   'v1/organization/count': true,
