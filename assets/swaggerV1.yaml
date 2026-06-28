@@ -7412,7 +7412,7 @@ components:
           example: csv-import
         status:
           type: string
-          enum: [pending, active, completed, failed]
+          enum: [pending, active, aggregating, completed, failed]
         createdAt:
           type: string
           format: date-time

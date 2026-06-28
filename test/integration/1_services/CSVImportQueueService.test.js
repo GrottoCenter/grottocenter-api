@@ -204,7 +204,7 @@ describe('CSVImportQueueService', () => {
       queryStub = sinon.stub(CommonService, 'query');
       updateStub = sinon
         .stub(TJobBatch, 'updateOne')
-        .returns({ set: sinon.stub().resolves() });
+        .returns({ set: sinon.stub().resolves({ id: 'batch-123' }) });
       aggregateStub = sinon
         .stub(CSVImportQueueService, 'aggregateBatch')
         .resolves();

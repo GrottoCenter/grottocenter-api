@@ -350,6 +350,18 @@ module.exports = {
         `CSV import chunk ${batchId}[${chunkIndex}] unexpected error:`,
         err
       );
+      // Mark all remaining unprocessed rows as failures so they are not
+      // silently lost from the batch results.
+      const processed =
+        result.successes.length +
+        result.duplicates.length +
+        result.failures.length;
+      for (let i = processed; i < rows.length; i += 1) {
+        result.failures.push({
+          line: rows[i].originalLine,
+          message: `Chunk-level error: ${err.toString()}`,
+        });
+      }
     }
 
     // Schedule a completion check as a separate job so that pg-boss has
@@ -400,6 +412,15 @@ module.exports = {
       return;
     }
 
+    // Atomic test-and-set guard: only one completion-check worker proceeds.
+    // If two completion-check jobs fire concurrently, only the first one
+    // transitions from 'active' to 'aggregating'; the second gets null.
+    const guard = await TJobBatch.updateOne({
+      id: batchId,
+      status: 'active',
+    }).set({ status: 'aggregating' });
+    if (!guard) return;
+
     await module.exports.aggregateBatch(batchId, jobs);
   },
 
@@ -427,12 +448,25 @@ module.exports = {
     allDuplicates.sort((a, b) => a.line - b.line);
     allFailures.sort((a, b) => a.line - b.line);
 
-    const reportUrls = await module.exports.generateAndUploadReports(
-      batchId,
-      allSuccesses,
-      allDuplicates,
-      allFailures
-    );
+    let reportUrls;
+    try {
+      reportUrls = await module.exports.generateAndUploadReports(
+        batchId,
+        allSuccesses,
+        allDuplicates,
+        allFailures
+      );
+    } catch (err) {
+      sails.log.error(
+        `CSVImportQueueService: aggregation failed for batch ${batchId}:`,
+        err
+      );
+      await TJobBatch.updateOne({ id: batchId }).set({
+        status: 'failed',
+        completedAt: new Date(),
+      });
+      return;
+    }
 
     const resultPayload = {
       reportUrls,
