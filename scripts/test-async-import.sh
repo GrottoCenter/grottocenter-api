@@ -35,7 +35,8 @@ echo "[1/5] Authenticating as $EMAIL..."
 # directly using the same JWT signing as the app (bypasses login controller).
 TOKEN=$(node -e "
 const jwt = require('jsonwebtoken');
-const secret = process.env.TOKEN_SALT || 'aR4nd0mT0kenSalt';
+const secret = process.env.TOKEN_SALT;
+if (!secret) { console.error('ERROR: TOKEN_SALT env variable is required'); process.exit(1); }
 const token = jwt.sign(
   { id: 5, groups: [{id:1,name:'Administrator'},{id:2,name:'Moderator'},{id:5,name:'Leader'}], nickname: 'AlexAll' },
   secret,

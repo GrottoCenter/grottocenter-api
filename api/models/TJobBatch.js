@@ -27,7 +27,7 @@ module.exports = {
       type: 'string',
       required: true,
       columnName: 'status',
-      isIn: ['pending', 'active', 'completed', 'failed'],
+      isIn: ['pending', 'active', 'aggregating', 'completed', 'failed'],
       maxLength: 20,
     },
 
