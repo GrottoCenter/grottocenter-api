@@ -292,20 +292,75 @@ describe('Rate Limiter', () => {
         }
       });
 
-      it('should skip rate limiting for explored entrance DELETE route', async () => {
-        const rateLimiter = freshRateLimiter();
-        const app = express();
-        app.use(rateLimiter.deleteRateLimit);
-        app.delete(
-          '/api/v1/entrances/:entranceId/cavers/:caverId',
-          (req, res) => res.status(200).send('ok')
-        );
+      describe('relation DELETE exemptions', () => {
+        const RELATION_PATHS = [
+          '/api/v1/entrances/42/cavers/7',
+          '/api/v1/caves/1/organizations/3',
+          '/api/v1/cavers/5/organizations/2',
+          '/api/v1/cavers/5/groups/1',
+          '/api/v1/countries/10/organizations/4',
+          '/api/v1/countries/10/regions/2/organizations/4',
+          '/api/v1/massifs/8/organizations/3',
+          '/api/v1/entrances/42/documents/99',
+          '/api/v1/caves/1/documents/50',
+          '/api/v1/massifs/8/documents/12',
+        ];
 
-        const agent = supertest.agent(app);
-        // Send more than the user delete limit — all should pass
-        for (let i = 0; i < TEST_USER_DELETE_LIMIT + 5; i += 1) {
-          await agent.delete('/api/v1/entrances/42/cavers/7').expect(200);
-        }
+        it('should skip rate limiting for all relation DELETE routes (unauthenticated)', async () => {
+          const rateLimiter = freshRateLimiter();
+          const app = express();
+          app.use(rateLimiter.deleteRateLimit);
+          RELATION_PATHS.forEach((p) => {
+            app.delete(p, (req, res) => res.status(200).send('ok'));
+          });
+
+          const agent = supertest.agent(app);
+          for (const p of RELATION_PATHS) {
+            for (let i = 0; i < TEST_USER_DELETE_LIMIT + 3; i += 1) {
+              await agent.delete(p).expect(200);
+            }
+          }
+        });
+
+        it('should skip rate limiting for relation DELETE routes (authenticated user)', async () => {
+          const rateLimiter = freshRateLimiter();
+          const app = express();
+          app.use((req, res, next) => {
+            req.token = { groups: [], nickname: 'User', id: 10 };
+            next();
+          });
+          app.use(rateLimiter.deleteRateLimit);
+          RELATION_PATHS.forEach((p) => {
+            app.delete(p, (req, res) => res.status(200).send('ok'));
+          });
+
+          const agent = supertest.agent(app);
+          for (const p of RELATION_PATHS) {
+            for (let i = 0; i < TEST_USER_DELETE_LIMIT + 3; i += 1) {
+              await agent.delete(p).expect(200);
+            }
+          }
+        });
+
+        it('should still rate limit paths that extend beyond a relation route', async () => {
+          const rateLimiter = freshRateLimiter();
+          const app = express();
+          app.use(rateLimiter.deleteRateLimit);
+          app.delete('/api/v1/entrances/42/cavers/7/extra', (req, res) =>
+            res.status(200).send('ok')
+          );
+
+          const agent = supertest.agent(app);
+          const responses = [];
+          for (let i = 0; i < TEST_USER_DELETE_LIMIT + 5; i += 1) {
+            const res = await agent.delete(
+              '/api/v1/entrances/42/cavers/7/extra'
+            );
+            responses.push(res.status);
+          }
+
+          should(responses.filter((s) => s === 429).length).be.above(0);
+        });
       });
     });
   });

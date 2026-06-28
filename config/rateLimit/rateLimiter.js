@@ -89,6 +89,39 @@ const deleteMax = (req) => {
   return USER_DELETE_MAX;
 };
 
+/**
+ * Patterns matching relation/association DELETE endpoints.
+ * These routes only remove a link between two entities — no data is destroyed.
+ * They are exempt from the restrictive DELETE rate limit.
+ *
+ * Covered routes:
+ *   DELETE /api/v1/entrances/:entranceId/cavers/:caverId
+ *   DELETE /api/v1/caves/:caveId/organizations/:organizationId
+ *   DELETE /api/v1/cavers/:caverId/organizations/:organizationId
+ *   DELETE /api/v1/cavers/:caverId/groups/:groupId
+ *   DELETE /api/v1/countries/:id/organizations/:organizationId
+ *   DELETE /api/v1/countries/:countryId/regions/:regionId/organizations/:organizationId
+ *   DELETE /api/v1/massifs/:id/organizations/:organizationId
+ *   DELETE /api/v1/entrances/:entranceId/documents/:documentId
+ *   DELETE /api/v1/caves/:caveId/documents/:documentId
+ *   DELETE /api/v1/massifs/:massifId/documents/:documentId
+ */
+const RELATION_DELETE_PATTERNS = [
+  /^\/api\/v1\/entrances\/\d+\/cavers\/\d+$/,
+  /^\/api\/v1\/caves\/\d+\/organizations\/\d+$/,
+  /^\/api\/v1\/cavers\/\d+\/organizations\/\d+$/,
+  /^\/api\/v1\/cavers\/\d+\/groups\/\d+$/,
+  /^\/api\/v1\/countries\/\d+\/organizations\/\d+$/,
+  /^\/api\/v1\/countries\/\d+\/regions\/\d+\/organizations\/\d+$/,
+  /^\/api\/v1\/massifs\/\d+\/organizations\/\d+$/,
+  /^\/api\/v1\/entrances\/\d+\/documents\/\d+$/,
+  /^\/api\/v1\/caves\/\d+\/documents\/\d+$/,
+  /^\/api\/v1\/massifs\/\d+\/documents\/\d+$/,
+];
+
+const isRelationDelete = (path) =>
+  RELATION_DELETE_PATTERNS.some((pattern) => pattern.test(path));
+
 module.exports = {
   generalRateLimit: rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
@@ -134,10 +167,12 @@ module.exports = {
         return true;
       }
 
-      // Removing an entrance from a user's exploration list is a low-risk
-      // self-service action (tokenAuth already ensures ownership). Skip the
-      // restrictive DELETE rate limit so users can freely manage their list.
-      if (/^\/api\/v1\/entrances\/\d+\/cavers\/\d+$/.test(req.path)) {
+      // Relation DELETE routes only remove an association row — no entity is
+      // destroyed. tokenAuth ensures the caller is authenticated, and the
+      // controller enforces ownership/authorization. Skip the restrictive
+      // DELETE rate limit so users can freely manage associations.
+      // The general rate limiter still applies to these routes.
+      if (isRelationDelete(req.path)) {
         return true;
       }
 
