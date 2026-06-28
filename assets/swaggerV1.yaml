@@ -5086,7 +5086,11 @@ paths:
     get:
       tags:
         - geoloc
-      description: Count entrances contained inside the given coords
+      description: >-
+        Returns networks (caves with multiple entrances) that have at least one
+        non-sensitive entrance within the given bounding box. Each network includes
+        a stable centroid (average of all non-sensitive entrance coordinates) and an
+        entrances array with per-entrance coordinates.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
@@ -5098,16 +5102,43 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  longitude:
-                    type: number
-                  latitude:
-                    type: number
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: Cave ID
+                    name:
+                      type: string
+                      description: Network name (cave name or first entrance name)
+                    longitude:
+                      type: number
+                      description: Centroid longitude (average of all non-sensitive entrance longitudes)
+                    latitude:
+                      type: number
+                      description: Centroid latitude (average of all non-sensitive entrance latitudes)
+                    entrances:
+                      type: array
+                      description: All non-sensitive, non-deleted entrances of the network
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: Entrance ID
+                          name:
+                            type: string
+                            nullable: true
+                            description: Main entrance name (null if no name defined)
+                          latitude:
+                            type: number
+                            description: Entrance latitude
+                          longitude:
+                            type: number
+                            description: Entrance longitude
+        '400':
+          description: Missing or invalid bounding box parameters
 
   '/geoloc/networksCoordinates':
     get:

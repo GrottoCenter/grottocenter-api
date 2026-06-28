@@ -84,17 +84,44 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
 `;
 
 const NETWORKS_IN_BOUNDS = `
-  SELECT c.id as id, COALESCE(nc.name, ne.name) as name, avg(en.longitude) as longitude, avg(en.latitude) as latitude
-  FROM t_entrance as en
-  INNER JOIN t_cave c ON c.id = en.id_cave
+  WITH qualifying_networks AS (
+    SELECT c.id AS cave_id
+    FROM t_cave AS c
+    INNER JOIN t_entrance AS en ON en.id_cave = c.id
+    WHERE en.is_deleted = false
+      AND c.is_deleted = false
+    GROUP BY c.id
+    HAVING count(en.id) > 1
+      AND bool_or(
+        en.is_sensitive = false
+        AND ST_Within(en.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
+      )
+  )
+  SELECT
+    c.id AS id,
+    COALESCE(nc.name, nc_first_ent.name) AS name,
+    avg(en.longitude) OVER (PARTITION BY c.id) AS longitude,
+    avg(en.latitude) OVER (PARTITION BY c.id) AS latitude,
+    en.id AS entrance_id,
+    ne.name AS entrance_name,
+    en.longitude AS entrance_longitude,
+    en.latitude AS entrance_latitude
+  FROM qualifying_networks AS qn
+  INNER JOIN t_cave AS c ON c.id = qn.cave_id
+  INNER JOIN t_entrance AS en ON en.id_cave = c.id
   LEFT JOIN t_name AS nc ON nc.id_cave = c.id AND nc.is_main = true AND nc.is_deleted = false
-  LEFT JOIN t_name as ne ON ne.id_entrance = en.id AND ne.is_main = true AND ne.is_deleted = false
-  WHERE ST_Within(en.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
-  AND en.is_sensitive = false
-  AND en.is_deleted = false
-  AND c.is_deleted = false
-  GROUP BY c.id, COALESCE(nc.name, ne.name)
-  HAVING count(en.id_cave) > 1
+  LEFT JOIN t_name AS ne ON ne.id_entrance = en.id AND ne.is_main = true AND ne.is_deleted = false
+  LEFT JOIN LATERAL (
+    SELECT n2.name
+    FROM t_entrance AS e2
+    JOIN t_name AS n2 ON n2.id_entrance = e2.id AND n2.is_main = true AND n2.is_deleted = false
+    WHERE e2.id_cave = c.id AND e2.is_deleted = false AND e2.is_sensitive = false
+    ORDER BY e2.id ASC
+    LIMIT 1
+  ) AS nc_first_ent ON nc.name IS NULL
+  WHERE en.is_sensitive = false
+    AND en.is_deleted = false
+  ORDER BY c.id, en.id;
 `;
 
 const PUBLIC_NETWORKS_COORDINATES_IN_BOUNDS = `
@@ -160,16 +187,34 @@ const NameService = require('./NameService');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
 
 /**
- * return a light version of the networks
- * @param networks
+ * Group flat entrance rows into network objects with an entrances array.
+ * Each row has: id, name, longitude, latitude (network-level centroid),
+ * entrance_id, entrance_name, entrance_longitude, entrance_latitude.
+ * @param rows
  */
-const formatNetworks = (networks) =>
-  networks.map((network) => ({
-    id: network.id,
-    name: network.name,
-    longitude: Number(network.longitude),
-    latitude: Number(network.latitude),
-  }));
+const formatNetworks = (rows) => {
+  const networksMap = new Map();
+
+  for (const row of rows) {
+    if (!networksMap.has(row.id)) {
+      networksMap.set(row.id, {
+        id: row.id,
+        name: row.name,
+        longitude: Number(row.longitude),
+        latitude: Number(row.latitude),
+        entrances: [],
+      });
+    }
+    networksMap.get(row.id).entrances.push({
+      id: row.entrance_id,
+      name: row.entrance_name || null,
+      latitude: Number(row.entrance_latitude),
+      longitude: Number(row.entrance_longitude),
+    });
+  }
+
+  return Array.from(networksMap.values());
+};
 
 /**
  * Format the quality entrances in a lighter version
