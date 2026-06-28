@@ -342,6 +342,24 @@ describe('Rate Limiter', () => {
           }
         });
 
+        it('should still rate limit destructive DELETE routes (entity deletion)', async () => {
+          const rateLimiter = freshRateLimiter();
+          const app = express();
+          app.use(rateLimiter.deleteRateLimit);
+          app.delete('/api/v1/entrances/42', (req, res) =>
+            res.status(200).send('ok')
+          );
+
+          const agent = supertest.agent(app);
+          const responses = [];
+          for (let i = 0; i < TEST_USER_DELETE_LIMIT + 5; i += 1) {
+            const res = await agent.delete('/api/v1/entrances/42');
+            responses.push(res.status);
+          }
+
+          should(responses.filter((s) => s === 429).length).be.above(0);
+        });
+
         it('should still rate limit paths that extend beyond a relation route', async () => {
           const rateLimiter = freshRateLimiter();
           const app = express();

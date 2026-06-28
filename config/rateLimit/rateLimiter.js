@@ -94,6 +94,10 @@ const deleteMax = (req) => {
  * These routes only remove a link between two entities — no data is destroyed.
  * They are exempt from the restrictive DELETE rate limit.
  *
+ * MAINTENANCE: When adding a new relation DELETE route in config/routes.js,
+ * add a corresponding pattern here so the new route is not subject to the
+ * restrictive 1-per-hour DELETE rate limit.
+ *
  * Covered routes:
  *   DELETE /api/v1/entrances/:entranceId/cavers/:caverId
  *   DELETE /api/v1/caves/:caveId/organizations/:organizationId
