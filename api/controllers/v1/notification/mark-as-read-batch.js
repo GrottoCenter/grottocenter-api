@@ -1,14 +1,17 @@
 const MAX_IDS = 1000;
 
 module.exports = async (req, res) => {
-  const ids = req.body && Array.isArray(req.body.ids) ? req.body.ids : [];
+  const rawIds = req.body && Array.isArray(req.body.ids) ? req.body.ids : [];
 
-  if (ids.length > 0) {
+  if (rawIds.length > 0) {
     // Validate that all provided IDs are positive integers
-    const allValid = ids.every((id) => Number.isInteger(id) && id > 0);
+    const allValid = rawIds.every((id) => Number.isInteger(id) && id > 0);
     if (!allValid) {
       return res.badRequest('ids must be an array of positive integers.');
     }
+
+    // De-duplicate so that repeated IDs don't cause a false 403
+    const ids = [...new Set(rawIds)];
 
     if (ids.length > MAX_IDS) {
       return res.badRequest(
