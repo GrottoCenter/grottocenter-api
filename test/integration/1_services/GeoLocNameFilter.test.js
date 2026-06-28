@@ -31,9 +31,6 @@ describe('GeoLocService - name join is_main filter fix', () => {
 
   describe('getNetworksMap() no row multiplication', () => {
     it('should return at most one row per network (no name duplication)', async () => {
-      // Networks require multiple entrances sharing the same cave.
-      // Current fixtures have no multi-entrance caves, so this verifies
-      // the query runs without error and returns no duplicates if any exist.
       const networks = await GeoLocService.getNetworksMap(
         southWestBound,
         northEastBound
@@ -46,6 +43,11 @@ describe('GeoLocService - name join is_main filter fix', () => {
           uniqueIds.length,
           'Duplicate network IDs found — name join is causing row multiplication'
         );
+        // Verify new shape: each network has entrances array
+        for (const network of networks) {
+          should(network).have.property('entrances');
+          should(network.entrances).be.an.Array();
+        }
       }
     });
   });

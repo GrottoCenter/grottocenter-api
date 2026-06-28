@@ -163,14 +163,57 @@ describe('GeoLocService', () => {
   });
 
   describe('getNetworksMap()', () => {
-    it('should get networks for map', async () => {
-      const southWestBound = { lat: 40, lng: 5 };
-      const northEastBound = { lat: 50, lng: 10 };
+    it('should get networks for map with entrances array', async () => {
+      // Cave 1 has entrances 1 (lat 62.8, lng 78.5) and 2 (lat 62.9, lng 78.6)
+      const southWestBound = { lat: 60, lng: 75 };
+      const northEastBound = { lat: 65, lng: 80 };
       const networks = await GeoLocService.getNetworksMap(
         southWestBound,
         northEastBound
       );
       should(networks).be.an.Array();
+      should(networks.length).be.greaterThan(0);
+
+      const network = networks.find((n) => n.id === 1);
+      should(network).not.be.undefined();
+      should(network).have.property('id', 1);
+      should(network).have.property('name');
+      should(network).have.property('longitude');
+      should(network).have.property('latitude');
+      should(network).have.property('entrances');
+      should(network.entrances).be.an.Array();
+      should(network.entrances.length).be.greaterThan(1);
+
+      for (const entrance of network.entrances) {
+        should(entrance).have.property('id');
+        should(entrance).have.property('name');
+        should(entrance).have.property('latitude');
+        should(entrance).have.property('longitude');
+        should(entrance.id).be.a.Number();
+        should(entrance.latitude).be.a.Number();
+        should(entrance.longitude).be.a.Number();
+      }
+    });
+
+    it('should compute centroid as average of entrance coordinates', async () => {
+      const southWestBound = { lat: 60, lng: 75 };
+      const northEastBound = { lat: 65, lng: 80 };
+      const networks = await GeoLocService.getNetworksMap(
+        southWestBound,
+        northEastBound
+      );
+      const network = networks.find((n) => n.id === 1);
+      should(network).not.be.undefined();
+
+      const avgLat =
+        network.entrances.reduce((sum, e) => sum + e.latitude, 0) /
+        network.entrances.length;
+      const avgLng =
+        network.entrances.reduce((sum, e) => sum + e.longitude, 0) /
+        network.entrances.length;
+
+      should(network.latitude).be.approximately(avgLat, 0.0001);
+      should(network.longitude).be.approximately(avgLng, 0.0001);
     });
 
     it('should return empty array for area with no networks', async () => {

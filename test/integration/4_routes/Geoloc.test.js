@@ -176,7 +176,40 @@ describe('Geoloc features', () => {
         .expect(400, done);
     });
 
-    it('should return code 200 with networks', (done) => {
+    it('should return code 200 with networks containing entrances', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/networks')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({
+          sw_lat: 60,
+          sw_lng: 75,
+          ne_lat: 65,
+          ne_lng: 80,
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).be.an.Array();
+          should(res.body.length).be.greaterThan(0);
+          const network = res.body[0];
+          should(network).have.property('id');
+          should(network).have.property('name');
+          should(network).have.property('longitude');
+          should(network).have.property('latitude');
+          should(network).have.property('entrances');
+          should(network.entrances).be.an.Array();
+          should(network.entrances.length).be.greaterThan(0);
+          const entrance = network.entrances[0];
+          should(entrance).have.property('id');
+          should(entrance).have.property('name');
+          should(entrance).have.property('latitude');
+          should(entrance).have.property('longitude');
+          return done();
+        });
+    });
+
+    it('should return empty array for area with no networks', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/geoloc/networks')
         .set('Content-type', 'application/json')
@@ -187,7 +220,13 @@ describe('Geoloc features', () => {
           ne_lat: 5,
           ne_lng: 5,
         })
-        .expect(200, done);
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).be.an.Array();
+          should(res.body.length).equal(0);
+          return done();
+        });
     });
   });
 
