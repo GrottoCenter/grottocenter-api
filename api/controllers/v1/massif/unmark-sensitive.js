@@ -23,6 +23,11 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
+  // Sensitivity is frozen while the massif is locked
+  if (massif.isSensitiveLocked) {
+    return res.forbidden('The sensitivity of this massif is locked.');
+  }
+
   // Idempotency: skip if already non-sensitive
   if (!massif.isSensitive) {
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
