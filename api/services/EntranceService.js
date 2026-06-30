@@ -53,6 +53,7 @@ module.exports = {
       yearDiscovery: coerceToInt(reqBodyWithoutId.yearDiscovery),
       geology: req.body.geology ?? 'Q35758',
       isSensitive: coerceBool(req, 'isSensitive'),
+      isSensitiveLocked: coerceBool(req, 'isSensitiveLocked'),
       hasBat: coerceBool(req, 'hasBat'),
       dangerFlooding: coerceBool(req, 'dangerFlooding'),
       dangerCo2: coerceBool(req, 'dangerCo2'),
@@ -169,12 +170,19 @@ module.exports = {
     /* eslint-disable no-param-reassign */
     entranceData.geology = entranceData.geology ?? 'Q35758';
     entranceData.isSensitive = entranceData.isSensitive ?? false;
+    entranceData.isSensitiveLocked = entranceData.isSensitiveLocked ?? false;
     entranceData.dateInscription = entranceData.dateInscription ?? new Date();
     /* eslint-enable no-param-reassign */
 
     let autoMarkedSensitive = false;
-    // Automatically inherit sensitivity from the massif
-    if (entranceData.latitude !== null && entranceData.longitude !== null) {
+    // Automatically inherit sensitivity from the massif, unless the entrance's
+    // sensitivity is locked (an admin explicitly froze it, so it's exempt from
+    // the massif's sensitivity — mirrors the mark-sensitive cascade skip).
+    if (
+      !entranceData.isSensitiveLocked &&
+      entranceData.latitude !== null &&
+      entranceData.longitude !== null
+    ) {
       /* eslint-disable no-param-reassign */
       const isPointInSensitiveMassif =
         await MassifService.isPointInSensitiveMassif(
