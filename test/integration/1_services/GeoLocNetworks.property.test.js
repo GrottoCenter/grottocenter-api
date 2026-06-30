@@ -57,8 +57,7 @@ const networkRowsArbitrary = fc
 
 describe('GeoLocService formatNetworks - Property Tests', () => {
   describe('Property 1: every network has more than one entrance', () => {
-    it('should produce networks each with at least 2 entrances', function () {
-      this.timeout(10000);
+    it('should produce networks each with at least 2 entrances', () => {
       fc.assert(
         fc.property(networkRowsArbitrary, (rows) => {
           const networks = formatNetworks(rows);
@@ -68,12 +67,11 @@ describe('GeoLocService formatNetworks - Property Tests', () => {
         }),
         { numRuns: 100 }
       );
-    });
+    }).timeout(10000);
   });
 
   describe('Property 2: centroid equals arithmetic mean of entrance coordinates', () => {
-    it('should have centroid matching average of entrance lat/lng', function () {
-      this.timeout(10000);
+    it('should have centroid matching average of entrance lat/lng', () => {
       fc.assert(
         fc.property(networkRowsArbitrary, (rows) => {
           const networks = formatNetworks(rows);
@@ -90,12 +88,11 @@ describe('GeoLocService formatNetworks - Property Tests', () => {
         }),
         { numRuns: 100 }
       );
-    });
+    }).timeout(10000);
   });
 
   describe('Property 6: backwards-compatible output shape', () => {
-    it('should always include id, name, longitude, latitude, entrances', function () {
-      this.timeout(10000);
+    it('should always include id, name, longitude, latitude, entrances', () => {
       fc.assert(
         fc.property(networkRowsArbitrary, (rows) => {
           const networks = formatNetworks(rows);
@@ -114,6 +111,6 @@ describe('GeoLocService formatNetworks - Property Tests', () => {
         }),
         { numRuns: 100 }
       );
-    });
+    }).timeout(10000);
   });
 });

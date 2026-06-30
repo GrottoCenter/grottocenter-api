@@ -427,6 +427,24 @@ describe('Converters Service', () => {
       const result = converters.toEntrance(source);
       should(result.dateLastModif).equal(1700000000000);
     });
+
+    it('should include isSensitiveLocked from source', () => {
+      const result = converters.toEntrance({ id: 1, isSensitiveLocked: true });
+      should(result.isSensitiveLocked).be.true();
+    });
+
+    it('should default isSensitiveLocked to false when absent (legacy rows)', () => {
+      const result = converters.toEntrance({ id: 1 });
+      should(result.isSensitiveLocked).be.false();
+    });
+
+    it('should read isSensitiveLocked from the snake_case column', () => {
+      const result = converters.toEntrance({
+        id: 1,
+        is_sensitive_locked: true,
+      });
+      should(result.isSensitiveLocked).be.true();
+    });
   });
 
   describe('toSimpleEntrance()', () => {
@@ -705,6 +723,14 @@ describe('Converters Service', () => {
     it('should return an empty array when organizations is empty', () => {
       const result = converters.toMassif({ id: 1, organizations: [] });
       should(result.organizations).eql([]);
+    });
+
+    it('should include isSensitiveLocked, defaulting to false when absent', () => {
+      should(converters.toMassif({ id: 1 }).isSensitiveLocked).be.false();
+      should(
+        converters.toMassif({ id: 1, isSensitiveLocked: true })
+          .isSensitiveLocked
+      ).be.true();
     });
   });
 });

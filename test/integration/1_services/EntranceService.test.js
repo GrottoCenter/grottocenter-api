@@ -78,6 +78,17 @@ describe('EntranceService', () => {
       should(result.isSensitive).be.true();
     });
 
+    it('should coerce isSensitiveLocked from string "true"', () => {
+      const req = {
+        body: {},
+        param: sinon.stub(),
+      };
+      req.param.withArgs('isSensitive').returns(undefined);
+      req.param.withArgs('isSensitiveLocked').returns('true');
+      const result = EntranceService.getConvertedDataFromClientRequest(req);
+      should(result.isSensitiveLocked).be.true();
+    });
+
     it('should set default geology', () => {
       const req = {
         body: {},
