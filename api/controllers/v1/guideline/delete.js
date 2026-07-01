@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     });
   }
 
-  const isPermanent = req.param('isPermanent') === 'true';
+  const isPermanent = !!req.param('isPermanent');
 
   if (isPermanent) {
     // Permanent (irreversible) deletion is gated to administrators; moderators
