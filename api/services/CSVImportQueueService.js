@@ -433,6 +433,7 @@ module.exports = {
     const allSuccesses = [];
     const allDuplicates = [];
     const allFailures = [];
+    let failedChunkCount = 0;
 
     for (const job of jobs) {
       if (job.state === 'completed' && job.output) {
@@ -441,6 +442,23 @@ module.exports = {
         if (output.successes) allSuccesses.push(...output.successes);
         if (output.duplicates) allDuplicates.push(...output.duplicates);
         if (output.failures) allFailures.push(...output.failures);
+      } else if (job.state === 'failed') {
+        failedChunkCount += 1;
+      }
+    }
+
+    // If some chunks failed (worker crash or expiry), record synthetic
+    // failure entries so the report reconciles against totalRows.
+    if (failedChunkCount > 0) {
+      const batch = await TJobBatch.findOne({ id: batchId });
+      const accountedRows =
+        allSuccesses.length + allDuplicates.length + allFailures.length;
+      const missingRows = batch ? batch.totalRows - accountedRows : 0;
+      if (missingRows > 0) {
+        allFailures.push({
+          line: null,
+          message: `${missingRows} row(s) lost due to ${failedChunkCount} failed chunk(s) (worker crash or job expiry).`,
+        });
       }
     }
 
@@ -556,6 +574,14 @@ module.exports = {
 
   /**
    * Upload a CSV report to Azure Blob Storage and return a SAS URL.
+   *
+   * NOTE: The documents container allows anonymous access, so the SAS token
+   * is not strictly required for read access. However, it provides a
+   * time-bounded URL (7 days) which signals expiry intent to consumers,
+   * and access control effectively relies on the unguessability of the
+   * batch UUID in the blob path. This is acceptable given report contents
+   * are limited to line numbers and messages (no PII).
+   *
    * @param {string} prefix
    * @param {string} filename
    * @param {string} content

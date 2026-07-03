@@ -68,14 +68,15 @@ describe('Job features', () => {
         });
     });
 
-    it('should return 403 for batch not initiated by the requesting user (non-admin)', (done) => {
+    it('should return 404 for batch not initiated by the requesting user (non-admin)', (done) => {
       // Fixture batch 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' has initiator = 1 (admin),
       // userToken is for caver id 3 (user1, not admin, not moderator)
+      // Returns 404 (not 403) to avoid leaking batch existence to non-owners.
       supertest(sails.hooks.http.app)
         .get('/api/v1/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890')
         .set('Authorization', userToken)
         .set('Accept', 'application/json')
-        .expect(403)
+        .expect(404)
         .end((err) => {
           if (err) return done(err);
           return done();

@@ -8,7 +8,8 @@ module.exports = async (req, res) => {
     return res.notFound('Job batch not found.');
   }
 
-  // Access control: users see only their own jobs unless moderator/admin
+  // Access control: users see only their own jobs unless moderator/admin.
+  // Return 404 (not 403) for non-owners to avoid leaking batch existence.
   const isModerator = RightService.hasGroup(
     req.token.groups,
     RightService.G.MODERATOR
@@ -18,7 +19,7 @@ module.exports = async (req, res) => {
     RightService.G.ADMINISTRATOR
   );
   if (batch.initiator !== req.token.id && !isModerator && !isAdmin) {
-    return res.forbidden('You are not authorized to view this job.');
+    return res.notFound('Job batch not found.');
   }
 
   const progress = await CSVImportQueueService.getBatchProgress(batchId);

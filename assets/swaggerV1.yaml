@@ -7254,10 +7254,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JobBatchStatus'
-        '403':
-          description: Not authorized to view this batch.
         '404':
-          description: Batch not found.
+          description: Batch not found (also returned for unauthorized access to prevent leaking batch existence).
 
 components:
 
