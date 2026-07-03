@@ -25,7 +25,11 @@ module.exports = async (req, res) => {
     });
   }
 
-  const isPermanent = !!req.param('isPermanent');
+  // The web client sends `?isPermanent=1`; accept the common truthy encodings
+  // ('1'/'true', or a real boolean from a JSON body) while treating explicit
+  // falsy values ('0'/'false') and an absent param as a soft delete. A bare
+  // `!!req.param(...)` would wrongly treat `isPermanent=0`/`false` as permanent.
+  const isPermanent = [true, 'true', '1'].includes(req.param('isPermanent'));
 
   if (isPermanent) {
     // Permanent (irreversible) deletion is gated to administrators; moderators

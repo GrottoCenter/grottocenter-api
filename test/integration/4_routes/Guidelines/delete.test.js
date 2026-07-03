@@ -144,5 +144,48 @@ describe('Guideline delete', () => {
       const remaining = await TGuideline.findOne(guideline.id);
       should(remaining).be.undefined();
     });
+
+    // The web client sends `?isPermanent=1` (not `=true`); this must hard delete.
+    it('should hard delete when isPermanent=1 (the web client encoding)', async () => {
+      const guideline = await TGuideline.create({
+        title: 'Hard Delete Via isPermanent=1',
+        author: 3,
+        language: 'fra',
+        dateInscription: new Date(),
+        isDeleted: true,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/guidelines/${guideline.id}?isPermanent=1`)
+        .set('Authorization', adminToken)
+        .expect(200);
+
+      const remaining = await TGuideline.findOne(guideline.id);
+      should(remaining).be.undefined();
+    });
+
+    // An explicit falsy value must NOT trigger a permanent delete.
+    it('should treat isPermanent=0 as a soft delete, not a permanent one', async () => {
+      const guideline = await TGuideline.create({
+        title: 'isPermanent=0 Is Soft',
+        author: 3,
+        language: 'fra',
+        dateInscription: new Date(),
+      }).fetch();
+
+      const res = await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/guidelines/${guideline.id}?isPermanent=0`)
+        .set('Authorization', adminToken)
+        .expect(200);
+
+      should(res.body.isDeleted).be.true();
+
+      // The row must still exist (soft-deleted), not be hard-deleted.
+      const remaining = await TGuideline.findOne(guideline.id);
+      should(remaining).be.ok();
+      should(remaining.isDeleted).be.true();
+
+      await TGuideline.destroy({ id: guideline.id }); // cleanup
+    });
   });
 });
