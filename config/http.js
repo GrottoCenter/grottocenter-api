@@ -371,8 +371,10 @@ module.exports.http = {
             '../.local-uploads',
             relativePath
           );
-          // Prevent path traversal
-          const uploadsRoot = path.resolve(__dirname, '../.local-uploads');
+          // Prevent path traversal (trailing separator avoids matching siblings
+          // like '.local-uploads-x')
+          const uploadsRoot =
+            path.resolve(__dirname, '../.local-uploads') + path.sep;
           if (!filePath.startsWith(uploadsRoot)) {
             return res.sendStatus(403);
           }
