@@ -1,0 +1,5 @@
+\c grottoce;
+
+ALTER TABLE t_file ADD COLUMN IF NOT EXISTS thumbnail_small VARCHAR(1000);
+ALTER TABLE t_file ADD COLUMN IF NOT EXISTS thumbnail_medium VARCHAR(1000);
+ALTER TABLE t_file ADD COLUMN IF NOT EXISTS thumbnail_large VARCHAR(1000);
