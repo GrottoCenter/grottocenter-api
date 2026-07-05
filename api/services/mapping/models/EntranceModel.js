@@ -11,6 +11,8 @@ module.exports = {
   author: undefined,
   reviewer: undefined,
   cave: undefined,
+  caveName: undefined,
+  isNameChangeSnapshot: undefined,
   caving: undefined,
   city: undefined,
   comments: [],

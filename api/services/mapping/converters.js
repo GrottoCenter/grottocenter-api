@@ -390,6 +390,8 @@ const c = {
     } else {
       result.massifs = toList('massifs', source.cave ?? {}, c.toSimpleMassif);
     }
+    result.caveName = source.caveName ?? null;
+    result.isNameChangeSnapshot = source.isNameChangeSnapshot ?? false;
     result.author = convertIfObject(source.author, c.toSimpleCaver);
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     // Convert collections

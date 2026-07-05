@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Ancien Nom Entrée",
+    "isMain": true,
+    "author": 1,
+    "reviewer": 1,
+    "dateInscription": "2000-01-01T00:00:00.000Z",
+    "dateReviewed": "2005-01-15T10:00:00.000Z",
+    "language": "fra",
+    "entrance": 1,
+    "cave": null,
+    "massif": null,
+    "point": null,
+    "grotto": null
+  },
+  {
+    "id": 2,
+    "name": "Nom Entrée Courant",
+    "isMain": true,
+    "author": 1,
+    "reviewer": 1,
+    "dateInscription": "2005-01-16T00:00:00.000Z",
+    "dateReviewed": "2010-06-20T15:30:00.000Z",
+    "language": "fra",
+    "entrance": 1,
+    "cave": null,
+    "massif": null,
+    "point": null,
+    "grotto": null
+  },
+  {
+    "id": 3,
+    "name": "Grotte de la Montagne",
+    "isMain": true,
+    "author": 1,
+    "reviewer": 1,
+    "dateInscription": "2003-05-10T00:00:00.000Z",
+    "dateReviewed": "2009-03-12T08:00:00.000Z",
+    "language": "fra",
+    "entrance": null,
+    "cave": 3,
+    "massif": null,
+    "point": null,
+    "grotto": null
+  }
+]

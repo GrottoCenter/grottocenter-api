@@ -52,6 +52,7 @@ module.exports = [
   'hlocation',
   'hdescription',
   'hentrance',
+  'hname',
   'hguideline',
   'vcaverroles',
   'vbibliographicmetadata',

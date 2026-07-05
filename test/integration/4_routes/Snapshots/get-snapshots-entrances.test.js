@@ -20,11 +20,16 @@ describe('Entrances snapshots features', () => {
           if (err) return done(err);
           const { body: entrances } = res;
           should(entrances).not.be.empty();
-          should(entrances.entrances[0]).not.be.null();
-          should(entrances.entrances[0].latitude).not.be.null();
-          should(entrances.entrances[0].longitude).not.be.null();
-          should(entrances.entrances[0].cave).equal(3);
-          should(entrances.entrances[0].caveName).not.be.null();
+          // Find the first regular (non-name-change) snapshot
+          const regularSnapshots = entrances.entrances.filter(
+            (e) => !e.isNameChangeSnapshot
+          );
+          should(regularSnapshots.length).be.above(0);
+          should(regularSnapshots[0].latitude).not.be.null();
+          should(regularSnapshots[0].longitude).not.be.null();
+          should(regularSnapshots[0].cave).equal(3);
+          should(regularSnapshots[0].caveName).be.a.String().and.not.be.empty();
+          should(regularSnapshots[0].caveName).equal('Grotte de la Montagne');
           return done();
         });
     });
@@ -58,6 +63,57 @@ describe('Entrances snapshots features', () => {
           should(entrances.entrances[0]).not.be.null();
           should(entrances.entrances[0].latitude).be.null();
           should(entrances.entrances[0].longitude).be.null();
+          return done();
+        });
+    });
+    it('should include name-change snapshots in the timeline (network)', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/1/snapshots?isNetwork=true')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body: entrances } = res;
+          const nameChangeSnapshots = entrances.entrances.filter(
+            (e) => e.isNameChangeSnapshot === true
+          );
+          // We have 2 h_name records for entrance 1 with is_main=true
+          should(nameChangeSnapshots.length).equal(2);
+          nameChangeSnapshots.forEach((s) => {
+            should(s.isNameChangeSnapshot).equal(true);
+            should(s.name).be.a.String().and.not.be.empty();
+            should(s.t_id).equal(1);
+          });
+          return done();
+        });
+    });
+  });
+
+  describe('get-all-snapshots()', () => {
+    it('should return temporal caveName and name-change snapshots in entrances array (network)', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/1/all-snapshots?isNetwork=true')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body } = res;
+          should(body.entrances).be.an.Array().and.not.be.empty();
+          // Verify caveName is temporally resolved
+          const regularSnapshots = body.entrances.filter(
+            (e) => !e.isNameChangeSnapshot
+          );
+          should(regularSnapshots.length).be.above(0);
+          regularSnapshots.forEach((s) => {
+            should(s.caveName).be.a.String().and.not.be.empty();
+          });
+          // Verify name-change snapshots are injected
+          const nameChangeSnapshots = body.entrances.filter(
+            (e) => e.isNameChangeSnapshot === true
+          );
+          should(nameChangeSnapshots.length).equal(2);
           return done();
         });
     });
