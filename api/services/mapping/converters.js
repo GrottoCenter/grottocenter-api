@@ -505,13 +505,30 @@ const c = {
     return result;
   },
 
-  toFile: (source) => ({
-    id: source.id,
-    dateInscription: source.dateInscription,
-    isValidated: source.isValidated,
-    fileName: source.fileName,
-    completePath: FileService.document.getUrl(source.path),
-  }),
+  toFile: (source) => {
+    const hasThumbnails =
+      source.thumbnailSmall || source.thumbnailMedium || source.thumbnailLarge;
+    return {
+      id: source.id,
+      dateInscription: source.dateInscription,
+      isValidated: source.isValidated,
+      fileName: source.fileName,
+      completePath: FileService.document.getUrl(source.path),
+      thumbnails: hasThumbnails
+        ? {
+            small: source.thumbnailSmall
+              ? FileService.document.getUrl(source.thumbnailSmall)
+              : null,
+            medium: source.thumbnailMedium
+              ? FileService.document.getUrl(source.thumbnailMedium)
+              : null,
+            large: source.thumbnailLarge
+              ? FileService.document.getUrl(source.thumbnailLarge)
+              : null,
+          }
+        : null,
+    };
+  },
 
   toSimpleHistory: (source) => {
     const result = {

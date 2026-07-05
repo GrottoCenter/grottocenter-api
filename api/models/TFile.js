@@ -62,5 +62,26 @@ module.exports = {
       columnName: 'id_document',
       model: 'TDocument',
     },
+
+    thumbnailSmall: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'thumbnail_small',
+      maxLength: 1000,
+    },
+
+    thumbnailMedium: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'thumbnail_medium',
+      maxLength: 1000,
+    },
+
+    thumbnailLarge: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'thumbnail_large',
+      maxLength: 1000,
+    },
   },
 };
