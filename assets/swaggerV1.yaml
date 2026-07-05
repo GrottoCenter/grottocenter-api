@@ -8037,6 +8037,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Name'
+        caveName:
+          type: string
+          nullable: true
+          description: >
+            The resolved cave name at the time of the snapshot. Only present on
+            snapshot responses. Null when the entrance has no cave association.
+        isNameChangeSnapshot:
+          type: boolean
+          default: false
+          description: >
+            True when this snapshot is a synthetic name-change entry injected
+            into the timeline (not a real HEntrance record).
         region:
           type: string
         riggings:

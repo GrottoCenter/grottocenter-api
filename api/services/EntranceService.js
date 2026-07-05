@@ -20,6 +20,7 @@ const {
   computeDateLastModif,
 } = require('../../config/constants/entrance');
 const NameService = require('./NameService');
+const TemporalNameResolver = require('./TemporalNameResolver');
 const RiggingService = require('./RiggingService');
 const DescriptionService = require('./DescriptionService');
 const HistoryService = require('./HistoryService');
@@ -117,24 +118,48 @@ module.exports = {
       ? RightService.hasGroup(token?.groups, RightService.G.ADMINISTRATOR)
       : true; // No need to call hasRight if it's not a sensitive entrance
 
-    // Batch resolve entrance names — one call for all history entries
-    const entranceStubs = HEntrances.map((e) => ({ id: e.t_id }));
-    await NameService.setNames(entranceStubs, 'entrance');
-    const entranceNameMap = new Map(
-      entranceStubs.map((s) => [s.id, { names: s.names, name: s.name }])
-    );
+    // Fetch all HName records for the entrance (temporal resolution)
+    const entranceHNames = await HName.find({
+      entrance: entranceId,
+      isMain: true,
+    })
+      .populate('author')
+      .populate('reviewer');
 
-    // Batch resolve cave names for entries that have a cave
+    // Fetch current TName main name as fallback
+    const currentEntranceNames = await TName.find({
+      entrance: entranceId,
+      isMain: true,
+    });
+    const currentEntranceName =
+      currentEntranceNames.length > 0 ? currentEntranceNames[0].name : null;
+
+    // Collect unique cave IDs from HEntrance records
     const caveIds = [
       ...new Set(
         HEntrances.filter((e) => e.cave).map((e) => e.cave?.id ?? e.cave)
       ),
-    ];
-    const caveNameMap = new Map();
+    ].filter(Boolean);
+
+    // Batch-fetch cave h_name records and current cave names
+    const caveHNameMap = new Map();
+    const currentCaveNameMap = new Map();
     if (caveIds.length > 0) {
-      const caveStubs = caveIds.map((id) => ({ id }));
-      await NameService.setNames(caveStubs, 'cave');
-      caveStubs.forEach((s) => caveNameMap.set(s.id, s.name));
+      const caveHNames = await HName.find({ cave: caveIds, isMain: true });
+      for (const record of caveHNames) {
+        const caveId = record.cave?.id ?? record.cave;
+        if (!caveHNameMap.has(caveId)) caveHNameMap.set(caveId, []);
+        caveHNameMap.get(caveId).push(record);
+      }
+      const currentCaveNames = await TName.find({
+        cave: caveIds,
+        isMain: true,
+      });
+      for (const record of currentCaveNames) {
+        const caveId = record.cave?.id ?? record.cave;
+        if (!currentCaveNameMap.has(caveId))
+          currentCaveNameMap.set(caveId, record.name);
+      }
     }
 
     /* eslint-disable no-param-reassign */
@@ -144,18 +169,43 @@ module.exports = {
         entrance.longitude = null;
         entrance.latitude = null;
       }
-      const resolved = entranceNameMap.get(entrance.t_id);
-      entrance.names = resolved?.names ?? [];
-      entrance.name = resolved?.name ?? '';
-
-      if (entrance.cave) {
-        const caveId = entrance.cave?.id ?? entrance.cave;
-        entrance.caveName = caveNameMap.get(caveId) ?? null;
-      }
+      entrance.name = TemporalNameResolver.resolveNameAtDate(
+        entrance.id,
+        entranceHNames,
+        currentEntranceName
+      );
+      // Use current TName records so getMainLanguage can extract the language
+      // (names are immutable reference attributes, not temporal)
+      entrance.names = currentEntranceNames;
     });
     /* eslint-enable no-param-reassign */
 
-    return HEntrances;
+    TemporalNameResolver.resolveCaveNamesForSnapshots(
+      HEntrances,
+      caveHNameMap,
+      currentCaveNameMap
+    );
+
+    const resolveCaveNameFn = (snapshotDate) => {
+      // Uses the first cave seen in HEntrance history. For entrances that were
+      // reassigned to a different cave, this may pick the wrong cave — a known
+      // limitation affecting only multi-cave-history entrances (very rare).
+      const entranceCaveId = caveIds.length > 0 ? caveIds[0] : null;
+      if (!entranceCaveId) return null;
+      return TemporalNameResolver.resolveNameAtDate(
+        snapshotDate,
+        caveHNameMap.get(entranceCaveId) || [],
+        currentCaveNameMap.get(entranceCaveId) || null
+      );
+    };
+
+    const nameChangeSnapshots = TemporalNameResolver.buildNameChangeSnapshots(
+      entranceId,
+      entranceHNames,
+      resolveCaveNameFn
+    );
+
+    return TemporalNameResolver.mergeAndSort(HEntrances, nameChangeSnapshots);
   },
 
   createEntrance: async (req, entranceData, nameDescLocData) => {
