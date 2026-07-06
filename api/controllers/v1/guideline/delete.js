@@ -54,19 +54,16 @@ module.exports = async (req, res) => {
       );
     }
 
-    // Remove FK-referencing children before the hard delete
-    await sails.sendNativeQuery(
-      'DELETE FROM j_guideline_country WHERE id_guideline = $1',
-      [guidelineId]
-    );
-    await sails.sendNativeQuery(
-      'DELETE FROM j_guideline_region WHERE id_guideline = $1',
-      [guidelineId]
-    );
-    await sails.sendNativeQuery(
-      'DELETE FROM j_guideline_massif WHERE id_guideline = $1',
-      [guidelineId]
-    );
+    // Remove FK-referencing children before the hard delete. Unlike
+    // device/delete.js and sensor-configuration/delete.js, we don't pre-check
+    // for children and return res.conflict(): the only rows pointing at
+    // t_guideline are these junction tables (countries/regions/massifs), which
+    // we own and delete outright. If a future FK to t_guideline is added that
+    // isn't cleared here, the phase-2 hard delete will surface a raw DB error
+    // instead of a friendly 409 — add the corresponding cleanup (or a guard) then.
+    await JGuidelineCountry.destroy({ guideline: guidelineId });
+    await JGuidelineRegion.destroy({ guideline: guidelineId });
+    await JGuidelineMassif.destroy({ guideline: guidelineId });
     await HGuideline.destroy({ t_id: guidelineId });
 
     await TGuideline.destroyOne({ id: guidelineId }); // Phase 2: hard-delete
@@ -90,6 +87,10 @@ module.exports = async (req, res) => {
 
   // The row is gone after a hard delete, so reuse the already-fetched record
   // rather than re-querying (which would return null). Reflect the deleted state.
+  // The populated countries/regions/massifs arrays on this object still reflect
+  // the pre-delete state; this matches the previous behaviour (which re-fetched
+  // right after the soft-delete) and relies on the `change_guideline` trigger
+  // not cascading to the junction rows on soft-delete — an implicit contract.
   guideline.isDeleted = true;
 
   return ControllerService.treatAndConvert(

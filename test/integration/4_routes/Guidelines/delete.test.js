@@ -98,6 +98,7 @@ describe('Guideline delete', () => {
         dateInscription: new Date(),
       }).fetch();
       await TGuideline.addToCollection(guideline.id, 'countries', ['FR']);
+      await TGuideline.addToCollection(guideline.id, 'regions', ['FR-01']);
       await TGuideline.addToCollection(guideline.id, 'massifs', [1]);
 
       const res = await supertest(sails.hooks.http.app)
@@ -119,6 +120,12 @@ describe('Guideline delete', () => {
         [guideline.id]
       );
       should(countryLinks.rows.length).equal(0);
+
+      const regionLinks = await sails.sendNativeQuery(
+        'SELECT 1 FROM j_guideline_region WHERE id_guideline = $1',
+        [guideline.id]
+      );
+      should(regionLinks.rows.length).equal(0);
 
       const massifLinks = await sails.sendNativeQuery(
         'SELECT 1 FROM j_guideline_massif WHERE id_guideline = $1',
