@@ -84,15 +84,15 @@ module.exports = {
   /**
    * Generate all applicable thumbnail variants for an image.
    * Uses an all-or-nothing approach: generates all buffers first, then uploads.
-   * If any step fails, returns all nulls.
+   * If any step fails, returns all nulls with hadError: true.
    *
    * @param {Buffer} imageBuffer - The original image file buffer
    * @param {string} originalPath - The blob path of the original
    * @param {object} blobClient - Azure container client for uploading
-   * @returns {Promise<{small: string|null, medium: string|null, large: string|null}>}
+   * @returns {Promise<{small: string|null, medium: string|null, large: string|null, hadError: boolean}>}
    */
   async generate(imageBuffer, originalPath, blobClient) {
-    const result = { small: null, medium: null, large: null };
+    const result = { small: null, medium: null, large: null, hadError: false };
 
     try {
       const metadata = await sharp(imageBuffer).metadata();
@@ -118,6 +118,12 @@ module.exports = {
       );
 
       // Upload all variants
+      // NOTE: If a subset of uploads succeeds before one fails, the successful
+      // uploads become orphaned blobs in Azure (the catch block returns all-null,
+      // so the DB never stores those paths and FileService.document.delete won't
+      // clean them up). This is a known trade-off: orphaned blobs are rare and
+      // low-cost compared to the complexity of per-variant rollback. A periodic
+      // storage cleanup job could address this if it becomes a concern.
       await Promise.all(
         buffers.map(async ({ path: blobPath, buffer }) => {
           const blockBlobClient = blobClient.getBlockBlobClient(blobPath);
@@ -133,7 +139,7 @@ module.exports = {
       });
     } catch (err) {
       sails.log.error('ThumbnailService.generate failed:', err);
-      return { small: null, medium: null, large: null };
+      return { small: null, medium: null, large: null, hadError: true };
     }
 
     return result;

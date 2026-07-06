@@ -2,6 +2,7 @@ const should = require('should');
 const fc = require('fast-check');
 const ThumbnailService = require('../../../api/services/ThumbnailService');
 const FileService = require('../../../api/services/FileService');
+const { toFile } = require('../../../api/services/mapping/converters');
 
 // --- Arbitraries ---
 
@@ -166,24 +167,6 @@ describe('ThumbnailService - Property 2: Thumbnail path computation', () => {
  * Input partition: all combinations of present/absent thumbnail fields.
  */
 describe('ThumbnailService - Property 3: Converter thumbnail output construction', () => {
-  // Helper that replicates the toFile converter logic for thumbnails
-  const buildExpectedThumbnails = (source) => {
-    const hasThumbnails =
-      source.thumbnailSmall || source.thumbnailMedium || source.thumbnailLarge;
-    if (!hasThumbnails) return null;
-    return {
-      small: source.thumbnailSmall
-        ? FileService.document.getUrl(source.thumbnailSmall)
-        : null,
-      medium: source.thumbnailMedium
-        ? FileService.document.getUrl(source.thumbnailMedium)
-        : null,
-      large: source.thumbnailLarge
-        ? FileService.document.getUrl(source.thumbnailLarge)
-        : null,
-    };
-  };
-
   it('should return thumbnails: null when all thumbnail fields are null/undefined', () => {
     fc.assert(
       fc.property(
@@ -198,8 +181,8 @@ describe('ThumbnailService - Property 3: Converter thumbnail output construction
           thumbnailLarge: fc.constant(null),
         }),
         (source) => {
-          const expected = buildExpectedThumbnails(source);
-          should(expected).be.null();
+          const result = toFile(source);
+          should(result.thumbnails).be.null();
         }
       ),
       { numRuns: 100 }
@@ -223,33 +206,33 @@ describe('ThumbnailService - Property 3: Converter thumbnail output construction
 
     fc.assert(
       fc.property(sourceArb, (source) => {
-        const expected = buildExpectedThumbnails(source);
+        const result = toFile(source);
 
-        should(expected).not.be.null();
-        should(expected).have.keys('small', 'medium', 'large');
-        should(Object.keys(expected).length).equal(3);
+        should(result.thumbnails).not.be.null();
+        should(result.thumbnails).have.keys('small', 'medium', 'large');
+        should(Object.keys(result.thumbnails).length).equal(3);
 
         // Each non-null source field produces a full URL
         if (source.thumbnailSmall) {
-          should(expected.small).equal(
+          should(result.thumbnails.small).equal(
             FileService.document.getUrl(source.thumbnailSmall)
           );
         } else {
-          should(expected.small).be.null();
+          should(result.thumbnails.small).be.null();
         }
         if (source.thumbnailMedium) {
-          should(expected.medium).equal(
+          should(result.thumbnails.medium).equal(
             FileService.document.getUrl(source.thumbnailMedium)
           );
         } else {
-          should(expected.medium).be.null();
+          should(result.thumbnails.medium).be.null();
         }
         if (source.thumbnailLarge) {
-          should(expected.large).equal(
+          should(result.thumbnails.large).equal(
             FileService.document.getUrl(source.thumbnailLarge)
           );
         } else {
-          should(expected.large).be.null();
+          should(result.thumbnails.large).be.null();
         }
       }),
       { numRuns: 100 }
