@@ -237,6 +237,7 @@ describe('ThumbnailService', () => {
       should(result.small).be.null();
       should(result.medium).be.null();
       should(result.large).be.null();
+      should(result.hadError).be.false();
       should(Object.keys(uploadedBlobs).length).equal(0);
     });
 
@@ -261,6 +262,7 @@ describe('ThumbnailService', () => {
       should(result.small).equal('thumbnails/small/12345-photo.webp');
       should(result.medium).equal('thumbnails/medium/12345-photo.webp');
       should(result.large).be.null();
+      should(result.hadError).be.false();
       should(Object.keys(uploadedBlobs).length).equal(2);
     });
 
@@ -285,6 +287,7 @@ describe('ThumbnailService', () => {
       should(result.small).equal('thumbnails/small/99999-cave.webp');
       should(result.medium).equal('thumbnails/medium/99999-cave.webp');
       should(result.large).equal('thumbnails/large/99999-cave.webp');
+      should(result.hadError).be.false();
       should(Object.keys(uploadedBlobs).length).equal(3);
 
       // Verify content type headers
@@ -325,6 +328,7 @@ describe('ThumbnailService', () => {
       should(result.small).be.null();
       should(result.medium).be.null();
       should(result.large).be.null();
+      should(result.hadError).be.true();
 
       logStub.restore();
     });
@@ -343,6 +347,7 @@ describe('ThumbnailService', () => {
       should(result.small).be.null();
       should(result.medium).be.null();
       should(result.large).be.null();
+      should(result.hadError).be.true();
 
       logStub.restore();
     });

@@ -86,6 +86,26 @@ module.exports = {
 
   isCredentials: !!credentials,
 
+  /**
+   * Test-only: Retrieve the current module-level credentials object.
+   * Used by tests to save original credentials before injecting mocks.
+   * @returns {object|null}
+   */
+  getCredentialsForTest() {
+    return credentials;
+  },
+
+  /**
+   * Test-only: Override the module-level credentials object.
+   * Allows integration tests to inject a mock blob client without
+   * reimplementing create/delete. Call with `null` to restore original.
+   * @param {object|null} mockCredentials
+   */
+  setCredentialsForTest(mockCredentials) {
+    credentials = mockCredentials;
+    this.isCredentials = !!mockCredentials;
+  },
+
   document: {
     getUrl(path) {
       // The documents container allow anonymous access

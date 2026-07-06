@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-await-in-loop, no-loop-func, global-require */
+/* eslint-disable no-await-in-loop, no-loop-func, global-require, no-console */
 
 /**
  * Backfill Thumbnails Script
@@ -163,6 +163,11 @@ async function run() {
                 thumbnailLarge: thumbnailPaths.large,
               });
               succeeded += 1;
+            } else if (thumbnailPaths.hadError) {
+              console.error(
+                `WARNING: file ${file.id} failed thumbnail generation (not just too small)`
+              );
+              failed += 1;
             } else {
               skipped += 1;
             }

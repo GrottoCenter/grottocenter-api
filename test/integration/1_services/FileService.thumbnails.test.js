@@ -2,145 +2,44 @@ const should = require('should');
 const sinon = require('sinon');
 const sharp = require('sharp');
 const FileService = require('../../../api/services/FileService');
-const ThumbnailService = require('../../../api/services/ThumbnailService');
 
 describe('FileService.document - Thumbnail Integration', () => {
-  // Store original methods for restoration
-  const originalCreate = FileService.document.create;
-  const originalDelete = FileService.document.delete;
-  const originalIsCredentials = FileService.isCredentials;
-
-  // Mock blob client
   let mockUploadData;
   let mockDeleteBlob;
-  let uploadedBlobs;
   let mockContainerClient;
+  let originalIsCredentials;
+  let originalCredentials;
 
   before(() => {
+    // Save original state to restore later
+    originalIsCredentials = FileService.isCredentials;
+    originalCredentials = FileService.getCredentialsForTest();
+
     mockUploadData = sinon.stub().resolves();
     mockDeleteBlob = sinon.stub().resolves();
-    uploadedBlobs = {};
 
     mockContainerClient = {
       getBlockBlobClient: (blobPath) => ({
-        uploadData: async (buffer, options) => {
-          uploadedBlobs[blobPath] = { buffer, options };
-          return mockUploadData(buffer, options);
-        },
-        delete: async (options) => {
-          mockDeleteBlob(blobPath, options);
-        },
+        uploadData: async (buffer, options) =>
+          mockUploadData(blobPath, buffer, options),
+        delete: async (options) => mockDeleteBlob(blobPath, options),
       }),
     };
 
-    // Patch create to use mock credentials
-    FileService.document.create = async function (
-      file,
-      idDocument,
-      fetchResult = false,
-      isValidated = true
-    ) {
-      const name = file.originalname;
-      const pathName = `${Math.random()
-        .toString()
-        .replace(/0\./, '')}-${name.replace(/ /, '_')}`;
-      const lastDot = name.lastIndexOf('.');
-      if (lastDot <= 0 || lastDot === name.length - 1) {
-        const err = new Error(FileService.INVALID_NAME);
-        err.fileName = name;
-        throw err;
-      }
-      const extension = name.slice(lastDot + 1).toLowerCase();
-
-      const foundFormat = await TFileFormat.find({ extension }).limit(1);
-      if (foundFormat.length === 0) {
-        const err = new Error(FileService.INVALID_FORMAT);
-        err.fileName = name;
-        throw err;
-      }
-
-      // Upload original
-      const blockBlobClient = mockContainerClient.getBlockBlobClient(pathName);
-      await blockBlobClient.uploadData(file.buffer, {
-        blobHTTPHeaders: { blobContentType: foundFormat[0].mimeType },
-      });
-
-      // Thumbnail generation (matches actual FileService logic)
-      let thumbnailPaths = { small: null, medium: null, large: null };
-      const fileMimeType = foundFormat[0].mimeType;
-      if (ThumbnailService.isProcessable(fileMimeType)) {
-        try {
-          thumbnailPaths = await ThumbnailService.generate(
-            file.buffer,
-            pathName,
-            mockContainerClient
-          );
-        } catch (err) {
-          sails.log.error('Thumbnail generation failed:', err);
-        }
-      }
-
-      const param = {
-        dateInscription: new Date(),
-        fileName: name,
-        document: idDocument,
-        fileFormat: foundFormat[0].id,
-        path: pathName,
-        isValidated,
-        thumbnailSmall: thumbnailPaths.small,
-        thumbnailMedium: thumbnailPaths.medium,
-        thumbnailLarge: thumbnailPaths.large,
-      };
-      if (fetchResult) {
-        return TFile.create(param).fetch();
-      }
-      return TFile.create(param);
-    };
-
-    // Patch delete to use mock credentials
-    FileService.document.delete = async function (file) {
-      const destroyedRecord = await TFile.destroyOne(file.id);
-      const blockBlobClient = mockContainerClient.getBlockBlobClient(
-        destroyedRecord.path
-      );
-      await blockBlobClient.delete({ deleteSnapshots: 'include' });
-
-      // Clean up thumbnail blobs
-      const thumbnailPaths = [
-        destroyedRecord.thumbnailSmall,
-        destroyedRecord.thumbnailMedium,
-        destroyedRecord.thumbnailLarge,
-      ].filter(Boolean);
-      await Promise.all(
-        thumbnailPaths.map(async (thumbPath) => {
-          try {
-            const thumbBlobClient =
-              mockContainerClient.getBlockBlobClient(thumbPath);
-            await thumbBlobClient.delete({ deleteSnapshots: 'include' });
-          } catch (err) {
-            sails.log.error(
-              `Failed to delete thumbnail blob ${thumbPath}:`,
-              err
-            );
-          }
-        })
-      );
-
-      return destroyedRecord;
-    };
-
-    FileService.isCredentials = true;
+    // Inject mock credentials so the real create/delete code paths run
+    FileService.setCredentialsForTest({
+      documentsBlobClient: mockContainerClient,
+    });
   });
 
   beforeEach(() => {
     mockUploadData.resetHistory();
     mockDeleteBlob.resetHistory();
-    uploadedBlobs = {};
   });
 
   after(() => {
-    FileService.document.create = originalCreate;
-    FileService.document.delete = originalDelete;
+    // Restore original credentials state
+    FileService.setCredentialsForTest(originalCredentials);
     FileService.isCredentials = originalIsCredentials;
     sinon.restore();
   });
@@ -148,9 +47,10 @@ describe('FileService.document - Thumbnail Integration', () => {
   describe('create() with image file', () => {
     let createdFile;
 
-    after(async () => {
+    afterEach(async () => {
       if (createdFile) {
         await TFile.destroyOne(createdFile.id);
+        createdFile = null;
       }
     });
 
@@ -183,8 +83,7 @@ describe('FileService.document - Thumbnail Integration', () => {
       should(createdFile.thumbnailMedium).startWith('thumbnails/medium/');
       should(createdFile.thumbnailMedium).endWith('.webp');
 
-      // Large should be null — original is only 2000px, not > 1920
-      // Actually 2000 > 1920, so large IS generated
+      // 2000 > 1920, so large IS generated
       should(createdFile.thumbnailLarge).be.a.String();
       should(createdFile.thumbnailLarge).startWith('thumbnails/large/');
       should(createdFile.thumbnailLarge).endWith('.webp');
@@ -208,13 +107,11 @@ describe('FileService.document - Thumbnail Integration', () => {
         size: imageBuffer.length,
       };
 
-      const result = await FileService.document.create(file, 1, true);
+      createdFile = await FileService.document.create(file, 1, true);
 
-      should(result.thumbnailSmall).be.a.String();
-      should(result.thumbnailMedium).be.a.String();
-      should(result.thumbnailLarge).be.null();
-
-      await TFile.destroyOne(result.id);
+      should(createdFile.thumbnailSmall).be.a.String();
+      should(createdFile.thumbnailMedium).be.a.String();
+      should(createdFile.thumbnailLarge).be.null();
     });
   });
 
@@ -254,9 +151,9 @@ describe('FileService.document - Thumbnail Integration', () => {
 
   describe('create() with thumbnail generation failure', () => {
     it('should still succeed with null thumbnails when sharp fails', async () => {
-      // Stub ThumbnailService.generate to throw
+      // Stub the global ThumbnailService.generate (Sails auto-globalized)
       const generateStub = sinon
-        .stub(ThumbnailService, 'generate')
+        .stub(global.ThumbnailService, 'generate')
         .rejects(new Error('sharp exploded'));
       const logStub = sinon.stub(sails.log, 'error');
 
