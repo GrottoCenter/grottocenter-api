@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       newIsSensitiveValue !== currentEntrance.isSensitive;
     if (currentEntrance.isSensitiveLocked && wantsSensitiveChange) {
       return res.forbidden(
-        `The sensitivity of this entrance is locked. Only an administrator can change it.`
+        'The sensitivity of this entrance is locked. Only an administrator can change it.'
       );
     }
   }
