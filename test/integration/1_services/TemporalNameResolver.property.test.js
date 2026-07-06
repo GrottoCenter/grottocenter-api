@@ -314,15 +314,19 @@ describe('TemporalNameResolver - Property 5: Converter caveName and isNameChange
 
           const result = toEntrance(source);
 
-          // caveName passthrough
-          if (caveName != null) {
-            should(result.caveName).equal(caveName);
-          } else {
+          // caveName passthrough: only present when source has it defined
+          if (caveName === undefined) {
+            should(result).not.have.property('caveName');
+          } else if (caveName === null) {
             should(result.caveName).be.null();
+          } else {
+            should(result.caveName).equal(caveName);
           }
 
-          // isNameChangeSnapshot passthrough
-          if (isNameChangeSnapshot === true) {
+          // isNameChangeSnapshot passthrough: only present when source has it defined
+          if (isNameChangeSnapshot === undefined) {
+            should(result).not.have.property('isNameChangeSnapshot');
+          } else if (isNameChangeSnapshot === true) {
             should(result.isNameChangeSnapshot).equal(true);
           } else {
             should(result.isNameChangeSnapshot).equal(false);

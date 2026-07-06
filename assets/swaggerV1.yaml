@@ -8076,14 +8076,16 @@ components:
           type: string
           nullable: true
           description: >
-            The resolved cave name at the time of the snapshot. Only present on
-            snapshot responses. Null when the entrance has no cave association.
+            The resolved cave name at the time of the snapshot. Present only on
+            snapshot responses (/snapshots and /all-snapshots). Null when the
+            entrance has no cave association.
         isNameChangeSnapshot:
           type: boolean
           default: false
           description: >
-            True when this snapshot is a synthetic name-change entry injected
-            into the timeline (not a real HEntrance record).
+            True when this entry is a synthetic name-change event injected
+            into the timeline (not a real HEntrance record). Present only on
+            snapshot responses.
         region:
           type: string
         riggings:

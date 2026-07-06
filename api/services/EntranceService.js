@@ -104,17 +104,18 @@ module.exports = {
   },
 
   getHEntrancesWithName: async (entranceId, HEntrances, token) => {
-    const tEntranceSensitivity = await TEntrance.find({
+    const tEntranceRecords = await TEntrance.find({
       where: { id: entranceId },
-      select: ['isSensitive'],
+      select: ['isSensitive', 'cave'],
     });
     // Check if the entrance exist
-    if (Object.keys(tEntranceSensitivity).length === 0) {
+    if (Object.keys(tEntranceRecords).length === 0) {
       return {};
     }
-    const isEntranceSensitive = tEntranceSensitivity[0]
-      ? tEntranceSensitivity[0].isSensitive
+    const isEntranceSensitive = tEntranceRecords[0]
+      ? tEntranceRecords[0].isSensitive
       : true;
+    const currentCaveId = tEntranceRecords[0]?.cave ?? null;
     const hasRight = isEntranceSensitive
       ? RightService.hasGroup(token?.groups, RightService.G.ADMINISTRATOR)
       : true; // No need to call hasRight if it's not a sensitive entrance
@@ -127,20 +128,21 @@ module.exports = {
       .populate('author')
       .populate('reviewer');
 
-    // Fetch current TName main name as fallback
-    const currentEntranceNames = await TName.find({
-      entrance: entranceId,
-      isMain: true,
-    });
-    const currentEntranceName =
-      currentEntranceNames.length > 0 ? currentEntranceNames[0].name : null;
+    // Fetch all current TName records for the entrance (full names collection)
+    const allEntranceNames = await TName.find({ entrance: entranceId });
+    // Extract the main name as fallback for temporal resolution
+    const mainEntranceName = allEntranceNames.find((n) => n.isMain);
+    const currentEntranceName = mainEntranceName ? mainEntranceName.name : null;
 
-    // Collect unique cave IDs from HEntrance records
+    // Collect unique cave IDs from HEntrance records + current association
     const caveIds = [
       ...new Set(
-        HEntrances.filter((e) => e.cave).map((e) => e.cave?.id ?? e.cave)
+        [
+          currentCaveId,
+          ...HEntrances.filter((e) => e.cave).map((e) => e.cave?.id ?? e.cave),
+        ].filter(Boolean)
       ),
-    ].filter(Boolean);
+    ];
 
     // Batch-fetch cave h_name records and current cave names
     const caveHNameMap = new Map();
@@ -175,9 +177,8 @@ module.exports = {
         entranceHNames,
         currentEntranceName
       );
-      // Use current TName records so getMainLanguage can extract the language
-      // (names are immutable reference attributes, not temporal)
-      entrance.names = currentEntranceNames;
+      // Assign all current TName records so getMainLanguage can extract the language
+      entrance.names = allEntranceNames;
     });
     /* eslint-enable no-param-reassign */
 
@@ -188,15 +189,12 @@ module.exports = {
     );
 
     const resolveCaveNameFn = (snapshotDate) => {
-      // Uses the first cave seen in HEntrance history. For entrances that were
-      // reassigned to a different cave, this may pick the wrong cave — a known
-      // limitation affecting only multi-cave-history entrances (very rare).
-      const entranceCaveId = caveIds.length > 0 ? caveIds[0] : null;
-      if (!entranceCaveId) return null;
+      // Uses current cave association; historical cave-at-rename-time isn't tracked
+      if (!currentCaveId) return null;
       return TemporalNameResolver.resolveNameAtDate(
         snapshotDate,
-        caveHNameMap.get(entranceCaveId) || [],
-        currentCaveNameMap.get(entranceCaveId) || null
+        caveHNameMap.get(currentCaveId) || [],
+        currentCaveNameMap.get(currentCaveId) || null
       );
     };
 
