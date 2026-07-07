@@ -86,6 +86,26 @@ module.exports = {
 
   isCredentials: !!credentials,
 
+  /**
+   * Test-only: Retrieve the current module-level credentials object.
+   * Used by tests to save original credentials before injecting mocks.
+   * @returns {object|null}
+   */
+  getCredentialsForTest() {
+    return credentials;
+  },
+
+  /**
+   * Test-only: Override the module-level credentials object.
+   * Allows integration tests to inject a mock blob client without
+   * reimplementing create/delete. Call with `null` to restore original.
+   * @param {object|null} mockCredentials
+   */
+  setCredentialsForTest(mockCredentials) {
+    credentials = mockCredentials;
+    this.isCredentials = !!mockCredentials;
+  },
+
   document: {
     getUrl(path) {
       // The documents container allow anonymous access
@@ -126,7 +146,7 @@ module.exports = {
       if (foundFormat.length === 0) {
         throw new FileError(INVALID_FORMAT, name);
       }
-      const { mimeType } = foundFormat;
+      const { mimeType } = foundFormat[0];
 
       if (!credentials) {
         noCredentialWarning('Document upload', {
@@ -147,6 +167,21 @@ module.exports = {
         }
       }
 
+      let thumbnailPaths = { small: null, medium: null, large: null };
+      const fileMimeType = foundFormat[0].mimeType;
+      if (credentials && ThumbnailService.isProcessable(fileMimeType)) {
+        try {
+          thumbnailPaths = await ThumbnailService.generate(
+            file.buffer,
+            pathName,
+            credentials.documentsBlobClient
+          );
+        } catch (err) {
+          sails.log.error('Thumbnail generation failed:', err);
+          // Continue — thumbnails are optional
+        }
+      }
+
       const param = {
         dateInscription: new Date(),
         fileName: name,
@@ -154,6 +189,9 @@ module.exports = {
         fileFormat: foundFormat[0].id,
         path: pathName,
         isValidated,
+        thumbnailSmall: thumbnailPaths.small,
+        thumbnailMedium: thumbnailPaths.medium,
+        thumbnailLarge: thumbnailPaths.large,
       };
       if (fetchResult) {
         let createQuery = TFile.create(param);
@@ -187,6 +225,27 @@ module.exports = {
             destroyedRecord.path
           );
         await blockBlobClient.delete({ deleteSnapshots: 'include' });
+
+        // Best-effort cleanup of thumbnail blobs
+        const thumbnailPaths = [
+          destroyedRecord.thumbnailSmall,
+          destroyedRecord.thumbnailMedium,
+          destroyedRecord.thumbnailLarge,
+        ].filter(Boolean);
+        await Promise.all(
+          thumbnailPaths.map(async (thumbPath) => {
+            try {
+              const thumbBlobClient =
+                credentials.documentsBlobClient.getBlockBlobClient(thumbPath);
+              await thumbBlobClient.delete({ deleteSnapshots: 'include' });
+            } catch (err) {
+              sails.log.error(
+                `Failed to delete thumbnail blob ${thumbPath}:`,
+                err
+              );
+            }
+          })
+        );
       }
       return destroyedRecord;
     },

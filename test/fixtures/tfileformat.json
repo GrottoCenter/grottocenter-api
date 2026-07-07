@@ -73,5 +73,25 @@
     "id": 51,
     "extension": "txt",
     "mimeType": "text/plain"
+  },
+  {
+    "id": 100,
+    "extension": "jpg",
+    "mimeType": "image/jpeg"
+  },
+  {
+    "id": 101,
+    "extension": "png",
+    "mimeType": "image/png"
+  },
+  {
+    "id": 102,
+    "extension": "gif",
+    "mimeType": "image/gif"
+  },
+  {
+    "id": 103,
+    "extension": "svg",
+    "mimeType": "image/svg+xml"
   }
 ]

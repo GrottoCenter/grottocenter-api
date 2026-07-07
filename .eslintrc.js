@@ -72,6 +72,7 @@ module.exports = {
     TSubstance: 'readonly',
     SubstanceService: 'readonly',
     PubChemService: 'readonly',
+    ThumbnailService: 'readonly',
     TType: 'readonly',
     TTokenBlacklist: 'readonly',
     TConversation: 'readonly',

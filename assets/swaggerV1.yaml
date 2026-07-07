@@ -3479,7 +3479,11 @@ paths:
     delete:
       tags:
         - guidelines
-      description: Soft-delete a guideline. Authenticated action (moderator only).
+      description: >
+        Delete a guideline. By default this is a reversible soft-delete
+        (moderator or administrator). When `isPermanent=true`, the guideline and
+        its history snapshots and entity associations are permanently removed —
+        this is irreversible and restricted to administrators.
       security:
         - bearerAuth: []
       parameters:
@@ -3489,9 +3493,19 @@ paths:
           schema:
             type: integer
           description: Guideline ID to delete
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: >
+            When true, permanently (hard) delete the guideline instead of
+            soft-deleting it. Administrators only.
       responses:
         '200':
-          description: Successful operation. Returns the soft-deleted guideline.
+          description: >
+            Successful operation. Returns the deleted guideline (with
+            `isDeleted: true`).
           content:
             application/json:
               schema:
@@ -3499,9 +3513,11 @@ paths:
         '401':
           description: Unauthorized (missing or invalid JWT token).
         '403':
-          description: Forbidden (user is not authorized to delete guidelines).
+          description: >
+            Forbidden (user is not authorized to delete guidelines, or is not an
+            administrator when requesting a permanent deletion).
         '404':
-          description: Guideline not found or already deleted.
+          description: Guideline not found, or already soft-deleted (non-permanent delete only).
           content:
             application/json:
               schema:
@@ -8169,18 +8185,38 @@ components:
     File:
       type: object
       properties:
+        id:
+          type: integer
         dateInscription:
           type: string
-        dateReviewed:
-          type: string
-        document:
-          $ref: '#/components/schemas/Document'
-        fileFormat:
-          $ref: '#/components/schemas/File-format'
+        isValidated:
+          type: boolean
         fileName:
           type: string
-        path:
+        completePath:
           type: string
+          description: Full public URL to the original file in Azure Blob Storage.
+        thumbnails:
+          type: object
+          nullable: true
+          description: >
+            Resized WebP variants of the original image for responsive display.
+            Null entirely for non-image files or if thumbnail generation failed.
+            Individual variants may be null if the original image is smaller
+            than the target width (no upscaling).
+          properties:
+            small:
+              type: string
+              nullable: true
+              description: 480px wide variant for card previews (desktop 240 CSS × 2 DPR).
+            medium:
+              type: string
+              nullable: true
+              description: 1280px wide variant for mobile full-width cards (~430 CSS × 3 DPR).
+            large:
+              type: string
+              nullable: true
+              description: 1920px wide variant for lightbox default view.
 
     File-format:
       type: object
