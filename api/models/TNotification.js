@@ -98,5 +98,10 @@ module.exports = {
       columnName: 'id_rigging',
       model: 'TRigging',
     },
+
+    jobBatch: {
+      columnName: 'id_job_batch',
+      model: 'TJobBatch',
+    },
   },
 };

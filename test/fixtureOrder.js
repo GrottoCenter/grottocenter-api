@@ -43,6 +43,7 @@ module.exports = [
   'jguidelinemassif',
   'tfile',
   'trigging',
+  'tjobbatch',
   'tnotification',
   'tcrs',
   'jcountrycrs',
