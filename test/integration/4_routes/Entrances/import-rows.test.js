@@ -3,20 +3,55 @@ const should = require('should');
 const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
+const VALID_ROW = {
+  id: '99999',
+  'rdf:type': 'Entrance',
+  'dct:rights/cc:attributionName': 'Author',
+  'dct:rights/karstlink:licenseType': 'CC-BY-SA',
+  'gn:countryCode': 'FR',
+  'w3geo:latitude': '45.0',
+  'w3geo:longitude': '6.0',
+  'rdfs:label/dc:language': 'en',
+  'rdfs:label': 'Test Entrance',
+};
+
 describe('Entrance features', () => {
   let adminToken;
   let userToken;
+  let originalBoss;
 
   before(async () => {
     adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
+    originalBoss = sails.enrichmentBoss;
+    sails.enrichmentBoss = { send: sinon.stub().resolves() };
   });
 
-  describe('Import rows', () => {
+  after(() => {
+    sails.enrichmentBoss = originalBoss;
+  });
+
+  describe('Import rows (async)', () => {
+    let createBatchStub;
+
+    beforeEach(() => {
+      createBatchStub = sinon
+        .stub(CSVImportQueueService, 'createBatch')
+        .resolves({
+          batchId: 'test-batch-id-123',
+          totalRows: 3,
+          totalChunks: 1,
+        });
+    });
+
+    afterEach(() => {
+      createBatchStub.restore();
+    });
+
     it('should forbid non-admin users', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/import-rows')
-        .send({ data: [] })
+        .send({ data: [VALID_ROW] })
         .set('Authorization', userToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
@@ -28,192 +63,104 @@ describe('Entrance features', () => {
         });
     });
 
-    it('should return empty results for empty data', (done) => {
+    it('should return 400 for empty data array', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/import-rows')
         .send({ data: [] })
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(400)
         .end((err, res) => {
           if (err) return done(err);
-          should(res.body.type).equal('entrance');
-          should(res.body.successfulImport).be.an.Array().with.length(0);
-          should(res.body.successfulImportAsDuplicates)
-            .be.an.Array()
-            .with.length(0);
-          should(res.body.failureImport).be.an.Array().with.length(0);
-          should(res.body.total.success).equal(0);
-          should(res.body.total.failure).equal(0);
+          should(res.body.message).containEql('non-empty');
           return done();
         });
     });
 
-    it('should fail when missing required columns', (done) => {
+    it('should return 400 for missing body', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/import-rows')
-        .send({
-          data: [{ 'dct:rights/cc:attributionName': 'Test' }],
-        })
+        .send({})
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(400)
         .end((err, res) => {
           if (err) return done(err);
-          should(res.body.failureImport).have.length(1);
-          should(res.body.failureImport[0]).have.property('line', 2);
-          should(res.body.failureImport[0].message).containEql(
-            'Columns missing'
+          should(res.body.message).containEql('non-empty');
+          return done();
+        });
+    });
+
+    it('should return 400 when mandatory columns are missing on first row', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/import-rows')
+        .send({ data: [{ 'dct:rights/cc:attributionName': 'Test' }] })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).containEql('Columns missing');
+          return done();
+        });
+    });
+
+    it('should return 202 with batchId for valid request', (done) => {
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/entrances/import-rows')
+        .send({ data: [VALID_ROW] })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(202)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body).have.property('batchId', 'test-batch-id-123');
+          should(res.body).have.property('totalRows', 3);
+          should(res.body).have.property('totalChunks', 1);
+          should(res.body).have.property(
+            'statusUrl',
+            '/api/v1/jobs/test-batch-id-123'
           );
           return done();
         });
     });
 
-    it('should create duplicate when entrance already exists', async () => {
-      const cave = await TCave.create({ author: 1 });
-      const existingEntrance = await TEntrance.create({
-        author: 1,
-        idDbImport: 44444,
-        nameDbImport: 'Duplicate Entrance',
-        latitude: 45.0,
-        longitude: 6.0,
-        cave: cave.id,
-      });
+    it('should return 500 when job queue is unavailable', (done) => {
+      const savedBoss = sails.enrichmentBoss;
+      sails.enrichmentBoss = null;
 
-      await supertest(sails.hooks.http.app)
-        .post('/api/v1/entrances/import-rows')
-        .send({
-          data: [
-            {
-              id: '44444',
-              'rdf:type': 'Entrance',
-              'dct:rights/cc:attributionName': 'Duplicate Entrance',
-              'dct:rights/karstlink:licenseType': 'CC-BY-SA',
-              'gn:countryCode': 'FR',
-              'w3geo:latitude': '45.0',
-              'w3geo:longitude': '6.0',
-              'rdfs:label': 'Test Entrance',
-              'rdfs:label/dc:language': 'en',
-            },
-          ],
-        })
-        .set('Authorization', adminToken)
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(200)
-        .then((res) => {
-          should(res.body.successfulImportAsDuplicates).have.length(1);
-          should(res.body.successfulImportAsDuplicates[0].line).equal(2);
-          should(res.body.successfulImportAsDuplicates[0].message).containEql(
-            'entrance duplicate'
-          );
-          should(res.body.total.successfulImportAsDuplicates).equal(1);
-        });
-
-      await TEntrance.destroy({ id: existingEntrance.id });
-      await TCave.destroy({ id: cave.id });
-    });
-
-    it('should handle import errors gracefully', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/import-rows')
-        .send({
-          data: [
-            {
-              id: '55555',
-              'rdf:type': 'Entrance',
-              'dct:rights/cc:attributionName': 'Error Entrance',
-              'dct:rights/karstlink:licenseType': 'CC-BY-SA',
-              'gn:countryCode': 'INVALID',
-              'w3geo:latitude': 'invalid',
-              'w3geo:longitude': '6.0',
-              'rdfs:label': 'Test Entrance',
-              'rdfs:label/dc:language': 'en',
-            },
-          ],
-        })
+        .send({ data: [VALID_ROW] })
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
-        .end((err, res) => {
+        .expect(500)
+        .end((err) => {
+          sails.enrichmentBoss = savedBoss;
           if (err) return done(err);
-          should(res.body.failureImport).have.length(1);
-          should(res.body.failureImport[0]).have.property('line', 2);
-          should(res.body.total.failure).equal(1);
           return done();
         });
     });
-  });
 
-  // **Validates: Requirements 1.1, 5.3**
-  describe('Import rows - CoordinatesSnapshot wiring', () => {
-    const fs = require('fs'); // eslint-disable-line global-require
-    const path = require('path'); // eslint-disable-line global-require
+    it('should return 500 when createBatch throws', (done) => {
+      createBatchStub.rejects(new Error('DB connection failed'));
 
-    afterEach(() => {
-      sinon.restore();
-      sails.services.coordinatessnapshotservice.reset();
-    });
-
-    it('should have CoordinatesSnapshotService.load() wired in bootstrap', () => {
-      const bootstrapSource = fs.readFileSync(
-        path.join(__dirname, '../../../../config/bootstrap.js'),
-        'utf8'
-      );
-      should(bootstrapSource).containEql('coordinatessnapshotservice');
-      should(bootstrapSource).containEql('.load()');
-    });
-
-    it('should call invalidate() after successful entrance import', async () => {
-      const invalidateSpy = sinon.spy(
-        sails.services.coordinatessnapshotservice,
-        'invalidate'
-      );
-
-      const res = await supertest(sails.hooks.http.app)
+      supertest(sails.hooks.http.app)
         .post('/api/v1/entrances/import-rows')
-        .send({
-          data: [
-            {
-              'rdf:type': 'Entrance',
-              'dct:rights/cc:attributionName': 'Snapshot Test Author',
-              'dct:rights/karstlink:licenseType': 'CC-BY-SA',
-              'gn:countryCode': 'FR',
-              'w3geo:latitude': '48.8',
-              'w3geo:longitude': '2.3',
-              'rdfs:label': 'Snapshot Test Entrance',
-              'rdfs:label/dc:language': 'eng',
-            },
-          ],
-        })
+        .send({ data: [VALID_ROW] })
         .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200);
-
-      if (res.body.successfulImport.length > 0) {
-        should(invalidateSpy.calledOnce).be.true();
-      }
-    });
-
-    it('should NOT call invalidate() when no entrances were imported', async () => {
-      const invalidateSpy = sinon.spy(
-        sails.services.coordinatessnapshotservice,
-        'invalidate'
-      );
-
-      await supertest(sails.hooks.http.app)
-        .post('/api/v1/entrances/import-rows')
-        .send({ data: [] })
-        .set('Authorization', adminToken)
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      should(invalidateSpy.called).be.false();
+        .expect(500)
+        .end((err) => {
+          if (err) return done(err);
+          return done();
+        });
     });
   });
 });

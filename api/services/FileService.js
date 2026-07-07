@@ -106,6 +106,25 @@ module.exports = {
     this.isCredentials = !!mockCredentials;
   },
 
+  /**
+   * Get the container client for CSV import reports.
+   * Reuses documents container with prefix isolation.
+   * @returns {import('@azure/storage-blob').ContainerClient|null}
+   */
+  getReportsContainerClient() {
+    if (!credentials) return null;
+    return credentials.documentsBlobClient;
+  },
+
+  /**
+   * Get the shared key credential for SAS generation.
+   * @returns {import('@azure/storage-blob').StorageSharedKeyCredential|null}
+   */
+  getSharedKeyCredential() {
+    if (!credentials) return null;
+    return credentials.sharedKeyCredential;
+  },
+
   document: {
     getUrl(path) {
       // The documents container allow anonymous access

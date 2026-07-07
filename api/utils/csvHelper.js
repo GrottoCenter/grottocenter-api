@@ -175,6 +175,12 @@ async function distantFileDownload({ url, allowedExtentions = [] } = {}) {
   });
 }
 
+const ENTRANCE_MANDATORY_COLUMNS = [
+  'w3geo:latitude',
+  'w3geo:longitude',
+  'rdfs:label/dc:language',
+];
+
 module.exports = {
   extractUrlFragment,
   valIfTruthyOrNull,
@@ -182,6 +188,8 @@ module.exports = {
   getOrCreateAuthor,
   getCreator,
   checkColumns,
+
+  ENTRANCE_MANDATORY_COLUMNS,
 
   KARSTLINK_DATE_FORMAT,
   getDateFromKarstlink,

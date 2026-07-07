@@ -78,7 +78,9 @@ module.exports.bootstrap = async function (done) {
     );
   }
 
-  // Register graceful shutdown for enrichment queue
+  // Register graceful shutdown for the shared pg-boss instance.
+  // Both EnrichmentQueueService and CSVImportQueueService use the same
+  // sails.enrichmentBoss instance, so stopping it shuts down all workers.
   sails.config.beforeShutdown = async (cb) => {
     try {
       await sails.services.enrichmentqueueservice.stop();
@@ -87,6 +89,14 @@ module.exports.bootstrap = async function (done) {
     }
     cb();
   };
+
+  // Blocking: start CSV import queue before accepting requests
+  try {
+    await sails.services.csvimportqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start CSVImportQueueService:', err.message);
+    sails.log.warn('CSV import processing will be unavailable');
+  }
 
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all

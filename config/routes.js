@@ -493,6 +493,9 @@ module.exports.routes = {
   // SSO
   'POST /api/v1/sso/auth-token': 'v1/sso/auth-token',
 
+  // Job (async batch operations)
+  'GET /api/v1/jobs/:batchId': 'v1/job/find',
+
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
   //  ╚╩╝╚═╝╚═╝╩ ╩╚═╝╚═╝╩ ╩╚═╝

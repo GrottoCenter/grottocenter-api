@@ -7191,6 +7191,74 @@ paths:
         '403':
           description: One or more notification IDs do not belong to the authenticated user.
 
+  '/entrances/import-rows':
+    post:
+      tags:
+        - import csv
+      summary: Enqueue entrance CSV import for async processing
+      description: >-
+        Validates the payload, groups rows by affinity, splits into chunks,
+        and enqueues them for background processing. Returns immediately with
+        a batch ID for progress polling.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
+      responses:
+        '202':
+          description: Import accepted for async processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchAccepted'
+        '400':
+          description: Invalid payload (empty data, missing mandatory columns).
+        '403':
+          description: You are not authorized to import entrances via CSV.
+        '500':
+          description: Job queue unavailable or batch creation failed.
+
+  '/jobs/{batchId}':
+    get:
+      tags:
+        - import csv
+      summary: Get async job batch status
+      description: >-
+        Returns progress and result for an async job batch. Users can only view
+        their own batches unless they have Moderator or Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: UUID of the job batch
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Batch status with progress and result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobBatchStatus'
+        '403':
+          description: Not authorized to view this batch.
+        '404':
+          description: Batch not found.
+
 components:
 
   parameters:
@@ -7316,6 +7384,85 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    ImportBatchAccepted:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          description: Unique identifier for the import batch
+        totalRows:
+          type: integer
+          description: Total number of rows in the payload
+        totalChunks:
+          type: integer
+          description: Number of chunks created for parallel processing
+        statusUrl:
+          type: string
+          description: URL to poll for batch progress
+
+    JobBatchStatus:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          example: csv-import
+        status:
+          type: string
+          enum: [pending, active, completed, failed]
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        progress:
+          type: object
+          properties:
+            totalChunks:
+              type: integer
+            completedChunks:
+              type: integer
+            totalRows:
+              type: integer
+            processedRows:
+              type: integer
+            successes:
+              type: integer
+            duplicates:
+              type: integer
+            failures:
+              type: integer
+        result:
+          type: object
+          nullable: true
+          properties:
+            reportUrls:
+              type: object
+              properties:
+                success:
+                  type: string
+                  nullable: true
+                duplicates:
+                  type: string
+                  nullable: true
+                failures:
+                  type: string
+                  nullable: true
+            summary:
+              type: object
+              properties:
+                successes:
+                  type: integer
+                duplicates:
+                  type: integer
+                failures:
+                  type: integer
+
     Auth-success:
       type: object
       properties:
