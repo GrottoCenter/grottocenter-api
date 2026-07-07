@@ -4227,6 +4227,12 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: isSensitiveLocked
+          in: query
+          description: When true, only administrators can change isSensitive (administrator-only field)
+          schema:
+            type: boolean
+            default: false
         - name: hasBat
           in: query
           description: The cave is a known bat habitat
@@ -5464,6 +5470,9 @@ paths:
                   description: List of names ids
                   items:
                     type: object
+                isSensitiveLocked:
+                  type: boolean
+                  description: When true, only administrators can change the massif sensitivity. Administrator-only field; stripped for other users.
                 name:
                   type: object
                   description: Optional. Update the main name inline (text and/or language).
@@ -5648,12 +5657,15 @@ paths:
                   count:
                     type: integer
                     description: Number of entrances marked as sensitive
+                  skippedLockedCount:
+                    type: integer
+                    description: Number of entrances skipped because their sensitivity is locked
                   massif:
                     $ref: '#/components/schemas/Massif'
         '401':
           description: Authentication required.
         '403':
-          description: Only administrators can perform this action.
+          description: The user is not an administrator, or the massif sensitivity is locked.
         '404':
           description: Massif not found
 
@@ -5685,7 +5697,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: Only administrators can perform this action.
+          description: The user is not an administrator, or the massif sensitivity is locked.
         '404':
           description: Massif not found
 
@@ -5711,7 +5723,10 @@ paths:
                 properties:
                   count:
                     type: integer
-                    description: Number of affected entrances
+                    description: Number of non-sensitive, non-locked entrances that would be affected
+                  lockedCount:
+                    type: integer
+                    description: Number of non-sensitive entrances that would be skipped because their sensitivity is locked
         '401':
           description: Authentication required.
         '403':
@@ -8009,6 +8024,10 @@ components:
           type: integer
         isSensitive:
           type: boolean
+        isSensitiveLocked:
+          type: boolean
+          default: false
+          description: When true, only administrators can change isSensitive
         hasBat:
           type: boolean
           default: false
@@ -8422,6 +8441,10 @@ components:
         isSensitive:
           type: boolean
           description: Whether the massif is marked as sensitive
+        isSensitiveLocked:
+          type: boolean
+          default: false
+          description: When true, only administrators can change the massif sensitivity
         name:
           type: string
         names:

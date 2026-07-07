@@ -24,11 +24,13 @@ module.exports = async (req, res) => {
 
   try {
     const count = await MassifService.countUnsensitiveEntrances(massifId);
+    const lockedCount =
+      await MassifService.countLockedUnsensitiveEntrances(massifId);
 
     return ControllerService.treat(
       req,
       null,
-      { count },
+      { count, lockedCount },
       { controllerMethod: 'MassifController.preview-sensitive' },
       res
     );

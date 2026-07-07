@@ -307,5 +307,85 @@ describe('Entrance features', () => {
         should(entrance.isSensitive).be.true();
       }).timeout(10000);
     });
+
+    describe('Sensitivity lock', () => {
+      let caveId;
+      let lockedEntranceId;
+
+      beforeEach(async () => {
+        const cave = await TCave.create({ author: 1 }).fetch();
+        caveId = cave.id;
+        const entrance = await TEntrance.create({
+          author: 1,
+          cave: caveId,
+          latitude: 12.3,
+          longitude: 45.6,
+          isSensitive: true,
+          isSensitiveLocked: true,
+        }).fetch();
+        lockedEntranceId = entrance.id;
+        await TName.create({
+          entrance: lockedEntranceId,
+          name: 'Locked entrance',
+          isMain: true,
+          author: 1,
+          language: 'eng',
+        });
+      });
+
+      afterEach(async () => {
+        await TName.destroy({ entrance: lockedEntranceId });
+        await TEntrance.destroyOne(lockedEntranceId);
+        await TCave.destroyOne(caveId);
+      });
+
+      it('should return 403 when a non-admin changes isSensitive on a locked entrance', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${lockedEntranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .send({ isSensitive: false })
+          .expect(403);
+
+        const entrance = await TEntrance.findOne(lockedEntranceId);
+        should(entrance.isSensitive).be.true();
+      });
+
+      it('should allow an admin to change isSensitive on a locked entrance', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${lockedEntranceId}`)
+          .set('Authorization', allGroupsToken)
+          .set('Content-type', 'application/json')
+          .send({ isSensitive: false })
+          .expect(200);
+
+        const entrance = await TEntrance.findOne(lockedEntranceId);
+        should(entrance.isSensitive).be.false();
+      });
+
+      it('should ignore isSensitiveLocked sent by a non-admin', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${lockedEntranceId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .send({ isSensitiveLocked: false })
+          .expect(200);
+
+        const entrance = await TEntrance.findOne(lockedEntranceId);
+        should(entrance.isSensitiveLocked).be.true();
+      });
+
+      it('should let an admin unlock the entrance', async () => {
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${lockedEntranceId}`)
+          .set('Authorization', allGroupsToken)
+          .set('Content-type', 'application/json')
+          .send({ isSensitiveLocked: false })
+          .expect(200);
+
+        const entrance = await TEntrance.findOne(lockedEntranceId);
+        should(entrance.isSensitiveLocked).be.false();
+      });
+    });
   });
 });

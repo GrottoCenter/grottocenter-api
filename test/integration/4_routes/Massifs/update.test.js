@@ -8,6 +8,7 @@ const EntranceService = require('../../../../api/services/EntranceService');
 
 describe('Massif features', () => {
   let userToken;
+  let adminToken;
   let testMassifId;
   let testDoc1Id;
   let testDoc2Id;
@@ -16,6 +17,7 @@ describe('Massif features', () => {
 
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
     const massif = await TMassif.create({ author: 1, reviewer: 2 }).fetch();
     testMassifId = massif.id;
     const doc1 = await TDocument.create({
@@ -263,6 +265,42 @@ describe('Massif features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(400, done);
+    });
+
+    it('should strip isSensitiveLocked when sent by a non-admin', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ isSensitiveLocked: true })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(async (err) => {
+          if (err) return done(err);
+          const massif = await TMassif.findOne(testMassifId);
+          should(massif.isSensitiveLocked).be.false();
+          return done();
+        });
+    });
+
+    it('should persist isSensitiveLocked when sent by an admin', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({ isSensitiveLocked: true })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(async (err) => {
+          if (err) return done(err);
+          const massif = await TMassif.findOne(testMassifId);
+          should(massif.isSensitiveLocked).be.true();
+          // Reset
+          await TMassif.updateOne(testMassifId).set({
+            isSensitiveLocked: false,
+          });
+          return done();
+        });
     });
   });
 });

@@ -53,5 +53,12 @@ module.exports = {
       columnName: 'is_sensitive',
       defaultsTo: false,
     },
+
+    isSensitiveLocked: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_sensitive_locked',
+      defaultsTo: false,
+    },
   },
 };

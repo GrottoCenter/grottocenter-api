@@ -106,6 +106,13 @@ module.exports = {
       defaultsTo: false,
     },
 
+    isSensitiveLocked: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_sensitive_locked',
+      defaultsTo: false,
+    },
+
     hasBat: {
       type: 'boolean',
       allowNull: false,

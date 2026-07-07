@@ -96,5 +96,24 @@ describe('Massif unmark-sensitive route features', () => {
       await TName.destroy({ massif: massif.id });
       await TMassif.destroyOne(massif.id);
     });
+
+    it('should return 403 when the massif sensitivity is locked', async () => {
+      const massif = await TMassif.create({
+        isSensitive: true,
+        isSensitiveLocked: true,
+        author: 1,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .post(`/api/v1/massifs/${massif.id}/unmark-sensitive`)
+        .set('Authorization', adminToken)
+        .expect(403);
+
+      // The massif must remain sensitive
+      const modified = await TMassif.findOne(massif.id);
+      modified.isSensitive.should.be.true();
+
+      await TMassif.destroyOne(massif.id);
+    });
   });
 });

@@ -24,7 +24,12 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  // Idempotency: skip if already sensitive
+  // Sensitivity is frozen while the massif is locked
+  if (massif.isSensitiveLocked) {
+    return res.forbidden('The sensitivity of this massif is locked.');
+  }
+
+  // Idempotency: skip if already sensitive (no entrances are touched)
   if (massif.isSensitive) {
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
     return ControllerService.treat(
@@ -32,12 +37,17 @@ module.exports = async (req, res) => {
       null,
       {
         count: 0,
+        skippedLockedCount: 0,
         massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.mark-sensitive' },
       res
     );
   }
+
+  // Count entrances that will be skipped because their sensitivity is locked
+  const skippedLockedCount =
+    await MassifService.countLockedUnsensitiveEntrances(massifId);
 
   try {
     // Set the massif as sensitive and get IDs of entrances that were updated
@@ -66,6 +76,7 @@ module.exports = async (req, res) => {
       null,
       {
         count: updatedEntranceIds.length,
+        skippedLockedCount,
         massif: toMassif(updatedMassif),
       },
       { controllerMethod: 'MassifController.mark-sensitive' },

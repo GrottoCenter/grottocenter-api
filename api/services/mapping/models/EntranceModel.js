@@ -29,6 +29,7 @@ module.exports = {
   id: undefined,
   isDeleted: undefined,
   isSensitive: undefined,
+  isSensitiveLocked: undefined,
   hasBat: undefined,
   dangerFlooding: undefined,
   dangerCo2: undefined,

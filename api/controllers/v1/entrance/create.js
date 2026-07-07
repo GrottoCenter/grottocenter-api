@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
+const RightService = require('../../../services/RightService');
 const { validateNameLength } = require('../../../utils/nameValidation');
 
 module.exports = async (req, res) => {
@@ -29,6 +30,15 @@ module.exports = async (req, res) => {
     dateInscription: new Date(),
     isOfInterest: false,
   };
+
+  // Only administrators can lock sensitivity at creation time
+  const isAdmin = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  if (!isAdmin) {
+    delete cleanedData.isSensitiveLocked;
+  }
 
   const nameDescLocData =
     EntranceService.getConvertedNameFromClientRequest(req);

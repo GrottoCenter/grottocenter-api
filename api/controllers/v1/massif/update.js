@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
 const NotificationService = require('../../../services/NotificationService');
+const RightService = require('../../../services/RightService');
 const { toMassif } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
 
@@ -28,6 +29,15 @@ module.exports = async (req, res) => {
   }
   // Sensitivity is managed exclusively via mark-sensitive / unmark-sensitive
   delete cleanedData.isSensitive;
+
+  // Only administrators can change the sensitivity lock
+  const isAdmin = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  if (!isAdmin) {
+    delete cleanedData.isSensitiveLocked;
+  }
 
   // Validate name length
   const nameText = req.body.name?.text;

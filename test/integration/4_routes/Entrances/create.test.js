@@ -252,6 +252,153 @@ describe('Entrance features', () => {
           });
       }).timeout(10000);
 
+      it('should ignore isSensitiveLocked sent by a non-admin (defaults to false)', (done) => {
+        const entranceData = {
+          cave: 1,
+          name: { text: 'Non-admin Lock Entrance', language: 'eng' },
+          latitude: 49.0,
+          longitude: 5.0,
+          isSensitiveLocked: true,
+        };
+
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(entranceData)
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: entrance } = res;
+              createdEntranceIds.push(entrance.id);
+              const persisted = await TEntrance.findOne(entrance.id);
+              should(persisted.isSensitiveLocked).equal(false);
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      }).timeout(10000);
+
+      it('should persist isSensitiveLocked when set by an admin', (done) => {
+        const entranceData = {
+          cave: 1,
+          name: { text: 'Admin Lock Entrance', language: 'eng' },
+          latitude: 49.5,
+          longitude: 5.5,
+          isSensitiveLocked: true,
+        };
+
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(entranceData)
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: entrance } = res;
+              createdEntranceIds.push(entrance.id);
+              const persisted = await TEntrance.findOne(entrance.id);
+              should(persisted.isSensitiveLocked).equal(true);
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      }).timeout(10000);
+
+      it('should default isSensitiveLocked to false when omitted', (done) => {
+        const entranceData = {
+          cave: 1,
+          name: { text: 'Default Lock Entrance', language: 'eng' },
+          latitude: 49.8,
+          longitude: 5.8,
+        };
+
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(entranceData)
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              const { body: entrance } = res;
+              createdEntranceIds.push(entrance.id);
+              const persisted = await TEntrance.findOne(entrance.id);
+              should(persisted.isSensitiveLocked).equal(false);
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      }).timeout(10000);
+
+      it('should not auto-inherit massif sensitivity when the entrance is locked', async () => {
+        const massif = await TMassif.create({
+          isSensitive: true,
+          author: 1,
+          geogPolygon: 'SRID=4326;POLYGON((44 44, 45 44, 45 45, 44 45, 44 44))',
+        }).fetch();
+
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            cave: 1,
+            name: { text: 'Locked exempt entrance', language: 'eng' },
+            latitude: 44.5,
+            longitude: 44.5,
+            isSensitive: false,
+            isSensitiveLocked: true,
+          })
+          .expect(200);
+
+        createdEntranceIds.push(res.body.id);
+        const persisted = await TEntrance.findOne(res.body.id);
+        should(persisted.isSensitive).equal(false);
+        should(persisted.isSensitiveLocked).equal(true);
+
+        await TMassif.destroyOne(massif.id);
+      }).timeout(10000);
+
+      it('should auto-inherit massif sensitivity when the entrance is not locked', async () => {
+        const massif = await TMassif.create({
+          isSensitive: true,
+          author: 1,
+          geogPolygon: 'SRID=4326;POLYGON((46 46, 47 46, 47 47, 46 47, 46 46))',
+        }).fetch();
+
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances')
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({
+            cave: 1,
+            name: { text: 'Auto sensitive entrance', language: 'eng' },
+            latitude: 46.5,
+            longitude: 46.5,
+            isSensitive: false,
+          })
+          .expect(200);
+
+        createdEntranceIds.push(res.body.id);
+        const persisted = await TEntrance.findOne(res.body.id);
+        should(persisted.isSensitive).equal(true);
+
+        await TMassif.destroyOne(massif.id);
+      }).timeout(10000);
+
       it('should populate point_geom from latitude/longitude on INSERT', (done) => {
         const lat = 48.8566;
         const lon = 2.3522;

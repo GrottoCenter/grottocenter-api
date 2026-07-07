@@ -126,6 +126,20 @@ const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   WHERE m.id = $1
   AND e.is_deleted = false
   AND e.is_sensitive = false
+  AND e.is_sensitive_locked = false
+`;
+
+// Counts non-sensitive entrances within the massif whose sensitivity is locked.
+// These are the entrances the cascade will skip.
+const COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
+  SELECT COUNT(e.id)::integer AS count
+  FROM t_entrance AS e
+  JOIN t_massif AS m
+  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE m.id = $1
+  AND e.is_deleted = false
+  AND e.is_sensitive = false
+  AND e.is_sensitive_locked = true
 `;
 
 async function safeDBQuery(sql, param) {
@@ -212,6 +226,7 @@ module.exports = {
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
     isSensitive: coerceBool(req, 'isSensitive'),
+    isSensitiveLocked: coerceBool(req, 'isSensitiveLocked'),
   }),
 
   async getPopulatedMassif(massifId) {
@@ -288,6 +303,21 @@ module.exports = {
       throw e;
     }
   },
+  countLockedUnsensitiveEntrances: async (massifId) => {
+    try {
+      const result = await CommonService.query(
+        COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF,
+        [massifId]
+      );
+      return result.rows[0]?.count ?? 0;
+    } catch (e) {
+      sails.log.error(
+        `Error counting locked unsensitive entrances for massif ${massifId}:`,
+        e
+      );
+      throw e;
+    }
+  },
   getNetworks: async (massifId) =>
     safeDBQuery(FIND_NETWORKS_IN_MASSIF, massifId),
 
@@ -347,7 +377,8 @@ module.exports = {
    * @returns {Promise<number[]>} IDs of entrances whose sensitivity was changed
    */
   async propagateSensitivityToEntrances(massifId, reviewerId, db) {
-    // Find IDs of non-sensitive entrances within the massif
+    // Find IDs of non-sensitive entrances within the massif.
+    // Entrances whose sensitivity is locked are skipped (left unchanged).
     const findEntrancesQuery = `
       SELECT e.id
       FROM t_entrance AS e
@@ -356,6 +387,7 @@ module.exports = {
       AND e.point_geom && m.geog_polygon
       AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
       AND e.is_sensitive = false
+      AND e.is_sensitive_locked = false
     `;
     const result = await CommonService.query(
       findEntrancesQuery,

@@ -29,6 +29,22 @@ module.exports = async (req, res) => {
 
   // Check if sensitive change is permitted
   const newIsSensitiveValue = cleanedData.isSensitive;
+
+  if (!isAdmin) {
+    // Non-admins cannot change the sensitivity lock
+    delete cleanedData.isSensitiveLocked;
+
+    // When sensitivity is locked, only admins may change isSensitive (either way)
+    const wantsSensitiveChange =
+      newIsSensitiveValue !== undefined &&
+      newIsSensitiveValue !== currentEntrance.isSensitive;
+    if (currentEntrance.isSensitiveLocked && wantsSensitiveChange) {
+      return res.forbidden(
+        'The sensitivity of this entrance is locked. Only an administrator can change it.'
+      );
+    }
+  }
+
   if (
     !isAdmin &&
     newIsSensitiveValue === false &&

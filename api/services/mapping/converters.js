@@ -339,6 +339,8 @@ const c = {
     }
     result.isDeleted = source.isDeleted;
     result.isSensitive = isSensitive;
+    result.isSensitiveLocked =
+      source.isSensitiveLocked ?? source.is_sensitive_locked ?? false;
     result.hasBat = source.hasBat;
     result.dangerFlooding = source.dangerFlooding;
     result.dangerCo2 = source.dangerCo2;
@@ -600,6 +602,7 @@ const c = {
     '@id': String(source.id),
     isDeleted: source.isDeleted,
     isSensitive: source.isSensitive,
+    isSensitiveLocked: source.isSensitiveLocked ?? false,
     redirectTo: source.redirectTo,
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
