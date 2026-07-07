@@ -3479,7 +3479,11 @@ paths:
     delete:
       tags:
         - guidelines
-      description: Soft-delete a guideline. Authenticated action (moderator only).
+      description: >
+        Delete a guideline. By default this is a reversible soft-delete
+        (moderator or administrator). When `isPermanent=true`, the guideline and
+        its history snapshots and entity associations are permanently removed —
+        this is irreversible and restricted to administrators.
       security:
         - bearerAuth: []
       parameters:
@@ -3489,9 +3493,19 @@ paths:
           schema:
             type: integer
           description: Guideline ID to delete
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: >
+            When true, permanently (hard) delete the guideline instead of
+            soft-deleting it. Administrators only.
       responses:
         '200':
-          description: Successful operation. Returns the soft-deleted guideline.
+          description: >
+            Successful operation. Returns the deleted guideline (with
+            `isDeleted: true`).
           content:
             application/json:
               schema:
@@ -3499,9 +3513,11 @@ paths:
         '401':
           description: Unauthorized (missing or invalid JWT token).
         '403':
-          description: Forbidden (user is not authorized to delete guidelines).
+          description: >
+            Forbidden (user is not authorized to delete guidelines, or is not an
+            administrator when requesting a permanent deletion).
         '404':
-          description: Guideline not found or already deleted.
+          description: Guideline not found, or already soft-deleted (non-permanent delete only).
           content:
             application/json:
               schema:
