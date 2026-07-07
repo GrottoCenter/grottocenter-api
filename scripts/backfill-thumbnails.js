@@ -26,7 +26,10 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const batchSizeIndex = args.indexOf('--batch-size');
 const batchSize =
-  batchSizeIndex !== -1 ? parseInt(args[batchSizeIndex + 1], 10) || 10 : 10;
+  batchSizeIndex !== -1 ? parseInt(args[batchSizeIndex + 1], 10) || 1 : 1;
+
+// Maximum blob size to download (50 MB) — skip larger files to avoid OOM
+const MAX_BLOB_BYTES = 50 * 1024 * 1024;
 
 async function run() {
   // Lift Sails in non-server mode
@@ -38,6 +41,7 @@ async function run() {
           blueprints: false,
           orm: require('sails-hook-orm'),
           grunt: false,
+          http: false,
           pubsub: false,
           sockets: false,
           views: false,
@@ -83,6 +87,7 @@ async function run() {
     } while (page.length === pageSize);
 
     console.log(`Found ${imageFiles.length} image files without thumbnails.`);
+    console.log('File IDs to process:', imageFiles.map((f) => f.id).join(', '));
 
     if (dryRun) {
       console.log('[DRY RUN] Would process', imageFiles.length, 'files.');
@@ -125,18 +130,37 @@ async function run() {
     let skipped = 0;
     let failed = 0;
 
-    // Process in batches
+    // Process in batches (default: sequential to limit memory pressure)
     for (let i = 0; i < imageFiles.length; i += batchSize) {
       const batch = imageFiles.slice(i, i + batchSize);
 
       await Promise.all(
         batch.map(async (file) => {
           try {
-            // Download original from Azure
+            // Check blob size before downloading to avoid OOM on huge files
             const blockBlobClient = containerClient.getBlockBlobClient(
               file.path
             );
 
+            let properties;
+            try {
+              properties = await blockBlobClient.getProperties();
+            } catch (propErr) {
+              if (propErr.statusCode === 404) {
+                throw new Error('The specified blob does not exist.');
+              }
+              throw propErr;
+            }
+
+            if (properties.contentLength > MAX_BLOB_BYTES) {
+              console.log(
+                `SKIPPED file ${file.id}: blob too large (${Math.round(properties.contentLength / 1024 / 1024)} MB), skipping to avoid OOM`
+              );
+              skipped += 1;
+              return;
+            }
+
+            // Download original from Azure
             const downloadResponse = await blockBlobClient.download(0);
             const chunks = [];
             for await (const chunk of downloadResponse.readableStreamBody) {
@@ -182,6 +206,12 @@ async function run() {
       console.log(
         `Processed ${processed}/${imageFiles.length} files, ${failed} error(s)`
       );
+
+      // Hint GC to reclaim buffers between batches (run with --expose-gc for
+      // deterministic collection; without it this is a no-op)
+      if (global.gc) {
+        global.gc();
+      }
     }
 
     console.log('\n--- Summary ---');

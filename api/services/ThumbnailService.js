@@ -95,7 +95,9 @@ module.exports = {
     const result = { small: null, medium: null, large: null, hadError: false };
 
     try {
-      const metadata = await sharp(imageBuffer).metadata();
+      const metadata = await sharp(imageBuffer, {
+        limitInputPixels: 100 * 1024 * 1024, // 100 megapixels max
+      }).metadata();
       const { width: originalWidth } = metadata;
 
       if (!originalWidth) {
