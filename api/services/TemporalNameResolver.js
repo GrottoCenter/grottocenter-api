@@ -99,7 +99,7 @@ const filterToActualNameChanges = (hNameRecords, currentName) => {
       new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
   );
 
-  const effectiveCurrentName = currentName || '';
+  const effectiveCurrentName = currentName ?? '';
   const result = [];
   for (let i = 0; i < sorted.length; i += 1) {
     const nextName =

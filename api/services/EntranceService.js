@@ -31,6 +31,35 @@ const coerceBool = require('../utils/coerceBool');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
 const { computeCommentsRating } = require('../utils/commentsRating');
 
+/**
+ * Map a raw h_name SQL row to a camelCase object.
+ * @param {object} row - Raw row from the h_name query.
+ * @param {object} [options]
+ * @param {boolean} [options.includeAuthorReviewer=false] - Whether to include
+ *   author/reviewer nested objects (requires joined columns).
+ * @returns {object} Mapped h_name record.
+ */
+const mapHNameRow = (row, { includeAuthorReviewer = false } = {}) => {
+  const mapped = {
+    id: row.id,
+    name: row.name,
+    isMain: row.is_main,
+    dateInscription: row.date_inscription,
+    dateReviewed: row.date_reviewed,
+    entrance: row.id_entrance,
+    cave: row.id_cave,
+  };
+  if (includeAuthorReviewer) {
+    mapped.author = row.id_author
+      ? { id: row.id_author, nickname: row.author_nickname }
+      : null;
+    mapped.reviewer = row.id_reviewer
+      ? { id: row.id_reviewer, nickname: row.reviewer_nickname }
+      : null;
+  }
+  return mapped;
+};
+
 module.exports = {
   getConvertedNameFromClientRequest: (req) => {
     const result = {
@@ -127,6 +156,7 @@ module.exports = {
     // but different date_reviewed. Waterline deduplicates by id, losing records.
     const numericEntranceId =
       typeof entranceId === 'string' ? parseInt(entranceId, 10) : entranceId;
+    if (Number.isNaN(numericEntranceId)) return [];
     const entranceHNamesRaw = await CommonService.query(
       `SELECT h.id, h.name, h.is_main, h.date_inscription, h.date_reviewed,
               h.id_entrance, h.id_cave, h.id_author, h.id_reviewer,
@@ -138,21 +168,9 @@ module.exports = {
        ORDER BY h.date_reviewed`,
       [numericEntranceId]
     );
-    const entranceHNames = (entranceHNamesRaw.rows || []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      isMain: row.is_main,
-      dateInscription: row.date_inscription,
-      dateReviewed: row.date_reviewed,
-      entrance: row.id_entrance,
-      cave: row.id_cave,
-      author: row.id_author
-        ? { id: row.id_author, nickname: row.author_nickname }
-        : null,
-      reviewer: row.id_reviewer
-        ? { id: row.id_reviewer, nickname: row.reviewer_nickname }
-        : null,
-    }));
+    const entranceHNames = (entranceHNamesRaw.rows || []).map((row) =>
+      mapHNameRow(row, { includeAuthorReviewer: true })
+    );
 
     // Fetch all current TName records for the entrance (full names collection)
     const allEntranceNames = await TName.find({ entrance: entranceId });
@@ -188,14 +206,7 @@ module.exports = {
       for (const row of caveHNamesRaw.rows || []) {
         const caveId = row.id_cave;
         if (!caveHNameMap.has(caveId)) caveHNameMap.set(caveId, []);
-        caveHNameMap.get(caveId).push({
-          id: row.id,
-          name: row.name,
-          isMain: row.is_main,
-          dateInscription: row.date_inscription,
-          dateReviewed: row.date_reviewed,
-          cave: row.id_cave,
-        });
+        caveHNameMap.get(caveId).push(mapHNameRow(row));
       }
       const currentCaveNames = await TName.find({
         cave: caveIds,
