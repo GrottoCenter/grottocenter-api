@@ -121,12 +121,38 @@ module.exports = {
       : true; // No need to call hasRight if it's not a sensitive entrance
 
     // Fetch all HName records for the entrance (temporal resolution)
-    const entranceHNames = await HName.find({
-      entrance: entranceId,
-      isMain: true,
-    })
-      .populate('author')
-      .populate('reviewer');
+    // Use raw SQL because h_name has a composite PK (id, date_reviewed) but
+    // the Waterline model declares primaryKey: 'id'. When the same t_name row
+    // is updated multiple times, h_name contains multiple rows with the same id
+    // but different date_reviewed. Waterline deduplicates by id, losing records.
+    const numericEntranceId =
+      typeof entranceId === 'string' ? parseInt(entranceId, 10) : entranceId;
+    const entranceHNamesRaw = await CommonService.query(
+      `SELECT h.id, h.name, h.is_main, h.date_inscription, h.date_reviewed,
+              h.id_entrance, h.id_cave, h.id_author, h.id_reviewer,
+              a.nickname AS author_nickname, r.nickname AS reviewer_nickname
+       FROM h_name h
+       LEFT JOIN t_caver a ON a.id = h.id_author
+       LEFT JOIN t_caver r ON r.id = h.id_reviewer
+       WHERE h.id_entrance = $1 AND h.is_main = true
+       ORDER BY h.date_reviewed`,
+      [numericEntranceId]
+    );
+    const entranceHNames = (entranceHNamesRaw.rows || []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      isMain: row.is_main,
+      dateInscription: row.date_inscription,
+      dateReviewed: row.date_reviewed,
+      entrance: row.id_entrance,
+      cave: row.id_cave,
+      author: row.id_author
+        ? { id: row.id_author, nickname: row.author_nickname }
+        : null,
+      reviewer: row.id_reviewer
+        ? { id: row.id_reviewer, nickname: row.reviewer_nickname }
+        : null,
+    }));
 
     // Fetch all current TName records for the entrance (full names collection)
     const allEntranceNames = await TName.find({ entrance: entranceId });
@@ -148,11 +174,28 @@ module.exports = {
     const caveHNameMap = new Map();
     const currentCaveNameMap = new Map();
     if (caveIds.length > 0) {
-      const caveHNames = await HName.find({ cave: caveIds, isMain: true });
-      for (const record of caveHNames) {
-        const caveId = record.cave?.id ?? record.cave;
+      // Use raw SQL for the same composite PK deduplication reason as above.
+      // Author/reviewer not needed here — cave h_name records are only used
+      // for resolveNameAtDate which only reads `name` and `dateReviewed`.
+      const placeholders = caveIds.map((_, i) => `$${i + 1}`).join(', ');
+      const caveHNamesRaw = await CommonService.query(
+        `SELECT id, name, is_main, date_inscription, date_reviewed, id_cave
+         FROM h_name
+         WHERE id_cave IN (${placeholders}) AND is_main = true
+         ORDER BY date_reviewed`,
+        caveIds
+      );
+      for (const row of caveHNamesRaw.rows || []) {
+        const caveId = row.id_cave;
         if (!caveHNameMap.has(caveId)) caveHNameMap.set(caveId, []);
-        caveHNameMap.get(caveId).push(record);
+        caveHNameMap.get(caveId).push({
+          id: row.id,
+          name: row.name,
+          isMain: row.is_main,
+          dateInscription: row.date_inscription,
+          dateReviewed: row.date_reviewed,
+          cave: row.id_cave,
+        });
       }
       const currentCaveNames = await TName.find({
         cave: caveIds,
@@ -200,7 +243,10 @@ module.exports = {
 
     const nameChangeSnapshots = TemporalNameResolver.buildNameChangeSnapshots(
       entranceId,
-      entranceHNames,
+      TemporalNameResolver.filterToActualNameChanges(
+        entranceHNames,
+        currentEntranceName
+      ),
       resolveCaveNameFn
     );
 

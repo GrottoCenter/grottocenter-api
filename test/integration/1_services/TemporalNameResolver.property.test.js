@@ -271,7 +271,102 @@ describe('TemporalNameResolver - Property 4: Merged timeline is sorted chronolog
 });
 
 /**
- * Property 5: Converter caveName and isNameChangeSnapshot passthrough
+ * Property 5: filterToActualNameChanges removes records where name equals successor
+ *
+ * For any array of h_name records sorted by dateReviewed and a currentName:
+ * - Records whose name equals the next record's name (or currentName for the last)
+ *   are excluded from the result
+ * - Records whose name differs from the next value are kept
+ * - Output is always a subset of input (preserves reference identity)
+ * - Output length <= input length
+ *
+ * Validates: Only records representing actual name transitions produce snapshots
+ */
+describe('TemporalNameResolver - Property 5: filterToActualNameChanges removes redundant records', () => {
+  it('should keep only records where name differs from successor', function () {
+    this.timeout(30000);
+
+    // Generate arrays where some consecutive records share names
+    const namePoolArb = fc.array(nameArb, { minLength: 1, maxLength: 5 });
+
+    fc.assert(
+      fc.property(
+        namePoolArb,
+        fc.array(
+          fc.record({
+            dateReviewed: isoDateArb,
+            dateInscription: isoDateArb,
+            author: fc.record({ id: positiveIntArb, name: nameArb }),
+            reviewer: fc.record({ id: positiveIntArb, name: nameArb }),
+          }),
+          { minLength: 1, maxLength: 20 }
+        ),
+        fc.option(nameArb, { nil: null }),
+        (namePool, recordSkeletons, currentName) => {
+          // Assign names from a small pool to create duplicates
+          const records = recordSkeletons.map((r, i) => ({
+            ...r,
+            name: namePool[i % namePool.length],
+          }));
+
+          const result = TemporalNameResolver.filterToActualNameChanges(
+            records,
+            currentName
+          );
+
+          // Result is a subset — length must be <= input
+          should(result.length).be.belowOrEqual(records.length);
+
+          // Sort records by dateReviewed for verification
+          const sorted = [...records].sort(
+            (a, b) =>
+              new Date(a.dateReviewed).getTime() -
+              new Date(b.dateReviewed).getTime()
+          );
+
+          // Every kept record must have a different name from its successor
+          for (let i = 0; i < result.length; i += 1) {
+            const idx = sorted.indexOf(result[i]);
+            const nextName =
+              idx < sorted.length - 1
+                ? sorted[idx + 1].name
+                : (currentName ?? '');
+            should(result[i].name).not.equal(
+              nextName,
+              `Record at sorted index ${idx} has same name as successor but was not filtered`
+            );
+          }
+
+          // Every excluded record must have the same name as its successor
+          const excluded = sorted.filter((r) => !result.includes(r));
+          for (const r of excluded) {
+            const idx = sorted.indexOf(r);
+            const nextName =
+              idx < sorted.length - 1
+                ? sorted[idx + 1].name
+                : (currentName ?? '');
+            should(r.name).equal(
+              nextName,
+              `Record at sorted index ${idx} was filtered but name differs from successor`
+            );
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('should return empty array for null/undefined/empty input', () => {
+    should(TemporalNameResolver.filterToActualNameChanges(null, 'x')).eql([]);
+    should(TemporalNameResolver.filterToActualNameChanges(undefined, 'x')).eql(
+      []
+    );
+    should(TemporalNameResolver.filterToActualNameChanges([], 'x')).eql([]);
+  });
+});
+
+/**
+ * Property 6: Converter caveName and isNameChangeSnapshot passthrough
  *
  * For any source object passed to toEntrance:
  * - If source.caveName is a non-null string, then result.caveName equals it
@@ -281,7 +376,7 @@ describe('TemporalNameResolver - Property 4: Merged timeline is sorted chronolog
  *
  * Validates: Requirements 4.2, 4.3
  */
-describe('TemporalNameResolver - Property 5: Converter caveName and isNameChangeSnapshot passthrough', () => {
+describe('TemporalNameResolver - Property 6: Converter caveName and isNameChangeSnapshot passthrough', () => {
   // eslint-disable-next-line global-require
   const { toEntrance } = require('../../../api/services/mapping/converters');
 

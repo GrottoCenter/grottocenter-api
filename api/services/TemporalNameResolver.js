@@ -76,6 +76,42 @@ const resolveCaveNamesForSnapshots = (
 };
 
 /**
+ * Filter h_name records to only those representing actual name changes.
+ *
+ * When a t_name row is updated for reasons other than a name change (e.g.
+ * date_reviewed is bumped by an unrelated edit), the trigger still copies
+ * the old row to h_name. This produces many h_name rows with the same name
+ * in sequence. This function keeps only the records where the name differs
+ * from the subsequent value in the timeline.
+ *
+ * @param {Array} hNameRecords - h_name records (need not be pre-sorted)
+ * @param {string|null} currentName - The current TName main name (the latest value).
+ *   Treated as empty string when null/undefined for comparison purposes.
+ * @returns {Array} Filtered records where name actually changed
+ */
+const filterToActualNameChanges = (hNameRecords, currentName) => {
+  if (!hNameRecords || hNameRecords.length === 0) return [];
+
+  // Sort defensively — callers may pass pre-sorted data but this function
+  // must not depend on caller ordering guarantees.
+  const sorted = [...hNameRecords].sort(
+    (a, b) =>
+      new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
+  );
+
+  const effectiveCurrentName = currentName || '';
+  const result = [];
+  for (let i = 0; i < sorted.length; i += 1) {
+    const nextName =
+      i < sorted.length - 1 ? sorted[i + 1].name : effectiveCurrentName;
+    if (sorted[i].name !== nextName) {
+      result.push(sorted[i]);
+    }
+  }
+  return result;
+};
+
+/**
  * Build Name_Change_Snapshot objects from h_name records.
  *
  * @param {number} entranceId - The entrance ID
@@ -124,6 +160,7 @@ const mergeAndSort = (hEntrances, nameChangeSnapshots) =>
 module.exports = {
   resolveNameAtDate,
   resolveCaveNamesForSnapshots,
+  filterToActualNameChanges,
   buildNameChangeSnapshots,
   mergeAndSort,
 };
