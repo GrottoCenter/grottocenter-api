@@ -41,6 +41,34 @@ const resolveNameAtDate = (snapshotDate, hNameRecords, currentName) => {
 };
 
 /**
+ * Resolve the language of the main name valid at a given snapshot date.
+ *
+ * Uses the same algorithm as resolveNameAtDate but returns the `language`
+ * field instead of `name`.
+ *
+ * @param {Date|string} snapshotDate - The date_reviewed of the snapshot
+ * @param {Array} hNameRecords - All h_name records for the entity (pre-filtered to is_main=true)
+ * @param {string|null} currentLanguage - The current TName main language (fallback)
+ * @returns {string|null} The resolved language, or null if none found
+ */
+const resolveLanguageAtDate = (snapshotDate, hNameRecords, currentLanguage) => {
+  const snapshotTime = new Date(snapshotDate).getTime();
+
+  const futureRecords = (hNameRecords || [])
+    .filter((r) => new Date(r.dateReviewed).getTime() > snapshotTime)
+    .sort(
+      (a, b) =>
+        new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
+    );
+
+  if (futureRecords.length > 0) {
+    return futureRecords[0].language ?? null;
+  }
+
+  return currentLanguage ?? null;
+};
+
+/**
  * Resolve cave names for multiple HEntrance snapshots.
  * Pure function — all DB data is passed in as arguments.
  *
@@ -159,6 +187,7 @@ const mergeAndSort = (hEntrances, nameChangeSnapshots) =>
 
 module.exports = {
   resolveNameAtDate,
+  resolveLanguageAtDate,
   resolveCaveNamesForSnapshots,
   filterToActualNameChanges,
   buildNameChangeSnapshots,

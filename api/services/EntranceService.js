@@ -44,6 +44,7 @@ const mapHNameRow = (row, { includeAuthorReviewer = false } = {}) => {
     id: row.id,
     name: row.name,
     isMain: row.is_main,
+    language: row.id_language ?? null,
     dateInscription: row.date_inscription,
     dateReviewed: row.date_reviewed,
     entrance: row.id_entrance,
@@ -159,7 +160,7 @@ module.exports = {
     if (Number.isNaN(numericEntranceId)) return [];
     const entranceHNamesRaw = await CommonService.query(
       `SELECT h.id, h.name, h.is_main, h.date_inscription, h.date_reviewed,
-              h.id_entrance, h.id_cave, h.id_author, h.id_reviewer,
+              h.id_entrance, h.id_cave, h.id_language, h.id_author, h.id_reviewer,
               a.nickname AS author_nickname, r.nickname AS reviewer_nickname
        FROM h_name h
        LEFT JOIN t_caver a ON a.id = h.id_author
@@ -172,10 +173,11 @@ module.exports = {
       mapHNameRow(row, { includeAuthorReviewer: true })
     );
 
-    // Fetch all current TName records for the entrance (full names collection)
-    const allEntranceNames = await TName.find({ entrance: entranceId });
-    // Extract the main name as fallback for temporal resolution
-    const mainEntranceName = allEntranceNames.find((n) => n.isMain);
+    // Fetch the current main name as fallback for temporal resolution
+    const mainEntranceName = await TName.findOne({
+      entrance: entranceId,
+      isMain: true,
+    });
     const currentEntranceName = mainEntranceName ? mainEntranceName.name : null;
 
     // Collect unique cave IDs from HEntrance records + current association
@@ -226,13 +228,23 @@ module.exports = {
         entrance.longitude = null;
         entrance.latitude = null;
       }
+      // entrance.id is the snapshot's date_reviewed timestamp (Waterline PK)
       entrance.name = TemporalNameResolver.resolveNameAtDate(
         entrance.id,
         entranceHNames,
         currentEntranceName
       );
-      // Assign all current TName records so getMainLanguage can extract the language
-      entrance.names = allEntranceNames;
+      // Resolve the language from the h_name record that was active at this
+      // snapshot's date_reviewed, falling back to the current main name language.
+      entrance.language = TemporalNameResolver.resolveLanguageAtDate(
+        entrance.id,
+        entranceHNames,
+        mainEntranceName?.language ?? null
+      );
+      // Do not assign current TName records — snapshots should not expose
+      // the current state. The names array is left empty for consistency with
+      // the "state before the change" semantic used by all other h_ snapshots.
+      entrance.names = [];
     });
     /* eslint-enable no-param-reassign */
 

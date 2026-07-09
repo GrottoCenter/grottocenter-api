@@ -24,6 +24,10 @@ const positiveIntArb = fc.integer({ min: 1, max: 100000 });
 // h_name record arbitrary
 const hNameRecordArb = fc.record({
   name: nameArb,
+  language: fc.oneof(
+    fc.constantFrom('fra', 'eng', 'deu', 'esp', 'ita'),
+    fc.constant(null)
+  ),
   dateReviewed: isoDateArb,
   dateInscription: isoDateArb,
   author: fc.record({ id: positiveIntArb, name: nameArb }),
@@ -77,6 +81,55 @@ describe('TemporalNameResolver - Property 1: Temporal entrance name resolution',
           } else {
             // Should fall back to empty string
             should(result).equal('');
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+/**
+ * Property 1b: Temporal language resolution
+ *
+ * Same algorithm as resolveNameAtDate but returns the `language` field.
+ * For any snapshot date S and any array of h_name records:
+ * - If records exist with dateReviewed > S, the resolved language equals
+ *   the language of the record with the smallest such dateReviewed
+ * - If no records have dateReviewed > S, the resolved language equals currentLanguage
+ * - If currentLanguage is also null, the result is null
+ *
+ * Validates: Language resolution uses same temporal logic as name resolution
+ */
+describe('TemporalNameResolver - Property 1b: Temporal language resolution', () => {
+  it('should resolve the correct language based on snapshot date, falling back to currentLanguage then null', function () {
+    this.timeout(30000);
+    fc.assert(
+      fc.property(
+        isoDateArb,
+        fc.array(hNameRecordArb, { minLength: 0, maxLength: 20 }),
+        fc.option(fc.constantFrom('fra', 'eng', 'deu'), { nil: null }),
+        (snapshotDate, hNameRecords, currentLanguage) => {
+          const result = TemporalNameResolver.resolveLanguageAtDate(
+            snapshotDate,
+            hNameRecords,
+            currentLanguage
+          );
+
+          const snapshotTime = new Date(snapshotDate).getTime();
+
+          const futureRecords = hNameRecords
+            .filter((r) => new Date(r.dateReviewed).getTime() > snapshotTime)
+            .sort(
+              (a, b) =>
+                new Date(a.dateReviewed).getTime() -
+                new Date(b.dateReviewed).getTime()
+            );
+
+          if (futureRecords.length > 0) {
+            should(result).equal(futureRecords[0].language ?? null);
+          } else {
+            should(result).equal(currentLanguage ?? null);
           }
         }
       ),
