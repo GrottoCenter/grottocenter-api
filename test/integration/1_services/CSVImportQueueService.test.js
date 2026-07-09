@@ -196,11 +196,15 @@ describe('CSVImportQueueService', () => {
   });
 
   describe('checkBatchCompletion', () => {
+    let findOneStub;
     let queryStub;
     let updateStub;
     let aggregateStub;
 
     before(() => {
+      findOneStub = sinon
+        .stub(TJobBatch, 'findOne')
+        .resolves({ id: 'batch-123', totalChunks: 2 });
       queryStub = sinon.stub(CommonService, 'query');
       updateStub = sinon
         .stub(TJobBatch, 'updateOne')
@@ -211,15 +215,34 @@ describe('CSVImportQueueService', () => {
     });
 
     after(() => {
+      findOneStub.restore();
       queryStub.restore();
       updateStub.restore();
       aggregateStub.restore();
     });
 
     afterEach(() => {
+      findOneStub.resetHistory();
       queryStub.resetHistory();
       updateStub.resetHistory();
       aggregateStub.resetHistory();
+    });
+
+    it('should return early when batch is not found', async () => {
+      findOneStub.resolves(null);
+      await CSVImportQueueService.checkBatchCompletion('unknown');
+      should(queryStub.callCount).equal(0);
+      should(aggregateStub.callCount).equal(0);
+      findOneStub.resolves({ id: 'batch-123', totalChunks: 2 });
+    });
+
+    it('should not aggregate when fewer chunks exist than totalChunks', async () => {
+      queryStub.resolves({
+        rows: [{ state: 'completed', output: {} }],
+      });
+
+      await CSVImportQueueService.checkBatchCompletion('batch-123');
+      should(aggregateStub.callCount).equal(0);
     });
 
     it('should not aggregate when not all jobs are done', async () => {
@@ -312,6 +335,31 @@ describe('CSVImportQueueService', () => {
       should(progress.totalRows).equal(100);
       should(progress.processedRows).equal(7);
       should(progress.successes).equal(5);
+      should(progress.duplicates).equal(1);
+      should(progress.failures).equal(1);
+    });
+
+    it('should count failed chunks toward completedChunks', async () => {
+      findOneStub.resolves({ totalChunks: 3, totalRows: 150 });
+      queryStub.resolves({
+        rows: [
+          {
+            state: 'completed',
+            output: { successes: [1, 2], duplicates: [], failures: [] },
+          },
+          { state: 'failed', output: null },
+          {
+            state: 'completed',
+            output: { successes: [3], duplicates: [4], failures: [5] },
+          },
+        ],
+      });
+
+      const progress = await CSVImportQueueService.getBatchProgress('batch-1');
+      should(progress.totalChunks).equal(3);
+      should(progress.completedChunks).equal(3);
+      should(progress.processedRows).equal(5);
+      should(progress.successes).equal(3);
       should(progress.duplicates).equal(1);
       should(progress.failures).equal(1);
     });
