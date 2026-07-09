@@ -57,7 +57,11 @@ module.exports = {
   },
   getMainLanguage: (source) => {
     if (!(source.names instanceof Array)) return source.language ?? null;
-    return source.names.find((name) => name.isMain)?.language ?? null;
+    return (
+      source.names.find((name) => name.isMain)?.language ??
+      source.language ??
+      null
+    );
   },
 
   getMetaFromRequest: (req) => ({
