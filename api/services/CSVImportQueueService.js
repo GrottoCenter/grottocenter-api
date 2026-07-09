@@ -343,7 +343,14 @@ module.exports = {
       /* eslint-enable no-await-in-loop, no-continue */
 
       if (hasSuccessfulImport) {
-        sails.services.coordinatessnapshotservice.invalidate();
+        sails.services.coordinatessnapshotservice
+          .invalidate()
+          .catch((err) =>
+            sails.log.error(
+              'CSVImportQueueService: coordinates snapshot invalidation failed:',
+              err
+            )
+          );
       }
     } catch (err) {
       sails.log.error(
@@ -387,6 +394,9 @@ module.exports = {
    * @param {string} batchId
    */
   async checkBatchCompletion(batchId) {
+    const batch = await TJobBatch.findOne({ id: batchId });
+    if (!batch) return;
+
     const query = `
       SELECT state, output
       FROM pgboss.job
@@ -397,6 +407,9 @@ module.exports = {
       QUEUE_NAME,
       batchId,
     ]);
+
+    // Ensure all expected chunks are present and terminal before proceeding.
+    if (jobs.length < batch.totalChunks) return;
 
     const allDone = jobs.every(
       (j) => j.state === 'completed' || j.state === 'failed'
@@ -711,17 +724,21 @@ module.exports = {
     let failures = 0;
 
     for (const job of jobs) {
-      if (job.state === 'completed' && job.output) {
+      if (job.state === 'completed' || job.state === 'failed') {
         completedChunks += 1;
-        const output =
-          typeof job.output === 'string' ? JSON.parse(job.output) : job.output;
-        successes += (output.successes || []).length;
-        duplicates += (output.duplicates || []).length;
-        failures += (output.failures || []).length;
-        processedRows +=
-          (output.successes || []).length +
-          (output.duplicates || []).length +
-          (output.failures || []).length;
+        if (job.state === 'completed' && job.output) {
+          const output =
+            typeof job.output === 'string'
+              ? JSON.parse(job.output)
+              : job.output;
+          successes += (output.successes || []).length;
+          duplicates += (output.duplicates || []).length;
+          failures += (output.failures || []).length;
+          processedRows +=
+            (output.successes || []).length +
+            (output.duplicates || []).length +
+            (output.failures || []).length;
+        }
       }
     }
 
