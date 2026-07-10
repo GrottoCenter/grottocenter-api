@@ -8,11 +8,31 @@
 /* eslint-disable no-param-reassign */
 
 /**
- * Resolve the name valid at a given snapshot date.
+ * Find the h_name record that was active at a given snapshot date.
  *
- * The algorithm finds the h_name record whose date_reviewed is the smallest
- * value still greater than snapshotDate. That record's `name` was the one
+ * The algorithm finds the record whose date_reviewed is the smallest
+ * value still greater than snapshotDate. That record was the one
  * active at snapshotDate (it was superseded after snapshotDate).
+ *
+ * @param {Date|string} snapshotDate - The date_reviewed of the snapshot
+ * @param {Array} hNameRecords - All h_name records for the entity (pre-filtered to is_main=true)
+ * @returns {object|null} The active h_name record, or null if none found
+ */
+const findActiveRecordAtDate = (snapshotDate, hNameRecords) => {
+  const snapshotTime = new Date(snapshotDate).getTime();
+
+  const futureRecords = (hNameRecords || [])
+    .filter((r) => new Date(r.dateReviewed).getTime() > snapshotTime)
+    .sort(
+      (a, b) =>
+        new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
+    );
+
+  return futureRecords.length > 0 ? futureRecords[0] : null;
+};
+
+/**
+ * Resolve the name valid at a given snapshot date.
  *
  * @param {Date|string} snapshotDate - The date_reviewed of the snapshot
  * @param {Array} hNameRecords - All h_name records for the entity (pre-filtered to is_main=true)
@@ -20,31 +40,17 @@
  * @returns {string} The resolved name, or '' if none found
  */
 const resolveNameAtDate = (snapshotDate, hNameRecords, currentName) => {
-  const snapshotTime = new Date(snapshotDate).getTime();
-
-  const futureRecords = (hNameRecords || [])
-    .filter((r) => new Date(r.dateReviewed).getTime() > snapshotTime)
-    .sort(
-      (a, b) =>
-        new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
-    );
-
-  if (futureRecords.length > 0) {
-    return futureRecords[0].name;
-  }
-
-  if (currentName) {
-    return currentName;
-  }
-
+  const record = findActiveRecordAtDate(snapshotDate, hNameRecords);
+  if (record) return record.name;
+  if (currentName) return currentName;
   return '';
 };
 
 /**
  * Resolve the language of the main name valid at a given snapshot date.
  *
- * Uses the same algorithm as resolveNameAtDate but returns the `language`
- * field instead of `name`.
+ * Uses the same temporal algorithm as resolveNameAtDate but returns the
+ * `language` field instead of `name`.
  *
  * @param {Date|string} snapshotDate - The date_reviewed of the snapshot
  * @param {Array} hNameRecords - All h_name records for the entity (pre-filtered to is_main=true)
@@ -52,19 +58,8 @@ const resolveNameAtDate = (snapshotDate, hNameRecords, currentName) => {
  * @returns {string|null} The resolved language, or null if none found
  */
 const resolveLanguageAtDate = (snapshotDate, hNameRecords, currentLanguage) => {
-  const snapshotTime = new Date(snapshotDate).getTime();
-
-  const futureRecords = (hNameRecords || [])
-    .filter((r) => new Date(r.dateReviewed).getTime() > snapshotTime)
-    .sort(
-      (a, b) =>
-        new Date(a.dateReviewed).getTime() - new Date(b.dateReviewed).getTime()
-    );
-
-  if (futureRecords.length > 0) {
-    return futureRecords[0].language ?? null;
-  }
-
+  const record = findActiveRecordAtDate(snapshotDate, hNameRecords);
+  if (record) return record.language ?? null;
   return currentLanguage ?? null;
 };
 
@@ -157,6 +152,7 @@ const buildNameChangeSnapshots = (
     t_id:
       typeof entranceId === 'string' ? parseInt(entranceId, 10) : entranceId,
     name: record.name,
+    language: record.language ?? null,
     author: record.author,
     reviewer: record.reviewer,
     dateInscription: record.dateInscription,
@@ -186,6 +182,7 @@ const mergeAndSort = (hEntrances, nameChangeSnapshots) =>
   );
 
 module.exports = {
+  findActiveRecordAtDate,
   resolveNameAtDate,
   resolveLanguageAtDate,
   resolveCaveNamesForSnapshots,

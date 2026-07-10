@@ -222,6 +222,13 @@ module.exports = {
     }
 
     /* eslint-disable no-param-reassign */
+    // NOTE on mixed semantic (intentional):
+    // `name`, `caveName`, and `language` are resolved temporally (state at that point in time)
+    // using h_name records, while `latitude`, `longitude`, booleans, etc. come from the
+    // h_entrance OLD row ("state before the change"). This is a deliberate trade-off:
+    // temporal resolution is applied only to fields where the raw OLD values are unavailable
+    // (names/language are stored in a separate table) or where displaying the historical
+    // "active" value is significantly more useful to the UI than displaying raw OLD data.
     HEntrances.forEach((entrance) => {
       if (!hasRight) {
         entrance.locations = [];
