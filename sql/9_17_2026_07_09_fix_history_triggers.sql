@@ -5,7 +5,13 @@
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- 1. histo_update_entrance: add missing boolean columns and precision
+-- 0. Add is_enrichment column to h_entrance for enrichment-originated snapshots
+-- -----------------------------------------------------------------------------
+ALTER TABLE h_entrance ADD COLUMN IF NOT EXISTS is_enrichment bool NOT NULL DEFAULT false;
+
+-- -----------------------------------------------------------------------------
+-- 1. histo_update_entrance: add missing boolean columns, precision, and
+--    is_enrichment (read from session variable set by the enrichment job)
 --
 -- The following columns exist in both t_entrance and h_entrance but were never
 -- included in the trigger's INSERT statement:
@@ -18,11 +24,17 @@
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION histo_update_entrance() RETURNS trigger AS $$
-DECLARE date_r timestamp;
+DECLARE
+  date_r timestamp;
+  v_is_enrichment bool;
 BEGIN
 if new.date_reviewed is null then date_r := NEW.date_inscription;
 else date_r := NEW.date_reviewed;
 end if;
+
+-- Read the session-scoped flag set by the enrichment job (SET LOCAL).
+-- Returns 'false' for all non-enrichment callers (missing_ok = true).
+v_is_enrichment := coalesce(current_setting('app.is_enrichment', true), 'false') = 'true';
 
 if NEW.is_deleted = OLD.is_deleted then
 INSERT INTO h_entrance (
@@ -60,7 +72,8 @@ INSERT INTO h_entrance (
         need_clean_gear,
         need_stay_on_trail,
         has_rules,
-        is_touristic
+        is_touristic,
+        is_enrichment
     )
 VALUES (
         OLD.id,
@@ -97,7 +110,8 @@ VALUES (
         OLD.need_clean_gear,
         OLD.need_stay_on_trail,
         OLD.has_rules,
-        OLD.is_touristic
+        OLD.is_touristic,
+        v_is_enrichment
     );
 end if;
 

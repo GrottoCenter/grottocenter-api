@@ -205,11 +205,22 @@ module.exports = {
       return;
     }
 
-    await TEntrance.updateOne({ id: entranceId }).set({
-      region: address.region,
-      county: address.county,
-      city: address.city,
-      iso_3166_2: address.iso_3166_2,
+    // Wrap in a transaction so SET LOCAL scopes the flag to this update only.
+    // The histo_update_entrance trigger reads app.is_enrichment and marks the
+    // resulting h_entrance row, allowing the API to flag it for the front-end.
+    await sails.getDatastore().transaction(async (db) => {
+      await sails
+        .getDatastore()
+        .sendNativeQuery("SET LOCAL app.is_enrichment = 'true';")
+        .usingConnection(db);
+      await TEntrance.update({ id: entranceId })
+        .set({
+          region: address.region,
+          county: address.county,
+          city: address.city,
+          iso_3166_2: address.iso_3166_2,
+        })
+        .usingConnection(db);
     });
     sails.log.info(
       `Enrichment job completed: entrance ${entranceId} (region=${address.region}, iso_3166_2=${address.iso_3166_2})`

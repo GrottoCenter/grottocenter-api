@@ -56,8 +56,20 @@ describe('EnrichmentQueueService', () => {
 
       sinon.stub(TEntrance, 'findOne').resolves(entrance);
       sinon.stub(sails.services.geocodingservice, 'reverse').resolves(address);
-      const updateStub = sinon.stub().resolves(entrance);
-      sinon.stub(TEntrance, 'updateOne').returns({ set: updateStub });
+
+      const updateSetStub = sinon
+        .stub()
+        .returns({ usingConnection: sinon.stub().resolves() });
+      sinon.stub(TEntrance, 'update').returns({ set: updateSetStub });
+
+      const sendNativeQueryStub = sinon
+        .stub()
+        .returns({ usingConnection: sinon.stub().resolves() });
+      const fakeDb = {};
+      sinon.stub(sails, 'getDatastore').returns({
+        transaction: (fn) => fn(fakeDb),
+        sendNativeQuery: sendNativeQueryStub,
+      });
 
       await EnrichmentQueueService.processEntrance(1);
 
@@ -65,8 +77,8 @@ describe('EnrichmentQueueService', () => {
       should(sails.services.geocodingservice.reverse.firstCall.args).deepEqual([
         46.2, 2.2,
       ]);
-      should(updateStub.calledOnce).be.true();
-      should(updateStub.firstCall.args[0]).deepEqual({
+      should(updateSetStub.calledOnce).be.true();
+      should(updateSetStub.firstCall.args[0]).deepEqual({
         region: 'Auvergne-Rhône-Alpes',
         county: 'Puy-de-Dôme',
         city: 'Clermont-Ferrand',
@@ -115,11 +127,11 @@ describe('EnrichmentQueueService', () => {
 
       sinon.stub(TEntrance, 'findOne').resolves(entrance);
       sinon.stub(sails.services.geocodingservice, 'reverse').resolves(null);
-      const updateOneStub = sinon.stub(TEntrance, 'updateOne');
+      const updateStub = sinon.stub(TEntrance, 'update');
 
       await EnrichmentQueueService.processEntrance(1);
 
-      should(updateOneStub.called).be.false();
+      should(updateStub.called).be.false();
     });
   });
 

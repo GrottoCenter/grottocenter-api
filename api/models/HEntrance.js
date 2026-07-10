@@ -241,5 +241,12 @@ module.exports = {
       allowNull: false,
       model: 'TGeology',
     },
+
+    isEnrichment: {
+      type: 'boolean',
+      allowNull: false,
+      columnName: 'is_enrichment',
+      defaultsTo: false,
+    },
   },
 };
