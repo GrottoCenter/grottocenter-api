@@ -97,6 +97,7 @@ module.exports = async (req, res) => {
   }).set({
     name: nameText,
     language: req.param('name')?.language,
+    reviewer: req.token.id,
   });
 
   await TEntrance.updateOne({ id: entranceId }).set(cleanedData);

@@ -141,7 +141,8 @@ INSERT INTO h_name (
         id_cave,
         id_massif,
         id_point,
-        id_grotto
+        id_grotto,
+        id_observation
     )
 VALUES (
         OLD.id,
@@ -156,7 +157,8 @@ VALUES (
         OLD.id_cave,
         OLD.id_massif,
         OLD.id_point,
-        OLD.id_grotto
+        OLD.id_grotto,
+        OLD.id_observation
     );
 end if;
 
