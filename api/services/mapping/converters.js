@@ -397,6 +397,9 @@ const c = {
     if (source.isNameChangeSnapshot !== undefined) {
       result.isNameChangeSnapshot = source.isNameChangeSnapshot ?? false;
     }
+    if (source.isEnrichment !== undefined) {
+      result.isEnrichmentSnapshot = source.isEnrichment ?? false;
+    }
     result.author = convertIfObject(source.author, c.toSimpleCaver);
     result.reviewer = convertIfObject(source.reviewer, c.toSimpleCaver);
     // Convert collections
