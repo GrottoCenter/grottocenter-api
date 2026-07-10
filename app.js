@@ -27,6 +27,21 @@
 // > Note: This is not required in order to lift, but it is a convenient default.
 process.chdir(__dirname);
 
+// Force the pg driver to handle all timestamps in UTC before any connection is
+// created. Must run before Sails loads config/datastores.js and creates the pool.
+// No-op on UTC servers (production) — only affects local dev with non-UTC clocks.
+// See config/datastores.js for the detailed explanation.
+// eslint-disable-next-line import/no-extraneous-dependencies
+const pg = require('pg');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const mpPg = require('machinepack-postgresql/node_modules/pg');
+
+[pg, mpPg].forEach((driver) => {
+  // eslint-disable-next-line no-param-reassign
+  driver.defaults.parseInputDatesAsUTC = true;
+  driver.types.setTypeParser(1114, (str) => new Date(`${str}Z`));
+});
+
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 let sails;
 let rc;
