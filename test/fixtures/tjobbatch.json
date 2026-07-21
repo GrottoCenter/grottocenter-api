@@ -11,7 +11,7 @@
     "totalChunks": 2,
     "result": {
       "reportUrls": {
-        "success": "https://example.com/report/successes.csv",
+        "successes": "https://example.com/report/successes.csv",
         "duplicates": null,
         "failures": "https://example.com/report/failures.csv"
       },

@@ -200,17 +200,21 @@ describe('CSVImportQueueService', () => {
     let queryStub;
     let updateStub;
     let aggregateStub;
+    let notifyStub;
 
     before(() => {
       findOneStub = sinon
         .stub(TJobBatch, 'findOne')
-        .resolves({ id: 'batch-123', totalChunks: 2 });
+        .resolves({ id: 'batch-123', totalChunks: 2, totalRows: 100 });
       queryStub = sinon.stub(CommonService, 'query');
       updateStub = sinon
         .stub(TJobBatch, 'updateOne')
         .returns({ set: sinon.stub().resolves({ id: 'batch-123' }) });
       aggregateStub = sinon
         .stub(CSVImportQueueService, 'aggregateBatch')
+        .resolves();
+      notifyStub = sinon
+        .stub(CSVImportQueueService, 'notifyCompletion')
         .resolves();
     });
 
@@ -219,6 +223,7 @@ describe('CSVImportQueueService', () => {
       queryStub.restore();
       updateStub.restore();
       aggregateStub.restore();
+      notifyStub.restore();
     });
 
     afterEach(() => {
@@ -226,6 +231,7 @@ describe('CSVImportQueueService', () => {
       queryStub.resetHistory();
       updateStub.resetHistory();
       aggregateStub.resetHistory();
+      notifyStub.resetHistory();
     });
 
     it('should return early when batch is not found', async () => {
@@ -233,7 +239,7 @@ describe('CSVImportQueueService', () => {
       await CSVImportQueueService.checkBatchCompletion('unknown');
       should(queryStub.callCount).equal(0);
       should(aggregateStub.callCount).equal(0);
-      findOneStub.resolves({ id: 'batch-123', totalChunks: 2 });
+      findOneStub.resolves({ id: 'batch-123', totalChunks: 2, totalRows: 100 });
     });
 
     it('should not aggregate when fewer chunks exist than totalChunks', async () => {
@@ -275,7 +281,7 @@ describe('CSVImportQueueService', () => {
       should(aggregateStub.callCount).equal(1);
     });
 
-    it('should set status to failed when all jobs failed', async () => {
+    it('should set status to failed and notify when all jobs failed', async () => {
       queryStub.resolves({
         rows: [
           { state: 'failed', output: null },
@@ -286,6 +292,11 @@ describe('CSVImportQueueService', () => {
       await CSVImportQueueService.checkBatchCompletion('batch-123');
       should(updateStub.callCount).equal(1);
       should(aggregateStub.callCount).equal(0);
+      should(notifyStub.callCount).equal(1);
+      const notifyArgs = notifyStub.firstCall.args;
+      should(notifyArgs[0]).equal('batch-123');
+      should(notifyArgs[1].summary.failures).equal(100);
+      should(notifyArgs[1].summary.successes).equal(0);
     });
   });
 
@@ -339,17 +350,23 @@ describe('CSVImportQueueService', () => {
       should(progress.failures).equal(1);
     });
 
-    it('should count failed chunks toward completedChunks', async () => {
+    it('should count failed chunks toward completedChunks using rows.length from job data', async () => {
       findOneStub.resolves({ totalChunks: 3, totalRows: 150 });
       queryStub.resolves({
         rows: [
           {
             state: 'completed',
+            data: { batchId: 'batch-1', rows: new Array(50) },
             output: { successes: [1, 2], duplicates: [], failures: [] },
           },
-          { state: 'failed', output: null },
+          {
+            state: 'failed',
+            data: { batchId: 'batch-1', rows: new Array(50) },
+            output: null,
+          },
           {
             state: 'completed',
+            data: { batchId: 'batch-1', rows: new Array(50) },
             output: { successes: [3], duplicates: [4], failures: [5] },
           },
         ],
@@ -358,10 +375,12 @@ describe('CSVImportQueueService', () => {
       const progress = await CSVImportQueueService.getBatchProgress('batch-1');
       should(progress.totalChunks).equal(3);
       should(progress.completedChunks).equal(3);
-      should(progress.processedRows).equal(5);
+      // processedRows = 5 (from completed) + 50 (rows.length of failed chunk) = 55
+      should(progress.processedRows).equal(55);
       should(progress.successes).equal(3);
       should(progress.duplicates).equal(1);
-      should(progress.failures).equal(1);
+      // failures = 1 (from completed chunks) + 50 (rows.length of failed chunk) = 51
+      should(progress.failures).equal(51);
     });
   });
 });

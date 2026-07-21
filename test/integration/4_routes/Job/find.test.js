@@ -63,7 +63,10 @@ describe('Job features', () => {
           should(res.body).have.property('progress');
           should(res.body).have.property('result');
           should(res.body.result).have.property('reportUrls');
+          should(res.body.result.reportUrls).have.property('successes');
+          should(res.body.result.reportUrls).not.have.property('success');
           should(res.body.result).have.property('summary');
+          should(res.body.result.summary).have.property('successes');
           return done();
         });
     });
