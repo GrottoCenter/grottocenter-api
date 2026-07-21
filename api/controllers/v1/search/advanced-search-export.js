@@ -250,6 +250,7 @@ module.exports = async (req, res) => {
         docsToSerialize = filtered.map((doc) => {
           // Only include coordinates and id for geometry construction;
           // aliased fields are the sole user-visible properties.
+          // KML/GPX also need the entrance name for the <name> element.
           const mapped = {
             id: doc.id,
             latitude: doc.latitude,
@@ -257,6 +258,9 @@ module.exports = async (req, res) => {
           };
           if (doc.altitude != null) {
             mapped.altitude = doc.altitude;
+          }
+          if (format === 'kml' || format === 'gpx') {
+            mapped.name = doc.name;
           }
           fieldMapping.forEach(({ key, alias }) => {
             mapped[alias] = resolveField(doc, key);
