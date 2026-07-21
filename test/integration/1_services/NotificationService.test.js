@@ -10,6 +10,23 @@ const {
 const tnotificationtypeFixture = require('../../fixtures/tnotificationtype.json');
 
 describe('NotificationService', () => {
+  describe('IMPORT_COMPLETE notification type', () => {
+    it('should have IMPORT_COMPLETE in NOTIFICATION_TYPES', () => {
+      should(NOTIFICATION_TYPES).have.property('IMPORT_COMPLETE');
+      should(NOTIFICATION_TYPES.IMPORT_COMPLETE).equal('IMPORT_COMPLETE');
+    });
+
+    it('should not throw when sendNotificationEmail is called with IMPORT_COMPLETE type', async () => {
+      const user = await TCaver.findOne(1);
+      await NotificationService.sendNotificationEmail(
+        { id: 1, name: 'test document' },
+        NOTIFICATION_TYPES.IMPORT_COMPLETE,
+        NOTIFICATION_ENTITIES.DOCUMENT,
+        user
+      );
+    });
+  });
+
   describe('REJECT notification type', () => {
     it('should have REJECT in NOTIFICATION_TYPES with value "REJECT"', () => {
       should(NOTIFICATION_TYPES).have.property('REJECT');

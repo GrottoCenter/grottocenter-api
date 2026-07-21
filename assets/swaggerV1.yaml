@@ -7442,7 +7442,7 @@ components:
             reportUrls:
               type: object
               properties:
-                success:
+                successes:
                   type: string
                   nullable: true
                 duplicates:

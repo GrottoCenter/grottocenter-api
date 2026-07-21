@@ -418,10 +418,20 @@ module.exports = {
 
     const allFailed = jobs.every((j) => j.state === 'failed');
     if (allFailed) {
+      const resultPayload = {
+        reportUrls: { successes: null, duplicates: null, failures: null },
+        summary: {
+          successes: 0,
+          duplicates: 0,
+          failures: batch.totalRows,
+        },
+      };
       await TJobBatch.updateOne({ id: batchId }).set({
         status: 'failed',
         completedAt: new Date(),
+        result: resultPayload,
       });
+      await module.exports.notifyCompletion(batchId, resultPayload);
       return;
     }
 
@@ -526,7 +536,7 @@ module.exports = {
    * @returns {Object} { success: url|null, duplicates: url|null, failures: url|null }
    */
   async generateAndUploadReports(batchId, successes, duplicates, failures) {
-    const reportUrls = { success: null, duplicates: null, failures: null };
+    const reportUrls = { successes: null, duplicates: null, failures: null };
 
     const prefix = `csv-import-reports/${batchId}`;
 
@@ -535,7 +545,7 @@ module.exports = {
         ['line', 'caveId', 'entranceId', 'latitude', 'longitude'],
         successes
       );
-      reportUrls.success = await module.exports.uploadReport(
+      reportUrls.successes = await module.exports.uploadReport(
         prefix,
         'successes.csv',
         csv
@@ -680,7 +690,7 @@ module.exports = {
               successes: summary.successes,
               duplicates: summary.duplicates,
               failures: summary.failures,
-              successUrl: reportUrls.success,
+              successesUrl: reportUrls.successes,
               duplicatesUrl: reportUrls.duplicates,
               failuresUrl: reportUrls.failures,
             },
@@ -707,7 +717,7 @@ module.exports = {
     if (!batch) return null;
 
     const query = `
-      SELECT state, output
+      SELECT state, data, output
       FROM pgboss.job
       WHERE name = $1
         AND data->>'batchId' = $2
@@ -738,6 +748,14 @@ module.exports = {
             (output.successes || []).length +
             (output.duplicates || []).length +
             (output.failures || []).length;
+        } else if (job.state === 'failed') {
+          // Read the exact row count from the job's data payload
+          const data =
+            typeof job.data === 'string' ? JSON.parse(job.data) : job.data;
+          const lostRows =
+            data && Array.isArray(data.rows) ? data.rows.length : 0;
+          failures += lostRows;
+          processedRows += lostRows;
         }
       }
     }

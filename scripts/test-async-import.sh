@@ -184,7 +184,7 @@ echo "  └───────────────────────
 echo ""
 
 # Download report CSVs if available
-SUCCESS_URL=$(echo "$STATUS_RESPONSE" | jq -r '.result.reportUrls.success // empty')
+SUCCESS_URL=$(echo "$STATUS_RESPONSE" | jq -r '.result.reportUrls.successes // empty')
 DUPLICATES_URL=$(echo "$STATUS_RESPONSE" | jq -r '.result.reportUrls.duplicates // empty')
 FAILURES_URL=$(echo "$STATUS_RESPONSE" | jq -r '.result.reportUrls.failures // empty')
 
