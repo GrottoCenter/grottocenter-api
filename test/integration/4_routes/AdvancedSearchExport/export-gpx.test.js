@@ -144,6 +144,31 @@ describe('Geo Export - GPX', () => {
         });
     });
 
+    it('should populate <name> even when field mapping is active', (done) => {
+      const SearchService = require('../../../../api/services/SearchService');
+      sinon.stub(SearchService, 'collectionSearch').resolves({
+        hits: entranceHits,
+        found: 2,
+      });
+
+      supertest(sails.hooks.http.app)
+        .post('/api/v1/advanced-search/export?format=gpx')
+        .send({
+          query: 'test',
+          entity: 'entrances',
+          columns: ['country'],
+          columnsName: ['Pays'],
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const body = res.text;
+          should(body).match(/<name>Cave A<\/name>/);
+          should(body).match(/<name>Cave B<\/name>/);
+          return done();
+        });
+    });
+
     it('should include <ele> element only when altitude is non-null', (done) => {
       const SearchService = require('../../../../api/services/SearchService');
       sinon.stub(SearchService, 'collectionSearch').resolves({
