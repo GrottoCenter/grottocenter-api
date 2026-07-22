@@ -426,11 +426,17 @@ module.exports = {
           failures: batch.totalRows,
         },
       };
-      await TJobBatch.updateOne({ id: batchId }).set({
+      // Atomic test-and-set guard: prevents duplicate notifications when
+      // two completion-check jobs fire concurrently for the same batch.
+      const guard = await TJobBatch.updateOne({
+        id: batchId,
+        status: 'active',
+      }).set({
         status: 'failed',
         completedAt: new Date(),
         result: resultPayload,
       });
+      if (!guard) return;
       await module.exports.notifyCompletion(batchId, resultPayload);
       return;
     }
@@ -749,7 +755,9 @@ module.exports = {
             (output.duplicates || []).length +
             (output.failures || []).length;
         } else if (job.state === 'failed') {
-          // Read the exact row count from the job's data payload
+          // Read the exact row count from the job's data payload.
+          // This relies on pg-boss retaining the job's `data` column for
+          // failed jobs within the `expireInHours: 4` retention window.
           const data =
             typeof job.data === 'string' ? JSON.parse(job.data) : job.data;
           const lostRows =
