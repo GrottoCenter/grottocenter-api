@@ -67,8 +67,142 @@ tags:
     description: Substance reference table for chemical species and isotopes
   - name: SSO
     description: Single Sign-On token issuance for external product integration
+  - name: enums
+    description: Public reference/enumeration tables for the scientific observation domain
 
 paths:
+  '/enums/quantity-kinds':
+    get:
+      tags:
+        - enums
+      description: 'Get all physical quantity kinds used by the observation domain.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quantityKinds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuantityKind'
+  '/enums/units':
+    get:
+      tags:
+        - enums
+      description: 'Get all measurement units with their symbols and SI conversion metadata.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  units:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Unit'
+  '/enums/media':
+    get:
+      tags:
+        - enums
+      description: 'Get all environmental sampling media.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Medium'
+  '/enums/observation-types':
+    get:
+      tags:
+        - enums
+      description: 'Get all observation types.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  observationTypes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ObservationType'
+  '/enums/human-activity-types':
+    get:
+      tags:
+        - enums
+      description: 'Get all human activity types.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  humanActivityTypes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HumanActivityType'
+  '/enums/contaminant-types':
+    get:
+      tags:
+        - enums
+      description: 'Get all contaminant types.'
+      responses:
+        200:
+          description: Successful operation
+          headers:
+            Cache-Control:
+              description: Caching directive (public, long max-age — reference data)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contaminantTypes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContaminantType'
   '/health':
     get:
       tags:
@@ -7316,6 +7450,79 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    QuantityKind:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        url:
+          type: string
+        symbolSi:
+          type: string
+        displayUnit:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            code:
+              type: string
+            symbol:
+              type: string
+    Unit:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        symbol:
+          type: string
+        dimension:
+          type: string
+        siToDisplayFactor:
+          type: string
+        siToDisplayOffset:
+          type: string
+    Medium:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        url:
+          type: string
+    ObservationType:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        url:
+          type: string
+    HumanActivityType:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        url:
+          type: string
+    ContaminantType:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        url:
+          type: string
+
     Auth-success:
       type: object
       properties:
