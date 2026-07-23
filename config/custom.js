@@ -99,6 +99,15 @@ module.exports.custom = {
 
   /** *************************************************************************
    *                                                                          *
+   * Cache-Control max-age (seconds) for the public /enums reference          *
+   * endpoints. Reference tables change only via migration/deploy, so a long  *
+   * TTL is safe.                                                              *
+   *                                                                          *
+   ************************************************************************** */
+  enumsCacheMaxAge: 86400, // 24 hours
+
+  /** *************************************************************************
+   *                                                                          *
    * Authentication settings.                                                 *
    *                                                                          *
    ************************************************************************** */

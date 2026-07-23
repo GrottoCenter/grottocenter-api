@@ -333,6 +333,15 @@ module.exports.policies = {
   'v1/convert/convert': true,
   'v1/file-format/find-all': true,
   'v1/identifier-type/find-all': true,
+
+  // Enumerations (public)
+  'v1/enum/find-quantity-kinds': true,
+  'v1/enum/find-units': true,
+  'v1/enum/find-media': true,
+  'v1/enum/find-observation-types': true,
+  'v1/enum/find-human-activity-types': true,
+  'v1/enum/find-contaminant-types': true,
+
   'v1/license/find-all': true,
   'v1/option/find-all': true,
   'v1/rss/get-feed': true,

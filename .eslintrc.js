@@ -13,6 +13,7 @@ module.exports = {
     BlacklistService: 'readonly',
     CommonService: 'readonly',
     ControllerService: 'readonly',
+    EnumService: 'readonly',
     GuidelineService: 'readonly',
     HComment: 'readonly',
     HDescription: 'readonly',

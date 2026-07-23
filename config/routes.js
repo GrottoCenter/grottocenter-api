@@ -431,6 +431,14 @@ module.exports.routes = {
   // File formats
   'GET /api/v1/file-formats': 'v1/file-format/find-all',
 
+  // Enumerations (public reference tables)
+  'GET /api/v1/enums/quantity-kinds': 'v1/enum/find-quantity-kinds',
+  'GET /api/v1/enums/units': 'v1/enum/find-units',
+  'GET /api/v1/enums/media': 'v1/enum/find-media',
+  'GET /api/v1/enums/observation-types': 'v1/enum/find-observation-types',
+  'GET /api/v1/enums/human-activity-types': 'v1/enum/find-human-activity-types',
+  'GET /api/v1/enums/contaminant-types': 'v1/enum/find-contaminant-types',
+
   // Option
   'GET /api/v1/options': 'v1/option/find-all',
 
