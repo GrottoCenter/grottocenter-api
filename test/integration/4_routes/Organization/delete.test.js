@@ -109,6 +109,18 @@ describe('Organization features', () => {
         isDeleted: true,
       }).fetch();
 
+      // Explored caves are re-pointed to the surviving org, not dropped.
+      // `sharedCave` is explored by both to exercise the (id_cave, id_grotto)
+      // PK-collision dedup; `onlyCave` is explored only by the deleted org.
+      const sharedCave = await TCave.create({ author: 1 }).fetch();
+      const onlyCave = await TCave.create({ author: 1 }).fetch();
+      await JGrottoCaveExplorer.create({ cave: sharedCave.id, grotto: org.id });
+      await JGrottoCaveExplorer.create({
+        cave: sharedCave.id,
+        grotto: targetOrg.id,
+      });
+      await JGrottoCaveExplorer.create({ cave: onlyCave.id, grotto: org.id });
+
       await supertest(sails.hooks.http.app)
         .delete(
           `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
@@ -120,6 +132,19 @@ describe('Organization features', () => {
 
       const deleted = await TGrotto.findOne(org.id);
       should(deleted).be.undefined();
+
+      // No relationships left pointing at the deleted org.
+      const orphaned = await JGrottoCaveExplorer.find({ grotto: org.id });
+      should(orphaned).have.length(0);
+
+      // The survivor explores both caves, each exactly once (no PK collision).
+      const survivorCaves = await JGrottoCaveExplorer.find({
+        grotto: targetOrg.id,
+      });
+      should(survivorCaves).have.length(2);
+      should(survivorCaves.map((r) => r.cave).sort()).deepEqual(
+        [sharedCave.id, onlyCave.id].sort()
+      );
     });
   });
 });
