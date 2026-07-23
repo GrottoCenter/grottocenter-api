@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "code": "tourism",
+    "url": "http://uis.speleo.org/vocab/humanactivitytype/tourism"
+  },
+  {
+    "id": 2,
+    "code": "scientific_research",
+    "url": "http://uis.speleo.org/vocab/humanactivitytype/scientific_research"
+  }
+]

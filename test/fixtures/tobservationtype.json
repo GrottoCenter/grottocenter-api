@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "code": "physical_measurements",
+    "url": "http://grottocenter.org/vocab/observationtype/physical_measurements"
+  },
+  {
+    "id": 2,
+    "code": "biological_survey",
+    "url": "http://grottocenter.org/vocab/observationtype/biological_survey"
+  }
+]

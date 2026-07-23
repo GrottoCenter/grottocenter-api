@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "code": "air",
+    "url": "http://qudt.org/vocab/medium/air"
+  },
+  {
+    "id": 2,
+    "code": "water",
+    "url": "http://qudt.org/vocab/medium/water"
+  },
+  {
+    "id": 3,
+    "code": "soil",
+    "url": "http://qudt.org/vocab/medium/soil"
+  }
+]

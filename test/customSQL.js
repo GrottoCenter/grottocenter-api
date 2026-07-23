@@ -27,6 +27,10 @@ SELECT SETVAL('public.t_device_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_dev
 SELECT SETVAL('public.t_sensor_configuration_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_sensor_configuration;
 SELECT SETVAL('public.t_quantity_kind_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_quantity_kind;
 SELECT SETVAL('public.t_unit_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_unit;
+SELECT SETVAL('public.t_medium_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_medium;
+SELECT SETVAL('public.t_observation_type_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_observation_type;
+SELECT SETVAL('public.t_human_activity_type_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_human_activity_type;
+SELECT SETVAL('public.t_contaminant_type_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_contaminant_type;
 SELECT SETVAL('public.t_substance_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_substance;
 SELECT SETVAL('public.t_guideline_id_seq', COALESCE(MAX(id), 1) ) FROM public.t_guideline;
 `;

@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "code": "heavy_metal",
+    "url": "http://grottocenter.org/vocab/contaminanttype/heavy_metal"
+  },
+  {
+    "id": 2,
+    "code": "organic_compound",
+    "url": "http://grottocenter.org/vocab/contaminanttype/organic_compound"
+  }
+]
