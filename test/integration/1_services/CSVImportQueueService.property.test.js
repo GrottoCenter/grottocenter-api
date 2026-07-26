@@ -2,8 +2,7 @@ const should = require('should');
 const fc = require('fast-check');
 
 describe('CSVImportQueueService - Property: affinity chunking co-location and completeness', () => {
-  it('should place all rows with the same key in the same chunk and preserve total count', function () {
-    this.timeout(30000);
+  it('should place all rows with the same key in the same chunk and preserve total count', () => {
     fc.assert(
       fc.property(
         fc.array(
@@ -67,5 +66,5 @@ describe('CSVImportQueueService - Property: affinity chunking co-location and co
       ),
       { numRuns: 100 }
     );
-  });
+  }).timeout(30000);
 });

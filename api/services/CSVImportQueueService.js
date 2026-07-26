@@ -530,45 +530,57 @@ module.exports = {
 
   /**
    * Generate CSV reports and upload to Azure Blob Storage.
+   * Each report is uploaded independently; a failure on one does not prevent
+   * the others from being uploaded. URLs for successfully uploaded reports are
+   * returned; failed ones stay null and a warning is logged.
    * @param {string} batchId
    * @param {Array} successes
    * @param {Array} duplicates
    * @param {Array} failures
-   * @returns {Object} { success: url|null, duplicates: url|null, failures: url|null }
+   * @returns {Object} { successes: url|null, duplicates: url|null, failures: url|null }
    */
   async generateAndUploadReports(batchId, successes, duplicates, failures) {
     const reportUrls = { successes: null, duplicates: null, failures: null };
 
     const prefix = `csv-import-reports/${batchId}`;
 
-    if (successes.length > 0) {
-      const csv = module.exports.toCSV(
-        ['line', 'caveId', 'entranceId', 'latitude', 'longitude'],
-        successes
-      );
-      reportUrls.successes = await module.exports.uploadReport(
-        prefix,
-        'successes.csv',
-        csv
-      );
-    }
+    const uploads = [
+      {
+        key: 'successes',
+        rows: successes,
+        columns: ['line', 'caveId', 'entranceId', 'latitude', 'longitude'],
+        filename: 'successes.csv',
+      },
+      {
+        key: 'duplicates',
+        rows: duplicates,
+        columns: ['line', 'message'],
+        filename: 'duplicates.csv',
+      },
+      {
+        key: 'failures',
+        rows: failures,
+        columns: ['line', 'message'],
+        filename: 'failures.csv',
+      },
+    ];
 
-    if (duplicates.length > 0) {
-      const csv = module.exports.toCSV(['line', 'message'], duplicates);
-      reportUrls.duplicates = await module.exports.uploadReport(
-        prefix,
-        'duplicates.csv',
-        csv
-      );
-    }
-
-    if (failures.length > 0) {
-      const csv = module.exports.toCSV(['line', 'message'], failures);
-      reportUrls.failures = await module.exports.uploadReport(
-        prefix,
-        'failures.csv',
-        csv
-      );
+    for (const { key, rows, columns, filename } of uploads) {
+      if (rows.length === 0) continue; // eslint-disable-line no-continue
+      const csv = module.exports.toCSV(columns, rows);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        reportUrls[key] = await module.exports.uploadReport(
+          prefix,
+          filename,
+          csv
+        );
+      } catch (err) {
+        sails.log.warn(
+          `CSVImportQueueService: failed to upload ${filename} for batch ${batchId}:`,
+          err
+        );
+      }
     }
 
     return reportUrls;
