@@ -300,6 +300,122 @@ describe('CSVImportQueueService', () => {
     });
   });
 
+  describe('aggregateBatch', () => {
+    let findOneStub;
+    let updateStub;
+    let generateStub;
+    let notifyStub;
+    let setStub;
+
+    before(() => {
+      findOneStub = sinon
+        .stub(TJobBatch, 'findOne')
+        .resolves({ id: 'batch-abc', totalChunks: 1, totalRows: 2 });
+      setStub = sinon.stub().resolves({ id: 'batch-abc' });
+      updateStub = sinon.stub(TJobBatch, 'updateOne').returns({ set: setStub });
+      generateStub = sinon.stub(
+        CSVImportQueueService,
+        'generateAndUploadReports'
+      );
+      notifyStub = sinon
+        .stub(CSVImportQueueService, 'notifyCompletion')
+        .resolves();
+    });
+
+    after(() => {
+      findOneStub.restore();
+      updateStub.restore();
+      generateStub.restore();
+      notifyStub.restore();
+    });
+
+    afterEach(() => {
+      findOneStub.resetHistory();
+      updateStub.resetHistory();
+      setStub.resetHistory();
+      generateStub.resetHistory();
+      notifyStub.resetHistory();
+    });
+
+    it('should mark batch as completed with null reportUrls when report upload fails', async () => {
+      const jobs = [
+        {
+          state: 'completed',
+          output: {
+            successes: [{ line: 2, caveId: 10, entranceId: 20 }],
+            duplicates: [],
+            failures: [],
+          },
+          data: { batchId: 'batch-abc', rows: [{}] },
+        },
+        {
+          state: 'completed',
+          output: {
+            successes: [],
+            duplicates: [],
+            failures: [{ line: 3, message: 'Missing column' }],
+          },
+          data: { batchId: 'batch-abc', rows: [{}] },
+        },
+      ];
+
+      generateStub.rejects(new Error('Azure upload failed'));
+
+      await CSVImportQueueService.aggregateBatch('batch-abc', jobs);
+
+      // Batch must be marked completed, not failed
+      should(updateStub.callCount).equal(1);
+      should(setStub.callCount).equal(1);
+      const setArgs = setStub.firstCall.args[0];
+      should(setArgs.status).equal('completed');
+      should(setArgs.result).not.be.null();
+      should(setArgs.result.summary.successes).equal(1);
+      should(setArgs.result.summary.failures).equal(1);
+      should(setArgs.result.reportUrls.successes).be.null();
+      should(setArgs.result.reportUrls.duplicates).be.null();
+      should(setArgs.result.reportUrls.failures).be.null();
+
+      // Notification must still be sent
+      should(notifyStub.callCount).equal(1);
+      const notifyArgs = notifyStub.firstCall.args;
+      should(notifyArgs[0]).equal('batch-abc');
+      should(notifyArgs[1].summary.successes).equal(1);
+    });
+
+    it('should mark batch as completed with reportUrls when upload succeeds', async () => {
+      const jobs = [
+        {
+          state: 'completed',
+          output: {
+            successes: [{ line: 2, caveId: 10, entranceId: 20 }],
+            duplicates: [],
+            failures: [],
+          },
+          data: { batchId: 'batch-abc', rows: [{}] },
+        },
+      ];
+
+      const urls = {
+        successes: 'https://example.com/s.csv',
+        duplicates: null,
+        failures: null,
+      };
+      generateStub.resolves(urls);
+
+      await CSVImportQueueService.aggregateBatch('batch-abc', jobs);
+
+      should(updateStub.callCount).equal(1);
+      should(setStub.callCount).equal(1);
+      const setArgs = setStub.firstCall.args[0];
+      should(setArgs.status).equal('completed');
+      should(setArgs.result.reportUrls.successes).equal(
+        'https://example.com/s.csv'
+      );
+      should(setArgs.result.summary.successes).equal(1);
+      should(notifyStub.callCount).equal(1);
+    });
+  });
+
   describe('getBatchProgress', () => {
     let findOneStub;
     let queryStub;

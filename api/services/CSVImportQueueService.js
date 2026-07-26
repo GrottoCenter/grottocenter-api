@@ -505,14 +505,13 @@ module.exports = {
       );
     } catch (err) {
       sails.log.error(
-        `CSVImportQueueService: aggregation failed for batch ${batchId}:`,
+        `CSVImportQueueService: report generation failed for batch ${batchId} (rows were already imported):`,
         err
       );
-      await TJobBatch.updateOne({ id: batchId }).set({
-        status: 'failed',
-        completedAt: new Date(),
-      });
-      return;
+      // Report upload failed, but the rows were already imported successfully.
+      // Mark the batch as completed with null reportUrls so the front-end
+      // can show accurate import counts instead of a misleading "failed" status.
+      reportUrls = { successes: null, duplicates: null, failures: null };
     }
 
     const resultPayload = {
