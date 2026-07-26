@@ -146,19 +146,6 @@ module.exports = {
     return credentials.documentsBlobClient;
   },
 
-  /**
-   * Get the shared key credential for SAS generation.
-   * In dev mode (no credentials), returns a stub that produces a no-op query string.
-   * @returns {import('@azure/storage-blob').StorageSharedKeyCredential|object|null}
-   */
-  getSharedKeyCredential() {
-    if (!credentials) {
-      // Return a stub; in dev mode URLs point to localhost so no real SAS needed
-      return { accountName: 'local-dev', isLocalStub: true };
-    }
-    return credentials.sharedKeyCredential;
-  },
-
   document: {
     getUrl(filePath) {
       if (!credentials) {
