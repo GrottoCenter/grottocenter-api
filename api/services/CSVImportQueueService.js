@@ -8,10 +8,6 @@
  */
 
 const { v4: uuidv4 } = require('uuid');
-const {
-  BlobSASPermissions,
-  generateBlobSASQueryParameters,
-} = require('@azure/storage-blob');
 const { ENTRANCE_MANDATORY_COLUMNS } = require('../utils/csvHelper');
 
 const QUEUE_NAME = 'csv-import';
@@ -343,14 +339,14 @@ module.exports = {
       /* eslint-enable no-await-in-loop, no-continue */
 
       if (hasSuccessfulImport) {
-        sails.services.coordinatessnapshotservice
-          .invalidate()
-          .catch((err) =>
-            sails.log.error(
-              'CSVImportQueueService: coordinates snapshot invalidation failed:',
-              err
-            )
-          );
+        // eslint-disable-next-line global-require
+        const CoordinatesSnapshotService = require('./CoordinatesSnapshotService');
+        CoordinatesSnapshotService.invalidate().catch((err) =>
+          sails.log.error(
+            'CSVImportQueueService: coordinates snapshot invalidation failed:',
+            err
+          )
+        );
       }
     } catch (err) {
       sails.log.error(
@@ -601,19 +597,17 @@ module.exports = {
   },
 
   /**
-   * Upload a CSV report to Azure Blob Storage and return a SAS URL.
+   * Upload a CSV report to Azure Blob Storage and return the blob URL.
    *
-   * NOTE: The documents container allows anonymous access, so the SAS token
-   * is not strictly required for read access. However, it provides a
-   * time-bounded URL (7 days) which signals expiry intent to consumers,
-   * and access control effectively relies on the unguessability of the
-   * batch UUID in the blob path. This is acceptable given report contents
-   * are limited to line numbers and messages (no PII).
+   * The documents container allows anonymous read access, so no SAS token
+   * is generated. The URL is returned directly after upload. The batch UUID
+   * in the blob path provides sufficient access control for report contents,
+   * which are limited to line numbers and messages (no PII).
    *
    * @param {string} prefix
    * @param {string} filename
    * @param {string} content
-   * @returns {string} SAS URL valid for 7 days
+   * @returns {string} Public URL of the uploaded blob
    */
   async uploadReport(prefix, filename, content) {
     const blobPath = `${prefix}/${filename}`;
@@ -624,27 +618,7 @@ module.exports = {
       blobHTTPHeaders: { blobContentType: 'text/csv' },
     });
 
-    const sharedKeyCredential = FileService.getSharedKeyCredential();
-
-    // In dev mode (no Azure credentials), return the local URL directly
-    if (sharedKeyCredential && sharedKeyCredential.isLocalStub) {
-      return blockBlobClient.url;
-    }
-
-    const expiresOn = new Date();
-    expiresOn.setDate(expiresOn.getDate() + 7);
-
-    const sasToken = generateBlobSASQueryParameters(
-      {
-        containerName: containerClient.containerName,
-        blobName: blobPath,
-        permissions: BlobSASPermissions.parse('r'),
-        expiresOn,
-      },
-      sharedKeyCredential
-    ).toString();
-
-    return `${blockBlobClient.url}?${sasToken}`;
+    return blockBlobClient.url;
   },
 
   /**
