@@ -115,6 +115,30 @@ Example:
 docker exec grotto-postgres psql -U root -d grottoce -c "SELECT id, id_country, iso_3166_2 FROM t_entrance WHERE id_country = 'US' LIMIT 5;"
 ```
 
+### Cloudflare Turnstile (anti-bot CAPTCHA)
+
+The signup endpoint is protected by Cloudflare Turnstile. Turnstile requires a domain registered in the Cloudflare dashboard, so it **cannot be tested end-to-end on localhost with real keys** — the widget will fail to load and the front-end won't be able to generate a token.
+
+Two options for local development:
+
+**Option 1 — disable Turnstile** (CAPTCHA check is skipped entirely):
+
+Set in `docker/.env`:
+```
+TURNSTILE_ENABLED=false
+```
+
+**Option 2 — use Cloudflare's always-pass test keys** (widget renders and tokens always validate):
+
+Set in `docker/.env`:
+```
+TURNSTILE_ENABLED=true
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+```
+And use site key `1x0000000000000000000000000000000AA` on the front-end side.
+
+For staging and production, `TURNSTILE_ENABLED=true` must be set alongside the real `TURNSTILE_SECRET_KEY`. The app refuses to start if `TURNSTILE_ENABLED=true` without a secret key configured.
+
 ### Refresh materialized views (development only)
 
 The database uses materialized views for performance optimization. These views need to be refreshed periodically to reflect the latest data. In development, you can manually refresh them using the provided cron scripts:
