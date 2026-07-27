@@ -13,6 +13,9 @@ const {
   TYPES_ALLOWING_PARENT,
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
+const {
+  computeDocumentAuthorsSort,
+} = require('../utils/computeDocumentAuthorsSort');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -93,6 +96,12 @@ module.exports = {
       library: library && { name: library.names?.[0]?.name },
       authors: authors?.map((e) => ({ nickname: e.nickname })),
       authorsOrganization: mapAuthorsOrganizationForSearch(authorsOrganization),
+      // Keep the denormalized author sort key in sync on single-doc upserts so
+      // edits match the full-reindex baseline (see computeDocumentAuthorsSort).
+      authorsSort: computeDocumentAuthorsSort(
+        authors?.map((e) => e.nickname),
+        authorsOrganization?.map((e) => e.names?.[0]?.name)
+      ),
       subjects: subjects?.map((e) => ({ code: e.id })),
       iso3166: [
         ...(countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ?? []),
