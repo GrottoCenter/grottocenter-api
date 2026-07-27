@@ -9,6 +9,7 @@ const normalizeDataQualityFilter = require('../../../utils/normalizeDataQualityF
 // Sort fields that are only valid for specific entities
 const ENTITY_SPECIFIC_SORT_FIELDS = {
   dataQuality: ['entrances'],
+  authorsSort: ['documents'],
 };
 
 module.exports = async (req, res) => {
