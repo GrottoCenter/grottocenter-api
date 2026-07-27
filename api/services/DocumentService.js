@@ -8,6 +8,9 @@ const {
   valIfTruthyOrNull,
   distantFileDownload,
 } = require('../utils/csvHelper');
+const {
+  computeDocumentAuthorsSort,
+} = require('../utils/computeDocumentAuthorsSort');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -33,6 +36,7 @@ module.exports = {
     // We prefer to clean them to ensure only clean data remains in the search database.
     const {
       authors,
+      authorsGrotto,
       descriptions,
       subjects,
       countries,
@@ -75,6 +79,12 @@ module.exports = {
       editor: editor && { name: editor.names?.[0]?.name },
       library: library && { name: library.names?.[0]?.name },
       authors: authors?.map((e) => ({ nickname: e.nickname })),
+      // Keep the denormalized author sort key in sync on single-doc upserts so
+      // edits match the full-reindex baseline (see computeDocumentAuthorsSort).
+      authorsSort: computeDocumentAuthorsSort(
+        authors?.map((e) => e.nickname),
+        authorsGrotto?.map((e) => e.names?.[0]?.name)
+      ),
       subjects: subjects?.map((e) => ({ code: e.id })),
       iso3166: [
         ...(countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ?? []),

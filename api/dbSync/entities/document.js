@@ -1,4 +1,7 @@
 const exportUtils = require('../utils');
+const {
+  computeDocumentAuthorsSort,
+} = require('../../utils/computeDocumentAuthorsSort');
 
 const query = `
     SELECT
@@ -122,6 +125,18 @@ async function* processRows(source) {
         join: ['LEFT JOIN t_caver c ON c.id = id_caver'],
       },
       {
+        table: 'j_document_grotto_author j',
+        foreignField: 'j.id_document',
+        rows,
+        localField: 'authorsOrganization',
+        fields: ['j.id_grotto AS id', 'n.name'],
+        join: [
+          'LEFT JOIN t_grotto g ON g.id = j.id_grotto',
+          'LEFT JOIN t_name n ON n.id_grotto = g.id AND n.is_main = true',
+        ],
+        where: [],
+      },
+      {
         table: 'j_document_language',
         foreignField: 'id_document',
         rows,
@@ -179,6 +194,11 @@ async function* processRows(source) {
         ...(row.isoRegions?.map((e) => ({ iso: e.iso, name: e.name })) ?? []),
       ];
       row.cave = row.cave?.[0] ?? null;
+
+      row.authorsSort = computeDocumentAuthorsSort(
+        row.authors?.map((e) => e.nickname),
+        row.authorsOrganization?.map((e) => e.name)
+      );
 
       yield row;
     }
@@ -280,6 +300,11 @@ module.exports = {
           facet: true,
           optional: true,
         },
+        // Denormalized scalar key for sorting biblio results by author.
+        // Typesense cannot sort on the `authors.nickname` array field, so this
+        // holds the alphabetical-first author name (persons + organizations).
+        // See api/utils/computeDocumentAuthorsSort.js for method & limitations.
+        { name: 'authorsSort', type: 'string', optional: true, sort: true },
         { name: 'cave.name', type: 'string', optional: true, sort: true },
         { name: 'entrances.name', type: 'string[]', optional: true },
         { name: 'massifs.name', type: 'string[]', optional: true },
