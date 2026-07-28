@@ -602,7 +602,9 @@ module.exports = {
       RiggingService.getEntranceRiggings(entrance.id, subEntitiesWhere),
       HistoryService.getEntranceHistories(entrance.id, subEntitiesWhere),
       CommentService.getEntranceComments(entrance.id, subEntitiesWhere),
-      DocumentService.getDocuments(entrance.documents.map((d) => d.id)),
+      DocumentService.getDocumentsForCitation(
+        entrance.documents.map((d) => d.id)
+      ),
     ]);
 
     return entrance;

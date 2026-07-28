@@ -500,6 +500,51 @@ module.exports = {
       .populate('files', { where: { isValidated: true } });
   },
 
+  /**
+   * Same as getDocuments(), plus everything needed to build a bibliographic
+   * citation (authors, publisher, journal, identifier...).
+   * The result is intended to be passed to the toCitationDocument converter.
+   * Kept apart from getDocuments() so that the callers only needing a title
+   * and a type don't pay for the extra joins.
+   * @param {Array} documentIds
+   * @returns
+   */
+  getDocumentsForCitation: async (documentIds) => {
+    if (documentIds.length === 0) return [];
+    const documents = await TDocument.find({ id: documentIds })
+      .populate('descriptions')
+      .populate('type')
+      .populate('files', { where: { isValidated: true } })
+      .populate('identifierType')
+      .populate('authors')
+      .populate('authorsGrotto')
+      .populate('editor')
+      .populate('library');
+
+    const grottos = documents.flatMap((d) =>
+      [d.editor, d.library, ...(d.authorsGrotto ?? [])].filter((g) => g)
+    );
+    // A document title lives in its descriptions, which cannot be populated
+    // through the parent association: resolve the parents with a second query.
+    const parentIds = [
+      ...new Set(documents.map((d) => d.parent).filter((id) => id)),
+    ];
+
+    const [parents] = await Promise.all([
+      parentIds.length > 0
+        ? TDocument.find({ id: parentIds }).populate('descriptions')
+        : [],
+      grottos.length > 0 ? NameService.setNames(grottos, 'grotto') : null,
+    ]);
+
+    const parentById = new Map(parents.map((p) => [p.id, p]));
+    for (const document of documents) {
+      document.parent = parentById.get(document.parent) ?? null;
+    }
+
+    return documents;
+  },
+
   getDocumentChildren: async (documentId) =>
     TDocument.find({ parent: documentId })
       .populate('descriptions')
