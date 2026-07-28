@@ -194,7 +194,9 @@ module.exports = {
     [cave.massifs, cave.descriptions, cave.documents] = await Promise.all([
       module.exports.getMassifs(cave.id),
       DescriptionService.getCaveDescriptions(cave.id, subEntitiesWhere),
-      DocumentService.getDocuments(cave.documents?.map((d) => d.id) ?? []),
+      DocumentService.getDocumentsForCitation(
+        cave.documents?.map((d) => d.id) ?? []
+      ),
     ]);
 
     cave.exploringOrganizations =

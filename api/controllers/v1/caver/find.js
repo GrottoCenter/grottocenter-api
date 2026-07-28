@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
   if (!caverFound)
     return res.notFound({ error: `${params.searchedItem} not found` });
 
-  caverFound.documents = await DocumentService.getDocuments(
+  caverFound.documents = await DocumentService.getDocumentsForCitation(
     caverFound.documents.map((d) => d.id)
   );
 
