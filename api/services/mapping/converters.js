@@ -49,7 +49,7 @@ const c = {
       }),
       entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
       massifs: toList('massifs', source, c.toSimpleMassif),
-      documents: toList('documents', source, c.toSimpleDocument),
+      documents: toList('documents', source, c.toCitationDocument),
       exploringOrganizations: toList(
         'exploringOrganizations',
         source,
@@ -119,7 +119,7 @@ const c = {
     // Convert collections
     listParser('exploredEntrances', c.toSimpleEntrance);
     listParser('groups', (group) => group);
-    listParser('documents', c.toSimpleDocument);
+    listParser('documents', c.toCitationDocument);
     listParser('grottos', c.toSimpleOrganization, 'organizations');
 
     if (meta?.isAdmin) {
@@ -223,6 +223,38 @@ const c = {
     datePublication: source.datePublication,
     isValidated: source.isValidated,
     isDeleted: source.isDeleted,
+  }),
+
+  // A simple document plus the bibliographic fields a document card needs to
+  // display a full citation. Only for sources coming from
+  // DocumentService.getDocumentsForCitation(): the other ones have those
+  // associations unpopulated, and must stick to toSimpleDocument.
+  toCitationDocument: (source) => ({
+    ...c.toSimpleDocument(source),
+    authors: toList('authors', source, c.toSimpleCaver),
+    authorsOrganization: toList(
+      'authorsGrotto',
+      source,
+      c.toSimpleOrganization
+    ),
+    editor: convertIfObject(source.editor, c.toSimpleOrganization),
+    library: convertIfObject(source.library, c.toSimpleOrganization),
+    identifier: source.identifier ?? undefined,
+    identifierType: source.identifierType?.id?.trim(),
+    issue: source.issue,
+    pages: source.pages,
+    // Flattened rather than converted as a document: a citation only needs the
+    // parent title, and nesting would let a card drag in a whole parent chain.
+    parent: convertIfObject(source.parent, (parent) => ({
+      id: parent.id,
+      title: c.toDocumentDescriptions(parent.descriptions).title,
+    })),
+    oldBBS: {
+      pages: source.pagesBBSOld,
+      comments: source.commentsBBSOld,
+      publicationOther: source.publicationOtherBBSOld,
+      publicationFascicule: source.publicationFasciculeBBSOld,
+    },
   }),
 
   toDocument: (source, meta) => {
@@ -413,7 +445,7 @@ const c = {
     result.comments = toList('comments', source, c.toSimpleComment, {
       filterDeleted: false,
     });
-    result.documents = toList('documents', source, c.toSimpleDocument);
+    result.documents = toList('documents', source, c.toCitationDocument);
     result.histories = toList('histories', source, c.toSimpleHistory, {
       filterDeleted: false,
     });
@@ -624,7 +656,7 @@ const c = {
     geogPolygon: source.geoJson,
     nbEntrances: source.nbEntrances, // from search
     descriptions: toList('descriptions', source, c.toSimpleDescription),
-    documents: toList('documents', source, c.toSimpleDocument),
+    documents: toList('documents', source, c.toCitationDocument),
     networks: toList('networks', source, c.toSimpleCave),
     guidelines: toList('guidelines', source, c.toSimpleGuideline),
     organizations: toList('organizations', source, c.toManagingOrganization, {

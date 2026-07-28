@@ -243,7 +243,9 @@ module.exports = {
     [massif.networks, massif.documents, massif.geoJson, massif.descriptions] =
       await Promise.all([
         module.exports.getNetworks(massif.id),
-        DocumentService.getDocuments(massif.documents.map((d) => d.id)),
+        DocumentService.getDocumentsForCitation(
+          massif.documents.map((d) => d.id)
+        ),
         module.exports.wktToGeoJson(massif.geogPolygon),
         DescriptionService.getMassifDescriptions(massif.id),
       ]);

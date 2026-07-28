@@ -7880,7 +7880,7 @@ components:
         documents:
           type: array
           items:
-            $ref: '#/components/schemas/Document'
+            $ref: '#/components/schemas/CitationDocument'
         entrances:
           type: array
           items:
@@ -7937,7 +7937,7 @@ components:
         documents:
           type: array
           items:
-            $ref: '#/components/schemas/Document'
+            $ref: '#/components/schemas/CitationDocument'
         exploredEntrances:
           type: array
           items:
@@ -8309,6 +8309,79 @@ components:
         parent:
           $ref: '#/components/schemas/Document-type'
 
+    CitationDocument:
+      type: object
+      description: >
+        A document as returned inside an entrance or a massif: the fields
+        needed to list it and to build its bibliographic citation. Lighter
+        than Document, which is only returned by the /documents endpoints.
+      properties:
+        authors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleCaver'
+        authorsOrganization:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleOrganization'
+        dateInscription:
+          type: string
+        datePublication:
+          type: string
+        dateReviewed:
+          type: string
+        description:
+          type: string
+        editor:
+          $ref: '#/components/schemas/SimpleOrganization'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        id:
+          type: integer
+        identifier:
+          type: string
+        identifierType:
+          type: string
+          description: Identifier type code, e.g. "issn", "isbn", "url".
+        isDeleted:
+          type: boolean
+        issue:
+          type: string
+        isValidated:
+          type: boolean
+        library:
+          $ref: '#/components/schemas/SimpleOrganization'
+        oldBBS:
+          type: object
+          description: Legacy BBS bibliographic data.
+          properties:
+            comments:
+              type: string
+            pages:
+              type: string
+            publicationFascicule:
+              type: string
+            publicationOther:
+              type: string
+        pages:
+          type: string
+        parent:
+          type: object
+          description: >
+            Parent document, flattened: a citation only needs its title.
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+        title:
+          type: string
+        type:
+          type: string
+          description: Document type name, e.g. "Article", "Book".
+
     Entrance:
       type: object
       properties:
@@ -8347,7 +8420,7 @@ components:
         documents:
           type: array
           items:
-            $ref: '#/components/schemas/Document'
+            $ref: '#/components/schemas/CitationDocument'
         externalUrl:
           type: string
         redirectTo:
@@ -8809,7 +8882,7 @@ components:
         documents:
           type: array
           items:
-            $ref: '#/components/schemas/Document'
+            $ref: '#/components/schemas/CitationDocument'
         networks:
           type: array
           items:
@@ -9279,6 +9352,18 @@ components:
           type: 'string'
         yearBirth:
           type: 'string'
+
+    SimpleOrganization:
+      type: object
+      properties:
+        id:
+          type: integer
+        isDeleted:
+          type: boolean
+        language:
+          type: string
+        name:
+          type: string
 
     Point:
       type: object
