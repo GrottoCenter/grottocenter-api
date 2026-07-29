@@ -17,8 +17,10 @@ module.exports = [
   'ttokenblacklist',
   'tcaver',
   'tdevice',
-  'tquantitykind',
+  // tunit before tquantitykind: t_quantity_kind.id_display_unit is an FK into
+  // t_unit (t_quantity_kind_t_unit_fk).
   'tunit',
+  'tquantitykind',
   'tmedium',
   'tobservationtype',
   'thumanactivitytype',

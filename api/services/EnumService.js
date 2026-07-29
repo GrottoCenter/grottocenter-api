@@ -5,10 +5,14 @@
  * scientific observation domain. Owns the query + response mapping for the six
  * lookup tables so their shape lives in one place.
  *
- * Immutable reference data — memoized at module level (see DEVELOPER_GUIDELINES
- * §22). The rows only change via database migrations shipped with a deploy, so
+ * Immutable reference data — memoized at module level. The rows only change via database migrations shipped with a deploy, so
  * a process restart refreshes the cache; within a process lifetime repeated
  * requests are served from memory without re-querying the database.
+ *
+ * Deliberately unpaginated, unlike the entity list endpoints asks to
+ * paginate: these are small bounded vocabularies a client needs in full to
+ * label a form, and the existing reference endpoints (licenses, file-formats,
+ * identifier-types) return their whole list too.
  */
 
 const cache = {};
