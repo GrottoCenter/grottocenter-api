@@ -26,5 +26,12 @@
     "url": "http://qudt.org/vocab/quantitykind/AmountOfSubstanceConcentration",
     "symbolSi": "mol/L",
     "displayUnit": 18
+  },
+  {
+    "id": 5,
+    "code": "MassFlowRate",
+    "url": "http://qudt.org/vocab/quantitykind/MassFlowRate",
+    "symbolSi": "kg/s",
+    "displayUnit": null
   }
 ]
