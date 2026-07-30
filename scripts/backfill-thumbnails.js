@@ -5,17 +5,22 @@
 /**
  * Backfill Thumbnails Script
  *
- * Generates thumbnails for existing image files that don't have any.
+ * Generates thumbnails for existing image files that don't have any, and
+ * regenerates thumbnails for images that already have them but were stored
+ * with the wrong orientation (EXIF Orientation != 1 or missing).
+ *
  * Lifts Sails to access models, config, and services.
  *
  * Usage:
  *   node scripts/backfill-thumbnails.js
  *   node scripts/backfill-thumbnails.js --dry-run
  *   node scripts/backfill-thumbnails.js --batch-size 5
+ *   node scripts/backfill-thumbnails.js --fix-orientation   # also re-generates already-thumbnailed images with wrong orientation
  */
 
 const Sails = require('sails');
 const rc = require('sails/accessible/rc');
+const sharp = require('sharp');
 const {
   BlobServiceClient,
   StorageSharedKeyCredential,
@@ -24,6 +29,7 @@ const {
 // Parse CLI flags
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+const fixOrientation = args.includes('--fix-orientation');
 const batchSizeIndex = args.indexOf('--batch-size');
 const batchSize =
   batchSizeIndex !== -1 ? parseInt(args[batchSizeIndex + 1], 10) || 1 : 1;
@@ -87,6 +93,45 @@ async function run() {
     } while (page.length === pageSize);
 
     console.log(`Found ${imageFiles.length} image files without thumbnails.`);
+
+    // When --fix-orientation is passed, also collect images that already have
+    // thumbnails but may have been generated before .autoOrient() was added.
+    // We check the EXIF orientation of the downloaded buffer at process time
+    // and skip files that are already correctly oriented (orientation == 1 or absent).
+    if (fixOrientation) {
+      let orientSkip = 0;
+      let orientPage;
+      do {
+        orientPage = await TFile.find({
+          where: {
+            or: [
+              { thumbnailSmall: { '!=': null } },
+              { thumbnailMedium: { '!=': null } },
+              { thumbnailLarge: { '!=': null } },
+            ],
+          },
+        })
+          .populate('fileFormat')
+          .limit(pageSize)
+          .skip(orientSkip);
+
+        orientPage.forEach((f) => {
+          if (!f.fileFormat || !f.fileFormat.mimeType) return;
+          const { mimeType } = f.fileFormat;
+          if (mimeType === 'image/svg+xml') return;
+          if (ThumbnailService.isProcessable(mimeType)) {
+            imageFiles.push(f);
+          }
+        });
+
+        orientSkip += pageSize;
+      } while (orientPage.length === pageSize);
+
+      console.log(
+        `Found ${imageFiles.length} total image files to process (including orientation re-check).`
+      );
+    }
+
     console.log('File IDs to process:', imageFiles.map((f) => f.id).join(', '));
 
     if (dryRun) {
@@ -167,6 +212,18 @@ async function run() {
               chunks.push(chunk);
             }
             const imageBuffer = Buffer.concat(chunks);
+
+            // When --fix-orientation: skip images that are already upright
+            // (EXIF orientation absent or == 1) — no re-generation needed.
+            if (fixOrientation) {
+              const meta = await sharp(imageBuffer).metadata();
+              const { orientation } = meta;
+              if (!orientation || orientation === 1) {
+                skipped += 1;
+                processed += 1;
+                return;
+              }
+            }
 
             // Generate thumbnails
             const thumbnailPaths = await ThumbnailService.generate(
