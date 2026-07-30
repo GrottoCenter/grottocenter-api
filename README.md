@@ -119,23 +119,7 @@ docker exec grotto-postgres psql -U root -d grottoce -c "SELECT id, id_country, 
 
 The signup endpoint is protected by Cloudflare Turnstile. Turnstile requires a domain registered in the Cloudflare dashboard, so it **cannot be tested end-to-end on localhost with real keys** — the widget will fail to load and the front-end won't be able to generate a token.
 
-Two options for local development:
-
-**Option 1 — disable Turnstile** (CAPTCHA check is skipped entirely):
-
-Set in `docker/.env`:
-```
-TURNSTILE_ENABLED=false
-```
-
-**Option 2 — use Cloudflare's always-pass test keys** (widget renders and tokens always validate):
-
-Set in `docker/.env`:
-```
-TURNSTILE_ENABLED=true
-TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
-```
-And use site key `1x0000000000000000000000000000000AA` on the front-end side.
+See `docker/sample.env` for the two local development options (disable entirely, or use Cloudflare's always-pass test keys). The environment variables must be **exported in your shell** before running `npm run dev` — they are not read from `docker/.env`, which is only used by docker-compose for the database and search containers.
 
 For staging and production, `TURNSTILE_ENABLED=true` must be set alongside the real `TURNSTILE_SECRET_KEY`. The app refuses to start if `TURNSTILE_ENABLED=true` without a secret key configured.
 

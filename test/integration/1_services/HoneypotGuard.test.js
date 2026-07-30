@@ -47,5 +47,27 @@ describe('HoneypotGuard', () => {
       const result = HoneypotGuard.check({ website: '  bot  ' });
       should(result).deepEqual({ trapped: true, value: '  bot  ' });
     });
+
+    it('should return trapped: true when website is an array (coerced to string)', () => {
+      const result = HoneypotGuard.check({ website: ['spam'] });
+      should(result.trapped).be.true();
+      should(result.value).equal('spam');
+    });
+
+    it('should return trapped: true when website is a plain object (coerced to string)', () => {
+      const result = HoneypotGuard.check({ website: { a: 1 } });
+      should(result.trapped).be.true();
+      should(result.value).equal('[object Object]');
+    });
+
+    it('should return trapped: false when website is null', () => {
+      const result = HoneypotGuard.check({ website: null });
+      should(result).deepEqual({ trapped: false });
+    });
+
+    it('should return trapped: false when website is undefined', () => {
+      const result = HoneypotGuard.check({ website: undefined });
+      should(result).deepEqual({ trapped: false });
+    });
   });
 });

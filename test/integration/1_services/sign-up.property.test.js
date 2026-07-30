@@ -22,69 +22,72 @@ const arbitraryCaptchaToken = fc.oneof(
   fc.string({ minLength: 1, maxLength: 2048 })
 );
 
-/**
- * Property 5: Honeypot rejection short-circuits Turnstile verification
- *
- * For any request body with a `website` field containing at least one
- * non-whitespace character, the Turnstile verification function SHALL NOT
- * be invoked — regardless of the `captchaToken` value.
- *
- * Validates: Requirements 3.1, 3.2
- */
-describe('Feature: signup-anti-bot-protection, Property 5: Honeypot rejection short-circuits Turnstile verification', () => {
-  let verifyTokenStub;
+describe('signup-anti-bot-protection', () => {
+  /**
+   * Property 5: Honeypot rejection short-circuits Turnstile verification
+   *
+   * For any request body with a `website` field containing at least one
+   * non-whitespace character, the Turnstile verification function SHALL NOT
+   * be invoked — regardless of the `captchaToken` value.
+   *
+   * Validates: Requirements 3.1, 3.2
+   */
+  describe('Property 5: Honeypot rejection short-circuits Turnstile verification', () => {
+    let verifyTokenStub;
 
-  beforeEach(() => {
-    verifyTokenStub = sinon.stub(TurnstileService, 'verifyToken').resolves({
-      pass: true,
-      errorCode: null,
+    beforeEach(() => {
+      verifyTokenStub = sinon.stub(TurnstileService, 'verifyToken').resolves({
+        pass: true,
+        errorCode: null,
+      });
+      sinon.stub(TurnstileService, 'isEnabled').returns(true);
+      sinon.stub(sails.log, 'warn');
     });
-    sinon.stub(TurnstileService, 'isEnabled').returns(true);
-    sinon.stub(sails.log, 'warn');
-  });
 
-  afterEach(() => {
-    sinon.restore();
-  });
+    afterEach(() => {
+      sinon.restore();
+    });
 
-  it('should never call TurnstileService.verifyToken when honeypot traps', async function () {
-    this.timeout(30000);
+    it('should never call TurnstileService.verifyToken when honeypot traps', async function () {
+      this.timeout(30000);
 
-    await fc.assert(
-      fc.asyncProperty(
-        nonEmptyAfterTrim,
-        arbitraryCaptchaToken,
-        async (website, captchaToken) => {
-          // Reset call counts between iterations
-          verifyTokenStub.resetHistory();
+      await fc.assert(
+        fc.asyncProperty(
+          nonEmptyAfterTrim,
+          arbitraryCaptchaToken,
+          async (website, captchaToken) => {
+            // Reset call counts between iterations
+            verifyTokenStub.resetHistory();
 
-          const req = {
-            body: { website, captchaToken },
-            ip: '192.168.1.1',
-            param: (name) => req.body[name],
-          };
+            const req = {
+              body: { website, captchaToken },
+              ip: '192.168.1.1',
+              param: (name) => req.body[name],
+              allParams: () => req.body,
+            };
 
-          let responseSent = false;
-          const res = {
-            ok: () => {
-              responseSent = true;
-            },
-            status: () => res,
-            json: () => res,
-            badRequest: () => res,
-            conflict: () => res,
-          };
+            let responseSent = false;
+            const res = {
+              ok: () => {
+                responseSent = true;
+              },
+              status: () => res,
+              json: () => res,
+              badRequest: () => res,
+              conflict: () => res,
+            };
 
-          await signUpController(req, res);
+            await signUpController(req, res);
 
-          // The honeypot should have intercepted and returned 200
-          should(responseSent).be.true();
+            // The honeypot should have intercepted and returned 200
+            should(responseSent).be.true();
 
-          // TurnstileService.verifyToken must NOT have been called
-          should(verifyTokenStub.callCount).equal(0);
-        }
-      ),
-      { numRuns: 100 }
-    );
+            // TurnstileService.verifyToken must NOT have been called
+            should(verifyTokenStub.callCount).equal(0);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
   });
 });

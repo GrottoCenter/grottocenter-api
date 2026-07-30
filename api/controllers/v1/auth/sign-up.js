@@ -8,11 +8,11 @@ module.exports = async (req, res) => {
   // --- Anti-bot defense layers (order matters) ---
 
   // Layer 1: Honeypot
-  const honeypotResult = HoneypotGuard.check(req.body);
+  const honeypotResult = HoneypotGuard.check(req.allParams());
   if (honeypotResult.trapped) {
     sails.log.warn('[AntiBot:Honeypot] Bot trapped', {
       ip: req.ip,
-      website: honeypotResult.value,
+      website: String(honeypotResult.value).slice(0, 200),
     });
     return res.ok(); // Deceptive response — res.ok() returns 204 to mimic normal signup success
   }
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
   // Layer 2: Turnstile
   if (TurnstileService.isEnabled()) {
     const turnstileResult = await TurnstileService.verifyToken(
-      req.body.captchaToken,
+      req.param('captchaToken'),
       req.ip
     );
     if (!turnstileResult.pass) {
@@ -28,14 +28,10 @@ module.exports = async (req, res) => {
         ip: req.ip,
         errorCode: turnstileResult.errorCode,
       });
-      const statusMap = {
-        CAPTCHA_MISSING: 400,
-        CAPTCHA_INVALID: 400,
-        CAPTCHA_SERVICE_UNAVAILABLE: 503,
-      };
-      return res.status(statusMap[turnstileResult.errorCode] || 500).json({
-        error: turnstileResult.errorCode,
-      });
+      if (turnstileResult.errorCode === 'CAPTCHA_SERVICE_UNAVAILABLE') {
+        return res.status(503).json({ error: turnstileResult.errorCode });
+      }
+      return res.badRequest({ error: turnstileResult.errorCode });
     }
   }
 

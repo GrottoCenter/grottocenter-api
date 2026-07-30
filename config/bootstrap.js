@@ -16,6 +16,15 @@ const TurnstileService = require('../api/services/TurnstileService');
 
 // eslint-disable-next-line func-names
 module.exports.bootstrap = async function (done) {
+  // Validate Turnstile configuration first — fail fast before any I/O if misconfigured
+  TurnstileService.validateConfig();
+
+  if (!TurnstileService.isEnabled()) {
+    sails.log.warn(
+      '[AntiBot:Turnstile] Turnstile verification is disabled — signup endpoint will skip CAPTCHA validation'
+    );
+  }
+
   logger.patchSailsLog();
 
   // Condense primary key validation warnings for all models to save on log output
@@ -112,15 +121,6 @@ module.exports.bootstrap = async function (done) {
       err
     );
   });
-
-  // Validate Turnstile configuration — app refuses to start if misconfigured
-  TurnstileService.validateConfig();
-
-  if (!TurnstileService.isEnabled()) {
-    sails.log.warn(
-      '[AntiBot:Turnstile] Turnstile verification is disabled — signup endpoint will skip CAPTCHA validation'
-    );
-  }
 
   return done();
 };

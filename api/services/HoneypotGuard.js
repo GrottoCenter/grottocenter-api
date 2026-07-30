@@ -17,7 +17,12 @@ module.exports = {
    * @returns {{ trapped: boolean, value: string|undefined }}
    */
   check(body) {
-    const value = body && body.website;
+    const rawValue = body && body.website;
+    if (rawValue === undefined || rawValue === null) {
+      return { trapped: false };
+    }
+    // Coerce to string so non-string types (arrays, objects) also trigger the trap
+    const value = String(rawValue);
     if (isNonBlankString(value)) {
       return { trapped: true, value };
     }
