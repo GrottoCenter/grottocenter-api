@@ -61,6 +61,12 @@ module.exports = {
       return { pass: false, errorCode: 'CAPTCHA_MISSING' };
     }
 
+    // Cloudflare Turnstile tokens are bounded at ~2 KB; reject oversized values
+    // before making an outbound call — cheap defense against log/payload abuse.
+    if (token.length > 2048) {
+      return { pass: false, errorCode: 'CAPTCHA_INVALID' };
+    }
+
     const secret = process.env.TURNSTILE_SECRET_KEY;
 
     try {
@@ -75,20 +81,10 @@ module.exports = {
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
 
-      // Treat 5xx or non-2xx as service unavailable
-      if (response.status >= 500) {
-        return { pass: false, errorCode: 'CAPTCHA_SERVICE_UNAVAILABLE' };
-      }
+      // Any non-2xx response means Cloudflare's siteverify is unavailable or
+      // unreachable. Cloudflare always returns 200 for invalid tokens (with
+      // success: false in the body), so a non-2xx is never a token error.
       if (!response.ok) {
-        // Non-2xx, non-5xx — try to parse for success: false
-        try {
-          const data = await response.json();
-          if (data.success === false) {
-            return { pass: false, errorCode: 'CAPTCHA_INVALID' };
-          }
-        } catch {
-          // Cannot parse — treat as service unavailable
-        }
         return { pass: false, errorCode: 'CAPTCHA_SERVICE_UNAVAILABLE' };
       }
 
