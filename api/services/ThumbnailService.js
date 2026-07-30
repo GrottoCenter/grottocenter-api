@@ -70,12 +70,16 @@ module.exports = {
    * Resize an image buffer to the target width, output as WebP.
    * Preserves aspect ratio (no crop, no upscaling).
    * Preserves alpha channel for PNG inputs and animation for GIF inputs.
+   * Applies EXIF orientation before resizing so portrait photos shot on a
+   * phone are not stored rotated. The orientation tag is dropped from the
+   * output (the pixels are already upright, so browsers need no correction).
    * @param {Buffer} inputBuffer - The original image buffer
    * @param {number} targetWidth - The target width in pixels
    * @returns {Promise<Buffer>} The resized WebP buffer
    */
   async resize(inputBuffer, targetWidth) {
     return sharp(inputBuffer, { animated: true })
+      .autoOrient() // rotate/flip pixels per EXIF Orientation, then drop the tag
       .resize({ width: targetWidth, withoutEnlargement: true })
       .webp({ quality: WEBP_QUALITY })
       .toBuffer();
@@ -85,6 +89,9 @@ module.exports = {
    * Generate all applicable thumbnail variants for an image.
    * Uses an all-or-nothing approach: generates all buffers first, then uploads.
    * If any step fails, returns all nulls with hadError: true.
+   *
+   * Variant selection is based on the upright (post-EXIF-orientation) width so
+   * that portrait photos stored in landscape pixel layout are measured correctly.
    *
    * @param {Buffer} imageBuffer - The original image file buffer
    * @param {string} originalPath - The blob path of the original
@@ -98,7 +105,11 @@ module.exports = {
       const metadata = await sharp(imageBuffer, {
         limitInputPixels: 100 * 1024 * 1024, // 100 megapixels max
       }).metadata();
-      const { width: originalWidth } = metadata;
+      // Use the oriented (upright) width so portrait photos whose stored pixels
+      // are landscape (e.g. EXIF Orientation 6/8) are measured correctly.
+      // metadata.autoOrient is available since sharp 0.34 and falls back to
+      // the stored dimensions when no orientation tag is present.
+      const originalWidth = (metadata.autoOrient || metadata).width;
 
       if (!originalWidth) {
         return result;
