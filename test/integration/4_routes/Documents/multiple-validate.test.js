@@ -213,15 +213,12 @@ describe('Document multiple-validate', () => {
       // cleaned up after the suite — prevents cross-shard fixture pollution.
       const createdDocIds = [];
       const createdDescIds = [];
-      const createdMassifIds = [];
 
       after(async () => {
         if (createdDocIds.length > 0)
           await TDocument.destroy({ id: createdDocIds });
         if (createdDescIds.length > 0)
           await TDescription.destroy({ id: createdDescIds });
-        if (createdMassifIds.length > 0)
-          await TMassif.destroy({ id: createdMassifIds });
       });
 
       it('should replace authors collection when validating a document with modifiedDocJson', async () => {
