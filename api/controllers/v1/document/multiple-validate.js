@@ -2,6 +2,9 @@ const DocumentService = require('../../../services/DocumentService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
 const NotificationService = require('../../../services/NotificationService');
+const {
+  DOCUMENT_M2M_COLLECTIONS,
+} = require('../../../../config/constants/document');
 
 async function markDocumentValidated(
   documentId,
@@ -17,26 +20,37 @@ async function markDocumentValidated(
   });
 }
 
+// The seven m2m associations on TDocument that must be handled via replaceCollection.
+// Waterline silently ignores collection fields passed to .update()/.set().
+// Defined in config/constants/document.js — single source of truth.
+
 // modifiedDocJson may pre-date this fix and contain populated objects instead of plain IDs.
-function normalizeCollectionIds(documentData) {
-  const collectionFields = [
-    'massifs',
-    'authors',
-    'authorsGrotto',
-    'subjects',
-    'languages',
-    'isoRegions',
-    'countries',
-  ];
-  const normalized = { ...documentData };
-  for (const field of collectionFields) {
-    if (Array.isArray(normalized[field])) {
-      normalized[field] = normalized[field].map((item) =>
+// Returns { scalarData, collectionData } where collectionData[field] is either an array of
+// plain ids or undefined (meaning "not sent — keep existing associations").
+function normalizeAndSplitDocumentData(documentData) {
+  const scalarData = { ...documentData };
+  const collectionData = {};
+
+  for (const field of DOCUMENT_M2M_COLLECTIONS) {
+    const value = scalarData[field];
+    // Remove from the scalar payload regardless — .set() cannot handle collections.
+    delete scalarData[field];
+
+    if (value === undefined) {
+      // Field was not sent by the client; leave existing associations untouched.
+      collectionData[field] = undefined;
+    } else if (Array.isArray(value)) {
+      // Normalize: older modifiedDocJson entries may have stored populated objects.
+      collectionData[field] = value.map((item) =>
         typeof item === 'object' && item !== null ? (item.id ?? item) : item
       );
+    } else {
+      // Unexpected value type — treat as "untouched" to be safe.
+      collectionData[field] = undefined;
     }
   }
-  return normalized;
+
+  return { scalarData, collectionData };
 }
 
 async function validateAndUpdateDocument(
@@ -53,7 +67,8 @@ async function validateAndUpdateDocument(
     newFiles,
   } = document.modifiedDocJson;
 
-  const cleanedDocumentData = normalizeCollectionIds(documentData);
+  const { scalarData, collectionData } =
+    normalizeAndSplitDocumentData(documentData);
 
   await sails.getDatastore().transaction(async (db) => {
     // Update associated data not handled by TDocument manually
@@ -64,7 +79,7 @@ async function validateAndUpdateDocument(
 
     await TDocument.updateOne(document.id)
       .set({
-        ...cleanedDocumentData,
+        ...scalarData,
         modifiedDocJson: null,
         dateReviewed: new Date(),
         reviewer: reviewerId,
@@ -74,6 +89,18 @@ async function validateAndUpdateDocument(
         validator: validationAuthor,
       })
       .usingConnection(db);
+
+    // Replace m2m collections for every field that was explicitly sent by the
+    // client (including an empty array, which means "clear all").
+    // Fields not sent (undefined) are left untouched.
+    const collectionPromises = DOCUMENT_M2M_COLLECTIONS.filter(
+      (field) => collectionData[field] !== undefined
+    ).map((field) =>
+      TDocument.replaceCollection(document.id, field)
+        .members(collectionData[field])
+        .usingConnection(db)
+    );
+    await Promise.all(collectionPromises);
 
     const filePromises = [];
     // Files have already been created,
