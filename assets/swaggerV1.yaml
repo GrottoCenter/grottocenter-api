@@ -1627,7 +1627,24 @@ paths:
     put:
       tags:
         - documents
-      description: Update a document. See the POST /documents route explaination about the parameters you can use to update a document.
+      description: >-
+        Update a document. See the POST /documents route explanation about the
+        parameters you can use to update a document.
+
+
+        **Many-to-many collection fields** (`authors`, `authorsGrotto`,
+        `subjects`, `languages`, `massifs`, `isoRegions`, `countries`):
+
+
+        * If a field is **omitted** from the request, the existing associations
+        are left untouched.
+
+        * If a field is sent as a **non-empty array**, it replaces the current
+        associations exactly.
+
+        * To **clear** a collection entirely, send the literal string `'[]'`
+        as the field value. This is required because `multipart/form-data`
+        cannot represent an empty array natively.
       parameters:
         - name: id
           in: path
@@ -1644,6 +1661,87 @@ paths:
                 $ref: '#/components/schemas/Document'
         403:
           description: You are not authorized to update a document.
+
+  '/documents/{id}/new-entities':
+    put:
+      tags:
+        - documents
+      description: >-
+        Update a document and optionally create new cavers or descriptions as
+        part of the same operation. Uses the same many-to-many collection
+        semantics as `PUT /documents/{id}`: omit a field to leave it untouched,
+        send `'[]'` to clear it, or send a non-empty array to replace it.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the document to update.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: object
+                  description: >-
+                    Scalar and collection fields to update on the document.
+                    Many-to-many collection fields (`authors`, `authorsGrotto`,
+                    `subjects`, `languages`, `massifs`, `isoRegions`,
+                    `countries`) follow the sentinel convention: omit to keep,
+                    `'[]'` to clear, array of ids to replace.
+                newAuthors:
+                  type: array
+                  description: >-
+                    New caver records to create and link as authors. Each
+                    object is passed directly to `TCaver.createEach`. Created
+                    ids are merged with `document.authors`.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      surname:
+                        type: string
+                      mail:
+                        type: string
+                newDescriptions:
+                  type: array
+                  description: >-
+                    New description records to create and link to the document.
+                    Each entry must include a `language` field.
+                  items:
+                    type: object
+                    required:
+                      - language
+                    properties:
+                      title:
+                        type: string
+                      body:
+                        type: string
+                      language:
+                        type: string
+                        description: 3-letter ISO 639-2 language code.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: >-
+            Bad request. Returned when a new description is missing the
+            required `language` field.
+        '401':
+          description: Unauthorized. A valid bearer token is required.
+        '404':
+          description: Document not found or has been deleted.
 
   '/documents/count':
     get:

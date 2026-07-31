@@ -16,8 +16,14 @@ const normalizeToId = (item) =>
 // Extract the document's main language from the request body.
 // Prefers `documentMainLanguage.id` (current front-end field) with
 // fallback to `mainLanguage` (legacy/backward-compat).
+//
+// Returns:
+//   undefined  — neither field present; caller should leave existing associations untouched
+//   []         — field present but empty; caller should clear the collection
+//   [lang]     — field present with a value; caller should replace the collection
 const getDocumentLanguages = (body) => {
   const lang = body.documentMainLanguage?.id ?? body.mainLanguage;
+  if (lang === undefined) return undefined;
   return lang ? [lang] : [];
 };
 
@@ -105,10 +111,40 @@ module.exports = {
   getConvertedDataFromClient: async (body) => {
     // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
     const massif = body.massif?.id;
-    const massifs = [
-      ...(body.massifs ?? []).map((m) => m.id ?? m),
-      ...(massif ? [massif] : []),
-    ];
+
+    // Interprets a m2m collection field coming from a multipart/form-data body.
+    // FormData cannot express an empty array, so the front-end sends the literal
+    // string '[]' to signal an intentional "clear all" operation.
+    //   undefined  → not sent by the client; keep existing associations untouched
+    //   '[]'       → explicitly cleared; replace with an empty array
+    //   array      → replace with the mapped ids
+    const parseIdList = (v, mapper) => {
+      if (v === undefined) return undefined;
+      if (v === '[]') return [];
+      return v.map(mapper);
+    };
+
+    // For massifs we merge the legacy scalar `massif` field with the array.
+    // An explicit '[]' on `massifs` with no legacy massif means "clear all".
+    let massifs;
+    if (body.massifs === undefined && massif === undefined) {
+      massifs = undefined;
+    } else {
+      massifs = [
+        ...(body.massifs === '[]'
+          ? []
+          : (body.massifs ?? []).map((m) => m.id ?? m)),
+        ...(massif ? [massif] : []),
+      ];
+    }
+
+    // iso3166 carries both isoRegions (length > 2) and countries (length <= 2).
+    // An explicit '[]' means "clear both collections".
+    // Parse once, then split by ISO code length to avoid iterating the same
+    // array twice (and to make the undefined/'[]'/array distinction explicit).
+    const isoList = parseIdList(body.iso3166, (s) => s.iso);
+    const isoRegions = isoList?.filter((e) => e.length > 2);
+    const countries = isoList?.filter((e) => e.length <= 2);
 
     let optionFound;
     // eslint-disable-next-line no-param-reassign
@@ -124,15 +160,15 @@ module.exports = {
       // dateReviewed will be updated automaticly by the SQL historisation trigger
       datePublication: valIfTruthyOrNull(body.datePublication),
       // author are added only at document creation (done after if needed)
-      authors: body.authors?.map((a) => a.id),
-      authorsGrotto: body.authorsGrotto?.map((a) => a.id),
+      authors: parseIdList(body.authors, (a) => a.id),
+      authorsGrotto: parseIdList(body.authorsGrotto, (a) => a.id),
       editor: body.editor?.id,
       library: body.library?.id,
       authorComment: body.creatorComment,
 
       type: typeFound?.id,
       // descriptions is changed independently
-      subjects: body.subjects?.map((s) => s.id ?? s.code),
+      subjects: parseIdList(body.subjects, (s) => s.id ?? s.code),
       issue: valIfTruthyOrNull(body.issue),
       pages: valIfTruthyOrNull(body.pages),
       license: body.license?.id ?? 1,
@@ -144,8 +180,8 @@ module.exports = {
       // entrance is linked with the entrance/add-document controller
       // files changes are handled independently
       // regions: body.regions?.map((r) => r.id), // Deprecated
-      isoRegions: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length > 2),
-      countries: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length <= 2),
+      isoRegions,
+      countries,
       parent: body.parent?.id,
       // children cannot be set. The parent child relation can only be changed in one direction
       authorizationDocument: body.authorizationDocument?.id,
