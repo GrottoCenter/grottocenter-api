@@ -93,14 +93,11 @@ async function validateAndUpdateDocument(
     // Replace m2m collections for every field that was explicitly sent by the
     // client (including an empty array, which means "clear all").
     // Fields not sent (undefined) are left untouched.
-    const collectionPromises = DOCUMENT_M2M_COLLECTIONS.filter(
-      (field) => collectionData[field] !== undefined
-    ).map((field) =>
-      TDocument.replaceCollection(document.id, field)
-        .members(collectionData[field])
-        .usingConnection(db)
+    await DocumentService.replaceM2MCollections(
+      document.id,
+      collectionData,
+      db
     );
-    await Promise.all(collectionPromises);
 
     const filePromises = [];
     // Files have already been created,

@@ -8,6 +8,7 @@ const {
   valIfTruthyOrNull,
   distantFileDownload,
 } = require('../utils/csvHelper');
+const { DOCUMENT_M2M_COLLECTIONS } = require('../../config/constants/document');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -569,4 +570,28 @@ module.exports = {
   },
 
   normalizeToId,
+
+  /**
+   * Replace all m2m collections that are explicitly present in collectionData.
+   * Fields set to `undefined` are left untouched (not sent by the client).
+   * Fields set to an array (including `[]`) replace the current associations.
+   *
+   * Must be called inside an active Waterline transaction — pass `db` from the
+   * surrounding `sails.getDatastore().transaction(async (db) => { ... })` call.
+   *
+   * @param {number} documentId
+   * @param {object} collectionData  — keys are m2m field names, values are
+   *                                   id arrays or undefined
+   * @param {object} db              — Waterline connection from the active transaction
+   */
+  async replaceM2MCollections(documentId, collectionData, db) {
+    const promises = DOCUMENT_M2M_COLLECTIONS.filter(
+      (field) => collectionData[field] !== undefined
+    ).map((field) =>
+      TDocument.replaceCollection(documentId, field)
+        .members(collectionData[field])
+        .usingConnection(db)
+    );
+    await Promise.all(promises);
+  },
 };

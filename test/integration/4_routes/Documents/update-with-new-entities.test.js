@@ -270,5 +270,36 @@ describe('Document update-with-new-entities', () => {
       should(grottoIds).containEql(1);
       should(grottoIds).not.containEql(2);
     });
+
+    it('should preserve existing authors when newAuthors are added without document.authors', async () => {
+      // Seed doc with caver 1 as an existing author
+      await TDocument.replaceCollection(testDocId, 'authors').members([1]);
+
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${testDocId}/new-entities`)
+        .send({
+          // document.authors is intentionally absent — client only wants to add a new caver
+          document: { type: 1 },
+          newAuthors: [
+            {
+              name: 'Extra',
+              surname: 'Author',
+              mail: `extra-author-${Date.now()}@example.com`,
+            },
+          ],
+          newDescriptions: [],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const doc = await TDocument.findOne(testDocId).populate('authors');
+      const authorIds = doc.authors.map((a) => a.id);
+      // Caver 1 must still be present — not silently wiped by the new author merge
+      should(authorIds).containEql(1);
+      // At least one extra author was added
+      should(doc.authors.length).be.greaterThan(1);
+    });
   });
 });
