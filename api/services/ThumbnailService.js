@@ -73,13 +73,26 @@ module.exports = {
    * Applies EXIF orientation before resizing so portrait photos shot on a
    * phone are not stored rotated. The orientation tag is dropped from the
    * output (the pixels are already upright, so browsers need no correction).
+   *
+   * `.autoOrient()` is skipped for animated inputs (pages > 1) because sharp's
+   * internal rotate step historically collapses multi-frame images to a single
+   * frame for orientations that require an actual pixel transform. Animated GIFs
+   * rarely carry EXIF orientation tags; skipping `.autoOrient()` for them avoids
+   * a still-WebP regression.
+   *
    * @param {Buffer} inputBuffer - The original image buffer
    * @param {number} targetWidth - The target width in pixels
+   * @param {object} [opts]
+   * @param {boolean} [opts.isAnimated=false] - True when the source has multiple frames
    * @returns {Promise<Buffer>} The resized WebP buffer
    */
-  async resize(inputBuffer, targetWidth) {
-    return sharp(inputBuffer, { animated: true })
-      .autoOrient() // rotate/flip pixels per EXIF Orientation, then drop the tag
+  async resize(inputBuffer, targetWidth, { isAnimated = false } = {}) {
+    const pipeline = sharp(inputBuffer, { animated: true });
+    if (!isAnimated) {
+      // rotate/flip pixels per EXIF Orientation, then drop the tag
+      pipeline.autoOrient();
+    }
+    return pipeline
       .resize({ width: targetWidth, withoutEnlargement: true })
       .webp({ quality: WEBP_QUALITY })
       .toBuffer();
@@ -96,15 +109,21 @@ module.exports = {
    * @param {Buffer} imageBuffer - The original image file buffer
    * @param {string} originalPath - The blob path of the original
    * @param {object} blobClient - Azure container client for uploading
+   * @param {object} [preloadedMeta] - Optional sharp metadata already fetched by the caller.
+   *   When provided the internal `sharp().metadata()` call is skipped, avoiding a
+   *   second decode of the same buffer (useful for callers that need orientation before
+   *   calling generate, e.g. the backfill script).
    * @returns {Promise<{small: string|null, medium: string|null, large: string|null, hadError: boolean}>}
    */
-  async generate(imageBuffer, originalPath, blobClient) {
+  async generate(imageBuffer, originalPath, blobClient, preloadedMeta) {
     const result = { small: null, medium: null, large: null, hadError: false };
 
     try {
-      const metadata = await sharp(imageBuffer, {
-        limitInputPixels: 100 * 1024 * 1024, // 100 megapixels max
-      }).metadata();
+      const metadata =
+        preloadedMeta ||
+        (await sharp(imageBuffer, {
+          limitInputPixels: 100 * 1024 * 1024, // 100 megapixels max
+        }).metadata());
       // Use the oriented (upright) width so portrait photos whose stored pixels
       // are landscape (e.g. EXIF Orientation 6/8) are measured correctly.
       // metadata.autoOrient is available since sharp 0.34 and falls back to
@@ -121,11 +140,15 @@ module.exports = {
         return result;
       }
 
+      // Animated inputs (GIFs with multiple frames) must not go through
+      // .autoOrient() — see resize() JSDoc for the rationale.
+      const isAnimated = (metadata.pages || 1) > 1;
+
       // Generate all buffers first (fail-fast before uploading)
       const buffers = await Promise.all(
         applicableVariants.map(async (variant) => ({
           name: variant.name,
-          buffer: await this.resize(imageBuffer, variant.width),
+          buffer: await this.resize(imageBuffer, variant.width, { isAnimated }),
           path: this.computeThumbnailPath(variant.name, originalPath),
         }))
       );
