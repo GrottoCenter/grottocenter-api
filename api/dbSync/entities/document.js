@@ -117,9 +117,21 @@ async function* processRows(source) {
         foreignField: 'id_document',
         rows,
         localField: 'authors',
-        fields: ['c.id', 'c.nickname'],
+        fields: ['c.nickname'],
         where: [],
         join: ['LEFT JOIN t_caver c ON c.id = id_caver'],
+      },
+      {
+        table: 'j_document_grotto_author j',
+        foreignField: 'j.id_document',
+        rows,
+        localField: 'authorsOrganization',
+        fields: ['n.name'],
+        where: [],
+        join: [
+          'LEFT JOIN t_grotto g ON g.id = j.id_grotto',
+          'LEFT JOIN t_name n ON n.id_grotto = g.id AND n.is_main = true',
+        ],
       },
       {
         table: 'j_document_language',
@@ -276,6 +288,12 @@ module.exports = {
         { name: 'subjects.code', type: 'string[]', optional: true },
         {
           name: 'authors.nickname',
+          type: 'string[]',
+          facet: true,
+          optional: true,
+        },
+        {
+          name: 'authorsOrganization.name',
           type: 'string[]',
           facet: true,
           optional: true,

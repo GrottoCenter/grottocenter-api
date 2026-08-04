@@ -248,7 +248,7 @@ const c = {
       creatorComment: source.authorComment ?? source.creatorComment ?? null,
       authors: toList('authors', source, c.toSimpleCaver),
       authorsOrganization: toList(
-        'authorsGrotto',
+        'authorsOrganization',
         source,
         c.toSimpleOrganization
       ),
@@ -956,7 +956,6 @@ const c = {
       else if (_type === 'documents') {
         data = c.toDocument(item.document, meta);
         // Strip arrays not needed in search responses
-        delete data.authorsOrganization;
         delete data.files;
         delete data.newFiles;
         delete data.modifiedFiles;

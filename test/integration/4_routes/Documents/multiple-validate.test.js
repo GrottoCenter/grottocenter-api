@@ -266,7 +266,7 @@ describe('Document multiple-validate', () => {
         should(authorIds).not.containEql(1);
       });
 
-      it('should clear authors and replace with authorsGrotto when validating', async () => {
+      it('should clear authors and replace with authorsOrganization when validating', async () => {
         const desc = await TDescription.create({
           author: 1,
           title: 'Org only',
@@ -288,7 +288,7 @@ describe('Document multiple-validate', () => {
             documentData: {
               type: 1,
               authors: [],
-              authorsGrotto: [1],
+              authorsOrganization: [1],
             },
             descriptionData: { title: 'Org only', body: 'Body' },
           },
@@ -307,11 +307,11 @@ describe('Document multiple-validate', () => {
 
         const updated = await TDocument.findOne(doc.id)
           .populate('authors')
-          .populate('authorsGrotto');
+          .populate('authorsOrganization');
         // All person authors must have been cleared
         should(updated.authors).have.length(0);
         // Grotto 1 must be present
-        const grottoIds = updated.authorsGrotto.map((g) => g.id);
+        const grottoIds = updated.authorsOrganization.map((g) => g.id);
         should(grottoIds).containEql(1);
       });
 

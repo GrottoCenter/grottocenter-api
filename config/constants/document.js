@@ -31,7 +31,7 @@ const TYPES_ALLOWING_ISSUE = [DOCUMENT_TYPE_IDS.BOOK, DOCUMENT_TYPE_IDS.ISSUE];
  */
 const DOCUMENT_M2M_COLLECTIONS = [
   'authors',
-  'authorsGrotto',
+  'authorsOrganization',
   'subjects',
   'languages',
   'massifs',

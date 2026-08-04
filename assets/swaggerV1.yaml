@@ -1396,6 +1396,16 @@ paths:
               properties:
                 id:
                   type: string
+        - name: authorsOrganization
+          in: query
+          description: Organization(s) (grotto/club) id(s) that authored the document.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
         - name: datePublication
           in: query
           description: Date on which the document you submit was made public. You can refer to the date indicated on the document.
@@ -1632,7 +1642,7 @@ paths:
         parameters you can use to update a document.
 
 
-        **Many-to-many collection fields** (`authors`, `authorsGrotto`,
+        **Many-to-many collection fields** (`authors`, `authorsOrganization`,
         `subjects`, `massifs`, `isoRegions`, `countries`):
 
 
@@ -1657,6 +1667,16 @@ paths:
           required: true
           schema:
             type: string
+        - name: authorsOrganization
+          in: query
+          description: Organization(s) (grotto/club) id(s) that authored the document.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
       responses:
         200:
           description: Successful operation
@@ -1676,7 +1696,7 @@ paths:
         part of the same operation. This endpoint accepts JSON only.
 
 
-        **Many-to-many collection fields** (`authors`, `authorsGrotto`,
+        **Many-to-many collection fields** (`authors`, `authorsOrganization`,
         `subjects`, `languages`, `massifs`, `isoRegions`, `countries`):
 
 
@@ -1710,7 +1730,7 @@ paths:
                   type: object
                   description: >-
                     Scalar and collection fields to update on the document.
-                    Many-to-many collection fields (`authors`, `authorsGrotto`,
+                    Many-to-many collection fields (`authors`, `authorsOrganization`,
                     `subjects`, `languages`, `massifs`, `isoRegions`,
                     `countries`): omit to keep existing, send `[]` to clear,
                     or send an array of ids to replace.
@@ -8093,6 +8113,15 @@ components:
           $ref: '#/components/schemas/Document'
         authorComment:
           type: string
+        authorsOrganization:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         cave:
           $ref: '#/components/schemas/Cave'
         commentsBBSOld:
