@@ -200,7 +200,7 @@ module.exports = {
       author: authorId,
       // authorComment: '', // TODO Add ?
       authors: creatorsCaverId,
-      authorsGrotto: creatorsGrottoId,
+      authorsOrganization: creatorsGrottoId,
       editor: editorId,
       // library: '', // TODO Add ?
 

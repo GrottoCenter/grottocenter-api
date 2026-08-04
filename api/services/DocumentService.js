@@ -14,6 +14,11 @@ const { DOCUMENT_M2M_COLLECTIONS } = require('../../config/constants/document');
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
 
+// Maps a populated authorsOrganization array to the Typesense-ready shape.
+// Exported so property tests can exercise the actual function rather than a copy.
+const mapAuthorsOrganizationForSearch = (orgs) =>
+  orgs?.map((e) => ({ name: e.names?.[0]?.name })) ?? [];
+
 // Extract the document's main language from the request body.
 // Prefers `documentMainLanguage.id` (current front-end field) with
 // fallback to `mainLanguage` (legacy/backward-compat).
@@ -40,6 +45,7 @@ module.exports = {
     // We prefer to clean them to ensure only clean data remains in the search database.
     const {
       authors,
+      authorsOrganization,
       descriptions,
       subjects,
       countries,
@@ -82,6 +88,7 @@ module.exports = {
       editor: editor && { name: editor.names?.[0]?.name },
       library: library && { name: library.names?.[0]?.name },
       authors: authors?.map((e) => ({ nickname: e.nickname })),
+      authorsOrganization: mapAuthorsOrganizationForSearch(authorsOrganization),
       subjects: subjects?.map((e) => ({ code: e.id })),
       iso3166: [
         ...(countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ?? []),
@@ -162,7 +169,7 @@ module.exports = {
       datePublication: valIfTruthyOrNull(body.datePublication),
       // author are added only at document creation (done after if needed)
       authors: parseIdList(body.authors, (a) => a.id),
-      authorsGrotto: parseIdList(body.authorsGrotto, (a) => a.id),
+      authorsOrganization: parseIdList(body.authorsOrganization, (a) => a.id),
       editor: body.editor?.id,
       library: body.library?.id,
       authorComment: body.creatorComment,
@@ -194,7 +201,7 @@ module.exports = {
       .populate('identifierType')
       .populate('author')
       .populate('authors')
-      .populate('authorsGrotto')
+      .populate('authorsOrganization')
       .populate('reviewer')
       .populate('validator')
       .populate('editor')
@@ -246,7 +253,8 @@ module.exports = {
     const allGrottos = [];
     if (document.library) allGrottos.push(document.library);
     if (document.editor) allGrottos.push(document.editor);
-    if (document.authorsGrotto) allGrottos.push(...document.authorsGrotto);
+    if (document.authorsOrganization)
+      allGrottos.push(...document.authorsOrganization);
     if (allGrottos.length > 0) {
       asyncQueue.push(NameService.setNames(allGrottos, 'grotto'));
     }
@@ -406,7 +414,7 @@ module.exports = {
       identifierType,
       author,
       authors,
-      authorsGrotto,
+      authorsOrganization,
       reviewer,
       editor,
       library,
@@ -435,8 +443,8 @@ module.exports = {
       : null;
     doc.author = author ? await TCaver.findOne(author) : null;
     doc.authors = authors ? await TCaver.find({ id: toIds(authors) }) : [];
-    doc.authorsGrotto = authorsGrotto
-      ? await TGrotto.find({ id: toIds(authorsGrotto) })
+    doc.authorsOrganization = authorsOrganization
+      ? await TGrotto.find({ id: toIds(authorsOrganization) })
       : [];
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.editor = editor ? await TGrotto.findOne(editor) : null;
@@ -570,6 +578,7 @@ module.exports = {
   },
 
   normalizeToId,
+  mapAuthorsOrganizationForSearch,
 
   /**
    * Replace all m2m collections that are explicitly present in collectionData.
