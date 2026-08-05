@@ -1,10 +1,3 @@
-const FIND_MASSIF_IN_VIEW = `
-  SELECT id_massif
-  FROM v_massif_info
-  WHERE id_massif = $1
-  LIMIT 1
-`;
-
 const GET_NB_CAVES = `
   SELECT COUNT(*) as nb_caves
   FROM v_massif_info
@@ -59,29 +52,15 @@ const GET_TOTAL_LENGTH_IN_MASSIF = `
 const CommonService = require('./CommonService');
 
 async function safeDBQuery(sql, param) {
-  try {
-    const queryResult = await CommonService.query(sql, [param]);
-    const result = queryResult.rows;
-    if (result.length > 0) {
-      return result[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
+  const queryResult = await CommonService.query(sql, [param]);
+  const result = queryResult.rows;
+  if (result.length > 0) {
+    return result[0];
   }
+  return null;
 }
 
 module.exports = {
-  /**
-   *
-   * @param {int} massifId
-   * @returns {boolean} true if there is some line about this massif, else false
-   */
-  isMassifInView: async (massifId) => {
-    const result = await safeDBQuery(FIND_MASSIF_IN_VIEW, massifId);
-    return result;
-  },
-
   /**
    *
    * @param {int} massifId
