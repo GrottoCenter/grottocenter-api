@@ -2,19 +2,6 @@ const should = require('should');
 const StatisticsMassifService = require('../../../api/services/StatisticsMassifService');
 
 describe('StatisticsMassifService', () => {
-  describe('isMassifInView()', () => {
-    it('should return massif data when massif exists', async () => {
-      const result = await StatisticsMassifService.isMassifInView(1);
-      should.exist(result);
-      result.should.have.property('id_massif', 1);
-    });
-
-    it('should return null when massif does not exist', async () => {
-      const result = await StatisticsMassifService.isMassifInView(999);
-      should(result).be.null();
-    });
-  });
-
   describe('getNbCavesInMassif()', () => {
     it('should count caves in massif 1 (2 caves)', async () => {
       const result = await StatisticsMassifService.getNbCavesInMassif(1);

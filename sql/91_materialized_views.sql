@@ -318,5 +318,8 @@ SELECT
 CREATE UNIQUE INDEX ON v_data_quality_compute_entrance(id_massif, id_entrance);
 CREATE INDEX IF NOT EXISTS idx_vdqce_entrance_massif ON v_data_quality_compute_entrance (id_entrance, id_massif);
 CREATE UNIQUE INDEX ON v_massif_info(id_massif, id_cave);
-CREATE UNIQUE INDEX ON v_country_info(id_massif, id_cave);
+-- id_country is part of the GROUP BY key, so a cave that spans two countries inside the same massif
+-- produces two rows with distinct id_country but the same (id_massif, id_cave) pair.
+-- The index must include id_country to remain unique across all rows.
+CREATE UNIQUE INDEX ON v_country_info(id_country, id_massif, id_cave);
 CREATE UNIQUE INDEX ON v_region_info(id_massif, id_cave, id_region);
