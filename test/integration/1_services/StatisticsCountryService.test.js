@@ -2,19 +2,6 @@ const should = require('should');
 const StatisticsCountryService = require('../../../api/services/StatisticsCountryService');
 
 describe('StatisticsCountryService', () => {
-  describe('isCountryInView()', () => {
-    it('should return country data when country exists', async () => {
-      const result = await StatisticsCountryService.isCountryInView('FR');
-      should.exist(result);
-      result.should.have.property('id_country', 'FR');
-    });
-
-    it('should return null when country does not exist', async () => {
-      const result = await StatisticsCountryService.isCountryInView('XX');
-      should(result).be.null();
-    });
-  });
-
   describe('getNbMassifsInCountry()', () => {
     it('should count distinct massifs (3 massifs)', async () => {
       const result = await StatisticsCountryService.getNbMassifsInCountry('FR');

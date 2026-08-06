@@ -1,10 +1,3 @@
-const FIND_COUNTRY_IN_VIEW = `
-  SELECT id_country
-  FROM v_country_info
-  WHERE id_country = $1
-  LIMIT 1
-`;
-
 const GET_NB_MASSIFS = `
   SELECT COUNT(*) as nb_massifs
   FROM (
@@ -76,99 +69,79 @@ const GET_TOTAL_LENGTH_IN_COUNTRY = `
 
 const CommonService = require('./CommonService');
 
-async function safeDBQuery(sql, param) {
-  try {
-    const queryResult = await CommonService.query(sql, [param]);
-    const result = queryResult.rows;
-    if (result.length > 0) {
-      return result[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
+async function queryFirstRow(sql, param) {
+  const queryResult = await CommonService.query(sql, [param]);
+  const result = queryResult.rows;
+  if (result.length > 0) {
+    return result[0];
   }
+  return null;
 }
 
 module.exports = {
   /**
    *
-   * @param {int} countryId
-   * @returns {boolean} true if there is some line about this country, else false
-   */
-  isCountryInView: async (countryId) => {
-    const result = await safeDBQuery(FIND_COUNTRY_IN_VIEW, countryId);
-    return result;
-  },
-
-  /**
-   *
    * @param {string} countryId
-   * @returns {int} the number of massifs in the country
-   *                or null if no result or something went wrong
+   * @returns {int} the number of massifs in the country, or null if no result
    */
   getNbMassifsInCountry: async (countryId) =>
-    safeDBQuery(GET_NB_MASSIFS, countryId),
+    queryFirstRow(GET_NB_MASSIFS, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {int} the number of caves in the country
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves in the country, or null if no result
    */
   getNbCavesInCountry: async (countryId) =>
-    safeDBQuery(GET_NB_CAVES, countryId),
+    queryFirstRow(GET_NB_CAVES, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {int} the number of networks in the country
-   *                or null if no result or something went wrong
+   * @returns {int} the number of networks in the country, or null if no result
    */
   getNbNetworksInCountry: async (countryId) =>
-    safeDBQuery(GET_NB_NETWORKS, countryId),
+    queryFirstRow(GET_NB_NETWORKS, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {Object} the cave with the maximum depth in the country (id, name and depth)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum depth in the country (id, name and depth),
+   *                   or null if no result
    */
   getCaveWithMaxDepthInCountry: async (countryId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY, countryId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_DEPTH_IN_COUNTRY, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {Object} the cave with the maximum length in the country (id, name and length)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum length in the country (id, name and length),
+   *                   or null if no result
    */
   getCaveWithMaxLengthInCountry: async (countryId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY, countryId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_LENGTH_IN_COUNTRY, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {int} the number of caves which are diving in the country
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves which are diving in the country, or null if no result
    */
   getNbCavesWhichAreDivingInCountry: async (countryId) =>
-    safeDBQuery(GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY, countryId),
+    queryFirstRow(GET_NB_CAVES_WHICH_ARE_DIVING_IN_COUNTRY, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {Object} the average depth and length in the country
-   *                or null if no result or something went wrong
+   * @returns {Object} the average depth and length in the country, or null if no result
    */
   getAvgDepthAndLengthInCountry: async (countryId) =>
-    safeDBQuery(GET_AVG_DEPTH_AND_LENGTH_IN_COUNTRY, countryId),
+    queryFirstRow(GET_AVG_DEPTH_AND_LENGTH_IN_COUNTRY, countryId),
 
   /**
    *
    * @param {string} countryId
-   * @returns {int} the sum of the lengths of each cave in the country
-   *                or null if no result or something went wrong
+   * @returns {int} the sum of the lengths of each cave in the country, or null if no result
    */
   getTotalLength: async (countryId) =>
-    safeDBQuery(GET_TOTAL_LENGTH_IN_COUNTRY, countryId),
+    queryFirstRow(GET_TOTAL_LENGTH_IN_COUNTRY, countryId),
 };

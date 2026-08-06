@@ -28,5 +28,11 @@
     "isSensitive": false,
     "geogPolygon": "POLYGON((1.9 1.9, 1.9 2.1, 2.1 2.1, 2.1 1.9, 1.9 1.9))",
     "names": [101]
+  },
+  {
+    "id": 102,
+    "author": 2,
+    "isDeleted": true,
+    "names": [102]
   }
 ]

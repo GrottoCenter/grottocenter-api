@@ -142,12 +142,14 @@ const COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   AND e.is_sensitive_locked = true
 `;
 
-async function safeDBQuery(sql, param) {
+// Spatial queries using ST_Contains can throw when point_geom is null rather than
+// returning an empty result set. This wrapper normalises that to an empty array.
+async function querySpatialRows(sql, param) {
   try {
     const queryResult = await CommonService.query(sql, [param]);
     return queryResult.rows;
   } catch (e) {
-    return []; // Fail silently (happens when the longitude and latitude are null for example)
+    return [];
   }
 }
 
@@ -276,7 +278,8 @@ module.exports = {
     await SearchService.updateDocument('massifs', massif);
   },
 
-  getCaves: async (massifId) => safeDBQuery(FIND_CAVES_IN_MASSIF, massifId),
+  getCaves: async (massifId) =>
+    querySpatialRows(FIND_CAVES_IN_MASSIF, massifId),
   countEntrances: async (massifId) => {
     try {
       const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [
@@ -319,7 +322,7 @@ module.exports = {
     }
   },
   getNetworks: async (massifId) =>
-    safeDBQuery(FIND_NETWORKS_IN_MASSIF, massifId),
+    querySpatialRows(FIND_NETWORKS_IN_MASSIF, massifId),
 
   geoJsonToWKT: async (geoJson) => {
     const query = `SELECT ST_AsText($1) `;

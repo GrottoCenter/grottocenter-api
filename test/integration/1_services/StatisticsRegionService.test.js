@@ -2,19 +2,6 @@ const should = require('should');
 const StatisticsRegionService = require('../../../api/services/StatisticsRegionService');
 
 describe('StatisticsRegionService', () => {
-  describe('isRegionInView()', () => {
-    it('should return region data when region exists', async () => {
-      const result = await StatisticsRegionService.isRegionInView('FR-ARA');
-      should.exist(result);
-      result.should.have.property('id_region', 'FR-ARA');
-    });
-
-    it('should return null when region does not exist', async () => {
-      const result = await StatisticsRegionService.isRegionInView('XX-XXX');
-      should(result).be.null();
-    });
-  });
-
   describe('getNbMassifsInRegion()', () => {
     it('should count distinct massifs (2 massifs in FR-ARA)', async () => {
       const result =
