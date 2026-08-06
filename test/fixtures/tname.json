@@ -130,5 +130,15 @@
     "name": "Unsensitive Massif 101",
     "isMain": true,
     "language": "eng"
+  },
+  {
+    "id": 102,
+    "author": 1,
+    "reviewer": 2,
+    "dateInscription": "2024-01-01 00:00:00",
+    "dateReviewed": "2024-01-02 00:00:00",
+    "name": "Deleted Massif 102",
+    "isMain": true,
+    "language": "eng"
   }
 ]

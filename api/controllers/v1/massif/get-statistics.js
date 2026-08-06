@@ -2,7 +2,13 @@ const ControllerService = require('../../../services/ControllerService');
 const StatisticsMassifService = require('../../../services/StatisticsMassifService');
 
 module.exports = async (req, res) => {
-  const massifId = req.params.id;
+  const massifId = Number(req.params.id);
+
+  // Guard against NaN, floats, zero, and negatives — all of which make Waterline throw
+  // E_INVALID_PK_VALUE rather than returning null, which would land in the catch as a 500.
+  if (!Number.isSafeInteger(massifId) || massifId <= 0) {
+    return res.notFound({ message: `Massif of id ${req.params.id} not found` });
+  }
 
   try {
     // Existence check against the real table, not the materialized view.
@@ -35,30 +41,34 @@ module.exports = async (req, res) => {
     // if the value is null, we return null
     const data = {
       nb_caves:
-        nbCaves?.nb_caves == null ? null : parseInt(nbCaves.nb_caves, 10),
+        nbCaves?.nb_caves == null
+          ? null
+          : Number.parseInt(nbCaves.nb_caves, 10),
       nb_networks:
         nbNetworks?.nb_networks == null
           ? null
-          : parseInt(nbNetworks.nb_networks, 10),
+          : Number.parseInt(nbNetworks.nb_networks, 10),
       cave_with_max_depth: caveWithMaxDepth,
       cave_with_max_length: caveWithMaxLength,
       diving_caves:
         nbCavesWhichAreDiving?.nb_diving_cave == null
           ? null
-          : parseInt(nbCavesWhichAreDiving.nb_diving_cave, 10),
+          : Number.parseInt(nbCavesWhichAreDiving.nb_diving_cave, 10),
       avg: {
         avg_depth:
           avgDepthAndLength?.avg_depth == null
             ? null
-            : parseInt(avgDepthAndLength.avg_depth, 10),
+            : Number.parseInt(avgDepthAndLength.avg_depth, 10),
         avg_length:
           avgDepthAndLength?.avg_length == null
             ? null
-            : parseInt(avgDepthAndLength.avg_length, 10),
+            : Number.parseInt(avgDepthAndLength.avg_length, 10),
       },
       total_length: {
         value:
-          totalLength?.value == null ? null : parseInt(totalLength.value, 10),
+          totalLength?.value == null
+            ? null
+            : Number.parseInt(totalLength.value, 10),
         nb_data:
           totalLength?.nb_data == null
             ? null
@@ -74,12 +84,9 @@ module.exports = async (req, res) => {
       res
     );
   } catch (err) {
-    return ControllerService.treat(
-      req,
-      err,
-      null,
-      { controllerMethod: 'MassifController.get-statistics' },
-      res
+    sails.log.error(err);
+    return res.serverError(
+      'An internal error occurred when getting massif statistics'
     );
   }
 };

@@ -51,7 +51,7 @@ const GET_TOTAL_LENGTH_IN_MASSIF = `
 
 const CommonService = require('./CommonService');
 
-async function safeDBQuery(sql, param) {
+async function queryFirstRow(sql, param) {
   const queryResult = await CommonService.query(sql, [param]);
   const result = queryResult.rows;
   if (result.length > 0) {
@@ -64,62 +64,57 @@ module.exports = {
   /**
    *
    * @param {int} massifId
-   * @returns {int} the number of caves in the massif
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves in the massif, or null if no result
    */
-  getNbCavesInMassif: async (massifId) => safeDBQuery(GET_NB_CAVES, massifId),
+  getNbCavesInMassif: async (massifId) => queryFirstRow(GET_NB_CAVES, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {int} the number of networks in the massif
-   *                or null if no result or something went wrong
+   * @returns {int} the number of networks in the massif, or null if no result
    */
   getNbNetworksInMassif: async (massifId) =>
-    safeDBQuery(GET_NB_NETWORKS, massifId),
+    queryFirstRow(GET_NB_NETWORKS, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {Object} the cave with the maximum depth in the massif (id, name and depth)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum depth in the massif (id, name and depth),
+   *                   or null if no result
    */
   getCaveWithMaxDepthInMassif: async (massifId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_DEPTH_IN_MASSIF, massifId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_DEPTH_IN_MASSIF, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {Object} the cave with the maximum length in the massif (id, name and length)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum length in the massif (id, name and length),
+   *                   or null if no result
    */
   getCaveWithMaxLengthInMassif: async (massifId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_LENGTH_IN_MASSIF, massifId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_LENGTH_IN_MASSIF, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {int} the number of caves which are diving in the massif
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves which are diving in the massif, or null if no result
    */
   getNbCavesWhichAreDivingInMassif: async (massifId) =>
-    safeDBQuery(GET_NB_CAVES_WHICH_ARE_DIVING_IN_MASSIF, massifId),
+    queryFirstRow(GET_NB_CAVES_WHICH_ARE_DIVING_IN_MASSIF, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {Object} the average depth and length in the massif
-   *                or null if no result or something went wrong
+   * @returns {Object} the average depth and length in the massif, or null if no result
    */
   getAvgDepthAndLengthInMassif: async (massifId) =>
-    safeDBQuery(GET_AVG_DEPTH_AND_LENGTH_IN_MASSIF, massifId),
+    queryFirstRow(GET_AVG_DEPTH_AND_LENGTH_IN_MASSIF, massifId),
 
   /**
    *
    * @param {int} massifId
-   * @returns {int} the sum of the lengths of each cave in the massif
-   *                or null if no result or something went wrong
+   * @returns {int} the sum of the lengths of each cave in the massif, or null if no result
    */
   getTotalLength: async (massifId) =>
-    safeDBQuery(GET_TOTAL_LENGTH_IN_MASSIF, massifId),
+    queryFirstRow(GET_TOTAL_LENGTH_IN_MASSIF, massifId),
 };

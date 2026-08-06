@@ -1,10 +1,3 @@
-const FIND_REGION_IN_VIEW = `
-  SELECT id_region
-  FROM v_region_info
-  WHERE id_region = $1
-  LIMIT 1
-`;
-
 const GET_NB_MASSIFS = `
   SELECT COUNT(*) as nb_massifs
   FROM (
@@ -76,98 +69,78 @@ const GET_TOTAL_LENGTH_IN_REGION = `
 
 const CommonService = require('./CommonService');
 
-async function safeDBQuery(sql, param) {
-  try {
-    const queryResult = await CommonService.query(sql, [param]);
-    const result = queryResult.rows;
-    if (result.length > 0) {
-      return result[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
+async function queryFirstRow(sql, param) {
+  const queryResult = await CommonService.query(sql, [param]);
+  const result = queryResult.rows;
+  if (result.length > 0) {
+    return result[0];
   }
+  return null;
 }
 
 module.exports = {
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {boolean} true if there is some line about this region, else false
-   */
-  isRegionInView: async (regionId) => {
-    const result = await safeDBQuery(FIND_REGION_IN_VIEW, regionId);
-    return result;
-  },
-
-  /**
-   *
-   * @param {string} regionId ISO 3166-2 code
-   * @returns {int} the number of massifs in the region
-   *                or null if no result or something went wrong
+   * @returns {int} the number of massifs in the region, or null if no result
    */
   getNbMassifsInRegion: async (regionId) =>
-    safeDBQuery(GET_NB_MASSIFS, regionId),
+    queryFirstRow(GET_NB_MASSIFS, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {int} the number of caves in the region
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves in the region, or null if no result
    */
-  getNbCavesInRegion: async (regionId) => safeDBQuery(GET_NB_CAVES, regionId),
+  getNbCavesInRegion: async (regionId) => queryFirstRow(GET_NB_CAVES, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {int} the number of networks in the region
-   *                or null if no result or something went wrong
+   * @returns {int} the number of networks in the region, or null if no result
    */
   getNbNetworksInRegion: async (regionId) =>
-    safeDBQuery(GET_NB_NETWORKS, regionId),
+    queryFirstRow(GET_NB_NETWORKS, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {Object} the cave with the maximum depth in the region (id, name and depth)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum depth in the region (id, name and depth),
+   *                   or null if no result
    */
   getCaveWithMaxDepthInRegion: async (regionId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_DEPTH_IN_REGION, regionId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_DEPTH_IN_REGION, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {Object} the cave with the maximum length in the region (id, name and length)
-   *                or null if no result or something went wrong
+   * @returns {Object} the cave with the maximum length in the region (id, name and length),
+   *                   or null if no result
    */
   getCaveWithMaxLengthInRegion: async (regionId) =>
-    safeDBQuery(FIND_CAVE_WITH_MAX_LENGTH_IN_REGION, regionId),
+    queryFirstRow(FIND_CAVE_WITH_MAX_LENGTH_IN_REGION, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {int} the number of caves which are diving in the region
-   *                or null if no result or something went wrong
+   * @returns {int} the number of caves which are diving in the region, or null if no result
    */
   getNbCavesWhichAreDivingInRegion: async (regionId) =>
-    safeDBQuery(GET_NB_CAVES_WHICH_ARE_DIVING_IN_REGION, regionId),
+    queryFirstRow(GET_NB_CAVES_WHICH_ARE_DIVING_IN_REGION, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {Object} the average depth and length in the region
-   *                or null if no result or something went wrong
+   * @returns {Object} the average depth and length in the region, or null if no result
    */
   getAvgDepthAndLengthInRegion: async (regionId) =>
-    safeDBQuery(GET_AVG_DEPTH_AND_LENGTH_IN_REGION, regionId),
+    queryFirstRow(GET_AVG_DEPTH_AND_LENGTH_IN_REGION, regionId),
 
   /**
    *
    * @param {string} regionId ISO 3166-2 code
-   * @returns {int} the sum of the lengths of each cave in the region
-   *                or null if no result or something went wrong
+   * @returns {int} the sum of the lengths of each cave in the region, or null if no result
    */
   getTotalLength: async (regionId) =>
-    safeDBQuery(GET_TOTAL_LENGTH_IN_REGION, regionId),
+    queryFirstRow(GET_TOTAL_LENGTH_IN_REGION, regionId),
 };
