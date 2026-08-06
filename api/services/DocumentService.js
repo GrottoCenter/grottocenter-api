@@ -489,6 +489,7 @@ module.exports = {
       ...new Set(documents.map((d) => d.parent).filter((id) => id)),
     ];
 
+    // setNames mutates grottos in place; its result is intentionally unused.
     const [parents] = await Promise.all([
       parentIds.length > 0
         ? TDocument.find({ id: parentIds }).populate('descriptions')

@@ -4803,6 +4803,7 @@ paths:
                     Returns 400 if the field is invalid or not sortable.
                     Entity-specific sort fields:
                       - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
+                      - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
                     Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
@@ -4891,6 +4892,10 @@ paths:
                   description: |
                     Sort field and direction in the format "field:asc" or "field:desc".
                     The field must exist and be sortable in the target entity's schema.
+                    Entity-specific sort fields:
+                      - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
+                      - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
+                    Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
                   type: object
