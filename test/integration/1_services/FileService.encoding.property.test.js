@@ -347,9 +347,7 @@ describe('FileService — Property 2: Preservation — ASCII-Only Filename and R
             true
           );
           const url = FileService.document.getUrl(createdFile.path);
-          should(url).containEql(
-            'grottocenter.blob.core.windows.net/documents/'
-          );
+          should(url).containEql('local-uploads/documents/');
         } finally {
           if (createdFile) {
             await TFile.destroyOne(createdFile.id);

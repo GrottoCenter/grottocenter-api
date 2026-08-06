@@ -210,15 +210,23 @@ describe('DocumentService', () => {
     it('should handle authors and organizations', async () => {
       const body = {
         authors: [{ id: 1 }, { id: 2 }],
-        authorsGrotto: [{ id: 1 }],
+        authorsOrganization: [{ id: 1 }],
         editor: { id: 1 },
         library: { id: 2 },
       };
       const result = await DocumentService.getConvertedDataFromClient(body);
       should(result.authors).eql([1, 2]);
-      should(result.authorsGrotto).eql([1]);
+      should(result.authorsOrganization).eql([1]);
       should(result.editor).equal(1);
       should(result.library).equal(2);
+    });
+
+    it('should map authorsOrganization ids from objects', async () => {
+      const body = {
+        authorsOrganization: [{ id: 1 }, { id: 2 }],
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.authorsOrganization).eql([1, 2]);
     });
 
     it('should handle subjects and iso3166', async () => {
@@ -553,7 +561,7 @@ describe('DocumentService', () => {
         .populate('massifs')
         .populate('library')
         .populate('editor')
-        .populate('authorsGrotto');
+        .populate('authorsOrganization');
 
       const result =
         await DocumentService.populateFullDocumentSubEntities(document);
@@ -571,7 +579,7 @@ describe('DocumentService', () => {
         .populate('massifs')
         .populate('library')
         .populate('editor')
-        .populate('authorsGrotto');
+        .populate('authorsOrganization');
 
       const result =
         await DocumentService.populateFullDocumentSubEntities(document);
@@ -589,7 +597,7 @@ describe('DocumentService', () => {
         .populate('massifs')
         .populate('library')
         .populate('editor')
-        .populate('authorsGrotto');
+        .populate('authorsOrganization');
 
       document.parent = 1;
       const result =

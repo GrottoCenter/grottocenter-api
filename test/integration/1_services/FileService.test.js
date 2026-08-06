@@ -1,4 +1,6 @@
 const should = require('should');
+const fs = require('fs');
+const path = require('path');
 const FileService = require('../../../api/services/FileService');
 
 describe('FileService', () => {
@@ -6,8 +8,7 @@ describe('FileService', () => {
     it('should return document URL', () => {
       const url = FileService.document.getUrl('test.pdf');
       should(url).be.a.String();
-      should(url).containEql('grottocenter.blob.core.windows.net');
-      should(url).containEql('documents');
+      should(url).containEql('local-uploads/documents');
       should(url).containEql('test.pdf');
     });
   });
@@ -120,30 +121,44 @@ describe('FileService', () => {
   });
 
   describe('dbExport.getUrl()', () => {
-    it('should return null without credentials', () => {
+    it('should return a local URL for the file', () => {
       const url = FileService.dbExport.getUrl('test.zip', 3600000);
-      should(url).be.null();
+      should(url).be.a.String();
+      should(url).containEql('local-uploads/db-exports/test.zip');
     });
   });
 
   describe('dbExport.getMetadata()', () => {
-    it('should return null without credentials', async () => {
+    it('should return null when metadata file does not exist', async () => {
+      // Remove any leftover metadata from prior tests
+      const metadataPath = path.resolve(
+        __dirname,
+        '../../../.local-uploads/db-exports/exportMetadata.json'
+      );
+      if (fs.existsSync(metadataPath)) fs.unlinkSync(metadataPath);
+
       const metadata = await FileService.dbExport.getMetadata();
       should(metadata).be.null();
     });
   });
 
   describe('dbExport.setMetadata()', () => {
-    it('should return null without credentials', async () => {
+    it('should write metadata locally and return null', async () => {
       const result = await FileService.dbExport.setMetadata(1024);
       should(result).be.null();
     });
   });
 
   describe('dbExport.upload()', () => {
-    it('should return null without credentials', () => {
-      const stream = FileService.dbExport.upload('test.zip', 'application/zip');
-      should(stream).be.null();
+    it('should return a writable stream for local storage', () => {
+      const uploadStream = FileService.dbExport.upload(
+        'test.zip',
+        'application/zip'
+      );
+      should(uploadStream).not.be.null();
+      should(uploadStream.writable).be.true();
+      // Clean up: end the stream without writing anything
+      uploadStream.end();
     });
   });
 

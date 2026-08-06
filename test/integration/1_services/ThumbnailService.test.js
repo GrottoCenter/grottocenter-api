@@ -198,6 +198,65 @@ describe('ThumbnailService', () => {
       const metadata = await sharp(result).metadata();
       should(metadata.width).be.belowOrEqual(480);
     });
+
+    it('should apply EXIF orientation so portrait pixels are upright after resize', async () => {
+      // Create a landscape buffer (800w × 600h) then tag it with Orientation 6
+      // (90° CW rotation needed). After autoOrient the logical image is 600w × 800h.
+      // Resizing to width 480 should produce an output whose width ≤ 480
+      // and height > width (portrait), confirming the orientation was applied.
+      const landscapeBuffer = await sharp({
+        create: {
+          width: 800,
+          height: 600,
+          channels: 3,
+          background: { r: 200, g: 100, b: 50 },
+        },
+      })
+        .jpeg()
+        .toBuffer();
+
+      // Embed EXIF Orientation 6 (rotate 90 CW) so raw pixels are landscape
+      // but the image should be displayed as portrait.
+      const orientedBuffer = await sharp(landscapeBuffer)
+        .withMetadata({ orientation: 6 })
+        .jpeg()
+        .toBuffer();
+
+      const result = await ThumbnailService.resize(orientedBuffer, 480);
+
+      const meta = await sharp(result).metadata();
+      should(meta.format).equal('webp');
+      // autoOrient swaps w/h: logical 600×800, resized to width 480 → 480×640
+      should(meta.width).equal(480);
+      should(meta.height).equal(640);
+      // Orientation tag must be absent (autoOrient drops it)
+      should(meta.orientation).be.undefined();
+    });
+
+    it('should skip autoOrient when isAnimated is true', async () => {
+      // For animated inputs, autoOrient is intentionally skipped.
+      // Create a simple JPEG (no EXIF orientation) and verify resize still works.
+      const inputBuffer = await sharp({
+        create: {
+          width: 1000,
+          height: 500,
+          channels: 3,
+          background: { r: 0, g: 200, b: 100 },
+        },
+      })
+        .jpeg()
+        .toBuffer();
+
+      const result = await ThumbnailService.resize(inputBuffer, 480, {
+        isAnimated: true,
+      });
+
+      const meta = await sharp(result).metadata();
+      should(meta.format).equal('webp');
+      should(meta.width).equal(480);
+      // Height proportional to original landscape 1000×500: 480/1000 * 500 = 240
+      should(meta.height).equal(240);
+    });
   });
 
   describe('generate', () => {
@@ -350,6 +409,43 @@ describe('ThumbnailService', () => {
       should(result.hadError).be.true();
 
       logStub.restore();
+    });
+
+    it('should use autoOrient width for variant selection on EXIF-rotated images', async () => {
+      // Raw pixels: 1500w × 800h (landscape), EXIF Orientation 6 (needs 90° CW rotation).
+      // Upright (post-autoOrient): 800w × 1500h (portrait).
+      // Without the autoOrient fallback, getApplicableVariants(1500) → small+medium.
+      // With the fallback, getApplicableVariants(800) → only small (medium threshold 1280 > 800).
+      // This verifies generate() measures the upright dimension for variant selection.
+      const landscapeBuffer = await sharp({
+        create: {
+          width: 1500,
+          height: 800,
+          channels: 3,
+          background: { r: 100, g: 150, b: 200 },
+        },
+      })
+        .jpeg()
+        .toBuffer();
+
+      // Embed Orientation 6: raw pixels are landscape, logical image is portrait 800×1500
+      const orientedBuffer = await sharp(landscapeBuffer)
+        .withMetadata({ orientation: 6 })
+        .jpeg()
+        .toBuffer();
+
+      const result = await ThumbnailService.generate(
+        orientedBuffer,
+        'oriented-photo.jpg',
+        mockBlobClient
+      );
+
+      // Upright width is 800 → only the small (480) variant applies; medium (1280) does not.
+      should(result.small).equal('thumbnails/small/oriented-photo.webp');
+      should(result.medium).be.null();
+      should(result.large).be.null();
+      should(result.hadError).be.false();
+      should(Object.keys(uploadedBlobs).length).equal(1);
     });
   });
 });

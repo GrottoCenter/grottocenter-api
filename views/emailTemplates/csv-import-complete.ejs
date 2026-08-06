@@ -1,0 +1,50 @@
+<%- include('emailHeader', { emailTitle: emailTitle, locale: locale }); %>
+  <% /*
+  ===== EMAIL BODY =====
+
+    Required values:
+        - __              Function    locale-scoped translation helper
+        - emailTitle      String      Subject line used as HTML <title>
+        - locale          String      ISO 639-1 locale code
+        - recipientName   String      Full name or nickname of the recipient
+        - batchId         String      UUID of the import batch
+        - successes       Number      Count of successfully imported entrances
+        - duplicates      Number      Count of duplicate rows
+        - failures        Number      Count of failed rows
+
+    Optional values:
+        - successesUrl    String|null   Download URL for successes CSV
+        - duplicatesUrl   String|null   Download URL for duplicates CSV
+        - failuresUrl     String|null   Download URL for failures CSV
+  */ %>
+
+  <p>
+    <%- __('Dear %s', '<b>' + recipientName + '</b>') %>
+  </p>
+
+  <p>
+    <%- __('Your CSV entrance import has finished processing.') %>
+  </p>
+
+  <h3><%- __('Summary') %></h3>
+  <ul>
+    <li><strong><%- __('Successes') %>:</strong> <%= successes %></li>
+    <li><strong><%- __('Duplicates') %>:</strong> <%= duplicates %></li>
+    <li><strong><%- __('Failures') %>:</strong> <%= failures %></li>
+  </ul>
+
+  <% if (successesUrl || duplicatesUrl || failuresUrl) { %>
+  <h3><%- __('Download Reports') %></h3>
+  <ul>
+    <% if (successesUrl) { %><li><a href="<%= successesUrl %>"><%- __('Successful imports') %></a></li><% } %>
+    <% if (duplicatesUrl) { %><li><a href="<%= duplicatesUrl %>"><%- __('Duplicates') %></a></li><% } %>
+    <% if (failuresUrl) { %><li><a href="<%= failuresUrl %>"><%- __('Failures') %></a></li><% } %>
+  </ul>
+  <p><em><%- __('Links expire in 7 days.') %></em></p>
+  <% } %>
+
+  <p style="color: #666; font-size: 12px;">
+    <%- __('Batch ID') %>: <%= batchId %>
+  </p>
+
+<%- include('emailFooter', { locale: locale }); %>

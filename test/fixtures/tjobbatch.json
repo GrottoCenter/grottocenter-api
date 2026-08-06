@@ -1,0 +1,49 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "type": "csv-import",
+    "status": "completed",
+    "initiator": 1,
+    "createdAt": "2025-06-01T10:00:00.000Z",
+    "completedAt": "2025-06-01T10:05:00.000Z",
+    "totalRows": 100,
+    "chunkSize": 50,
+    "totalChunks": 2,
+    "result": {
+      "reportUrls": {
+        "successes": "https://example.com/report/successes.csv",
+        "duplicates": null,
+        "failures": "https://example.com/report/failures.csv"
+      },
+      "summary": {
+        "successes": 95,
+        "duplicates": 0,
+        "failures": 5
+      }
+    }
+  },
+  {
+    "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "type": "csv-import",
+    "status": "pending",
+    "initiator": 1,
+    "createdAt": "2025-06-02T08:00:00.000Z",
+    "completedAt": null,
+    "totalRows": 50,
+    "chunkSize": 50,
+    "totalChunks": 1,
+    "result": null
+  },
+  {
+    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "type": "csv-import",
+    "status": "active",
+    "initiator": 3,
+    "createdAt": "2025-06-03T12:00:00.000Z",
+    "completedAt": null,
+    "totalRows": 200,
+    "chunkSize": 50,
+    "totalChunks": 4,
+    "result": null
+  }
+]

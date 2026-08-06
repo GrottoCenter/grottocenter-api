@@ -115,6 +115,14 @@ Example:
 docker exec grotto-postgres psql -U root -d grottoce -c "SELECT id, id_country, iso_3166_2 FROM t_entrance WHERE id_country = 'US' LIMIT 5;"
 ```
 
+### Cloudflare Turnstile (anti-bot CAPTCHA)
+
+The signup endpoint is protected by Cloudflare Turnstile. Turnstile requires a domain registered in the Cloudflare dashboard, so it **cannot be tested end-to-end on localhost with real keys** — the widget will fail to load and the front-end won't be able to generate a token.
+
+See `docker/sample.env` for the two local development options (disable entirely, or use Cloudflare's always-pass test keys). The environment variables must be **exported in your shell** before running `npm run dev` — they are not read from `docker/.env`, which is only used by docker-compose for the database and search containers.
+
+For staging and production, `TURNSTILE_ENABLED=true` must be set alongside the real `TURNSTILE_SECRET_KEY`. The app refuses to start if `TURNSTILE_ENABLED=true` without a secret key configured.
+
 ### Refresh materialized views (development only)
 
 The database uses materialized views for performance optimization. These views need to be refreshed periodically to reflect the latest data. In development, you can manually refresh them using the provided cron scripts:

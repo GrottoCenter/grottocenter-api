@@ -12,9 +12,19 @@
 const dbSync = require('../api/dbSync/dbSync');
 const sesSuppressionPoller = require('../api/sesSuppressionPoller/sesSuppressionPoller');
 const logger = require('../api/utils/logger');
+const TurnstileService = require('../api/services/TurnstileService');
 
 // eslint-disable-next-line func-names
 module.exports.bootstrap = async function (done) {
+  // Validate Turnstile configuration first — fail fast before any I/O if misconfigured
+  TurnstileService.validateConfig();
+
+  if (!TurnstileService.isEnabled()) {
+    sails.log.warn(
+      '[AntiBot:Turnstile] Turnstile verification is disabled — signup endpoint will skip CAPTCHA validation'
+    );
+  }
+
   logger.patchSailsLog();
 
   // Condense primary key validation warnings for all models to save on log output
@@ -78,7 +88,9 @@ module.exports.bootstrap = async function (done) {
     );
   }
 
-  // Register graceful shutdown for enrichment queue
+  // Register graceful shutdown for the shared pg-boss instance.
+  // Both EnrichmentQueueService and CSVImportQueueService use the same
+  // sails.enrichmentBoss instance, so stopping it shuts down all workers.
   sails.config.beforeShutdown = async (cb) => {
     try {
       await sails.services.enrichmentqueueservice.stop();
@@ -87,6 +99,14 @@ module.exports.bootstrap = async function (done) {
     }
     cb();
   };
+
+  // Blocking: start CSV import queue before accepting requests
+  try {
+    await sails.services.csvimportqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start CSVImportQueueService:', err.message);
+    sails.log.warn('CSV import processing will be unavailable');
+  }
 
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all

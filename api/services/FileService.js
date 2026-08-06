@@ -6,6 +6,8 @@ const {
   generateBlobSASQueryParameters,
 } = require('@azure/storage-blob');
 const stream = require('stream');
+const fs = require('fs');
+const path = require('path');
 
 // Ensure crypto is available globally for Azure SDK
 if (!global.crypto) {
@@ -17,6 +19,11 @@ const AZURE_CONTAINER_DOCUMENTS = 'documents';
 const AZURE_CONTAINER_DB_SNAPSHOTS = 'db-exports';
 
 const { AZURE_KEY = '' } = process.env;
+
+// Local storage root for dev environment (when AZURE_KEY is not set)
+const LOCAL_UPLOADS_ROOT = path.resolve(__dirname, '../../.local-uploads');
+const LOCAL_DOCUMENTS_DIR = path.join(LOCAL_UPLOADS_ROOT, 'documents');
+const LOCAL_DB_EXPORTS_DIR = path.join(LOCAL_UPLOADS_ROOT, 'db-exports');
 
 let credentials = null;
 
@@ -38,6 +45,10 @@ if (AZURE_KEY) {
       AZURE_CONTAINER_DOCUMENTS
     ),
   };
+} else {
+  // Create local storage directories for dev environment
+  fs.mkdirSync(LOCAL_DOCUMENTS_DIR, { recursive: true });
+  fs.mkdirSync(LOCAL_DB_EXPORTS_DIR, { recursive: true });
 }
 
 const INVALID_FORMAT = 'INVALID_FORMAT';
@@ -57,18 +68,20 @@ const generateName = (fileName) => {
   return `${identifier}-${newFileName}`;
 };
 
-function noCredentialWarning(name, args) {
-  const fmtArgs = Object.entries(args)
-    .map((e) => e.join(': '))
-    .join(', ');
-  sails.log.warn(`Azure ${name} Missing credential, ${fmtArgs}`);
-  return null;
+/**
+ * Get the base URL for local file serving in dev mode.
+ * Uses the Sails config if available, otherwise defaults to localhost:1337.
+ */
+function getLocalBaseUrl() {
+  const port =
+    (sails && sails.config && sails.config.port) || process.env.PORT || 1337;
+  return `http://localhost:${port}`;
 }
 
-function getSignedReadUrl(container, path, expiresOnMs) {
+function getSignedReadUrl(container, blobPath, expiresOnMs) {
   const sasQuery = generateBlobSASQueryParameters(
     {
-      blobName: path,
+      blobName: blobPath,
       containerName: container,
       expiresOn: new Date(Date.now() + expiresOnMs),
       permissions: BlobSASPermissions.parse('r'),
@@ -76,7 +89,7 @@ function getSignedReadUrl(container, path, expiresOnMs) {
     credentials.sharedKeyCredential
   );
 
-  return `https://${AZURE_ACCOUNT}.blob.core.windows.net/${container}/${path}?${sasQuery.toString()}`;
+  return `https://${AZURE_ACCOUNT}.blob.core.windows.net/${container}/${blobPath}?${sasQuery.toString()}`;
 }
 
 module.exports = {
@@ -106,10 +119,40 @@ module.exports = {
     this.isCredentials = !!mockCredentials;
   },
 
+  /**
+   * Get the container client for CSV import reports.
+   * Reuses documents container with prefix isolation.
+   * In dev mode (no credentials), returns a local filesystem adapter.
+   * @returns {import('@azure/storage-blob').ContainerClient|object|null}
+   */
+  getReportsContainerClient() {
+    if (!credentials) {
+      // Return a local adapter that mimics the ContainerClient interface
+      return {
+        containerName: AZURE_CONTAINER_DOCUMENTS,
+        getBlockBlobClient(blobPath) {
+          const localPath = path.join(LOCAL_DOCUMENTS_DIR, blobPath);
+          return {
+            url: `${getLocalBaseUrl()}/local-uploads/documents/${blobPath}`,
+            async upload(content, _byteLength, _options) {
+              fs.mkdirSync(path.dirname(localPath), { recursive: true });
+              fs.writeFileSync(localPath, content);
+              sails.log.info(`[Local Storage] Report saved: ${localPath}`);
+            },
+          };
+        },
+      };
+    }
+    return credentials.documentsBlobClient;
+  },
+
   document: {
-    getUrl(path) {
+    getUrl(filePath) {
+      if (!credentials) {
+        return `${getLocalBaseUrl()}/local-uploads/documents/${filePath}`;
+      }
       // The documents container allow anonymous access
-      return `https://${AZURE_ACCOUNT}.blob.core.windows.net/${AZURE_CONTAINER_DOCUMENTS}/${path}`;
+      return `https://${AZURE_ACCOUNT}.blob.core.windows.net/${AZURE_CONTAINER_DOCUMENTS}/${filePath}`;
     },
 
     // File is a multer object : https://github.com/expressjs/multer#file-information
@@ -149,11 +192,12 @@ module.exports = {
       const { mimeType } = foundFormat[0];
 
       if (!credentials) {
-        noCredentialWarning('Document upload', {
-          name,
-          mimeType,
-          size: file.size,
-        });
+        // Dev mode: store file locally
+        const localPath = path.join(LOCAL_DOCUMENTS_DIR, pathName);
+        fs.writeFileSync(localPath, file.buffer);
+        sails.log.info(
+          `[Local Storage] Document saved: ${localPath} (${mimeType}, ${file.size} bytes)`
+        );
       } else {
         sails.log.info(`Uploading ${name} to Azure Blob...`);
         try {
@@ -218,7 +262,12 @@ module.exports = {
     async delete(file) {
       const destroyedRecord = await TFile.destroyOne(file.id);
       if (!credentials) {
-        noCredentialWarning('Document delete', file);
+        // Dev mode: delete from local filesystem
+        const localPath = path.join(LOCAL_DOCUMENTS_DIR, destroyedRecord.path);
+        if (fs.existsSync(localPath)) {
+          fs.unlinkSync(localPath);
+          sails.log.info(`[Local Storage] Document deleted: ${localPath}`);
+        }
       } else {
         const blockBlobClient =
           credentials.documentsBlobClient.getBlockBlobClient(
@@ -252,13 +301,32 @@ module.exports = {
   },
 
   dbExport: {
-    getUrl(path, expiresOnMs) {
-      if (!credentials) return noCredentialWarning('dbExport getUrl', { path });
-      return getSignedReadUrl(AZURE_CONTAINER_DB_SNAPSHOTS, path, expiresOnMs);
+    getUrl(filePath, expiresOnMs) {
+      if (!credentials) {
+        return `${getLocalBaseUrl()}/local-uploads/db-exports/${filePath}`;
+      }
+      return getSignedReadUrl(
+        AZURE_CONTAINER_DB_SNAPSHOTS,
+        filePath,
+        expiresOnMs
+      );
     },
 
     async getMetadata() {
-      if (!credentials) return noCredentialWarning('dbExport getMetadata', {});
+      if (!credentials) {
+        const metadataPath = path.join(
+          LOCAL_DB_EXPORTS_DIR,
+          'exportMetadata.json'
+        );
+        if (!fs.existsSync(metadataPath)) {
+          sails.log.warn(
+            `[Local Storage] DB export metadata not found: ${metadataPath}`
+          );
+          return null;
+        }
+        const data = fs.readFileSync(metadataPath, 'utf8');
+        return JSON.parse(data);
+      }
       const metadataBlobClient =
         credentials.dbExportBlobClient.getBlockBlobClient(
           'exportMetadata.json'
@@ -270,7 +338,21 @@ module.exports = {
     },
 
     async setMetadata(archiveSize) {
-      if (!credentials) return noCredentialWarning('dbExport setMetadata', {});
+      if (!credentials) {
+        const metadataPath = path.join(
+          LOCAL_DB_EXPORTS_DIR,
+          'exportMetadata.json'
+        );
+        const dataStr = JSON.stringify({
+          lastUpdate: new Date().toISOString(),
+          size: archiveSize,
+        });
+        fs.writeFileSync(metadataPath, dataStr);
+        sails.log.info(
+          `[Local Storage] DB export metadata saved: ${metadataPath}`
+        );
+        return null;
+      }
       const metadataBlobClient =
         credentials.dbExportBlobClient.getBlockBlobClient(
           'exportMetadata.json'
@@ -284,8 +366,19 @@ module.exports = {
     },
 
     upload(filename, mimeType) {
-      if (!credentials)
-        return noCredentialWarning('dbExport upload', { filename });
+      if (!credentials) {
+        // Dev mode: write to local filesystem via a PassThrough stream
+        const localPath = path.join(LOCAL_DB_EXPORTS_DIR, filename);
+        const aStream = new stream.PassThrough();
+        const writeStream = fs.createWriteStream(localPath);
+        aStream.pipe(writeStream);
+        writeStream.on('finish', () => {
+          sails.log.info(
+            `[Local Storage] DB export saved: ${localPath} (${mimeType})`
+          );
+        });
+        return aStream;
+      }
 
       const ONE_MEGABYTE = 1024 * 1024;
       const BUFFER_SIZE = 2 * ONE_MEGABYTE;

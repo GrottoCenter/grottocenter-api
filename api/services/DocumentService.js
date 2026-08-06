@@ -11,16 +11,28 @@ const {
 const {
   computeDocumentAuthorsSort,
 } = require('../utils/computeDocumentAuthorsSort');
+const { DOCUMENT_M2M_COLLECTIONS } = require('../../config/constants/document');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
 
+// Maps a populated authorsOrganization array to the Typesense-ready shape.
+// Exported so property tests can exercise the actual function rather than a copy.
+const mapAuthorsOrganizationForSearch = (orgs) =>
+  orgs?.map((e) => ({ name: e.names?.[0]?.name })) ?? [];
+
 // Extract the document's main language from the request body.
 // Prefers `documentMainLanguage.id` (current front-end field) with
 // fallback to `mainLanguage` (legacy/backward-compat).
+//
+// Returns:
+//   undefined  — neither field present; caller should leave existing associations untouched
+//   []         — field present but empty; caller should clear the collection
+//   [lang]     — field present with a value; caller should replace the collection
 const getDocumentLanguages = (body) => {
   const lang = body.documentMainLanguage?.id ?? body.mainLanguage;
+  if (lang === undefined) return undefined;
   return lang ? [lang] : [];
 };
 
@@ -36,7 +48,7 @@ module.exports = {
     // We prefer to clean them to ensure only clean data remains in the search database.
     const {
       authors,
-      authorsGrotto,
+      authorsOrganization,
       descriptions,
       subjects,
       countries,
@@ -79,11 +91,12 @@ module.exports = {
       editor: editor && { name: editor.names?.[0]?.name },
       library: library && { name: library.names?.[0]?.name },
       authors: authors?.map((e) => ({ nickname: e.nickname })),
+      authorsOrganization: mapAuthorsOrganizationForSearch(authorsOrganization),
       // Keep the denormalized author sort key in sync on single-doc upserts so
       // edits match the full-reindex baseline (see computeDocumentAuthorsSort).
       authorsSort: computeDocumentAuthorsSort(
         authors?.map((e) => e.nickname),
-        authorsGrotto?.map((e) => e.names?.[0]?.name)
+        authorsOrganization?.map((e) => e.names?.[0]?.name)
       ),
       subjects: subjects?.map((e) => ({ code: e.id })),
       iso3166: [
@@ -115,10 +128,40 @@ module.exports = {
   getConvertedDataFromClient: async (body) => {
     // Massif will be deleted in the future (a document can be about many massifs and a massif can be the subject of many documents): use massifs
     const massif = body.massif?.id;
-    const massifs = [
-      ...(body.massifs ?? []).map((m) => m.id ?? m),
-      ...(massif ? [massif] : []),
-    ];
+
+    // Interprets a m2m collection field coming from a multipart/form-data body.
+    // FormData cannot express an empty array, so the front-end sends the literal
+    // string '[]' to signal an intentional "clear all" operation.
+    //   undefined  → not sent by the client; keep existing associations untouched
+    //   '[]'       → explicitly cleared; replace with an empty array
+    //   array      → replace with the mapped ids
+    const parseIdList = (v, mapper) => {
+      if (v === undefined) return undefined;
+      if (v === '[]') return [];
+      return v.map(mapper);
+    };
+
+    // For massifs we merge the legacy scalar `massif` field with the array.
+    // An explicit '[]' on `massifs` with no legacy massif means "clear all".
+    let massifs;
+    if (body.massifs === undefined && massif === undefined) {
+      massifs = undefined;
+    } else {
+      massifs = [
+        ...(body.massifs === '[]'
+          ? []
+          : (body.massifs ?? []).map((m) => m.id ?? m)),
+        ...(massif ? [massif] : []),
+      ];
+    }
+
+    // iso3166 carries both isoRegions (length > 2) and countries (length <= 2).
+    // An explicit '[]' means "clear both collections".
+    // Parse once, then split by ISO code length to avoid iterating the same
+    // array twice (and to make the undefined/'[]'/array distinction explicit).
+    const isoList = parseIdList(body.iso3166, (s) => s.iso);
+    const isoRegions = isoList?.filter((e) => e.length > 2);
+    const countries = isoList?.filter((e) => e.length <= 2);
 
     let optionFound;
     // eslint-disable-next-line no-param-reassign
@@ -134,15 +177,15 @@ module.exports = {
       // dateReviewed will be updated automaticly by the SQL historisation trigger
       datePublication: valIfTruthyOrNull(body.datePublication),
       // author are added only at document creation (done after if needed)
-      authors: body.authors?.map((a) => a.id),
-      authorsGrotto: body.authorsGrotto?.map((a) => a.id),
+      authors: parseIdList(body.authors, (a) => a.id),
+      authorsOrganization: parseIdList(body.authorsOrganization, (a) => a.id),
       editor: body.editor?.id,
       library: body.library?.id,
       authorComment: body.creatorComment,
 
       type: typeFound?.id,
       // descriptions is changed independently
-      subjects: body.subjects?.map((s) => s.id ?? s.code),
+      subjects: parseIdList(body.subjects, (s) => s.id ?? s.code),
       issue: valIfTruthyOrNull(body.issue),
       pages: valIfTruthyOrNull(body.pages),
       license: body.license?.id ?? 1,
@@ -154,8 +197,8 @@ module.exports = {
       // entrance is linked with the entrance/add-document controller
       // files changes are handled independently
       // regions: body.regions?.map((r) => r.id), // Deprecated
-      isoRegions: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length > 2),
-      countries: body.iso3166?.map((s) => s.iso)?.filter((e) => e.length <= 2),
+      isoRegions,
+      countries,
       parent: body.parent?.id,
       // children cannot be set. The parent child relation can only be changed in one direction
       authorizationDocument: body.authorizationDocument?.id,
@@ -167,7 +210,7 @@ module.exports = {
       .populate('identifierType')
       .populate('author')
       .populate('authors')
-      .populate('authorsGrotto')
+      .populate('authorsOrganization')
       .populate('reviewer')
       .populate('validator')
       .populate('editor')
@@ -219,7 +262,8 @@ module.exports = {
     const allGrottos = [];
     if (document.library) allGrottos.push(document.library);
     if (document.editor) allGrottos.push(document.editor);
-    if (document.authorsGrotto) allGrottos.push(...document.authorsGrotto);
+    if (document.authorsOrganization)
+      allGrottos.push(...document.authorsOrganization);
     if (allGrottos.length > 0) {
       asyncQueue.push(NameService.setNames(allGrottos, 'grotto'));
     }
@@ -379,7 +423,7 @@ module.exports = {
       identifierType,
       author,
       authors,
-      authorsGrotto,
+      authorsOrganization,
       reviewer,
       editor,
       library,
@@ -408,8 +452,8 @@ module.exports = {
       : null;
     doc.author = author ? await TCaver.findOne(author) : null;
     doc.authors = authors ? await TCaver.find({ id: toIds(authors) }) : [];
-    doc.authorsGrotto = authorsGrotto
-      ? await TGrotto.find({ id: toIds(authorsGrotto) })
+    doc.authorsOrganization = authorsOrganization
+      ? await TGrotto.find({ id: toIds(authorsOrganization) })
       : [];
     doc.reviewer = reviewer ? await TCaver.findOne(reviewer) : null;
     doc.editor = editor ? await TGrotto.findOne(editor) : null;
@@ -476,12 +520,12 @@ module.exports = {
       .populate('files', { where: { isValidated: true } })
       .populate('identifierType')
       .populate('authors')
-      .populate('authorsGrotto')
+      .populate('authorsOrganization')
       .populate('editor')
       .populate('library');
 
     const grottos = documents.flatMap((d) =>
-      [d.editor, d.library, ...(d.authorsGrotto ?? [])].filter((g) => g)
+      [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter((g) => g)
     );
     // A document title lives in its descriptions, which cannot be populated
     // through the parent association: resolve the parents with a second query.
@@ -589,4 +633,29 @@ module.exports = {
   },
 
   normalizeToId,
+  mapAuthorsOrganizationForSearch,
+
+  /**
+   * Replace all m2m collections that are explicitly present in collectionData.
+   * Fields set to `undefined` are left untouched (not sent by the client).
+   * Fields set to an array (including `[]`) replace the current associations.
+   *
+   * Must be called inside an active Waterline transaction — pass `db` from the
+   * surrounding `sails.getDatastore().transaction(async (db) => { ... })` call.
+   *
+   * @param {number} documentId
+   * @param {object} collectionData  — keys are m2m field names, values are
+   *                                   id arrays or undefined
+   * @param {object} db              — Waterline connection from the active transaction
+   */
+  async replaceM2MCollections(documentId, collectionData, db) {
+    const promises = DOCUMENT_M2M_COLLECTIONS.filter(
+      (field) => collectionData[field] !== undefined
+    ).map((field) =>
+      TDocument.replaceCollection(documentId, field)
+        .members(collectionData[field])
+        .usingConnection(db)
+    );
+    await Promise.all(promises);
+  },
 };

@@ -1396,6 +1396,16 @@ paths:
               properties:
                 id:
                   type: string
+        - name: authorsOrganization
+          in: query
+          description: Organization(s) (grotto/club) id(s) that authored the document.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
         - name: datePublication
           in: query
           description: Date on which the document you submit was made public. You can refer to the date indicated on the document.
@@ -1627,7 +1637,29 @@ paths:
     put:
       tags:
         - documents
-      description: Update a document. See the POST /documents route explaination about the parameters you can use to update a document.
+      description: >-
+        Update a document. See the POST /documents route explanation about the
+        parameters you can use to update a document.
+
+
+        **Many-to-many collection fields** (`authors`, `authorsOrganization`,
+        `subjects`, `massifs`, `isoRegions`, `countries`):
+
+
+        * If a field is **omitted** from the request, the existing associations
+        are left untouched.
+
+        * If a field is sent as a **non-empty array**, it replaces the current
+        associations exactly.
+
+        * To **clear** a collection entirely, send the literal string `'[]'`
+        as the field value. This is required because `multipart/form-data`
+        cannot represent an empty array natively.
+
+
+        **Language field**: the document language is set via `documentMainLanguage.id`
+        (or the legacy `mainLanguage` field). It cannot be cleared via `'[]'`;
+        omit the field to leave the language untouched.
       parameters:
         - name: id
           in: path
@@ -1635,6 +1667,16 @@ paths:
           required: true
           schema:
             type: string
+        - name: authorsOrganization
+          in: query
+          description: Organization(s) (grotto/club) id(s) that authored the document.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
       responses:
         200:
           description: Successful operation
@@ -1644,6 +1686,106 @@ paths:
                 $ref: '#/components/schemas/Document'
         403:
           description: You are not authorized to update a document.
+
+  '/documents/{id}/new-entities':
+    put:
+      tags:
+        - documents
+      description: >-
+        Update a document and optionally create new cavers or descriptions as
+        part of the same operation. This endpoint accepts JSON only.
+
+
+        **Many-to-many collection fields** (`authors`, `authorsOrganization`,
+        `subjects`, `languages`, `massifs`, `isoRegions`, `countries`):
+
+
+        * **Omit** a field to leave existing associations untouched.
+
+        * Send a **non-empty array** of ids to replace the current associations.
+
+        * Send an **empty array** `[]` to clear the collection entirely.
+
+
+        Note: unlike `PUT /documents/{id}` (which is `multipart/form-data`),
+        this endpoint receives a JSON body, so a real empty array `[]` is used
+        to clear a collection — the `'[]'` string sentinel is not needed here.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID of the document to update.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: object
+                  description: >-
+                    Scalar and collection fields to update on the document.
+                    Many-to-many collection fields (`authors`, `authorsOrganization`,
+                    `subjects`, `languages`, `massifs`, `isoRegions`,
+                    `countries`): omit to keep existing, send `[]` to clear,
+                    or send an array of ids to replace.
+                newAuthors:
+                  type: array
+                  description: >-
+                    New caver records to create and link as authors. Each
+                    object is passed directly to `TCaver.createEach`. The
+                    junction-table row linking each new caver to the document
+                    is written at creation time. If `document.authors` is also
+                    present, the new ids are merged into that list before
+                    `replaceCollection` runs. If `document.authors` is absent,
+                    existing authors are left untouched and only the new cavers
+                    are added.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      surname:
+                        type: string
+                      mail:
+                        type: string
+                newDescriptions:
+                  type: array
+                  description: >-
+                    New description records to create and link to the document.
+                    Each entry must include a `language` field.
+                  items:
+                    type: object
+                    required:
+                      - language
+                    properties:
+                      title:
+                        type: string
+                      body:
+                        type: string
+                      language:
+                        type: string
+                        description: 3-letter ISO 639-2 language code.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: >-
+            Bad request. Returned when a new description is missing the
+            required `language` field.
+        '401':
+          description: Unauthorized. A valid bearer token is required.
+        '404':
+          description: Document not found or has been deleted.
 
   '/documents/count':
     get:
@@ -7196,6 +7338,72 @@ paths:
         '403':
           description: One or more notification IDs do not belong to the authenticated user.
 
+  '/entrances/import-rows':
+    post:
+      tags:
+        - import csv
+      summary: Enqueue entrance CSV import for async processing
+      description: >-
+        Validates the payload, groups rows by affinity, splits into chunks,
+        and enqueues them for background processing. Returns immediately with
+        a batch ID for progress polling.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import-csv'
+      responses:
+        '202':
+          description: Import accepted for async processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchAccepted'
+        '400':
+          description: Invalid payload (empty data, missing mandatory columns).
+        '403':
+          description: You are not authorized to import entrances via CSV.
+        '500':
+          description: Job queue unavailable or batch creation failed.
+
+  '/jobs/{batchId}':
+    get:
+      tags:
+        - import csv
+      summary: Get async job batch status
+      description: >-
+        Returns progress and result for an async job batch. Users can only view
+        their own batches unless they have Moderator or Administrator role.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: UUID of the job batch
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Batch status with progress and result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobBatchStatus'
+        '404':
+          description: Batch not found (also returned for unauthorized access to prevent leaking batch existence).
+
 components:
 
   parameters:
@@ -7321,6 +7529,85 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    ImportBatchAccepted:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+          description: Unique identifier for the import batch
+        totalRows:
+          type: integer
+          description: Total number of rows in the payload
+        totalChunks:
+          type: integer
+          description: Number of chunks created for parallel processing
+        statusUrl:
+          type: string
+          description: URL to poll for batch progress
+
+    JobBatchStatus:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          example: csv-import
+        status:
+          type: string
+          enum: [pending, active, aggregating, completed, failed]
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        progress:
+          type: object
+          properties:
+            totalChunks:
+              type: integer
+            completedChunks:
+              type: integer
+            totalRows:
+              type: integer
+            processedRows:
+              type: integer
+            successes:
+              type: integer
+            duplicates:
+              type: integer
+            failures:
+              type: integer
+        result:
+          type: object
+          nullable: true
+          properties:
+            reportUrls:
+              type: object
+              properties:
+                successes:
+                  type: string
+                  nullable: true
+                duplicates:
+                  type: string
+                  nullable: true
+                failures:
+                  type: string
+                  nullable: true
+            summary:
+              type: object
+              properties:
+                successes:
+                  type: integer
+                duplicates:
+                  type: integer
+                failures:
+                  type: integer
+
     Auth-success:
       type: object
       properties:
@@ -7831,6 +8118,15 @@ components:
           $ref: '#/components/schemas/Document'
         authorComment:
           type: string
+        authorsOrganization:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         cave:
           $ref: '#/components/schemas/Cave'
         commentsBBSOld:

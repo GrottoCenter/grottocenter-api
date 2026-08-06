@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
       languages: 'j_document_language',
       massifs: 'j_document_massif',
       subjects: 'j_document_subject',
-      authorsGrotto: 'j_document_grotto_author',
+      authorsOrganization: 'j_document_grotto_author',
       authors: 'j_document_caver_author',
     };
 
@@ -130,7 +130,7 @@ module.exports = async (req, res) => {
     await linkedEntitiesDeleteOrMerge('languages');
     await linkedEntitiesDeleteOrMerge('massifs');
     await linkedEntitiesDeleteOrMerge('subjects');
-    await linkedEntitiesDeleteOrMerge('authorsGrotto');
+    await linkedEntitiesDeleteOrMerge('authorsOrganization');
     await linkedEntitiesDeleteOrMerge('authors');
 
     await sails.sendNativeQuery(

@@ -329,6 +329,9 @@ module.exports.policies = {
   // SSO
   'v1/sso/auth-token': 'tokenAuth',
 
+  // Job (async batch operations)
+  'v1/job/find': 'tokenAuth',
+
   // Miscellaneous
   'v1/convert/convert': true,
   'v1/file-format/find-all': true,

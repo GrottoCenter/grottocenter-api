@@ -184,6 +184,10 @@ ALTER TABLE t_unit ADD CONSTRAINT t_unit_symbol_key UNIQUE (symbol);
 
 -- History table indexes
 CREATE INDEX IF NOT EXISTS idx_h_document_id_massif ON h_document(id_massif);
+
+-- Job batch indexes
+CREATE INDEX IF NOT EXISTS idx_job_batch_initiator ON t_job_batch (id_initiator);
+CREATE INDEX IF NOT EXISTS idx_job_batch_status ON t_job_batch (status);
 `;
 
 // Convert t_measurement from a regular table (created by Waterline migrate:drop)

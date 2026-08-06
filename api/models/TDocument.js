@@ -147,7 +147,7 @@ module.exports = {
       model: 'TGrotto',
     },
 
-    authorsGrotto: {
+    authorsOrganization: {
       collection: 'TGrotto',
       via: 'document',
       through: 'JDocumentGrottoAuthor',

@@ -11,6 +11,8 @@
 const { v7: uuidv7 } = require('uuid');
 const multer = require('multer');
 const responseTime = require('response-time');
+const path = require('path');
+const fs = require('fs');
 const rateLimiter = require('./rateLimit/rateLimiter');
 const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
@@ -88,6 +90,7 @@ module.exports.http = {
       'compress',
       'poweredBy',
       'addPackageVersionHeader',
+      'localUploads',
       'router',
       'www',
     ],
@@ -351,6 +354,36 @@ module.exports.http = {
       });
       responseTime()(req, res, next);
     },
+
+    // Serve locally stored uploads in dev mode (when AZURE_KEY is not set).
+    // Maps /local-uploads/* to the .local-uploads/ directory at the project root.
+    // In production this middleware is a no-op since files are served from Azure.
+    localUploads: process.env.AZURE_KEY
+      ? (req, res, next) => next()
+      : (req, res, next) => {
+          const LOCAL_PREFIX = '/local-uploads/';
+          if (!req.url.startsWith(LOCAL_PREFIX)) {
+            return next();
+          }
+          const relativePath = req.url.slice(LOCAL_PREFIX.length);
+          const filePath = path.resolve(
+            __dirname,
+            '../.local-uploads',
+            relativePath
+          );
+          // Prevent path traversal (trailing separator avoids matching siblings
+          // like '.local-uploads-x')
+          const uploadsRoot =
+            path.resolve(__dirname, '../.local-uploads') + path.sep;
+          if (!filePath.startsWith(uploadsRoot)) {
+            return res.sendStatus(403);
+          }
+          if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+            return res.sendStatus(404);
+          }
+          res.set('X-Local-Storage', 'true');
+          return res.sendFile(filePath);
+        },
   },
 
   /** *************************************************************************

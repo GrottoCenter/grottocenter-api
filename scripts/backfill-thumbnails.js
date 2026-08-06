@@ -5,17 +5,22 @@
 /**
  * Backfill Thumbnails Script
  *
- * Generates thumbnails for existing image files that don't have any.
+ * Generates thumbnails for existing image files that don't have any, and
+ * regenerates thumbnails for images that already have them but were stored
+ * with the wrong orientation (EXIF Orientation != 1 or missing).
+ *
  * Lifts Sails to access models, config, and services.
  *
  * Usage:
  *   node scripts/backfill-thumbnails.js
  *   node scripts/backfill-thumbnails.js --dry-run
  *   node scripts/backfill-thumbnails.js --batch-size 5
+ *   node scripts/backfill-thumbnails.js --fix-orientation   # also re-generates already-thumbnailed images with wrong orientation
  */
 
 const Sails = require('sails');
 const rc = require('sails/accessible/rc');
+const sharp = require('sharp');
 const {
   BlobServiceClient,
   StorageSharedKeyCredential,
@@ -24,6 +29,7 @@ const {
 // Parse CLI flags
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+const fixOrientation = args.includes('--fix-orientation');
 const batchSizeIndex = args.indexOf('--batch-size');
 const batchSize =
   batchSizeIndex !== -1 ? parseInt(args[batchSizeIndex + 1], 10) || 1 : 1;
@@ -56,37 +62,69 @@ async function run() {
   });
 
   try {
-    // Query file records without thumbnails in pages to avoid loading all into memory
+    // Paginate through TFile records matching the given `where` clause and collect
+    // processable image files. Explicit sort guarantees stable pagination across
+    // multiple SELECT calls — without it PostgreSQL may reorder rows (autovacuum,
+    // HOT updates) causing records to be missed or processed twice.
     const pageSize = 500;
-    let skip = 0;
-    let page;
-    const imageFiles = [];
 
-    do {
-      page = await TFile.find({
-        where: {
-          thumbnailSmall: null,
-          thumbnailMedium: null,
-          thumbnailLarge: null,
-        },
-      })
-        .populate('fileFormat')
-        .limit(pageSize)
-        .skip(skip);
+    const fetchImageFiles = async (where) => {
+      const files = [];
+      let skip = 0;
+      let page;
+      do {
+        // eslint-disable-next-line no-await-in-loop
+        page = await TFile.find({ where })
+          .populate('fileFormat')
+          .sort('id ASC')
+          .limit(pageSize)
+          .skip(skip);
 
-      page.forEach((f) => {
-        if (!f.fileFormat || !f.fileFormat.mimeType) return;
-        const { mimeType } = f.fileFormat;
-        if (mimeType === 'image/svg+xml') return;
-        if (ThumbnailService.isProcessable(mimeType)) {
-          imageFiles.push(f);
-        }
+        page.forEach((f) => {
+          if (!f.fileFormat || !f.fileFormat.mimeType) return;
+          const { mimeType } = f.fileFormat;
+          if (mimeType === 'image/svg+xml') return;
+          if (ThumbnailService.isProcessable(mimeType)) {
+            files.push(f);
+          }
+        });
+
+        skip += pageSize;
+      } while (page.length === pageSize);
+      return files;
+    };
+
+    // Collect files that have no thumbnails at all.
+    const missingThumbnailFiles = await fetchImageFiles({
+      thumbnailSmall: null,
+      thumbnailMedium: null,
+      thumbnailLarge: null,
+    });
+    const imageFiles = [...missingThumbnailFiles];
+
+    console.log(
+      `Found ${missingThumbnailFiles.length} image files without thumbnails.`
+    );
+
+    // When --fix-orientation is passed, also collect images that already have
+    // thumbnails but may have been generated before .autoOrient() was added.
+    // We check the EXIF orientation of the downloaded buffer at process time
+    // and skip files that are already correctly oriented (orientation == 1 or absent).
+    if (fixOrientation) {
+      const alreadyThumbnailedFiles = await fetchImageFiles({
+        or: [
+          { thumbnailSmall: { '!=': null } },
+          { thumbnailMedium: { '!=': null } },
+          { thumbnailLarge: { '!=': null } },
+        ],
       });
+      imageFiles.push(...alreadyThumbnailedFiles);
 
-      skip += pageSize;
-    } while (page.length === pageSize);
+      console.log(
+        `Found ${imageFiles.length} total image files to process (including orientation re-check).`
+      );
+    }
 
-    console.log(`Found ${imageFiles.length} image files without thumbnails.`);
     console.log('File IDs to process:', imageFiles.map((f) => f.id).join(', '));
 
     if (dryRun) {
@@ -127,7 +165,11 @@ async function run() {
 
     let processed = 0;
     let succeeded = 0;
-    let skipped = 0;
+    // Separate skip counters so the summary is unambiguous:
+    //   orientationSkipped — file already has correct orientation, no re-encode needed
+    //   tooSmallSkipped    — image dimensions too small for any variant (or blob too large)
+    let orientationSkipped = 0;
+    let tooSmallSkipped = 0;
     let failed = 0;
 
     // Process in batches (default: sequential to limit memory pressure)
@@ -156,7 +198,8 @@ async function run() {
               console.log(
                 `SKIPPED file ${file.id}: blob too large (${Math.round(properties.contentLength / 1024 / 1024)} MB), skipping to avoid OOM`
               );
-              skipped += 1;
+              tooSmallSkipped += 1;
+              processed += 1;
               return;
             }
 
@@ -168,11 +211,39 @@ async function run() {
             }
             const imageBuffer = Buffer.concat(chunks);
 
-            // Generate thumbnails
+            // Fetch metadata once. In --fix-orientation mode we need orientation
+            // to decide whether to skip; we pass this pre-fetched metadata to
+            // generate() so it does not decode the buffer a second time.
+            const meta = await sharp(imageBuffer, {
+              limitInputPixels: 100 * 1024 * 1024,
+            }).metadata();
+
+            // When --fix-orientation: skip images that already had thumbnails
+            // AND are upright (EXIF orientation absent or == 1) — no re-encode needed.
+            // Files that had no thumbnails at all (from the first query) must still
+            // be processed regardless of orientation, so we check for pre-existing
+            // thumbnails before skipping. Files from the second query always have at
+            // least one non-null thumbnail column by construction of its `where` clause.
+            const alreadyHasThumbnail =
+              file.thumbnailSmall ||
+              file.thumbnailMedium ||
+              file.thumbnailLarge;
+            if (fixOrientation && alreadyHasThumbnail) {
+              const { orientation } = meta;
+              if (!orientation || orientation === 1) {
+                orientationSkipped += 1;
+                processed += 1;
+                return;
+              }
+            }
+
+            // Generate thumbnails, passing the already-fetched metadata to
+            // avoid a second sharp decode inside generate().
             const thumbnailPaths = await ThumbnailService.generate(
               imageBuffer,
               file.path,
-              containerClient
+              containerClient,
+              meta
             );
 
             // Update DB record
@@ -192,8 +263,22 @@ async function run() {
                 `WARNING: file ${file.id} failed thumbnail generation (not just too small)`
               );
               failed += 1;
+            } else if (fixOrientation && alreadyHasThumbnail) {
+              // Image had stale thumbnails with wrong orientation but is too small
+              // for any variant after correction. Clear the stale paths so the
+              // front-end no longer serves the incorrect blobs (they remain in Azure
+              // as orphans but are no longer referenced by the DB).
+              console.log(
+                `file ${file.id}: wrong orientation but too small for any variant — clearing stale thumbnail paths`
+              );
+              await TFile.updateOne(file.id).set({
+                thumbnailSmall: null,
+                thumbnailMedium: null,
+                thumbnailLarge: null,
+              });
+              tooSmallSkipped += 1;
             } else {
-              skipped += 1;
+              tooSmallSkipped += 1;
             }
           } catch (err) {
             console.error(`ERROR processing file ${file.id}:`, err.message);
@@ -217,7 +302,12 @@ async function run() {
     console.log('\n--- Summary ---');
     console.log(`Total files: ${imageFiles.length}`);
     console.log(`Succeeded: ${succeeded}`);
-    console.log(`Skipped (too small): ${skipped}`);
+    if (fixOrientation) {
+      console.log(
+        `Skipped (orientation already correct): ${orientationSkipped}`
+      );
+    }
+    console.log(`Skipped (too small / blob too large): ${tooSmallSkipped}`);
     console.log(`Failed: ${failed}`);
 
     sailsApp.lower();

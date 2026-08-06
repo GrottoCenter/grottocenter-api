@@ -1,8 +1,42 @@
 const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
+const HoneypotGuard = require('../../../services/HoneypotGuard');
 const LanguageService = require('../../../services/LanguageService');
+const TurnstileService = require('../../../services/TurnstileService');
 
 module.exports = async (req, res) => {
+  // --- Anti-bot defense layers (order matters) ---
+
+  // Layer 1: Honeypot
+  const honeypotResult = HoneypotGuard.check(req.allParams());
+  if (honeypotResult.trapped) {
+    sails.log.warn('[AntiBot:Honeypot] Bot trapped', {
+      ip: req.ip,
+      website: String(honeypotResult.value).slice(0, 200),
+    });
+    return res.ok(); // Deceptive response — res.ok() returns 204 to mimic normal signup success
+  }
+
+  // Layer 2: Turnstile
+  if (TurnstileService.isEnabled()) {
+    const turnstileResult = await TurnstileService.verifyToken(
+      req.param('captchaToken'),
+      req.ip
+    );
+    if (!turnstileResult.pass) {
+      sails.log.warn('[AntiBot:Turnstile] Rejected', {
+        ip: req.ip,
+        errorCode: turnstileResult.errorCode,
+      });
+      if (turnstileResult.errorCode === 'CAPTCHA_SERVICE_UNAVAILABLE') {
+        return res.status(503).json({ error: turnstileResult.errorCode });
+      }
+      return res.badRequest({ error: turnstileResult.errorCode });
+    }
+  }
+
+  // --- Existing signup logic (unchanged) ---
+
   // Check params
   let email = req.param('email');
   if (!email || !CaverService.isARealCaver(email)) {
