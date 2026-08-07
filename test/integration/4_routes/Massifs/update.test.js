@@ -118,6 +118,56 @@ describe('Massif features', () => {
         });
     });
 
+    it('should appear as update (not create) in the recent-changes feed after a second PUT (#1769)', async () => {
+      // Regression: before the fix, reviewer was never set so id_reviewer stayed NULL,
+      // and the change_massif trigger always classified edits as 'create'.
+      //
+      // This test creates a massif with reviewer=null (simulating a freshly created
+      // entity that has never been edited), issues two consecutive PUTs, and asserts
+      // that reviewer is set after the first PUT and remains set after the second.
+      // The change_massif DB trigger uses id_reviewer IS NULL to decide 'create' vs
+      // 'update' — so a populated reviewer is both necessary and sufficient for
+      // subsequent edits to be classified as 'update' in the feed.
+      const stub = sinon.stub(EntranceService, 'updateInSearch').resolves();
+      let nullReviewerMassifId;
+      try {
+        // Create a massif with no reviewer (as the create controller leaves it)
+        const freshMassif = await TMassif.create({ author: 1 }).fetch();
+        nullReviewerMassifId = freshMassif.id;
+        should(freshMassif.reviewer).be.null();
+
+        // First PUT — reviewer was null; after this call the controller must set it
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/massifs/${nullReviewerMassifId}`)
+          .send({ descriptions: [testDescId] })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+
+        const afterFirst = await TMassif.findOne(nullReviewerMassifId);
+        should(afterFirst.reviewer).not.be.null();
+
+        // Second PUT — reviewer is now populated; must stay set so the trigger
+        // keeps classifying this as 'update' rather than reverting to 'create'
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/massifs/${nullReviewerMassifId}`)
+          .send({ descriptions: [testDescId] })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+
+        const afterSecond = await TMassif.findOne(nullReviewerMassifId);
+        should(afterSecond.reviewer).not.be.null();
+      } finally {
+        stub.restore();
+        if (nullReviewerMassifId) {
+          await TMassif.destroy({ id: nullReviewerMassifId });
+        }
+      }
+    });
+
     it('should return 400 when polygon area exceeds 35000 km²', (done) => {
       supertest(sails.hooks.http.app)
         .put(`/api/v1/massifs/${testMassifId}`)
