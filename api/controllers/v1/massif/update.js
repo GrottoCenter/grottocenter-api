@@ -12,7 +12,10 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  const cleanedData = MassifService.getConvertedDataFromClientRequest(req);
+  const cleanedData = {
+    reviewer: req.token.id,
+    ...MassifService.getConvertedDataFromClientRequest(req),
+  };
 
   // conversion of geoJson into PostGis Geom
   if (cleanedData.geogPolygon) {

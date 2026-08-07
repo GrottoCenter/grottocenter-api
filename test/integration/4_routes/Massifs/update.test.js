@@ -108,6 +108,12 @@ describe('Massif features', () => {
           ]);
           should(massifUpdated.geogPolygon).not.be.null();
           should(massifUpdated.names).containDeep([{ id: testNameId }]);
+
+          // reviewer must be set so the DB trigger classifies subsequent edits as 'update'
+          // not 'create' in the recent changes feed (issue #1769)
+          const userCaver = await TCaver.findOne({ mail: 'user1@user1.com' });
+          should(massifUpdated.reviewer).equal(userCaver.id);
+
           return done();
         });
     });
