@@ -13,8 +13,9 @@ module.exports = async (req, res) => {
   }
 
   const cleanedData = {
-    reviewer: req.token.id,
+    // dateReviewed will be updated automatically by the SQL historisation trigger
     ...MassifService.getConvertedDataFromClientRequest(req),
+    reviewer: req.token.id,
   };
 
   // conversion of geoJson into PostGis Geom
@@ -63,21 +64,19 @@ module.exports = async (req, res) => {
 
   // Handle name update inline (consistent with entrance and cave update)
   if (req.body.name) {
-    const nameUpdate = {};
+    const nameUpdate = { reviewer: req.token.id };
     if (nameText !== undefined) {
       nameUpdate.name = nameText;
     }
     if (nameLanguage !== undefined) {
       nameUpdate.language = nameLanguage;
     }
-    if (Object.keys(nameUpdate).length > 0) {
-      const updatedName = await TName.updateOne({
-        massif: massifId,
-        isMain: true,
-      }).set(nameUpdate);
-      if (!updatedName) {
-        sails.log.warn(`Massif ${massifId} has no main name record to update.`);
-      }
+    const updatedName = await TName.updateOne({
+      massif: massifId,
+      isMain: true,
+    }).set(nameUpdate);
+    if (!updatedName) {
+      sails.log.warn(`Massif ${massifId} has no main name record to update.`);
     }
   }
 
