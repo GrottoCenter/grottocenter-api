@@ -5962,7 +5962,15 @@ paths:
     delete:
       tags:
         - organizations
-      description: Delete an organization.
+      description: >
+        Delete an organization. By default this is a reversible soft-delete
+        (moderators only). When `isPermanent=true`, the organization and its
+        history snapshots are permanently removed — this is irreversible. If
+        `entityId` points to a surviving organization, the deleted
+        organization's documents, explored caves, editor/library links and
+        incoming redirects are merged into it instead of being dropped.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -5970,13 +5978,36 @@ paths:
           required: true
           schema:
             type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: >
+            When true, permanently (hard) delete the organization instead of
+            soft-deleting it.
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: >
+            Id of the organization this one is a duplicate of. Sets
+            `redirectTo` on a soft-delete, and is used as the merge target on a
+            permanent delete.
       responses:
         '204':
           description: Successful operation
+        '403':
+          description: You are not authorized to delete an organization.
         '404':
           description: Organization not found.
         '410':
           description: Organization already deleted.
+        '501':
+          description: >
+            Permanent delete is not supported yet for organizations that still
+            have partner networks, partner entrances or cavers attached.
 
     get:
       tags:
