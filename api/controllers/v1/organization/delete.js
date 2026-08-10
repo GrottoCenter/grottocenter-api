@@ -75,26 +75,36 @@ module.exports = async (req, res) => {
     }
 
     // Explored caves: when merging into a surviving organization, re-point the
-    // deleted duplicate's relationships to it instead of dropping them. The
-    // join table's PK is (id_cave, id_grotto), so first delete the deleted
-    // org's rows for caves the survivor already explores to avoid a PK
-    // collision, then re-point the remainder. Without a merge target, drop them.
+    // deleted org's relationships to it instead of dropping them. The join
+    // table's PK is (id_cave, id_grotto), so first delete the deleted org's
+    // rows for caves the survivor already explores to avoid a PK collision,
+    // then re-point the remainder. Both statements run in a transaction: a
+    // failure between them would delete the shared caves without ever handing
+    // the rest over to the survivor. Without a merge target, drop them all.
     if (shouldMergeInto) {
-      await sails.sendNativeQuery(
-        `DELETE FROM j_grotto_cave_explorer d
-           WHERE d.id_grotto = $1
-             AND EXISTS (
-               SELECT 1 FROM j_grotto_cave_explorer k
-               WHERE k.id_grotto = $2 AND k.id_cave = d.id_cave
-             )`,
-        [organizationId, mergeIntoId]
-      );
-      await sails.sendNativeQuery(
-        `UPDATE j_grotto_cave_explorer
-           SET id_grotto = $2
-           WHERE id_grotto = $1`,
-        [organizationId, mergeIntoId]
-      );
+      await sails.getDatastore().transaction(async (db) => {
+        await sails
+          .getDatastore()
+          .sendNativeQuery(
+            `DELETE FROM j_grotto_cave_explorer d
+               WHERE d.id_grotto = $1
+                 AND EXISTS (
+                   SELECT 1 FROM j_grotto_cave_explorer k
+                   WHERE k.id_grotto = $2 AND k.id_cave = d.id_cave
+                 )`,
+            [organizationId, mergeIntoId]
+          )
+          .usingConnection(db);
+        await sails
+          .getDatastore()
+          .sendNativeQuery(
+            `UPDATE j_grotto_cave_explorer
+               SET id_grotto = $2
+               WHERE id_grotto = $1`,
+            [organizationId, mergeIntoId]
+          )
+          .usingConnection(db);
+      });
     } else {
       await JGrottoCaveExplorer.destroy({ grotto: organizationId });
     }

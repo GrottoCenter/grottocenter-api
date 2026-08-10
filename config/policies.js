@@ -275,7 +275,7 @@ module.exports.policies = {
   'v1/organization/find': ['validateId'],
   'v1/organization/find-all': true,
   'v1/organization/create': 'tokenAuth',
-  'v1/organization/delete': 'tokenAuth',
+  'v1/organization/delete': ['validateId', 'tokenAuth'],
   'v1/organization/restore': 'tokenAuth',
   'v1/organization/update': 'tokenAuth',
 
