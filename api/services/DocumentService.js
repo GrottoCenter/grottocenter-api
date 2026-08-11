@@ -504,8 +504,10 @@ module.exports = {
   },
 
   /**
-   * Same as getDocuments(), plus everything needed to build a bibliographic
-   * citation (authors, publisher, journal, identifier...).
+   * Like getDocuments(), but also populates the citation fields
+   * (identifierType, authors, authorsOrganization, editor, library) and
+   * resolves the parent descriptions and the organization names, which the
+   * associations cannot carry on their own.
    * The result is intended to be passed to the toCitationDocument converter.
    * Kept apart from getDocuments() so that the callers only needing a title
    * and a type don't pay for the extra joins.

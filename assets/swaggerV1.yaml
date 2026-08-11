@@ -9333,6 +9333,7 @@ components:
           type: string
         name:
           type: string
+          nullable: true
 
     Point:
       type: object
