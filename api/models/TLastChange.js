@@ -32,9 +32,9 @@ module.exports = {
     },
 
     entityRelatedType: {
-      type: 'number',
+      type: 'string',
       columnName: 'type_related_entity',
-      columnType: 'int4',
+      columnType: 'varchar(30)',
     },
 
     entityRelatedId: {
