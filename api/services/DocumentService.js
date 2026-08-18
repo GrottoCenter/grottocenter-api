@@ -8,7 +8,11 @@ const {
   valIfTruthyOrNull,
   distantFileDownload,
 } = require('../utils/csvHelper');
-const { DOCUMENT_M2M_COLLECTIONS } = require('../../config/constants/document');
+const {
+  DOCUMENT_M2M_COLLECTIONS,
+  TYPES_ALLOWING_PARENT,
+  TYPES_REQUIRING_PARENT,
+} = require('../../config/constants/document');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -190,7 +194,14 @@ module.exports = {
       // regions: body.regions?.map((r) => r.id), // Deprecated
       isoRegions,
       countries,
-      parent: body.parent?.id,
+      // When a type is provided and it doesn't allow a parent, explicitly clear
+      // the parent field regardless of whether the client sent it. This prevents
+      // a stale id_parent from surviving a type change (e.g. Issue → Collection)
+      // when the front-end omits the parent field instead of sending null.
+      parent:
+        typeFound && !TYPES_ALLOWING_PARENT.includes(typeFound.id)
+          ? null
+          : body.parent?.id,
       // children cannot be set. The parent child relation can only be changed in one direction
       authorizationDocument: body.authorizationDocument?.id,
     };
@@ -324,19 +335,14 @@ module.exports = {
     descriptionData,
     shouldDownloadDistantFile = false
   ) => {
-    // Doc types needing a parent in order to be created
-    // (ex; an issue needs a collection, an article needs an issue)
-    const MANDATORY_PARENT_TYPES = ['article', 'issue'];
-
     const document = await sails.getDatastore().transaction(async (db) => {
       // Perform some checks
       const docType =
         documentData.type && (await TType.findOne(documentData.type));
       if (docType) {
-        const docTypeName = docType.name.toLowerCase();
         // Parent doc is mandatory for articles and issues
         if (
-          MANDATORY_PARENT_TYPES.includes(docTypeName) &&
+          TYPES_REQUIRING_PARENT.includes(docType.id) &&
           !documentData.parent
         ) {
           throw Error(
@@ -549,10 +555,9 @@ module.exports = {
   getCollectionAncestors: async (documentIds) => {
     if (documentIds.length === 0) return [];
 
-    // Infinite loop should normaly not happen unless the t_document table is not properly formated as a tree
-    // In case it happend search for:
-    // - Self reference: SELECT id, id_parent FROM t_document WHERE id = id_parent;
-    // - Cycle: A → B → A
+    // The CYCLE clause (PostgreSQL 14+) detects when a row has already appeared
+    // in the recursive path and stops traversal, so cyclic data (e.g. a document
+    // that is its own parent) can never produce an infinite loop.
     const query = `
       WITH RECURSIVE doc_hierarchy AS (
         SELECT id, id_parent, id_type
@@ -565,16 +570,61 @@ module.exports = {
         FROM t_document d
         JOIN doc_hierarchy dh ON d.id = dh.id_parent
       )
+      CYCLE id SET is_cycle USING path
       SELECT DISTINCT dh.id
       FROM doc_hierarchy dh
       JOIN t_type t ON dh.id_type = t.id
       WHERE t.name = 'Collection'
+        AND dh.is_cycle = false
     `;
 
     const result = await sails.sendNativeQuery(query, [documentIds]);
     const collectionIds = result.rows.map((row) => row.id);
 
     return module.exports.getDocuments(collectionIds);
+  },
+
+  /**
+   * Check whether setting `proposedParentId` as the parent of `documentId`
+   * would create a cycle in the document hierarchy.
+   *
+   * Returns true when a cycle would be created (i.e. documentId already
+   * appears in the ancestor chain of proposedParentId, or they are the same).
+   *
+   * @param {number} documentId       - the document being updated
+   * @param {number} proposedParentId - the candidate new parent
+   * @returns {Promise<boolean>}
+   */
+  checkParentCycle: async (documentId, proposedParentId) => {
+    if (documentId === proposedParentId) return true;
+
+    // Walk the ancestor chain of proposedParentId upward.  If documentId
+    // appears anywhere along that chain, the assignment would create a cycle.
+    const query = `
+      WITH RECURSIVE ancestors AS (
+        SELECT id, id_parent
+        FROM t_document
+        WHERE id = $1
+
+        UNION ALL
+
+        SELECT d.id, d.id_parent
+        FROM t_document d
+        JOIN ancestors a ON d.id = a.id_parent
+      )
+      CYCLE id SET is_cycle USING path
+      SELECT 1
+      FROM ancestors
+      WHERE id = $2
+        AND is_cycle = false
+      LIMIT 1
+    `;
+
+    const result = await sails.sendNativeQuery(query, [
+      proposedParentId,
+      documentId,
+    ]);
+    return result.rows.length > 0;
   },
 
   normalizeToId,

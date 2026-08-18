@@ -44,6 +44,21 @@ module.exports = async (req, res) => {
     );
   }
 
+  // Reject cyclic parent assignments before any file upload side-effects.
+  const proposedParentId = documentDataForValidation.parent;
+  if (proposedParentId != null) {
+    const documentId = req.param('id');
+    const hasCycle = await DocumentService.checkParentCycle(
+      Number(documentId),
+      Number(proposedParentId)
+    );
+    if (hasCycle) {
+      return res.badRequest(
+        'The proposed parent would create a cycle in the document hierarchy.'
+      );
+    }
+  }
+
   // Add new files
   const newFiles = [];
   if (req.files && req.files.files) {
