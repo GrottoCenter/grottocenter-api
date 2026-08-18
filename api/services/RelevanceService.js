@@ -195,6 +195,12 @@ module.exports = {
           [],
           db
         );
+        // Model.tableName is safe to interpolate here: it is sourced from
+        // ENTITY_CONFIG, whose keys were validated by getConfig() earlier in
+        // this call stack.  Postgres does not support parameterized identifiers,
+        // so string interpolation is the correct and only option; the invariant
+        // that entityType was validated via getConfig() must be preserved if
+        // this code is ever refactored.
         await CommonService.query(
           `UPDATE ${Model.tableName} SET relevance = $1 WHERE id = $2`,
           [target.relevance, neighbor.id],
