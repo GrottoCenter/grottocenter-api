@@ -4,6 +4,8 @@
  *
  * Models (TLocation, TDescription, etc.) are Sails globals - no imports needed.
  */
+const CommonService = require('./CommonService');
+
 const ENTITY_CONFIG = {
   location: {
     model: 'tlocation',
@@ -128,7 +130,7 @@ module.exports = {
     // Unranked entity: assign a position first, no swap needed.
     if (target.relevance == null) {
       sails.log.warn(
-        `moveRelevance: ${label} id=${entityId} has null relevance â€” assigning from computeNextRelevance`
+        `moveRelevance: ${label} id=${entityId} has null relevance — assigning from computeNextRelevance`
       );
       const nextRelevance = await this.computeNextRelevance(
         entityType,
@@ -175,12 +177,35 @@ module.exports = {
     const { moved, swapped } = await sails
       .getDatastore()
       .transaction(async (db) => {
+        // Update the target entity via Waterline so its change_* trigger fires
+        // and records this as an intentional move by the actor.
         const updatedTarget = await Model.updateOne({ id: entityId })
           .set({ relevance: neighbor.relevance })
           .usingConnection(db);
-        const updatedNeighbor = await Model.updateOne({ id: neighbor.id })
-          .set({ relevance: target.relevance })
-          .usingConnection(db);
+
+        // Update the neighbor's relevance using raw SQL with a session variable
+        // that tells the change_* trigger to skip logging.  The neighbor's
+        // relevance change is an involuntary side-effect of the move — no actor
+        // chose to update it, and logging it would attribute a spurious event
+        // to the original author.
+        // SET LOCAL scopes the variable to this transaction only; it reverts
+        // automatically when the transaction ends, so no explicit reset is needed.
+        await CommonService.query(
+          `SET LOCAL app.relevance_swap_skip_log TO 'true'`,
+          [],
+          db
+        );
+        await CommonService.query(
+          `UPDATE ${Model.tableName} SET relevance = $1 WHERE id = $2`,
+          [target.relevance, neighbor.id],
+          db
+        );
+
+        // Fetch via Waterline so `swapped` has the same shape (JS attribute
+        // names) as `moved`, which is also a Waterline record.
+        const updatedNeighbor = await Model.findOne({
+          id: neighbor.id,
+        }).usingConnection(db);
         return { moved: updatedTarget, swapped: updatedNeighbor };
       });
 

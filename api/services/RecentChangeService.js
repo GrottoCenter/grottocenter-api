@@ -63,6 +63,10 @@ function groupChanges(changes) {
     mainAction: c.id_related_entity ? null : c.type_change, // Null in case it is a change on a sub entity
     subEntityTypes: c.id_related_entity ? [c.type_entity] : [],
     subAction: c.id_related_entity ? c.type_change : null, // Null when no sub entities
+    // Tracks the entity id that last set subAction, so we can apply
+    // create/restore priority correctly when the same entity is later
+    // seen with a higher-priority action (e.g. create after update).
+    subActionEntityId: c.id_related_entity ? c.id_entity : null,
     name: c.name, // Can be the real entity name or the related entity name
   });
 
@@ -75,8 +79,23 @@ function groupChanges(changes) {
       g.mainAction = c.type_change; // eslint-disable-line no-param-reassign
     if (c.id_related_entity && !g.subEntityTypes.includes(c.type_entity))
       g.subEntityTypes.push(c.type_entity);
-    if (c.id_related_entity && g.subAction !== c.type_change)
-      g.subAction = 'change'; // eslint-disable-line no-param-reassign
+    if (c.id_related_entity && g.subAction !== c.type_change) {
+      // 'create' and 'restore' take priority over 'update' only when it is the
+      // same entity that produced both events (e.g. a sub-entity was created
+      // then edited within the grouping window).  When different entity ids are
+      // involved the author genuinely performed mixed actions → 'change'.
+      if (
+        g.subAction === 'update' &&
+        ['create', 'restore'].includes(c.type_change) &&
+        g.subActionEntityId === c.id_entity
+      ) {
+        g.subAction = c.type_change; // eslint-disable-line no-param-reassign
+        g.subActionEntityId = c.id_entity; // eslint-disable-line no-param-reassign
+      } else {
+        g.subAction = 'change'; // eslint-disable-line no-param-reassign
+        g.subActionEntityId = null; // eslint-disable-line no-param-reassign
+      }
+    }
   };
 
   for (const change of changes) {
@@ -106,7 +125,9 @@ function groupChanges(changes) {
   }
 
   const allGroups = Object.values(authorChanges).flat();
-  return allGroups.sort((a, b) => b.date - a.date);
+  return allGroups
+    .sort((a, b) => b.date - a.date)
+    .map(({ subActionEntityId, ...group }) => group); // strip internal tracking field
 }
 
 async function getRecent() {

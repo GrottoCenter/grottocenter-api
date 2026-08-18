@@ -477,6 +477,58 @@ DROP TRIGGER IF EXISTS last_change_guideline ON t_guideline;
 CREATE TRIGGER last_change_guideline BEFORE INSERT OR UPDATE ON t_guideline FOR EACH ROW EXECUTE PROCEDURE change_guideline();
 `;
 
+const CREATE_COMMENT_TRIGGERS = `
+CREATE OR REPLACE FUNCTION change_comment() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.relevance_swap_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' then
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'comment',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_comment ON t_comment;
+CREATE TRIGGER last_change_comment BEFORE INSERT OR UPDATE ON t_comment FOR EACH ROW EXECUTE PROCEDURE change_comment();
+`;
+
 const ADMIN_MFA_MIGRATION = `
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) DEFAULT NULL;
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN NOT NULL DEFAULT false;
@@ -501,4 +553,5 @@ module.exports = {
   ADMIN_MFA_MIGRATION,
   CONVERT_MEASUREMENT_TO_PARTITIONED,
   CREATE_GUIDELINE_TRIGGERS,
+  CREATE_COMMENT_TRIGGERS,
 };

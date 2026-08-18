@@ -62,5 +62,27 @@
     "body": "Body comment 4",
     "entrance": 2,
     "language": "fra"
+  },
+  {
+    "_comment": "Issue #1772 fixture: old comment on entrance 999 by moderator (id=2), no reviewer — used to verify relevance-swap does not corrupt recent-changes",
+    "id": 5,
+    "author": 2,
+    "dateInscription": "2010-03-01T10:00:00.000Z",
+    "relevance": 1,
+    "title": "Old comment A (entrance 999)",
+    "body": "Body old comment A",
+    "entrance": 999,
+    "language": "fra"
+  },
+  {
+    "_comment": "Issue #1772 fixture: second old comment on entrance 999 by moderator (id=2), no reviewer",
+    "id": 6,
+    "author": 2,
+    "dateInscription": "2011-05-15T14:00:00.000Z",
+    "relevance": 2,
+    "title": "Old comment B (entrance 999)",
+    "body": "Body old comment B",
+    "entrance": 999,
+    "language": "fra"
   }
 ]
