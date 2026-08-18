@@ -79,6 +79,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.ADMIN_MFA_MIGRATION,
                 customSQL.CREATE_GUIDELINE_TRIGGERS,
                 customSQL.CREATE_COMMENT_TRIGGERS,
+                customSQL.CREATE_SUB_ENTITY_TRIGGERS,
               ].join('\n')
             )
               .then(() => resolve(sails))

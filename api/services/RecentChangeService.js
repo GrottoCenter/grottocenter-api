@@ -90,7 +90,15 @@ function groupChanges(changes) {
         g.subActionEntityId === c.id_entity
       ) {
         g.subAction = c.type_change; // eslint-disable-line no-param-reassign
-        g.subActionEntityId = c.id_entity; // eslint-disable-line no-param-reassign
+        // subActionEntityId is already equal to c.id_entity (checked above).
+      } else if (
+        ['create', 'restore'].includes(g.subAction) &&
+        c.type_change === 'update' &&
+        g.subActionEntityId === c.id_entity
+      ) {
+        // 'create'/'restore' already wins — an incoming 'update' for the same
+        // entity must not downgrade it.  Leave subAction and subActionEntityId
+        // untouched.
       } else {
         g.subAction = 'change'; // eslint-disable-line no-param-reassign
         g.subActionEntityId = null; // eslint-disable-line no-param-reassign

@@ -529,6 +529,220 @@ DROP TRIGGER IF EXISTS last_change_comment ON t_comment;
 CREATE TRIGGER last_change_comment BEFORE INSERT OR UPDATE ON t_comment FOR EACH ROW EXECUTE PROCEDURE change_comment();
 `;
 
+const CREATE_SUB_ENTITY_TRIGGERS = `
+CREATE OR REPLACE FUNCTION change_history() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.relevance_swap_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' then
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'history',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_history ON t_history;
+CREATE TRIGGER last_change_history BEFORE INSERT OR UPDATE ON t_history FOR EACH ROW EXECUTE PROCEDURE change_history();
+
+CREATE OR REPLACE FUNCTION change_location() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.relevance_swap_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' then
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'location',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_location ON t_location;
+CREATE TRIGGER last_change_location BEFORE INSERT OR UPDATE ON t_location FOR EACH ROW EXECUTE PROCEDURE change_location();
+
+CREATE OR REPLACE FUNCTION change_description() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE type_related_entity varchar(20);
+DECLARE id_related_entity int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.relevance_swap_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' AND NEW.id_document is null then
+if NEW.id_cave is not null then
+type_related_entity := 'cave';
+id_related_entity := NEW.id_cave;
+elsif NEW.id_entrance is not null then
+type_related_entity := 'entrance';
+id_related_entity := NEW.id_entrance;
+elsif NEW.id_massif is not null then
+type_related_entity := 'massif';
+id_related_entity := NEW.id_massif;
+end if;
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND (tname.id_cave = NEW.id_cave OR tname.id_entrance = NEW.id_entrance OR tname.id_massif = NEW.id_massif) LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'description',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_description ON t_description;
+CREATE TRIGGER last_change_description BEFORE INSERT OR UPDATE ON t_description FOR EACH ROW EXECUTE PROCEDURE change_description();
+
+CREATE OR REPLACE FUNCTION change_rigging() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.relevance_swap_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted = false then
+    type_change := 'update';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+end if;
+if type_change != '' then
+SELECT tname.name INTO entity_name FROM t_name tname WHERE tname.is_main = true AND tname.id_entrance = NEW.id_entrance LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        type_related_entity,
+        id_related_entity,
+        name
+    )
+VALUES (
+        'rigging',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        'entrance',
+        NEW.id_entrance,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_rigging ON t_rigging;
+CREATE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();
+`;
+
 const ADMIN_MFA_MIGRATION = `
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) DEFAULT NULL;
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN NOT NULL DEFAULT false;
@@ -554,4 +768,5 @@ module.exports = {
   CONVERT_MEASUREMENT_TO_PARTITIONED,
   CREATE_GUIDELINE_TRIGGERS,
   CREATE_COMMENT_TRIGGERS,
+  CREATE_SUB_ENTITY_TRIGGERS,
 };
