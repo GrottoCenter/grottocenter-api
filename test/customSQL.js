@@ -188,6 +188,13 @@ CREATE INDEX IF NOT EXISTS idx_h_document_id_massif ON h_document(id_massif);
 -- Job batch indexes
 CREATE INDEX IF NOT EXISTS idx_job_batch_initiator ON t_job_batch (id_initiator);
 CREATE INDEX IF NOT EXISTS idx_job_batch_status ON t_job_batch (status);
+
+-- Prevent a document from referencing itself as its own parent (mirrors migration
+-- 9_20_2026_08_18_document_no_self_parent_constraint.sql).
+ALTER TABLE t_document
+  DROP CONSTRAINT IF EXISTS t_document_no_self_parent;
+ALTER TABLE t_document
+  ADD CONSTRAINT t_document_no_self_parent CHECK (id <> id_parent);
 `;
 
 // Convert t_measurement from a regular table (created by Waterline migrate:drop)

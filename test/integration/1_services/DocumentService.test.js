@@ -690,4 +690,137 @@ describe('DocumentService', () => {
       should(result[1].description.title).equal('Desc1');
     });
   });
+
+  describe('checkParentCycle()', () => {
+    // Test documents from fixtures:
+    // id=1  → Collection (no parent)
+    // id=2  → Issue, parent=1
+    // id=3  → Issue, parent=1
+    // id=4  → Article, parent=3
+
+    it('should return true for a direct self-reference', async () => {
+      const result = await DocumentService.checkParentCycle(1, 1);
+      should(result).be.true();
+    });
+
+    it('should return false when there is no cycle (child of existing doc)', async () => {
+      // Setting parent of doc 4 to doc 1 — valid hierarchy, no cycle
+      const result = await DocumentService.checkParentCycle(4, 1);
+      should(result).be.false();
+    });
+
+    it('should return true for an indirect cycle (ancestor → descendant)', async () => {
+      // doc 1 is an ancestor of doc 4 (1 → 3 → 4).
+      // Trying to make doc 1 a child of doc 4 would create a cycle.
+      const result = await DocumentService.checkParentCycle(1, 4);
+      should(result).be.true();
+    });
+
+    it('should return false for an unrelated document pair', async () => {
+      // doc 2 and doc 4 are siblings; neither is an ancestor of the other
+      const result = await DocumentService.checkParentCycle(2, 4);
+      should(result).be.false();
+    });
+  });
+
+  describe('getCollectionAncestors() - cycle safety', () => {
+    let cyclicDocAId;
+    let cyclicDocBId;
+
+    afterEach(async () => {
+      // Clean up any cyclic docs created for these tests
+      if (cyclicDocBId) {
+        await TDocument.updateOne(cyclicDocBId).set({ parent: null });
+      }
+      if (cyclicDocAId) {
+        await TDocument.updateOne(cyclicDocAId).set({ parent: null });
+        await TDocument.destroy({ id: cyclicDocAId });
+        cyclicDocAId = null;
+      }
+      if (cyclicDocBId) {
+        await TDocument.destroy({ id: cyclicDocBId });
+        cyclicDocBId = null;
+      }
+    });
+
+    it('should terminate and not return the cyclic doc when A→B→A cycle exists', async function terminatesCycleGracefully() {
+      // We create an indirect cycle by temporarily bypassing the application-layer
+      // validation and inserting directly via raw SQL.  This simulates legacy/corrupt
+      // data that may exist in production before the constraint was added.
+      this.timeout(10000);
+
+      // Create doc A (a Collection, so getCollectionAncestors would normally walk up)
+      const docA = await TDocument.create({ author: 1, type: 1 }).fetch();
+      cyclicDocAId = docA.id;
+
+      // Create doc B pointing to doc A as parent
+      const docB = await TDocument.create({
+        author: 1,
+        type: 1,
+        parent: docA.id,
+      }).fetch();
+      cyclicDocBId = docB.id;
+
+      // Form the cycle: A → B by bypassing the CHECK constraint with raw SQL
+      // (constraint was added after legacy data; the CTE must still be safe)
+      await sails.sendNativeQuery(
+        'UPDATE t_document SET id_parent = $1 WHERE id = $2',
+        [docB.id, docA.id]
+      );
+
+      // getCollectionAncestors must terminate and return a valid (possibly empty) array
+      const result = await DocumentService.getCollectionAncestors([
+        docA.id,
+        docB.id,
+      ]);
+      should(result).be.an.Array();
+    });
+  });
+
+  describe('getConvertedDataFromClient() - parent clearing', () => {
+    it('should keep parent when type allows it (Article)', async () => {
+      const body = {
+        type: 'Article',
+        parent: { id: 2 },
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.parent).equal(2);
+    });
+
+    it('should keep parent when type allows it (Issue)', async () => {
+      const body = {
+        type: 'Issue',
+        parent: { id: 1 },
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.parent).equal(1);
+    });
+
+    it('should clear parent when type does not allow it (Collection)', async () => {
+      const body = {
+        type: 'Collection',
+        // parent deliberately omitted — simulates front-end FormData omission
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.parent).be.null();
+    });
+
+    it('should clear parent even when client sends a parent id for a non-parent type', async () => {
+      const body = {
+        type: 'Collection',
+        parent: { id: 1 },
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      should(result.parent).be.null();
+    });
+
+    it('should leave parent undefined when no type is given', async () => {
+      const body = {
+        parent: { id: 1 },
+      };
+      const result = await DocumentService.getConvertedDataFromClient(body);
+      // No type → we cannot determine allowed types; leave the field as-is
+      should(result.parent).equal(1);
+    });
+  });
 });

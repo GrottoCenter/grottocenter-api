@@ -39,6 +39,25 @@ module.exports = async (req, res) => {
     }
   }
 
+  // Reject cyclic parent assignments before touching any data.
+  // scalarData.parent may be a raw ID or an object with an id property.
+  const rawParent = scalarData.parent;
+  const proposedParentId =
+    rawParent != null && typeof rawParent === 'object'
+      ? rawParent.id
+      : rawParent;
+  if (proposedParentId != null) {
+    const hasCycle = await DocumentService.checkParentCycle(
+      Number(documentId),
+      Number(proposedParentId)
+    );
+    if (hasCycle) {
+      return res.badRequest(
+        'The proposed parent would create a cycle in the document hierarchy.'
+      );
+    }
+  }
+
   // Wrap the scalar update, entity creation, and all replaceCollection calls in
   // a single transaction so the document is never left in a partially-updated state.
   let updatedDocument;

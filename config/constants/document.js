@@ -14,6 +14,20 @@ const DOCUMENT_TYPE_IDS = {
 // Matches the t_document_check constraint in sql/0_tables.sql.
 const TYPES_ALLOWING_ISSUE = [DOCUMENT_TYPE_IDS.BOOK, DOCUMENT_TYPE_IDS.ISSUE];
 
+// Document types that may have a parent document set.
+// An Issue must be under a Collection; an Article must be under an Issue.
+// All other types are top-level and must not have a parent.
+const TYPES_ALLOWING_PARENT = [
+  DOCUMENT_TYPE_IDS.ISSUE,
+  DOCUMENT_TYPE_IDS.ARTICLE,
+];
+
+// Document types for which a parent is mandatory at creation time.
+const TYPES_REQUIRING_PARENT = [
+  DOCUMENT_TYPE_IDS.ISSUE,
+  DOCUMENT_TYPE_IDS.ARTICLE,
+];
+
 /**
  * The seven many-to-many associations on TDocument that must be managed via
  * `replaceCollection()`. Waterline silently ignores collection fields when they
@@ -42,5 +56,7 @@ const DOCUMENT_M2M_COLLECTIONS = [
 module.exports = {
   DOCUMENT_TYPE_IDS,
   TYPES_ALLOWING_ISSUE,
+  TYPES_ALLOWING_PARENT,
+  TYPES_REQUIRING_PARENT,
   DOCUMENT_M2M_COLLECTIONS,
 };
