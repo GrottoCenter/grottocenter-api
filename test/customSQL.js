@@ -191,10 +191,12 @@ CREATE INDEX IF NOT EXISTS idx_job_batch_status ON t_job_batch (status);
 
 -- Prevent a document from referencing itself as its own parent (mirrors migration
 -- 9_20_2026_08_18_document_no_self_parent_constraint.sql).
+-- The test DB is always fresh so VALIDATE is safe to run immediately here.
 ALTER TABLE t_document
   DROP CONSTRAINT IF EXISTS t_document_no_self_parent;
 ALTER TABLE t_document
-  ADD CONSTRAINT t_document_no_self_parent CHECK (id <> id_parent);
+  ADD CONSTRAINT t_document_no_self_parent CHECK (id <> id_parent) NOT VALID;
+ALTER TABLE t_document VALIDATE CONSTRAINT t_document_no_self_parent;
 `;
 
 // Convert t_measurement from a regular table (created by Waterline migrate:drop)

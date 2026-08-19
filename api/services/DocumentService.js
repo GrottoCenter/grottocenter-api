@@ -627,8 +627,51 @@ module.exports = {
     return result.rows.length > 0;
   },
 
-  normalizeToId,
-  mapAuthorsOrganizationForSearch,
+  /**
+   * Validate that setting proposedParentId as the parent of documentId is safe:
+   * both ids must be finite integers and the assignment must not create a cycle.
+   *
+   * Returns an error message string if the assignment is invalid, or null if it
+   * is safe to proceed. Controllers call this and return res.badRequest(msg) on
+   * a non-null result.
+   *
+   * @param {number} documentId
+   * @param {number} proposedParentId
+   * @returns {Promise<string|null>}
+   */
+  async validateParentAssignment(documentId, proposedParentId) {
+    const numDocId = Number(documentId);
+    const numParentId = Number(proposedParentId);
+    if (!Number.isInteger(numDocId) || !Number.isInteger(numParentId)) {
+      return 'Document id and parent id must be integers.';
+    }
+    const hasCycle = await module.exports.checkParentCycle(
+      numDocId,
+      numParentId
+    );
+    if (hasCycle) {
+      return 'The proposed parent would create a cycle in the document hierarchy.';
+    }
+    return null;
+  },
+
+  /**
+   * If the given type ID does not allow a parent, return null to explicitly
+   *
+   * Centralises the "type-vs-parent" policy so both update paths enforce the
+   * same rule: update.js (via getConvertedDataFromClient) and
+   * update-with-new-entities.js (which writes scalarData directly).
+   *
+   * @param {number|undefined} typeId        - resolved type id (may be undefined)
+   * @param {number|null|undefined} parentId - current proposed parent value
+   * @returns {number|null|undefined}
+   */
+  clearParentIfTypeDisallows: (typeId, parentId) => {
+    if (typeId != null && !TYPES_ALLOWING_PARENT.includes(typeId)) {
+      return null;
+    }
+    return parentId;
+  },
 
   /**
    * Replace all m2m collections that are explicitly present in collectionData.
@@ -653,4 +696,7 @@ module.exports = {
     );
     await Promise.all(promises);
   },
+
+  normalizeToId,
+  mapAuthorsOrganizationForSearch,
 };

@@ -17,16 +17,17 @@ const TYPES_ALLOWING_ISSUE = [DOCUMENT_TYPE_IDS.BOOK, DOCUMENT_TYPE_IDS.ISSUE];
 // Document types that may have a parent document set.
 // An Issue must be under a Collection; an Article must be under an Issue.
 // All other types are top-level and must not have a parent.
+// Currently every type that may have a parent also requires one, so
+// TYPES_REQUIRING_PARENT is an alias for this same set. If a future type
+// makes the parent optional, split these into two distinct arrays.
 const TYPES_ALLOWING_PARENT = [
   DOCUMENT_TYPE_IDS.ISSUE,
   DOCUMENT_TYPE_IDS.ARTICLE,
 ];
 
-// Document types for which a parent is mandatory at creation time.
-const TYPES_REQUIRING_PARENT = [
-  DOCUMENT_TYPE_IDS.ISSUE,
-  DOCUMENT_TYPE_IDS.ARTICLE,
-];
+// Alias: every type that currently allows a parent also requires one.
+// See comment on TYPES_ALLOWING_PARENT above before diverging these.
+const TYPES_REQUIRING_PARENT = [...TYPES_ALLOWING_PARENT];
 
 /**
  * The seven many-to-many associations on TDocument that must be managed via

@@ -70,6 +70,41 @@ async function validateAndUpdateDocument(
   const { scalarData, collectionData } =
     normalizeAndSplitDocumentData(documentData);
 
+  // Re-validate the parent assignment against the current hierarchy.
+  // The hierarchy may have changed since the modification was submitted
+  // (e.g. a sibling was re-parented while this modification was pending),
+  // so the stored parent could now create a cycle even though it passed
+  // validation at submission time.
+  // Also re-apply the type-vs-parent policy in case the stored type no
+  // longer allows a parent (uses the stored type with a fallback to the
+  // current document type, matching the update-with-new-entities.js path).
+  const effectiveTypeId = scalarData.type ?? document.type;
+  scalarData.parent = DocumentService.clearParentIfTypeDisallows(
+    effectiveTypeId,
+    scalarData.parent
+  );
+  if (scalarData.parent != null) {
+    const parentError = await DocumentService.validateParentAssignment(
+      document.id,
+      scalarData.parent
+    );
+    if (parentError) {
+      // Reject the modification rather than persisting a corrupt hierarchy.
+      // Clear the pending modification so the document returns to its last
+      // validated state and the moderator is informed of why it was rejected.
+      await TDocument.updateOne(document.id).set({
+        modifiedDocJson: null,
+        validationComment: `Auto-rejected: ${parentError}`,
+        validator: validationAuthor,
+        dateValidation: new Date(),
+      });
+      sails.log.warn(
+        `Document ${document.id} modification auto-rejected: ${parentError}`
+      );
+      return { rejected: true, reason: `Auto-rejected: ${parentError}` };
+    }
+  }
+
   await sails.getDatastore().transaction(async (db) => {
     // Update associated data not handled by TDocument manually
     // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
@@ -120,6 +155,7 @@ async function validateAndUpdateDocument(
     }
     await Promise.all(filePromises);
   });
+  return { rejected: false };
 }
 
 async function updateSearchAndNotify(req, documentId, userId) {
@@ -204,11 +240,34 @@ module.exports = async (req, res) => {
 
     if (isAModifiedDoc) {
       // eslint-disable-next-line no-await-in-loop
-      await validateAndUpdateDocument(
+      const result = await validateAndUpdateDocument(
         document,
         change.validationComment,
         req.token.id
       );
+      if (result.rejected) {
+        // The pending modification was auto-rejected due to a parent cycle.
+        // Send a REJECT author notification with the auto-rejection reason,
+        // matching the behaviour of the manual-rejection path above.
+        // eslint-disable-next-line no-await-in-loop
+        const rejectedDoc = await DocumentService.getPopulatedDocument(
+          document.id
+        );
+        // eslint-disable-next-line no-await-in-loop
+        await NotificationService.notifyAuthor(
+          rejectedDoc,
+          req.token.id,
+          NotificationService.NOTIFICATION_TYPES.REJECT,
+          result.reason
+        ).catch((err) =>
+          sails.log.error(
+            'Document multiple-validate notifyAuthor error',
+            document,
+            err
+          )
+        );
+        continue; // eslint-disable-line no-continue
+      }
     } else {
       // Likely a document creation
       // eslint-disable-next-line no-await-in-loop
