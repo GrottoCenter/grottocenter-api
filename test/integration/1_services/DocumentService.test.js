@@ -723,6 +723,31 @@ describe('DocumentService', () => {
     });
   });
 
+  describe('validateParentAssignment()', () => {
+    it('should return an error message for a decimal document id', async () => {
+      const result = await DocumentService.validateParentAssignment(1.5, 2);
+      should(result).be.a.String();
+      should(result).match(/integer/i);
+    });
+
+    it('should return an error message for a decimal parent id', async () => {
+      const result = await DocumentService.validateParentAssignment(1, 2.7);
+      should(result).be.a.String();
+      should(result).match(/integer/i);
+    });
+
+    it('should return an error message for a self-reference', async () => {
+      const result = await DocumentService.validateParentAssignment(1, 1);
+      should(result).be.a.String();
+    });
+
+    it('should return null for a valid parent assignment', async () => {
+      // doc 4 (Article) → doc 1 (Collection): no cycle
+      const result = await DocumentService.validateParentAssignment(4, 1);
+      should(result).be.null();
+    });
+  });
+
   describe('getCollectionAncestors() - cycle safety', () => {
     let cyclicDocAId;
     let cyclicDocBId;
@@ -814,7 +839,7 @@ describe('DocumentService', () => {
       should(result.parent).be.null();
     });
 
-    it('should leave parent undefined when no type is given', async () => {
+    it('should return the client-sent parent id when no type is given', async () => {
       const body = {
         parent: { id: 1 },
       };

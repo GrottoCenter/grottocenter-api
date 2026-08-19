@@ -354,6 +354,100 @@ describe('Document multiple-validate', () => {
         const authorIds = updated.authors.map((a) => a.id);
         should(authorIds).containEql(1);
       });
+
+      it('should auto-reject modifiedDocJson that would create a parent cycle at approval time', async () => {
+        // Set up: docA is the parent of docB.
+        // User submits a modification on docA to set its parent to docB.
+        // This passes validation at submission time if docB is not yet
+        // an ancestor of docA. But by approval time the hierarchy has not
+        // changed — the cycle is detected and the modification is rejected.
+        const desc = await TDescription.create({
+          author: 1,
+          title: 'Cycle test',
+          body: 'Body',
+        }).fetch();
+        createdDescIds.push(desc.id);
+
+        // docA — will have a pending modification that tries to set parent = docB
+        const docA = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          descriptions: [desc.id],
+        }).fetch();
+        createdDocIds.push(docA.id);
+
+        // docB — child of docA
+        const docB = await TDocument.create({
+          author: 1,
+          type: 17,
+          license: 1,
+          parent: docA.id,
+          isValidated: true,
+        }).fetch();
+        createdDocIds.push(docB.id);
+
+        // Stage a pending modification on docA that would create cycle docA → docB → docA
+        await TDocument.updateOne(docA.id).set({
+          modifiedDocJson: {
+            reviewerId: 2,
+            documentData: { type: 17, parent: docB.id },
+            descriptionData: { title: 'Cycle test', body: 'Body' },
+          },
+        });
+
+        // Track notifications created during validation
+        const beforeNotifIds = (await TNotification.find().select(['id'])).map(
+          (n) => n.id
+        );
+
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: docA.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+
+        const updated = await TDocument.findOne(docA.id);
+        // modifiedDocJson must be cleared (auto-rejected)
+        should(updated.modifiedDocJson).be.null();
+        // The cyclic parent must NOT have been written
+        should(updated.parent).not.equal(docB.id);
+        // The auto-rejection comment must be set
+        should(updated.validationComment).match(/auto-rejected/i);
+
+        // No VALIDATE notification must have been sent — only a REJECT one
+        const afterNotifIds = (await TNotification.find().select(['id'])).map(
+          (n) => n.id
+        );
+        const newNotifIds = afterNotifIds.filter(
+          (id) => !beforeNotifIds.includes(id)
+        );
+        const VALIDATE_TYPE_ID = 4;
+        const REJECT_TYPE_ID = 7;
+        const validateNotif = newNotifIds.length
+          ? await TNotification.findOne({
+              id: newNotifIds,
+              notificationType: VALIDATE_TYPE_ID,
+            })
+          : null;
+        should(validateNotif).be.undefined();
+
+        // A REJECT author notification must have been sent with the auto-rejection reason
+        const rejectNotif = newNotifIds.length
+          ? await TNotification.findOne({
+              id: newNotifIds,
+              notified: 1,
+              document: docA.id,
+              notificationType: REJECT_TYPE_ID,
+            })
+          : null;
+        should(rejectNotif).not.be.undefined();
+      });
     });
   });
 

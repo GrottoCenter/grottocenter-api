@@ -42,20 +42,27 @@ module.exports = async (req, res) => {
   // Reject cyclic parent assignments before touching any data.
   // scalarData.parent may be a raw ID or an object with an id property.
   const rawParent = scalarData.parent;
-  const proposedParentId =
+  const resolvedParent =
     rawParent != null && typeof rawParent === 'object'
       ? rawParent.id
       : rawParent;
+
+  // Apply the same type-vs-parent policy as getConvertedDataFromClient:
+  // if the type does not allow a parent, clear it now so the ORM write
+  // does not preserve a stale id_parent from a previous type state.
+  const effectiveTypeId = scalarData.type ?? currentDocument.type;
+  scalarData.parent = DocumentService.clearParentIfTypeDisallows(
+    effectiveTypeId,
+    resolvedParent
+  );
+
+  const proposedParentId = scalarData.parent;
   if (proposedParentId != null) {
-    const hasCycle = await DocumentService.checkParentCycle(
-      Number(documentId),
-      Number(proposedParentId)
+    const parentError = await DocumentService.validateParentAssignment(
+      documentId,
+      proposedParentId
     );
-    if (hasCycle) {
-      return res.badRequest(
-        'The proposed parent would create a cycle in the document hierarchy.'
-      );
-    }
+    if (parentError) return res.badRequest(parentError);
   }
 
   // Wrap the scalar update, entity creation, and all replaceCollection calls in
