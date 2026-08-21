@@ -66,5 +66,26 @@ describe('Organization features', () => {
           });
       }).timeout(4000);
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1774
+    describe('Invalid data', () => {
+      it('should return 400 when postalCode is too long', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/organizations')
+          .send({
+            name: { text: 'Organisation Flémalle', language: 'fr' },
+            postalCode: '4400 Flémalle',
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body.message).containEql('Postal code');
+            return done();
+          });
+      });
+    });
   });
 });

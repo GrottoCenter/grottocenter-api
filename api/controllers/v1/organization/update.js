@@ -4,6 +4,9 @@ const NotificationService = require('../../../services/NotificationService');
 const EnrichmentQueueService = require('../../../services/EnrichmentQueueService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const {
+  validatePostalCodeLength,
+} = require('../../../utils/postalCodeValidation');
 
 module.exports = async (req, res) => {
   // Check if organization exists
@@ -34,6 +37,13 @@ module.exports = async (req, res) => {
     // Clear stale enrichment field — it'll be repopulated by the async job
     cleanedData.iso_3166_2 = null;
     coordinatesChanged = true;
+  }
+
+  // Validate postalCode length before any write (checked on the trimmed value,
+  // so a value that fits once trimmed is not rejected)
+  const postalCodeError = validatePostalCodeLength(cleanedData.postalCode);
+  if (postalCodeError) {
+    return res.badRequest(postalCodeError);
   }
 
   // Validate name length
