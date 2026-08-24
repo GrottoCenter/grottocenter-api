@@ -5931,7 +5931,8 @@ paths:
         - name: postalCode
           in: query
           schema:
-            type: number
+            type: string
+            maxLength: 10
         - name: region
           in: query
           schema:
@@ -5954,7 +5955,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Organization'
         '400':
-          description: You must provide at least a name to create an organization.
+          description: You must provide at least a name to create an organization, or the postal code is too long.
         '403':
           description: You are not authorized to create an organization.
 
@@ -6040,6 +6041,8 @@ paths:
                   type: string
                 postalCode:
                   type: string
+                  description: Postal code (max 10 characters)
+                  maxLength: 10
                 region:
                   type: string
                 url:
@@ -6066,7 +6069,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
         400:
-          description: Validation error (name too long, language null or not found)
+          description: Validation error (name too long, postal code too long, language null or not found)
         403:
           description: You are not authorized to update an organization.
         404:

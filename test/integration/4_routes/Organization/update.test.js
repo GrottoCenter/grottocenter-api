@@ -230,10 +230,17 @@ describe('Organization features', () => {
           .set('Accept', 'application/json')
           .send({ postalCode: '1234567890' })
           .expect(200)
-          .end((err, res) => {
+          .end(async (err, res) => {
             if (err) return done(err);
-            should(res.body.postalCode).equal('1234567890');
-            return done();
+            try {
+              should(res.body.postalCode).equal('1234567890');
+
+              // Reset
+              await TGrotto.updateOne({ id: 1 }).set({ postalCode: '92130' });
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
           });
       });
     });

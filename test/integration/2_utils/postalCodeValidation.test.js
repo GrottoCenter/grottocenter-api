@@ -28,9 +28,10 @@ describe('postalCodeValidation', () => {
       should(result).containEql('3 over limit');
     });
 
-    it('should return null for null, undefined and non-string values', () => {
+    it('should return null for null, undefined, empty string and non-string values', () => {
       should(validatePostalCodeLength(null)).be.null();
       should(validatePostalCodeLength(undefined)).be.null();
+      should(validatePostalCodeLength('')).be.null();
       should(validatePostalCodeLength(84000)).be.null();
     });
   });
