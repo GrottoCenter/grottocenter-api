@@ -105,6 +105,14 @@ describe('Caver features', () => {
 
       should(res.body).have.property('id', 102);
 
+      // toCaver converts documents as citations, so the response must carry
+      // the citation fields that getCaver alone does not populate.
+      should(res.body.documents).have.length(1);
+      should(res.body.documents[0]).have.property('id', 3);
+      should(res.body.documents[0]).have.property('identifierType', 'issn');
+      const citationAuthorIds = res.body.documents[0].authors.map((a) => a.id);
+      should(citationAuthorIds).containDeep([102]);
+
       // Verify source caver is deleted
       const sourceAfter = await TCaver.findOne(102);
       should(sourceAfter).be.undefined();

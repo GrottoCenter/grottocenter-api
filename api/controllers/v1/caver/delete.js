@@ -3,6 +3,7 @@ const RightService = require('../../../services/RightService');
 const { toCaver } = require('../../../services/mapping/converters');
 const CaverService = require('../../../services/CaverService');
 const CommonService = require('../../../services/CommonService');
+const DocumentService = require('../../../services/DocumentService');
 
 const DEFAULT_DELETED_CAVER_ID = 8;
 
@@ -52,6 +53,13 @@ module.exports = async (req, res) => {
       });
     }
   }
+
+  // toCaver renders documents as citations, which getCaver does not populate.
+  // Enrich here, before the delete tears down the caver's associations, so the
+  // response describes the caver as it was (same step as caver/find.js).
+  caver.documents = await DocumentService.getDocumentsForCitation(
+    caver.documents.map((d) => d.id)
+  );
 
   // eslint-disable-next-line no-inner-declarations
   async function reassignField(model, field, replacement = null) {
