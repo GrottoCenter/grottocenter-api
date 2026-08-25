@@ -5,6 +5,7 @@ const RightService = require('../../../services/RightService');
 const { toOrganization } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const CommonService = require('../../../services/CommonService');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -83,27 +84,23 @@ module.exports = async (req, res) => {
     // the rest over to the survivor. Without a merge target, drop them all.
     if (shouldMergeInto) {
       await sails.getDatastore().transaction(async (db) => {
-        await sails
-          .getDatastore()
-          .sendNativeQuery(
-            `DELETE FROM j_grotto_cave_explorer d
-               WHERE d.id_grotto = $1
-                 AND EXISTS (
-                   SELECT 1 FROM j_grotto_cave_explorer k
-                   WHERE k.id_grotto = $2 AND k.id_cave = d.id_cave
-                 )`,
-            [organizationId, mergeIntoId]
-          )
-          .usingConnection(db);
-        await sails
-          .getDatastore()
-          .sendNativeQuery(
-            `UPDATE j_grotto_cave_explorer
-               SET id_grotto = $2
-               WHERE id_grotto = $1`,
-            [organizationId, mergeIntoId]
-          )
-          .usingConnection(db);
+        await CommonService.query(
+          `DELETE FROM j_grotto_cave_explorer d
+             WHERE d.id_grotto = $1
+               AND EXISTS (
+                 SELECT 1 FROM j_grotto_cave_explorer k
+                 WHERE k.id_grotto = $2 AND k.id_cave = d.id_cave
+               )`,
+          [organizationId, mergeIntoId],
+          db
+        );
+        await CommonService.query(
+          `UPDATE j_grotto_cave_explorer
+             SET id_grotto = $2
+             WHERE id_grotto = $1`,
+          [organizationId, mergeIntoId],
+          db
+        );
       });
     } else {
       await JGrottoCaveExplorer.destroy({ grotto: organizationId });
