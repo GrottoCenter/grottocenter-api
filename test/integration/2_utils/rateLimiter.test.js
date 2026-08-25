@@ -9,6 +9,8 @@ const TEST_USER_LIMIT = 20;
 const TEST_MODERATOR_LIMIT = 40;
 const TEST_DELETE_LIMIT = 5;
 const TEST_USER_DELETE_LIMIT = 1;
+const TEST_AUTH_LIMIT = 3;
+const TEST_ADMIN_AUTH_LIMIT = 2;
 
 const freshRateLimiter = () => {
   delete require.cache[
@@ -30,6 +32,8 @@ describe('Rate Limiter', () => {
       'MODERATOR_RATE_LIMIT',
       'DELETE_RATE_LIMIT',
       'USER_DELETE_RATE_LIMIT',
+      'AUTH_RATE_LIMIT',
+      'ADMIN_AUTH_RATE_LIMIT',
     ].forEach((key) => {
       envBackup[key] = process.env[key];
     });
@@ -81,6 +85,8 @@ describe('Rate Limiter', () => {
       process.env.MODERATOR_RATE_LIMIT = TEST_MODERATOR_LIMIT;
       process.env.DELETE_RATE_LIMIT = TEST_DELETE_LIMIT;
       process.env.USER_DELETE_RATE_LIMIT = TEST_USER_DELETE_LIMIT;
+      process.env.AUTH_RATE_LIMIT = TEST_AUTH_LIMIT;
+      process.env.ADMIN_AUTH_RATE_LIMIT = TEST_ADMIN_AUTH_LIMIT;
 
       // Mock the sails global used by deleteRateLimit.skip for origin checks
       // and by the limit-exceeded handler for logging.
@@ -234,6 +240,38 @@ describe('Rate Limiter', () => {
 
         should(responses.filter((s) => s === 429).length).be.above(0);
         should(responses.filter((s) => s === 500)).be.empty();
+      });
+
+      it('should name the auth limiter on authRateLimit rejections', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.authRateLimit);
+        app.post('/api/v1/login', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_AUTH_LIMIT + 2; i += 1) {
+          await agent.post('/api/v1/login');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        should(logs[0].limiter).be.exactly('auth');
+      });
+
+      it('should name the adminAuth limiter on adminAuthRateLimit rejections', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.adminAuthRateLimit);
+        app.post('/api/v1/login', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_ADMIN_AUTH_LIMIT + 2; i += 1) {
+          await agent.post('/api/v1/login');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        should(logs[0].limiter).be.exactly('adminAuth');
       });
     });
 
