@@ -49,6 +49,53 @@ const isTestOrDev = () =>
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development';
 
 /**
+ * Builds the `handler` that express-rate-limit invokes when a limit is exceeded.
+ *
+ * Without this, rejections are invisible in the logs. `generalRateLimit`,
+ * `deleteRateLimit` and `authRateLimit` all run *before* `responseTimeLogger`
+ * and `requestLogger` in the middleware order (see config/http.js), and the
+ * library's default handler responds without calling `next()`. Neither the
+ * `Req ::` nor the `Res ::` line is ever emitted, so a 429 leaves no trace
+ * beyond Azure's own HTTP logs — which carry no trace ID to correlate with.
+ *
+ * Overriding `handler` replaces the default responder entirely, so this must
+ * also send the response itself.
+ *
+ * `options.limit` is NOT the effective limit: it holds the `max` function
+ * unresolved, because `options` is computed once when the limiter is created.
+ * The resolved per-request numbers live on `req.rateLimit`.
+ *
+ * sails.log is patched by api/utils/logger.js to prefix the trace ID, and
+ * `traceId` runs first in the middleware order, so these lines correlate with
+ * the X-Trace-Id header the client received.
+ */
+const limitExceededHandler = (limiterName) => (req, res, next, options) => {
+  // Guarded: a throw here would turn the 429 into a 500 and let the request
+  // through unlabelled. Tests exercise these limiters on a bare express app
+  // where the sails global may be absent.
+  if (typeof sails !== 'undefined' && sails.log && sails.log.warn) {
+    sails.log.warn(
+      'Rate limit exceeded:',
+      JSON.stringify({
+        limiter: limiterName,
+        ip: req.ip,
+        method: req.method,
+        path: req.path,
+        userId: req.token ? req.token.id : undefined,
+        nickname: req.token ? req.token.nickname : undefined,
+        limit: req.rateLimit ? req.rateLimit.limit : undefined,
+        used: req.rateLimit ? req.rateLimit.used : undefined,
+        windowMs: options.windowMs,
+      })
+    );
+  }
+
+  // Mirrors the library's default handler.
+  res.status(options.statusCode);
+  if (!res.writableEnded) res.send(options.message);
+};
+
+/**
  * Returns the general rate limit for a request based on the caller's role.
  * Unauthenticated visitors get the lowest cap; higher roles get progressively
  * more headroom. Administrators are skipped entirely (see `skip`).
@@ -135,6 +182,7 @@ module.exports = {
     standardHeaders: true,
     statusCode: 429,
     validate: { keyGeneratorIpFallback: false },
+    handler: limitExceededHandler('general'),
     skip: (req) => {
       if (req.method.toUpperCase() === 'OPTIONS') return true;
       if (isTestOrDev()) return true;
@@ -159,6 +207,7 @@ module.exports = {
     standardHeaders: true,
     statusCode: 429,
     validate: { keyGeneratorIpFallback: false },
+    handler: limitExceededHandler('delete'),
     skip: (req) => {
       if (req.method.toUpperCase() !== 'DELETE') return true;
       if (isTestOrDev()) return true;
@@ -211,6 +260,7 @@ module.exports = {
     standardHeaders: true,
     statusCode: 429,
     validate: { keyGeneratorIpFallback: false },
+    handler: limitExceededHandler('auth'),
     skip: () => isTestOrDev(),
   }),
 
@@ -234,6 +284,7 @@ module.exports = {
     statusCode: 429,
     keyGenerator: (req) => `admin:${req.ip || 'unknown'}`,
     validate: { keyGeneratorIpFallback: false },
+    handler: limitExceededHandler('adminAuth'),
     skip: () => isTestOrDev(),
   }),
 };
