@@ -64,6 +64,7 @@ describe('Rate Limiter', () => {
 
   describe('in production environment', () => {
     let sailsBackup;
+    let warnLogs = [];
 
     before(() => {
       sailsBackup = global.sails;
@@ -82,10 +83,158 @@ describe('Rate Limiter', () => {
       process.env.USER_DELETE_RATE_LIMIT = TEST_USER_DELETE_LIMIT;
 
       // Mock the sails global used by deleteRateLimit.skip for origin checks
+      // and by the limit-exceeded handler for logging.
+      warnLogs = [];
       global.sails = {
         config: { custom: { baseUrl: 'http://localhost:1337' } },
-        log: { error: () => {}, info: () => {} },
+        log: {
+          error: () => {},
+          info: () => {},
+          warn: (...args) => warnLogs.push(args.join(' ')),
+        },
       };
+    });
+
+    // Parses the JSON payload out of the 'Rate limit exceeded:' log lines.
+    const exceededLogs = () =>
+      warnLogs
+        .filter((l) => l.startsWith('Rate limit exceeded:'))
+        .map((l) => JSON.parse(l.slice(l.indexOf('{'))));
+
+    describe('rate limit rejection logging', () => {
+      it('should log a warning naming the limiter, IP, method and path', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/api/v1/caves/1', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 2; i += 1) {
+          await agent.get('/api/v1/caves/1');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        should(logs[0].limiter).be.exactly('general');
+        should(logs[0].method).be.exactly('GET');
+        should(logs[0].path).be.exactly('/api/v1/caves/1');
+        should(logs[0].ip).be.a.String();
+        should(logs[0].windowMs).be.a.Number();
+      });
+
+      it('should log the resolved numeric limit, not the max function', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 2; i += 1) {
+          await agent.get('/test');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        // options.limit holds the unresolved `max` function; the effective
+        // limit must be read from req.rateLimit instead.
+        should(logs[0].limit).be.exactly(TEST_VISITOR_LIMIT);
+        should(logs[0].used).be.above(TEST_VISITOR_LIMIT);
+      });
+
+      it('should include the authenticated user in the log', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use((req, res, next) => {
+          req.token = { groups: [], nickname: 'User', id: 10 };
+          next();
+        });
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_USER_LIMIT + 2; i += 1) {
+          await agent.get('/test');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        should(logs[0].userId).be.exactly(10);
+        should(logs[0].nickname).be.exactly('User');
+      });
+
+      it('should name the delete limiter on DELETE rejections', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.deleteRateLimit);
+        app.delete('/api/v1/entrances/42', (req, res) =>
+          res.status(200).send('ok')
+        );
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_USER_DELETE_LIMIT + 3; i += 1) {
+          await agent.delete('/api/v1/entrances/42');
+        }
+
+        const logs = exceededLogs();
+        should(logs.length).be.above(0);
+        should(logs[0].limiter).be.exactly('delete');
+        should(logs[0].method).be.exactly('DELETE');
+      });
+
+      it('should still return 429 with the configured message body', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        let limited;
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 2; i += 1) {
+          const res = await agent.get('/test');
+          if (res.status === 429) limited = res;
+        }
+
+        // Overriding `handler` replaces the library's default responder, so the
+        // status, message body and RateLimit headers must survive.
+        should(limited).be.ok();
+        should(limited.text).be.exactly(
+          'Too many requests with the same IP, try again later.'
+        );
+        should(limited.headers).have.property('retry-after');
+      });
+
+      it('should not log anything while under the limit', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_VISITOR_LIMIT - 2; i += 1) {
+          await agent.get('/test').expect(200);
+        }
+
+        should(exceededLogs()).be.empty();
+      });
+
+      it('should reject with 429 even when the sails global is absent', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+
+        // A throw inside the handler would surface as a 500 and lose the 429.
+        delete global.sails;
+        const agent = supertest.agent(app);
+        const responses = [];
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 2; i += 1) {
+          const res = await agent.get('/test');
+          responses.push(res.status);
+        }
+
+        should(responses.filter((s) => s === 429).length).be.above(0);
+        should(responses.filter((s) => s === 500)).be.empty();
+      });
     });
 
     describe('generalRateLimit', () => {
