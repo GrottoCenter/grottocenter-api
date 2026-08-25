@@ -1,4 +1,3 @@
-/* eslint-disable func-names */
 const should = require('should');
 const {
   EMPTY_AUTHORS_SORT_KEY,
