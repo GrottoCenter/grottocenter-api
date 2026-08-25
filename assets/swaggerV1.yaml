@@ -5996,7 +5996,7 @@ paths:
             `redirectTo` on a soft-delete, and is used as the merge target on a
             permanent delete.
       responses:
-        '204':
+        '200':
           description: Successful operation
         '403':
           description: You are not authorized to delete an organization.
