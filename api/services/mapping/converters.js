@@ -233,7 +233,7 @@ const c = {
     ...c.toSimpleDocument(source),
     authors: toList('authors', source, c.toSimpleCaver),
     authorsOrganization: toList(
-      'authorsGrotto',
+      'authorsOrganization',
       source,
       c.toSimpleOrganization
     ),

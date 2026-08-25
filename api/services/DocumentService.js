@@ -532,12 +532,12 @@ module.exports = {
       .populate('files', { where: { isValidated: true } })
       .populate('identifierType')
       .populate('authors')
-      .populate('authorsGrotto')
+      .populate('authorsOrganization')
       .populate('editor')
       .populate('library');
 
     const grottos = documents.flatMap((d) =>
-      [d.editor, d.library, ...(d.authorsGrotto ?? [])].filter((g) => g)
+      [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter((g) => g)
     );
     // A document title lives in its descriptions, which cannot be populated
     // through the parent association: resolve the parents with a second query.
