@@ -80,6 +80,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.CREATE_GUIDELINE_TRIGGERS,
                 customSQL.CREATE_COMMENT_TRIGGERS,
                 customSQL.CREATE_SUB_ENTITY_TRIGGERS,
+                customSQL.CREATE_GROTTO_SOFT_DELETE_TRIGGER,
               ].join('\n')
             )
               .then(() => resolve(sails))

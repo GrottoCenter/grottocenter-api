@@ -447,6 +447,7 @@ const SNAPSHOT_SOURCES = [
   'test/fixtures/**/*.json',
   'test/fixtureOrder.js',
   'test/customSQL.js', // literal path — glob resolves it as-is
+  'test/seed-database.js', // decides which customSQL blocks actually run
   'api/models/**/*.js',
   'sql/**/*.sql',
 ];

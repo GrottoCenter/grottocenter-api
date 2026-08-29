@@ -752,6 +752,16 @@ DROP TRIGGER IF EXISTS last_change_rigging ON t_rigging;
 CREATE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();
 `;
 
+// The histo_delete() function (defined in CREATE_GUIDELINE_TRIGGERS) converts
+// a DELETE on is_deleted=false rows into an UPDATE SET is_deleted=true,
+// matching the soft-delete semantics of the production schema. This trigger
+// must be installed on t_grotto so that TGrotto.destroyOne() soft-deletes
+// rather than hard-deletes, exactly as sql/0_triggers.sql does in production.
+const CREATE_GROTTO_SOFT_DELETE_TRIGGER = `
+DROP TRIGGER IF EXISTS histo_delete_grotto ON t_grotto;
+CREATE TRIGGER histo_delete_grotto BEFORE DELETE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_delete();
+`;
+
 const ADMIN_MFA_MIGRATION = `
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) DEFAULT NULL;
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN NOT NULL DEFAULT false;
@@ -778,4 +788,5 @@ module.exports = {
   CREATE_GUIDELINE_TRIGGERS,
   CREATE_COMMENT_TRIGGERS,
   CREATE_SUB_ENTITY_TRIGGERS,
+  CREATE_GROTTO_SOFT_DELETE_TRIGGER,
 };

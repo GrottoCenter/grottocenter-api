@@ -74,6 +74,43 @@ describe('Organization features', () => {
         .expect(200);
     });
 
+    it('should soft delete when isPermanent=false (string)', async () => {
+      const org = await TGrotto.create({
+        author: 1,
+      }).fetch();
+
+      const res = await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/organizations/${org.id}?isPermanent=false`)
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(res.body.isDeleted).be.true();
+      // The organization must still exist in the database (soft delete only).
+      const still = await TGrotto.findOne(org.id);
+      should(still).not.be.undefined();
+    });
+
+    it('should soft delete when isPermanent=0', async () => {
+      const org = await TGrotto.create({
+        author: 1,
+      }).fetch();
+
+      const res = await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/organizations/${org.id}?isPermanent=0`)
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(res.body.isDeleted).be.true();
+      // The row must survive: `isDeleted` alone proves nothing here, since the
+      // soft-delete pass sets it before the permanent branch would run.
+      const still = await TGrotto.findOne(org.id);
+      should(still).not.be.undefined();
+    });
+
     it('should permanently delete an organization', async () => {
       const org = await TGrotto.create({
         author: 1,

@@ -56,7 +56,13 @@ module.exports = async (req, res) => {
       .set({ [field]: replacement });
   }
 
-  const deletePermanently = !!req.param('isPermanent');
+  // The web client sends `?isPermanent=1`; accept the common truthy encodings
+  // ('1'/'true', or a real boolean) while treating explicit falsy values
+  // ('0'/'false') and an absent param as a soft delete. A bare `!!req.param(...)`
+  // would wrongly treat `isPermanent=0`/`false` as permanent.
+  const deletePermanently = [true, 'true', '1'].includes(
+    req.param('isPermanent')
+  );
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   let mergeIntoEntity;
