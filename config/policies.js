@@ -194,6 +194,7 @@ module.exports.policies = {
 
   // Guideline
   'v1/guideline/find-all': true,
+  'v1/guideline/find': ['validateId'],
   'v1/guideline/create': 'tokenAuth',
   'v1/guideline/update': ['validateId', 'tokenAuth'],
   'v1/guideline/delete': ['validateId', 'tokenAuth'],

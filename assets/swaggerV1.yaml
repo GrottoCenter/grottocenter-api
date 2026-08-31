@@ -3541,6 +3541,33 @@ paths:
                     type: string
 
   '/guidelines/{id}':
+    get:
+      tags:
+        - guidelines
+      description: Get a single guideline by ID. Public endpoint — no authentication required.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guideline'
+        '404':
+          description: Guideline not found or soft-deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
     patch:
       tags:
         - guidelines
