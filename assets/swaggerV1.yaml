@@ -8328,12 +8328,16 @@ components:
           type: string
         datePublication:
           type: string
+          nullable: true
         dateReviewed:
           type: string
+          nullable: true
         description:
           type: string
         editor:
-          $ref: '#/components/schemas/SimpleOrganization'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SimpleOrganization'
         files:
           type: array
           items:
@@ -8349,26 +8353,35 @@ components:
           type: boolean
         issue:
           type: string
+          nullable: true
         isValidated:
           type: boolean
         library:
-          $ref: '#/components/schemas/SimpleOrganization'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SimpleOrganization'
         oldBBS:
           type: object
           description: Legacy BBS bibliographic data.
           properties:
             comments:
               type: string
+              nullable: true
             pages:
               type: string
+              nullable: true
             publicationFascicule:
               type: string
+              nullable: true
             publicationOther:
               type: string
+              nullable: true
         pages:
           type: string
+          nullable: true
         parent:
           type: object
+          nullable: true
           description: >
             Parent document, flattened: a citation only needs its title.
           properties:
@@ -9362,6 +9375,7 @@ components:
           type: boolean
         language:
           type: string
+          nullable: true
         name:
           type: string
           nullable: true
