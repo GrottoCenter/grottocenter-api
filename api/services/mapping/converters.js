@@ -23,6 +23,12 @@ const {
   getQualityBreakdown,
 } = require('../../utils/computeEntranceDataQuality');
 
+/**
+ * Derive a country code from an ISO 3166-2 region code ('FR-01' -> 'FR').
+ * Returns null for anything that isn't a string containing a '-' past the
+ * first character, so a malformed or already-numeric id yields no country
+ * rather than a bogus prefix.
+ */
 const extractCountryId = (regionId) => {
   if (!regionId || typeof regionId !== 'string') return null;
   const dash = regionId.indexOf('-');
@@ -977,15 +983,7 @@ const c = {
         source,
         (country) => country.id || country
       ),
-      regions: toList('regions', source, (region) => {
-        const id = region.id || region;
-        const name = region instanceof Object ? region.name : undefined;
-        return {
-          id,
-          name,
-          countryId: extractCountryId(typeof id === 'string' ? id : String(id)),
-        };
-      }),
+      regions: toList('regions', source, (region) => region.id || region),
       massifs: toList('massifs', source, (massif) =>
         massif instanceof Object ? c.toSimpleMassif(massif) : { id: massif }
       ),
@@ -1001,6 +999,30 @@ const c = {
     }
     return result;
   },
+
+  // Detail view for GET /api/v1/guidelines/:id. Unlike toSimpleGuideline (used
+  // by the list, by-entity and snapshot endpoints, which keep the leaner
+  // shape), this hydrates the geographic relations and the language with
+  // readable names so the front end can render a standalone guideline page
+  // without follow-up requests. Relies on
+  // GuidelineService.getGuidelineDetail having populated `language` and the
+  // massifs' nested `names`.
+  toGuideline: (source) => ({
+    ...c.toSimpleGuideline(source),
+    countries: toList('countries', source, (country) =>
+      country instanceof Object
+        ? { id: country.id, name: country.nativeName }
+        : { id: country }
+    ),
+    regions: toList('regions', source, (region) => {
+      const id = region instanceof Object ? region.id : region;
+      return {
+        id,
+        name: region instanceof Object ? region.name : undefined,
+        countryId: extractCountryId(id),
+      };
+    }),
+  }),
 
   // Transform the typesense response
   toSearchResult: (source, meta) => {
