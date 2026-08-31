@@ -4,6 +4,10 @@ const DocumentService = require('../../../api/services/DocumentService');
 const DescriptionService = require('../../../api/services/DescriptionService');
 const AuthTokenService = require('../AuthTokenService');
 const SearchService = require('../../../api/services/SearchService');
+const {
+  EMPTY_AUTHORS_SORT_KEY,
+  computeDocumentAuthorsSort,
+} = require('../../../api/utils/computeDocumentAuthorsSort');
 
 describe('DocumentService', () => {
   const userReq = {};
@@ -549,6 +553,103 @@ describe('DocumentService', () => {
       should(callArg.entrance.name).equal('Test Entrance');
       should(callArg.massifs[0].name).equal('Test Massif');
       process.env.NODE_ENV = originalEnv;
+    });
+
+    describe('authorsSort', () => {
+      // The full reindex selects the organization's `n.is_main = true` name
+      // (api/dbSync/entities/document.js). NameService.setNames() exposes that
+      // same name as `organization.name` but leaves `organization.names`
+      // unordered, so the incremental key must read `name` — otherwise editing
+      // a document after an organization changed its main name would write a
+      // key that a later reindex overwrites with a different value.
+      const stubUpdate = () => {
+        process.env.NODE_ENV = 'development';
+        return sinon.stub(SearchService, 'updateDocument').resolves();
+      };
+
+      let originalEnv;
+      beforeEach(() => {
+        originalEnv = process.env.NODE_ENV;
+      });
+      afterEach(() => {
+        process.env.NODE_ENV = originalEnv;
+      });
+
+      it("should key on the organization's main name, not names[0]", async () => {
+        const updateStub = stubUpdate();
+
+        await DocumentService.updateInSearch({
+          id: 1,
+          author: { id: 1, nickname: 'Author' },
+          authorsOrganization: [
+            {
+              // Main name is deliberately NOT the first array element.
+              name: 'Alpha Speleo Club',
+              names: [
+                { name: 'Zeta Historical Name', isMain: false },
+                { name: 'Alpha Speleo Club', isMain: true },
+              ],
+            },
+          ],
+        });
+
+        const callArg = updateStub.getCall(0).args[1];
+        should(callArg.authorsSort).equal('0alpha speleo club');
+      });
+
+      it('should match the full-reindex key for the same organization', async () => {
+        const updateStub = stubUpdate();
+
+        await DocumentService.updateInSearch({
+          id: 1,
+          author: { id: 1, nickname: 'Author' },
+          authors: [{ nickname: 'Zola' }],
+          authorsOrganization: [
+            {
+              name: 'Meandre Club',
+              names: [
+                { name: 'Old Meandre Society', isMain: false },
+                { name: 'Meandre Club', isMain: true },
+              ],
+            },
+          ],
+        });
+
+        // What dbSync computes: person nicknames + the is_main org name.
+        const reindexKey = computeDocumentAuthorsSort(
+          ['Zola'],
+          ['Meandre Club']
+        );
+        should(updateStub.getCall(0).args[1].authorsSort).equal(reindexKey);
+      });
+
+      it('should pick the alphabetical-first author across persons and organizations', async () => {
+        const updateStub = stubUpdate();
+
+        await DocumentService.updateInSearch({
+          id: 1,
+          author: { id: 1, nickname: 'Author' },
+          authors: [{ nickname: 'Zola' }, { nickname: 'Bernard' }],
+          authorsOrganization: [
+            { name: 'Meandre Club', names: [{ name: 'Meandre Club' }] },
+          ],
+        });
+
+        should(updateStub.getCall(0).args[1].authorsSort).equal('0bernard');
+      });
+
+      it('should use the authorless key when the document has no author', async () => {
+        const updateStub = stubUpdate();
+
+        await DocumentService.updateInSearch({
+          id: 1,
+          author: { id: 1, nickname: 'Author' },
+        });
+
+        should(updateStub.getCall(0).args[1].authorsSort).equal(
+          EMPTY_AUTHORS_SORT_KEY
+        );
+      });
     });
   });
 
