@@ -98,9 +98,13 @@ module.exports = {
       authorsOrganization: mapAuthorsOrganizationForSearch(authorsOrganization),
       // Keep the denormalized author sort key in sync on single-doc upserts so
       // edits match the full-reindex baseline (see computeDocumentAuthorsSort).
+      // Uses `e.name` — the main name NameService.setNames() resolves from the
+      // `isMain` row — because the full reindex selects `n.is_main = true`.
+      // `e.names[0]` carries no ordering guarantee and would drift from the
+      // reindexed key as soon as an organization's main name changes.
       authorsSort: computeDocumentAuthorsSort(
         authors?.map((e) => e.nickname),
-        authorsOrganization?.map((e) => e.names?.[0]?.name)
+        authorsOrganization?.map((e) => e.name)
       ),
       subjects: subjects?.map((e) => ({ code: e.id })),
       iso3166: [

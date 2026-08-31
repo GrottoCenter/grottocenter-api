@@ -17,9 +17,9 @@ describe('Advanced Search - authorsSort sort validation', () => {
   it('should sort documents by authorsSort:asc and return ascending order', async () => {
     sinon.stub(SearchService, 'collectionSearch').resolves({
       hits: [
-        { document: { id: '1', title: 'Doc A', authorsSort: 'adam' } },
-        { document: { id: '2', title: 'Doc B', authorsSort: 'meandre club' } },
-        { document: { id: '3', title: 'Doc C', authorsSort: 'zola' } },
+        { document: { id: '1', title: 'Doc A', authorsSort: '0adam' } },
+        { document: { id: '2', title: 'Doc B', authorsSort: '0meandre club' } },
+        { document: { id: '3', title: 'Doc C', authorsSort: '0zola' } },
       ],
       found: 3,
       out_of: 100,
@@ -46,9 +46,9 @@ describe('Advanced Search - authorsSort sort validation', () => {
   it('should sort documents by authorsSort:desc', async () => {
     sinon.stub(SearchService, 'collectionSearch').resolves({
       hits: [
-        { document: { id: '3', title: 'Doc C', authorsSort: 'zola' } },
-        { document: { id: '2', title: 'Doc B', authorsSort: 'meandre club' } },
-        { document: { id: '1', title: 'Doc A', authorsSort: 'adam' } },
+        { document: { id: '3', title: 'Doc C', authorsSort: '0zola' } },
+        { document: { id: '2', title: 'Doc B', authorsSort: '0meandre club' } },
+        { document: { id: '1', title: 'Doc A', authorsSort: '0adam' } },
       ],
       found: 3,
       out_of: 100,
@@ -105,7 +105,7 @@ describe('Advanced Search - authorsSort sort validation', () => {
 
   it('should allow authorsSort in a multi-field sort on documents entity', async () => {
     sinon.stub(SearchService, 'collectionSearch').resolves({
-      hits: [{ document: { id: '1', title: 'Doc A', authorsSort: 'adam' } }],
+      hits: [{ document: { id: '1', title: 'Doc A', authorsSort: '0adam' } }],
       found: 1,
       out_of: 100,
       page: 1,
