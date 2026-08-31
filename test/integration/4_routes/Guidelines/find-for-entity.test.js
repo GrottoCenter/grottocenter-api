@@ -69,7 +69,7 @@ describe('Guideline find-for-entity', () => {
           if (err) return done(err);
           should(res.body).be.an.Array();
           should(res.body.length).be.greaterThan(0);
-          should(res.body[0].regions).containEql('FR-01');
+          should(res.body[0].regions.map((r) => r.id)).containEql('FR-01');
           return done();
         });
     });

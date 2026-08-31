@@ -23,6 +23,12 @@ const {
   getQualityBreakdown,
 } = require('../../utils/computeEntranceDataQuality');
 
+const extractCountryId = (regionId) => {
+  if (!regionId || typeof regionId !== 'string') return null;
+  const dash = regionId.indexOf('-');
+  return dash > 0 ? regionId.slice(0, dash) : null;
+};
+
 const c = {
   toCave: (source, meta) => {
     const result = {
@@ -971,7 +977,15 @@ const c = {
         source,
         (country) => country.id || country
       ),
-      regions: toList('regions', source, (region) => region.id || region),
+      regions: toList('regions', source, (region) => {
+        const id = region.id || region;
+        const name = region instanceof Object ? region.name : undefined;
+        return {
+          id,
+          name,
+          countryId: extractCountryId(typeof id === 'string' ? id : String(id)),
+        };
+      }),
       massifs: toList('massifs', source, (massif) =>
         massif instanceof Object ? c.toSimpleMassif(massif) : { id: massif }
       ),
@@ -1076,4 +1090,4 @@ const c = {
   }),
 };
 
-module.exports = c;
+module.exports = { ...c, extractCountryId };
