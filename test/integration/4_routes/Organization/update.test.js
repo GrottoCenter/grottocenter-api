@@ -198,6 +198,51 @@ describe('Organization features', () => {
           .send({ name: { text: 'A'.repeat(500) } })
           .expect(400, done);
       });
+
+      // https://github.com/GrottoCenter/grottocenter-api/issues/1774
+      it('should return 400 when postalCode is too long', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ postalCode: '4400 Flémalle' })
+          .expect(400)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              should(res.body.message).containEql('Postal code');
+              // Nothing must have been persisted
+              const organization = await TGrotto.findOne({ id: 1 });
+              should(organization.postalCode).not.equal('4400 Flémalle');
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      });
+
+      it('should return 200 when postalCode is exactly 10 characters', (done) => {
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/1')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ postalCode: '1234567890' })
+          .expect(200)
+          .end(async (err, res) => {
+            if (err) return done(err);
+            try {
+              should(res.body.postalCode).equal('1234567890');
+
+              // Reset
+              await TGrotto.updateOne({ id: 1 }).set({ postalCode: '92130' });
+              return done();
+            } catch (testErr) {
+              return done(testErr);
+            }
+          });
+      });
     });
   });
 });
