@@ -1,10 +1,10 @@
 const ControllerService = require('../../../services/ControllerService');
 const GuidelineService = require('../../../services/GuidelineService');
-const { toSimpleGuideline } = require('../../../services/mapping/converters');
+const { toGuideline } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
   const guidelineId = req.param('id');
-  const guideline = await GuidelineService.getGuideline(guidelineId);
+  const guideline = await GuidelineService.getGuidelineDetail(guidelineId);
   if (!guideline || guideline.isDeleted) {
     return res.notFound({
       message: `Guideline of id ${guidelineId} not found.`,
@@ -16,6 +16,6 @@ module.exports = async (req, res) => {
     guideline,
     { controllerMethod: 'GuidelineController.find' },
     res,
-    toSimpleGuideline
+    toGuideline
   );
 };

@@ -1,4 +1,5 @@
 const CaveService = require('./CaveService');
+const NameService = require('./NameService');
 
 module.exports = {
   /**
@@ -28,6 +29,34 @@ module.exports = {
       .populate('countries')
       .populate('regions')
       .populate('massifs'),
+
+  /**
+   * Fetch a single guideline for the public detail endpoint.
+   *
+   * Adds two hydrations on top of getGuideline that only the detail view needs
+   * (see toGuideline): `language`, so the response can carry its readable
+   * `refName` instead of the bare FK code, and the massifs' names, which live
+   * in the separate t_name table. Kept separate from getGuideline so the
+   * create/update/rollback/restore/delete responses — which all use the leaner
+   * toSimpleGuideline shape — are unaffected.
+   *
+   * Massif names are resolved in a single batched query via NameService rather
+   * than one lookup per massif, so this stays free of N+1 queries.
+   * @param {number} id - The ID of the guideline
+   * @returns {Promise<Object|null>} The guideline record or null/undefined
+   */
+  getGuidelineDetail: async (id) => {
+    const guideline = await TGuideline.findOne({ id })
+      .populate('author')
+      .populate('reviewer')
+      .populate('countries')
+      .populate('regions')
+      .populate('massifs')
+      .populate('language');
+    if (!guideline) return guideline;
+    await NameService.setNames(guideline.massifs, 'massif');
+    return guideline;
+  },
 
   /**
    * Fetch all history snapshots for a given guideline ID, populating author and reviewer.
