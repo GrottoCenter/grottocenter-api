@@ -3544,7 +3544,7 @@ paths:
     patch:
       tags:
         - guidelines
-      description: Update a guideline. Authenticated action (only the author or a moderator can update a guideline).
+      description: Update a guideline. Authenticated action (any authenticated user can update a guideline).
       security:
         - bearerAuth: []
       parameters:
@@ -3785,7 +3785,7 @@ paths:
         '401':
           description: Unauthorized (missing or invalid JWT token).
         '403':
-          description: Forbidden (user is not the author, a moderator, or an administrator).
+          description: Forbidden (user is not authorized to roll back this guideline).
         '404':
           description: Guideline or history snapshot not found.
           content:

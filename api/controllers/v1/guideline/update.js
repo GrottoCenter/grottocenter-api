@@ -2,10 +2,8 @@ const ControllerService = require('../../../services/ControllerService');
 const GuidelineService = require('../../../services/GuidelineService');
 const CommonService = require('../../../services/CommonService');
 const { toSimpleGuideline } = require('../../../services/mapping/converters');
-const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  // Only the author or a moderator can update a guideline
   const guidelineId = req.param('id');
   const rawGuideline = await TGuideline.findOne(guidelineId)
     .populate('countries')
@@ -15,19 +13,6 @@ module.exports = async (req, res) => {
     return res.notFound({
       message: `Guideline of id ${guidelineId} not found.`,
     });
-  }
-
-  const isAuthor = Number(rawGuideline.author) === Number(req.token.id);
-  const isModerator = RightService.hasGroup(
-    req.token.groups,
-    RightService.G.MODERATOR
-  );
-  const isAdmin = RightService.hasGroup(
-    req.token.groups,
-    RightService.G.ADMINISTRATOR
-  );
-  if (!isAuthor && !isModerator && !isAdmin) {
-    return res.forbidden('You are not authorized to update this guideline.');
   }
 
   const newTitle = req.param('title');
@@ -82,12 +67,6 @@ module.exports = async (req, res) => {
   ) {
     return res.badRequest({
       message: 'All massif ids must be valid positive numbers.',
-    });
-  }
-
-  if (countries.length === 0 && regions.length === 0 && massifs.length === 0) {
-    return res.badRequest({
-      message: 'At least one country, region, or massif must be specified.',
     });
   }
 
