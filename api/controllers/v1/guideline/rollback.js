@@ -1,7 +1,6 @@
 const dayjs = require('../../../utils/dayjs');
 const ControllerService = require('../../../services/ControllerService');
 const GuidelineService = require('../../../services/GuidelineService');
-const RightService = require('../../../services/RightService');
 const { toSimpleGuideline } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
@@ -32,21 +31,6 @@ module.exports = async (req, res) => {
     return res.notFound({
       message: `Guideline of id ${guidelineId} not found.`,
     });
-  }
-
-  // Rollback mutates the guideline (title, description, language), so it is
-  // functionally an update: restrict it to the author, a moderator, or an admin.
-  const isAuthor = Number(rawGuideline.author) === Number(req.token.id);
-  const isModerator = RightService.hasGroup(
-    req.token.groups,
-    RightService.G.MODERATOR
-  );
-  const isAdmin = RightService.hasGroup(
-    req.token.groups,
-    RightService.G.ADMINISTRATOR
-  );
-  if (!isAuthor && !isModerator && !isAdmin) {
-    return res.forbidden('You are not authorized to roll back this guideline.');
   }
 
   // Find the specific history snapshot by comparing instants rather than doing a
