@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.1098.0",
     "@azure/storage-blob": "^12.33.0",
-    "@natlibfi/marc-record": "^10.0.1",
+    "@natlibfi/marc-record": "^11.0.3",
     "@natlibfi/marc-record-serializers": "^11.0.2",
     "@rapideditor/country-coder": "^5.6.1",
     "archiver": "^8.0.0",
