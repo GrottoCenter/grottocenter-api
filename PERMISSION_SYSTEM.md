@@ -73,6 +73,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Delete/restore legislation guidelines (permanent deletion of these requires Administrator)
     - Delete/restore devices and sensor configurations (permanent deletion of these requires Administrator)
     - Update any device or sensor configuration (regardless of ownership)
+    - Permanently delete author records (`type: AUTHOR`; deleting a `CAVER` account requires Administrator instead —
+      see "Caver Deletion")
     - Update any user's comments
     - Update/rollback any user's legislation guidelines
     - Update documents that have modifications pending moderator approval
@@ -90,7 +92,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
   - **User Management**:
     - Assign/remove user roles
     - Manage any user accounts
-    - Delete user accounts
+    - Permanently delete caver accounts (`type: CAVER`; deleting an `AUTHOR` record requires Moderator instead —
+      see "Caver Deletion")
     - Ban/unban users (revokes all active tokens)
     - View user lists (authors, contributors, users, banned, invalid-email)
     - View complete user information
@@ -197,7 +200,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | View banned users list                                        | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Ban/unban users                                               | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Manage user roles                                             | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Delete user accounts                                          | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Delete a caver account (`type: CAVER`, permanent)             | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Delete an author record (`type: AUTHOR`, permanent)           | ❌ | ❌ | ❌ | ✅ | ❌ |
 | **Authentication & MFA**                                      |
 | Enroll MFA (generate TOTP secret)                             | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Verify MFA enrollment                                         | ❌ | ❌ | ❌ | ❌ | ✅ |
@@ -324,8 +328,10 @@ Countries, regions, and massifs can be linked to the organizations in charge of 
   - **Core content** (caves, entrances, documents, comments, descriptions, locations, riggings, histories,
     organisations, massifs): the controllers check `MODERATOR` only, so an Administrator who does not also hold the
     Moderator role cannot soft-delete or restore them
-  - **Cavers, devices, sensor configurations, guidelines**: accept either Moderator or Administrator
+  - **Devices, sensor configurations, guidelines**: accept either Moderator or Administrator
   - **Restore** is Moderator-only for every entity except guidelines
+  - **Cavers are not part of this flow at all** — deleting a caver is always permanent and there is no restore
+    endpoint. See "Caver Deletion" below
 - **Permanent deletion is not uniformly Administrator-only**:
   - For core content, the permanent path (`?isPermanent=…`) is guarded by the *same* Moderator check as the soft
     delete, with no additional Administrator check — so a Moderator can permanently delete a cave, and an
@@ -334,6 +340,25 @@ Countries, regions, and massifs can be linked to the organizations in charge of 
   - See "Known Permission Inconsistencies" below
 - Permanent deletion of devices is blocked if they have associated sensor configurations
 - Permanent deletion of sensor configurations is blocked if they have associated time series
+
+### Caver Deletion
+Cavers are the one entity with no soft-delete flow: `api/controllers/v1/caver/delete.js` ends in
+`TCaver.destroyOne`, so the row is always removed and there is no `caver/restore` endpoint. Which role is required
+depends on the caver's `type`, and the two roles are **not** interchangeable (lines 27-30):
+
+| Caver `type` | Required role   |
+|--------------|-----------------|
+| `CAVER`      | `ADMINISTRATOR` |
+| `AUTHOR`     | `MODERATOR`     |
+
+A Moderator therefore cannot delete a registered caver account, and an Administrator who does not also hold the
+Moderator role cannot delete an author record.
+
+Two further rules apply regardless of role:
+- Caver id 8 (`DEFAULT_DELETED_CAVER_ID`) can never be deleted — it is the placeholder that inherits authorship of
+  deleted cavers' contributions
+- Passing `entityId` merges the caver's contributions and associations into the target caver instead of orphaning
+  them; without it, authorship is reassigned to caver 8, reviewer fields are nulled, and notifications are destroyed
 
 ## Known Permission Inconsistencies
 
