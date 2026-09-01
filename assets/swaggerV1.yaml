@@ -8375,20 +8375,49 @@ components:
           type: string
           nullable: true
         parent:
-          type: object
           nullable: true
           description: >
-            Parent document, flattened: a citation only needs its title.
-          properties:
-            id:
-              type: integer
-            title:
-              type: string
+            Parent publication. For an Article this is the Issue it appeared in,
+            whose own `parent` is the Collection (the journal).
+          allOf:
+            - $ref: '#/components/schemas/CitationParent'
         title:
           type: string
         type:
           type: string
           description: Document type name, e.g. "Article", "Book".
+
+    CitationParent:
+      type: object
+      description: >
+        An ancestor in a citation's parent chain. Only what identifies the
+        parent publication, not a full document.
+
+        The chain spans at most Article -> Issue -> Collection, and an ISO 690
+        article reference needs both levels: the Issue supplies the number and
+        the publication date, the Collection above it supplies the journal
+        name. Those two titles are distinct, which is why the chain is nested
+        rather than flattened to a single title.
+      properties:
+        datePublication:
+          type: string
+          nullable: true
+        id:
+          type: integer
+        issue:
+          type: string
+          nullable: true
+        parent:
+          nullable: true
+          description: >
+            The next ancestor, or null at the top of the chain.
+          allOf:
+            - $ref: '#/components/schemas/CitationParent'
+        title:
+          type: string
+        type:
+          type: string
+          description: Document type name, e.g. "Issue", "Collection".
 
     Entrance:
       type: object

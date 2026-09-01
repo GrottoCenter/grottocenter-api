@@ -37,6 +37,53 @@ const getDocumentLanguages = (body) => {
   return lang ? [lang] : [];
 };
 
+// The parent chain is at most Article → Issue → Collection (see
+// TYPES_ALLOWING_PARENT), so two hops reach the top. An ISO 690 article
+// reference needs both levels: the Issue carries the number and the
+// publication date, while the journal name is the Collection title.
+const MAX_CITATION_PARENT_DEPTH = 2;
+
+/**
+ * Resolves the ancestors of the given documents, breadth-first, one query per
+ * level. A parent title lives in its descriptions, which cannot be reached
+ * through the parent association, so each level is fetched explicitly.
+ *
+ * Each resolved document gets its own `parent` replaced by the resolved record
+ * (or null), so the converter can walk the chain as nested objects.
+ *
+ * @param {Array} documents documents whose `parent` is still a raw id
+ * @returns {Promise<Map>} resolved ancestors, keyed by id
+ */
+const resolveCitationParentChain = async (documents) => {
+  const resolvedById = new Map();
+  let frontier = [
+    ...new Set(documents.map((d) => d.parent).filter((id) => id)),
+  ];
+
+  for (let depth = 0; depth < MAX_CITATION_PARENT_DEPTH; depth += 1) {
+    if (frontier.length === 0) break;
+    // eslint-disable-next-line no-await-in-loop
+    const level = await TDocument.find({ id: frontier })
+      .populate('descriptions')
+      .populate('type');
+    for (const parent of level) resolvedById.set(parent.id, parent);
+
+    frontier = [
+      ...new Set(
+        level.map((p) => p.parent).filter((id) => id && !resolvedById.has(id))
+      ),
+    ];
+  }
+
+  // Link the levels together, and null out any parent left unresolved so the
+  // converter never sees a bare id where it expects a document.
+  for (const parent of resolvedById.values()) {
+    parent.parent = resolvedById.get(parent.parent) ?? null;
+  }
+
+  return resolvedById;
+};
+
 module.exports = {
   async deleteInSearch(documentId) {
     await SearchService.deleteDocument('documents', documentId);
@@ -503,7 +550,7 @@ module.exports = {
   /**
    * Like getDocuments(), but also populates the citation fields
    * (identifierType, authors, authorsOrganization, editor, library) and
-   * resolves the parent descriptions and the organization names, which the
+   * resolves the parent chain and the organization names, which the
    * associations cannot carry on their own.
    * The result is intended to be passed to the toCitationDocument converter.
    * Kept apart from getDocuments() so that the callers only needing a title
@@ -526,23 +573,15 @@ module.exports = {
     const grottos = documents.flatMap((d) =>
       [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter((g) => g)
     );
-    // A document title lives in its descriptions, which cannot be populated
-    // through the parent association: resolve the parents with a second query.
-    const parentIds = [
-      ...new Set(documents.map((d) => d.parent).filter((id) => id)),
-    ];
 
     // setNames mutates grottos in place; its result is intentionally unused.
-    const [parents] = await Promise.all([
-      parentIds.length > 0
-        ? TDocument.find({ id: parentIds }).populate('descriptions')
-        : [],
+    const [parentsById] = await Promise.all([
+      resolveCitationParentChain(documents),
       grottos.length > 0 ? NameService.setNames(grottos, 'grotto') : null,
     ]);
 
-    const parentById = new Map(parents.map((p) => [p.id, p]));
     for (const document of documents) {
-      document.parent = parentById.get(document.parent) ?? null;
+      document.parent = parentsById.get(document.parent) ?? null;
     }
 
     return documents;
