@@ -225,6 +225,24 @@ const c = {
     isDeleted: source.isDeleted,
   }),
 
+  // An ancestor in a citation's parent chain, kept far lighter than a document:
+  // a reference only needs what identifies the parent publication.
+  //
+  // The chain is walked rather than flattened to a single title because an
+  // ISO 690 article reference spans two levels — the Issue supplies the number
+  // and the publication date, the Collection above it supplies the journal
+  // name — and those two titles are distinct. The chain is bounded by
+  // TYPES_ALLOWING_PARENT (Article → Issue → Collection), so this cannot
+  // recurse indefinitely; DocumentService caps the depth when resolving it.
+  toCitationParent: (source) => ({
+    id: source.id,
+    type: source.type?.name,
+    title: c.toDocumentDescriptions(source.descriptions).title,
+    issue: source.issue,
+    datePublication: source.datePublication,
+    parent: convertIfObject(source.parent, c.toCitationParent),
+  }),
+
   // A simple document plus the bibliographic fields a document card needs to
   // display a full citation. Only for sources coming from
   // DocumentService.getDocumentsForCitation(): the other ones have those
@@ -243,12 +261,7 @@ const c = {
     identifierType: source.identifierType?.id?.trim(),
     issue: source.issue,
     pages: source.pages,
-    // Flattened rather than converted as a document: a citation only needs the
-    // parent title, and nesting would let a card drag in a whole parent chain.
-    parent: convertIfObject(source.parent, (parent) => ({
-      id: parent.id,
-      title: c.toDocumentDescriptions(parent.descriptions).title,
-    })),
+    parent: convertIfObject(source.parent, c.toCitationParent),
     oldBBS: {
       pages: source.pagesBBSOld,
       comments: source.commentsBBSOld,
