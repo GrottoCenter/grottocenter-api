@@ -387,11 +387,21 @@ histories, names, descriptions, plus `TCrs`, `TPoint`, the duplicate tables, not
 - `JOrganizationCountry` / `JOrganizationRegion` / `JOrganizationMassif` (`author`, `reviewer`)
 - the scientific-data tables — `t_device`, `t_sensor_configuration`, `t_observation`, `t_time_series`,
   `t_contamination`, `t_human_activity`, `t_substance`
+- `TTimeSeriesQualityLog.changedBy` (`t_time_series_quality_log.changed_by`) and `TJobBatch.initiator`
+  (`t_job_batch.id_initiator`)
 
-Every one of these has a foreign key to `t_caver(id)` with **no `ON DELETE` action**, so the final `destroyOne` is
-rejected by the database if any row still points at the caver. In practice a caver who authored a guideline, an
-organization association, or any scientific-data record cannot be deleted or merged at all until those rows are
-repointed by hand. The role rules above still describe who is *authorized* to attempt the deletion.
+Every one of these has a foreign key to `t_caver(id)` with **no `ON DELETE` action**, so a single surviving row is
+enough to make the final `destroyOne` fail.
+
+**The failure is not clean.** All of the reassignments, collection cleanups, and notification/`TLastChange` deletions
+run *before* `TCaver.destroyOne`, and the controller uses no transaction, so those writes have already committed by the
+time the delete is rejected. A blocked deletion therefore leaves the caver **partially merged**: contributions in the
+handled tables are already repointed at the merge target (or at caver 8), group memberships, subscriptions, and
+explored-entrance links are already cleared, and notifications are already destroyed — while the caver row itself
+survives, still referenced by whichever unhandled table blocked the delete. Re-running the request after repointing
+those rows by hand will complete the deletion, but the intermediate state is not recoverable by retrying alone.
+
+The role rules above still describe who is *authorized* to attempt the deletion.
 
 ## Known Permission Inconsistencies
 
