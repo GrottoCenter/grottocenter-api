@@ -47,9 +47,18 @@ const namesArb = fc.array(fc.oneof(nameArb, fc.constantFrom(null, undefined)), {
   maxLength: 5,
 });
 
-/** Arbitrary: a list holding at least one name that survives normalization. */
-const nonEmptyNamesArb = namesArb.filter((names) =>
-  names.some((n) => typeof n === 'string' && n.trim().length > 0)
+/**
+ * Arbitrary: a list holding at least one name that survives normalization.
+ *
+ * Survival is decided by asking the helper itself, not by `.trim()`: `trim`
+ * only strips whitespace, while normalizeName strips combining marks first, so
+ * a name made purely of diacritics is non-blank to `trim` yet normalizes away.
+ * U+1FDD, say, decomposes under NFKD to a space plus two combining marks and
+ * leaves nothing behind — a `trim`-based precondition would hand such a name to
+ * the properties below as "authored" and they would rightly disagree.
+ */
+const nonEmptyNamesArb = namesArb.filter(
+  (names) => computeDocumentAuthorsSort(names) !== EMPTY_AUTHORS_SORT_KEY
 );
 
 /** Strip the ordering bucket prefix to recover the normalized name. */
