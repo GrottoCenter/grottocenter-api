@@ -247,7 +247,7 @@ Guidelines are legal/regulatory notes attached to one or more geographic entitie
 - **Permanent delete**: Administrator only, via `?isPermanent=1`. Performed as a two-phase delete that first clears the
   country/region/massif junction rows and history
 - **Asymmetry to note**: authorship grants edit rights but not delete rights, so an author can amend their guideline but
-  must ask a Moderator to remove it
+  must ask a Moderator or an Administrator to remove it
 
 ### Responsible Organization Associations
 Countries, regions, and massifs can be linked to the organizations in charge of managing them and their caves.
@@ -345,8 +345,9 @@ cannot detach it either.
   - **Core content** (caves, entrances, documents, comments, descriptions, locations, riggings, histories,
     organisations, massifs): the controllers check `MODERATOR` only, so an Administrator who does not also hold the
     Moderator role cannot soft-delete or restore them
-  - **Devices, sensor configurations, guidelines**: accept either Moderator or Administrator
-  - **Restore** is Moderator-only for every entity except guidelines
+  - **Devices, sensor configurations, guidelines**: **soft deletion** accepts either Moderator or Administrator
+  - **Restore** is Moderator-only for every entity except guidelines, which again accepts either role — so devices and
+    sensor configurations accept both roles to delete but only Moderator to restore
   - **Cavers are not part of this flow at all** — deleting a caver is always permanent and there is no restore
     endpoint. See "Caver Deletion" below
 - **Permanent deletion is not uniformly Administrator-only**:
@@ -374,8 +375,23 @@ Moderator role cannot delete an author record.
 Two further rules apply regardless of role:
 - Caver id 8 (`DEFAULT_DELETED_CAVER_ID`) can never be deleted — it is the placeholder that inherits authorship of
   deleted cavers' contributions
-- Passing `entityId` merges the caver's contributions and associations into the target caver instead of orphaning
-  them; without it, authorship is reassigned to caver 8, reviewer fields are nulled, and notifications are destroyed
+- Passing `entityId` merges the caver's references into the target caver instead of orphaning them; without it,
+  `author` is reassigned to caver 8, `reviewer` is nulled, and notifications are destroyed. **This covers only the
+  fixed model list in the controller** — see the limitation below
+
+**Known limitation — the delete path does not cover every table referencing `t_caver`.** The controller reassigns an
+explicit list: the `T`/`H` pairs for caves, entrances, grottos, massifs, locations, riggings, comments, documents,
+histories, names, descriptions, plus `TCrs`, `TPoint`, the duplicate tables, notifications, `TLastChange`,
+`TTokenBlacklist`, and the caver's own collections. It does **not** touch:
+- `TGuideline` / `HGuideline` (`author`, `reviewer`)
+- `JOrganizationCountry` / `JOrganizationRegion` / `JOrganizationMassif` (`author`, `reviewer`)
+- the scientific-data tables — `t_device`, `t_sensor_configuration`, `t_observation`, `t_time_series`,
+  `t_contamination`, `t_human_activity`, `t_substance`
+
+Every one of these has a foreign key to `t_caver(id)` with **no `ON DELETE` action**, so the final `destroyOne` is
+rejected by the database if any row still points at the caver. In practice a caver who authored a guideline, an
+organization association, or any scientific-data record cannot be deleted or merged at all until those rows are
+repointed by hand. The role rules above still describe who is *authorized* to attempt the deletion.
 
 ## Known Permission Inconsistencies
 
