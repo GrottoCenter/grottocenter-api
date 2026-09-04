@@ -168,7 +168,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Search devices                                                | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Create devices/sensor configurations                          | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Update own devices/sensor configurations                      | ❌ | ✅ | ✅ | ✅ | ✅ |
-| Update any device/sensor configuration                        | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Update any device/sensor configuration                        | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Soft delete devices/sensor configurations                     | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Restore devices/sensor configurations                         | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Permanently delete devices/sensor configurations              | ❌ | ❌ | ❌ | ❌ | ✅ |
@@ -230,8 +230,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 ### Organization-Based Permissions
 - **Membership Management**: Users can only manage their own organization memberships
 - **Explored Cave Management**: Organization members can add/remove explored caves for organizations they belong to
-- **Administrative Override**: Moderators and Administrators can manage any organization's explored caves and
-  memberships
+- **Administrative Override**: the two operations are gated differently — either Moderator or Administrator can manage
+  any organization's explored caves, but managing another user's memberships requires `ADMINISTRATOR` (a Moderator
+  cannot)
 
 ### Legislation Guidelines
 Guidelines are legal/regulatory notes attached to one or more geographic entities (country, region, massif).
@@ -263,8 +264,11 @@ Countries, regions, and massifs can be linked to the organizations in charge of 
   associations are still returned by reads, flagged with `isDeleted` and a `redirectTo` pointer
 
 ### Owner-Based Access Control
-- **Content Ownership**: Users can modify any content except other users' comments and other users' guidelines
-- **Moderator Override**: Moderators and Administrators can modify any content regardless of ownership
+- **Content Ownership**: Users can modify any content except other users' comments, other users' guidelines, and
+  documents that have modifications pending moderator approval (`modifiedDocJson` set)
+- **Moderator Override**: Moderators can modify any content regardless of ownership. Administrators override ownership
+  only on guidelines — updating another user's comment, or a document with pending modifications, checks `MODERATOR`
+  alone and does not accept `ADMINISTRATOR` as an alternative
 - **Comment Updates**: Users can update their own comments; Moderators can update any comments
 - **Guideline Updates**: Users can update and roll back only their own guidelines; Moderators and Administrators can
   update and roll back any guideline
@@ -289,7 +293,9 @@ cannot detach it either.
   User can bulk-create observation entities (up to a 100 MB file). **This openness is intended**: observation upload is
   a core contributor workflow, unlike the document/entrance CSV imports, which are admin-driven and require the
   Administrator role. Do not "fix" the missing role check here
-- **Owner-based update**: The original author of a device or sensor configuration can update it; Moderators can update any device or sensor configuration regardless of ownership
+- **Owner-based update**: The original author of a device or sensor configuration can update it; Moderators can update
+  any device or sensor configuration regardless of ownership. Note the in-code comment says "moderator/admin", but both
+  controllers check `MODERATOR` only, so a non-Moderator Administrator cannot update another user's device
 
 ### Ban/Unban
 - Only Administrators can ban or unban users
@@ -324,7 +330,8 @@ cannot detach it either.
 
 ### Ownership-Based Access
 - Users can modify their own content
-- Moderators and Administrators can override ownership
+- Which role overrides ownership is per-entity, not uniform: Moderator overrides it everywhere, while Administrator
+  overrides it only on guidelines. See "Owner-Based Access Control" for the exceptions
 - Organization members can manage their organization's explored caves
 
 ### Sensitive Data Protection
