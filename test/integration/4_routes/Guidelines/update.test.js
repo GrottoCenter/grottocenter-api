@@ -99,13 +99,12 @@ describe('Guideline update', () => {
       should(snapshots.length).be.greaterThan(1);
     });
 
-    // Bug condition exploration tests — EXPECTED TO FAIL on unfixed code
-    // Validates: Requirements 1.2, 1.3
+    // Regression cases for the two guards removed in this change (issue #1775).
 
-    it('[BUG-2] any authenticated user (non-author, non-moderator, non-admin) should be able to update a guideline (currently returns 403)', (done) => {
-      // isBugCondition_2: leaderToken is user 7 — authenticated, not the author (user 3), not a moderator, not an admin
-      // Expected correct behavior: 200. Current (buggy) behavior: 403.
-      // This test WILL FAIL on unfixed code — that failure documents the bug exists.
+    it('should allow any authenticated user (non-author, non-moderator, non-admin) to update a guideline', (done) => {
+      // leaderToken is user 7 — authenticated, but not the author (user 3),
+      // not a moderator and not an admin: exactly the caller the removed
+      // author-check rejected with 403.
       supertest(sails.hooks.http.app)
         .patch('/api/v1/guidelines/1')
         .send({ title: 'Updated By Leader' })
@@ -114,11 +113,10 @@ describe('Guideline update', () => {
         .expect(200, done);
     });
 
-    it('[BUG-1] PATCH with all geo associations set to empty arrays should return 200 (currently returns 400)', (done) => {
-      // isBugCondition_1: countries: [], regions: [], massifs: [] — all effective geo collections are empty
-      // Expected correct behavior: 200 with guideline saved with no geo associations.
-      // Current (buggy) behavior: 400 "At least one country, region, or massif must be specified."
-      // This test WILL FAIL on unfixed code — that failure documents the bug exists.
+    it('should allow PATCH with all geo associations set to empty arrays', (done) => {
+      // All effective geo collections empty. The removed guard rejected this
+      // with 400 "At least one country, region, or massif must be specified.";
+      // a guideline with no geographic scope is now valid and persists as such.
       supertest(sails.hooks.http.app)
         .patch('/api/v1/guidelines/1')
         .send({ countries: [], regions: [], massifs: [] })
