@@ -24,8 +24,14 @@ const nameArb = fc.oneof(
     maxLength: 15,
   }),
   fc.string({
+    // Iterate by code point, not by `.split('')`: the astral-plane samples
+    // below (U+2000B, U+2A600) are two UTF-16 code units each, so splitting by
+    // code unit would offer their surrogate halves as standalone units and
+    // generate names holding lone surrogates. Those have no UTF-8 encoding —
+    // every one of them serializes to U+FFFD — which collapses names this
+    // helper orders as distinct and makes Property 4 fail on ~9% of seeds.
     unit: fc.constantFrom(
-      ...'ЯрославльΩμέγα山田太郎홍길동محمدמשהสมชาย𠀋𪘀'.split(''),
+      ...'ЯрославльΩμέγα山田太郎홍길동محمدמשהสมชาย𠀋𪘀',
       '\u{10FFFD}',
       '�',
       '~'
