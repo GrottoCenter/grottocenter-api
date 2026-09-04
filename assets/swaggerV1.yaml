@@ -8939,8 +8939,14 @@ components:
           type: string
         type:
           type: string
-        ref_name:
+        refName:
           type: string
+          description: >-
+            The language's readable name (e.g. `French`). Serialized as
+            `refName`; `ref_name` is the underlying column name, not the API
+            attribute.
+        isPrefered:
+          type: boolean
         comment:
           type: string
 
