@@ -30,8 +30,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Edit caves, entrances, documents, massifs, organisations, descriptions, locations, riggings, histories
     - Edit own comments
     - Edit own legislation guidelines
-    - Unlink documents from entities
-    - Rollback to a previous version of any content, except guidelines (own only)
+    - Rollback own legislation guidelines to a previous version (guidelines are the only entity exposing a rollback
+      route)
     - Associate/dissociate responsible organizations for any country, region, or massif
     - Add/remove own explored entrances
     - Set main name for entities
@@ -77,6 +77,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
       see "Caver Deletion")
     - Update any user's comments
     - Update/rollback any user's legislation guidelines
+    - Unlink documents from caves, entrances, and massifs
     - Update documents that have modifications pending moderator approval
     - Validate documents
     - Manage duplicates (documents and entrances)
@@ -159,7 +160,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | **Document Management**                                       |
 | Validate documents                                            | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Manage document duplicates                                    | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Unlink documents from entities                                | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Link a document to a cave/entrance/massif                     | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Unlink documents from entities                                | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Update a document with modifications pending approval         | ❌ | ❌ | ❌ | ✅ | ❌ |
 | **Scientific Domain (Devices, Sensors, Observations)**        |
 | View device/sensor configuration details                      | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -266,6 +268,14 @@ Countries, regions, and massifs can be linked to the organizations in charge of 
 - **Comment Updates**: Users can update their own comments; Moderators can update any comments
 - **Guideline Updates**: Users can update and roll back only their own guidelines; Moderators and Administrators can
   update and roll back any guideline
+
+### Document Linking
+Linking and unlinking are **not** gated symmetrically for caves, entrances, and massifs:
+- **Link** (`add-document`): any authenticated user — the controllers perform no role check at all
+- **Unlink** (`unlink-document`): `MODERATOR` only, and `ADMINISTRATOR` is *not* accepted as an alternative
+
+So an ordinary user can attach a document to a cave but cannot detach it again, and a non-Moderator Administrator
+cannot detach it either.
 
 ### Snapshot and History Access
 - **Public History**: Available to all users for non-sensitive content
@@ -406,9 +416,12 @@ If any of these are corrected in code, update the matrix rows and the "Soft Dele
   routes. Policies run in sequence, so the order decides which rejection an unauthenticated request with a malformed ID
   receives: this order returns `401` first, whereas `['validateId', 'tokenAuth']` rejects the ID before checking the token
 
-**Routes that deliberately omit `validateId`**: `v1/guideline/rollback` and `v1/guideline/get-snapshots` validate the
-`:id` in the controller instead. `validateId` requires an integer, and the guideline snapshot identifier
-(`:snapshotId`) is an ISO date string, so applying the policy would reject every otherwise-valid request.
+**Routes that deliberately omit `validateId`**: two guideline routes validate the `:id` in the controller instead, for
+different reasons:
+- `v1/guideline/rollback` — the route carries a second parameter, `:snapshotId`, which is an ISO date string.
+  `validateId` requires an integer, so applying it would reject every otherwise-valid rollback request
+- `v1/guideline/get-snapshots` — takes only a numeric `:id` and *could* use `validateId`; it omits the policy because
+  the controller already performs its own numeric check
 
 2. **Controller Level** (`RightService.hasGroup()`)
 - Role-based permission checks
