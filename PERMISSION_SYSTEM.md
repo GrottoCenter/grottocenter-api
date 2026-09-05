@@ -13,7 +13,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 - **Permissions**:
   - View public cave/entrance/document/organisation/massif/person data
   - Search through cave/entrance/document/organisation/massif/person/device data
-  - View legislation guidelines (list, by geographic entity, and snapshots)
+  - View legislation guidelines (list, single guideline by id, by geographic entity, and snapshots)
   - View the organizations responsible for a country/region/massif
   - View complete entity history
   - View statistics
@@ -29,9 +29,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Create legislation guidelines
     - Edit caves, entrances, documents, massifs, organisations, descriptions, locations, riggings, histories
     - Edit own comments
-    - Edit own legislation guidelines
-    - Rollback own legislation guidelines to a previous version (guidelines are the only entity exposing a rollback
-      route)
+    - Edit any legislation guideline, including other users' (no ownership or role check)
+    - Rollback any legislation guideline to a previous version, including other users' (guidelines are the only entity
+      exposing a rollback route)
     - Associate/dissociate responsible organizations for any country, region, or massif
     - Add/remove own explored entrances
     - Set main name for entities
@@ -76,7 +76,6 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Permanently delete author records (`type: AUTHOR`; deleting a `CAVER` account requires Administrator instead —
       see "Caver Deletion")
     - Update any user's comments
-    - Update/rollback any user's legislation guidelines
     - Unlink documents from caves, entrances, and massifs
     - Update documents that have modifications pending moderator approval
     - Validate documents
@@ -106,9 +105,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
   - **System Operations**:
     - Import data from CSV files (documents and entrances)
     - System configuration and maintenance
-  - **Content Moderation** (guidelines only; other content moderation is Moderator-only):
-    - Update/rollback any user's legislation guidelines
-    - Delete/restore legislation guidelines
+  - **Content Moderation** (guideline deletion only; other content moderation is Moderator-only):
+    - Delete/restore legislation guidelines — the only guideline operation an Administrator gates, since updating and
+      rolling back them is open to any authenticated user
   - **Sensitive Data Management**:
     - View coordinates of sensitive entrances
     - Remove sensitive flag from entrances
@@ -134,7 +133,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Search content (including devices)                            | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View statistics                                               | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View history/snapshots                                        | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View guidelines (list/by-entity/snapshots)                    | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View guidelines (list/by-id/by-entity/snapshots)              | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View responsible organizations of country/region/massif       | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Content Creation**                                          |
 | Create caves/entrances/documents/organisations/massifs        | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -145,8 +144,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Update descriptions/locations/riggings/histories              | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Update own comments                                           | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Update any comment                                            | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Update/rollback own guidelines                                | ❌ | ✅ | ✅ | ✅ | ✅ |
-| Update/rollback any guideline                                 | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Update/rollback any guideline (ownership not checked)         | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Set main name for entities                                    | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Move entrance to another cave                                 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Reorder descriptions/locations/riggings/histories/comments    | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -237,17 +235,22 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 ### Legislation Guidelines
 Guidelines are legal/regulatory notes attached to one or more geographic entities (country, region, massif).
 
-- **Read**: Fully public — list, by-entity lookup, and snapshots require no authentication
+- **Read**: Fully public — list, single-guideline lookup by id, by-entity lookup, and snapshots require no
+  authentication. The by-id route is gated `['validateId']` only, so a malformed id yields `400` and a missing one `404`.
+  It returns `404` for soft-deleted guidelines **to every role**, including Moderators: unlike the core-content `find`
+  controllers, it has no `MODERATOR` branch revealing deleted records, so there is no authenticated way to read one back
 - **Create**: Any authenticated user; no role check. At least one country, region, or massif must be referenced
-- **Update**: Author, Moderator, or Administrator only — unlike most content, a plain user cannot edit another user's
-  guideline
-- **Rollback**: Same rule as update (rollback mutates title/description/language, so it is treated as an update).
-  Guidelines are currently the only entity exposing a rollback route
-- **Soft delete/restore**: Moderator or Administrator only — the author alone cannot delete their own guideline
+- **Update**: Any authenticated user; no ownership and no role check — `tokenAuth` is the only gate, so a plain user can
+  edit another user's guideline, as with most other content
+- **Rollback**: Same rule as update — any authenticated user, no ownership or role check. Guidelines are currently the
+  only entity exposing a rollback route
+- **Geographic scope on update**: unlike create, `PATCH` accepts clearing every association, so a guideline can end up
+  attached to no country, region, or massif. The at-least-one rule is enforced on create only
+- **Soft delete/restore**: Moderator or Administrator only — neither the author nor a plain user can delete a guideline
 - **Permanent delete**: Administrator only, via `?isPermanent=1`. Performed as a two-phase delete that first clears the
   country/region/massif junction rows and history
-- **Asymmetry to note**: authorship grants edit rights but not delete rights, so an author can amend their guideline but
-  must ask a Moderator or an Administrator to remove it
+- **Asymmetry to note**: editing is open to every authenticated user while deletion requires a Moderator or an
+  Administrator, so any user can rewrite or roll back a guideline they must ask a moderator to remove
 
 ### Responsible Organization Associations
 Countries, regions, and massifs can be linked to the organizations in charge of managing them and their caves.
@@ -264,14 +267,15 @@ Countries, regions, and massifs can be linked to the organizations in charge of 
   associations are still returned by reads, flagged with `isDeleted` and a `redirectTo` pointer
 
 ### Owner-Based Access Control
-- **Content Ownership**: Users can modify any content except other users' comments, other users' guidelines, and
-  documents that have modifications pending moderator approval (`modifiedDocJson` set)
-- **Moderator Override**: Moderators can modify any content regardless of ownership. Administrators override ownership
-  only on guidelines — updating another user's comment, or a document with pending modifications, checks `MODERATOR`
-  alone and does not accept `ADMINISTRATOR` as an alternative
-- **Comment Updates**: Users can update their own comments; Moderators can update any comments
-- **Guideline Updates**: Users can update and roll back only their own guidelines; Moderators and Administrators can
-  update and roll back any guideline
+- **Content Ownership**: Users can modify any content except other users' comments and documents that have modifications
+  pending moderator approval (`modifiedDocJson` set)
+- **Moderator Override**: Moderators can modify any content regardless of ownership. There is no ownership check left for
+  `ADMINISTRATOR` to override — updating another user's comment, or a document with pending modifications, checks
+  `MODERATOR` alone and does not accept `ADMINISTRATOR` as an alternative
+- **Comment Updates**: Users can update their own comments; Moderators can update any comments. Comments are now the only
+  entity whose update path is ownership-scoped
+- **Guideline Updates**: Any authenticated user can update and roll back any guideline, their own or not — the update and
+  rollback controllers perform no ownership or role check
 
 ### Document Linking
 Linking and unlinking are **not** gated symmetrically for caves, entrances, and massifs:
@@ -330,8 +334,8 @@ cannot detach it either.
 
 ### Ownership-Based Access
 - Users can modify their own content
-- Which role overrides ownership is per-entity, not uniform: Moderator overrides it everywhere, while Administrator
-  overrides it only on guidelines. See "Owner-Based Access Control" for the exceptions
+- Only comments and documents pending approval are ownership-scoped on update, and both accept `MODERATOR` alone as the
+  override — `ADMINISTRATOR` is not accepted anywhere as an ownership override. See "Owner-Based Access Control"
 - Organization members can manage their organization's explored caves
 
 ### Sensitive Data Protection
@@ -411,7 +415,8 @@ combined with per-controller role checks that were not applied uniformly — so 
 
 Items 1, 4 and 5 are tracked in
 [#1796](https://github.com/GrottoCenter/grottocenter-api/issues/1796). Items 2 and 3 are **accepted behaviour**: in
-practice Administrators are granted every group, so they cumulate Moderator powers and are not blocked.
+practice Administrators are granted every group, so they cumulate Moderator powers and are not blocked. Item 6 is
+**intended behaviour** introduced deliberately, recorded here because it reads as an inconsistency.
 
 1. **Moderators can permanently delete core content.** For caves, entrances, documents, comments, descriptions,
    locations, riggings, histories, organisations, and massifs, the `isPermanent` branch of the delete controller is
@@ -431,6 +436,12 @@ practice Administrators are granted every group, so they cumulate Moderator powe
    the outlier, accepting either role. Tracked in #1796.
 5. **Delete and restore disagree within the same entity.** `device`, `sensor-configuration` and `guideline` all accept
    either role to *delete*, but only `guideline` accepts either role to *restore*. Tracked in #1796.
+6. **Guidelines are writable by anyone but deletable only by moderators.** `guideline/update` and `guideline/rollback`
+   perform no ownership or role check, so any authenticated user can rewrite or roll back any guideline, while
+   `guideline/delete` still requires Moderator or Administrator. Rollback is the sharper edge: it replaces the live
+   title, description, and language from an arbitrary snapshot, giving any user a one-request way to revert another
+   user's edits. Deliberate — it matches how caves, entrances, and documents are already open to any authenticated user —
+   but it leaves comments as the only ownership-scoped update path.
 
 If any of these are corrected in code, update the matrix rows and the "Soft Deletes" section together.
 
@@ -443,7 +454,7 @@ If any of these are corrected in code, update the matrix rows and the "Soft Dele
 - `true` - Public access (no authentication required)
 - `'tokenAuth'` - Requires valid JWT token
 - `'mfaEnrollmentAuth'` - Requires valid MFA enrollment token
-- `['validateId']` - Public access with ID validation
+- `['validateId']` - Public access with ID validation (e.g. `v1/guideline/find`, the single-guideline read route)
 - `['validateId', 'tokenAuth']` - Authenticated with ID validation
 - `['tokenAuth', 'validateId']` - Same pair in the opposite order, used by the responsible-organization association
   routes. Policies run in sequence, so the order decides which rejection an unauthenticated request with a malformed ID
