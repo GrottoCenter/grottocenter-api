@@ -4,6 +4,7 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Guideline rollback', () => {
   let userToken;
+  let leaderToken;
 
   // A guideline dedicated to the success case below. Sibling test files in
   // this same folder (e.g. update.test.js) mutate the seeded guideline 1, and
@@ -16,8 +17,15 @@ describe('Guideline rollback', () => {
   const targetTitle = 'Rollback Target Title';
   const targetDescription = 'Target state to roll back to.';
 
+  // A second guideline for the non-author permission case. The success case
+  // below consumes its guideline's snapshot state, so that row cannot be
+  // rolled back twice.
+  let nonAuthorGuidelineId;
+  const nonAuthorTargetTitle = 'Rollback Target Title For Non Author';
+
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
+    leaderToken = await AuthTokenService.getRawBearerLeaderToken();
 
     // 1. Create the guideline. The AFTER INSERT trigger snapshots these
     //    initial values at date_reviewed = '2024-01-01 10:00:00'.
@@ -56,6 +64,47 @@ describe('Guideline rollback', () => {
         'fra',
         '2024-06-01T09:00:00.000Z',
         '2024-06-01T09:00:00.000Z',
+        false,
+      ]
+    );
+
+    // Same three-step setup for the non-author case, authored by user 3 so the
+    // leader (user 7) is provably not the author.
+    //
+    // The timestamps below must differ from the ones used above: Waterline
+    // cannot express h_guideline's composite (id, date_reviewed) primary key,
+    // so the migrate:drop-built test schema keys it on date_reviewed alone.
+    // Two guidelines sharing a date_reviewed therefore collide in the history
+    // table even though the real SQL schema in sql/0_tables.sql allows it.
+    const nonAuthorGuideline = await TGuideline.create({
+      title: 'Rollback Seed Title For Non Author',
+      description: 'Seed state.',
+      author: 3,
+      reviewer: 2,
+      language: 'fra',
+      dateInscription: '2024-02-01T10:00:00.000Z',
+      dateReviewed: '2024-02-01T10:00:00.000Z',
+      isDeleted: false,
+    }).fetch();
+    nonAuthorGuidelineId = nonAuthorGuideline.id;
+
+    await TGuideline.updateOne({ id: nonAuthorGuidelineId }).set({
+      title: 'Rollback Current Title For Non Author',
+      description: 'Current state before rollback.',
+    });
+
+    await sails.sendNativeQuery(
+      `INSERT INTO h_guideline
+         (id, title, description, id_author, id_language, date_inscription, date_reviewed, is_deleted)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        nonAuthorGuidelineId,
+        nonAuthorTargetTitle,
+        'Target state to roll back to.',
+        3,
+        'fra',
+        '2024-07-01T09:00:00.000Z',
+        '2024-07-01T09:00:00.000Z',
         false,
       ]
     );
@@ -124,6 +173,38 @@ describe('Guideline rollback', () => {
         (s) => s.description === currentDescription
       );
       should(preRollbackSnapshot).be.ok();
+    });
+
+    // Guards the RBAC relaxation from this change (issue #1775). The success
+    // case above authenticates as user1 (id 3), who is also the guideline's
+    // author, so it would still pass if the removed author-check came back.
+    // The leader (user 7) is authenticated but is neither the author, a
+    // moderator, nor an administrator — exactly the caller the old guard
+    // rejected with 403.
+    it('should allow an authenticated non-author, non-moderator, non-admin to roll back', async () => {
+      const getRes = await supertest(sails.hooks.http.app)
+        .get(`/api/v1/guidelines/${nonAuthorGuidelineId}/snapshots`)
+        .expect(200);
+
+      const targetSnapshot = getRes.body.guidelines.find(
+        (s) => s.title === nonAuthorTargetTitle
+      );
+      should(targetSnapshot).be.ok();
+
+      const res = await supertest(sails.hooks.http.app)
+        .post(
+          `/api/v1/guidelines/${nonAuthorGuidelineId}/rollback/${targetSnapshot.id}`
+        )
+        .set('Authorization', leaderToken)
+        .expect(200);
+
+      should(res.body.title).equal(nonAuthorTargetTitle);
+
+      // Confirm the caller really was a non-author, so this test keeps its
+      // meaning if the fixtures change.
+      const guideline = await TGuideline.findOne(nonAuthorGuidelineId);
+      should(guideline.author).not.equal(7);
+      should(guideline.title).equal(nonAuthorTargetTitle);
     });
   });
 });

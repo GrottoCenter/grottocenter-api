@@ -3541,10 +3541,40 @@ paths:
                     type: string
 
   '/guidelines/{id}':
+    get:
+      tags:
+        - guidelines
+      description: >-
+        Get a single guideline by ID. Public endpoint — no authentication
+        required. Geographic relations and the language are hydrated with
+        readable names (see `GuidelineDetail`).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Guideline ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuidelineDetail'
+        '404':
+          description: Guideline not found or soft-deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
     patch:
       tags:
         - guidelines
-      description: Update a guideline. Authenticated action (only the author or a moderator can update a guideline).
+      description: Update a guideline. Authenticated action (any authenticated user can update a guideline).
       security:
         - bearerAuth: []
       parameters:
@@ -3606,8 +3636,6 @@ paths:
                     type: string
         '401':
           description: Unauthorized (missing or invalid JWT token).
-        '403':
-          description: Forbidden (user is not authorized to update this guideline).
         '404':
           description: Guideline not found or already deleted.
           content:
@@ -3784,8 +3812,6 @@ paths:
                     type: string
         '401':
           description: Unauthorized (missing or invalid JWT token).
-        '403':
-          description: Forbidden (user is not the author, a moderator, or an administrator).
         '404':
           description: Guideline or history snapshot not found.
           content:
@@ -8755,6 +8781,83 @@ components:
           type: integer
           description: "Only present in history snapshots. The ID of the parent guideline this snapshot belongs to."
 
+    GuidelineDetail:
+      type: object
+      description: >-
+        Returned by `GET /guidelines/{id}` only. Same fields as `Guideline`, but
+        the geographic relations and the language are hydrated with readable
+        names so a guideline detail page can be rendered without follow-up
+        requests. The other guideline endpoints return the leaner `Guideline`
+        shape, where `countries`/`regions` are bare ID strings.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        countries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: ISO 3166-1 alpha-2 country code.
+              name:
+                type: string
+                nullable: true
+                description: The country's native name.
+        regions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: ISO 3166-2 subdivision code.
+              name:
+                type: string
+                nullable: true
+              countryId:
+                type: string
+                nullable: true
+                description: >-
+                  Country code derived from the ISO 3166-2 prefix
+                  (e.g. `FR-01` yields `FR`). Null when the code has no prefix.
+        massifs:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+                nullable: true
+              language:
+                type: string
+                nullable: true
+              isDeleted:
+                type: boolean
+        dateInscription:
+          type: string
+          format: date-time
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+        isDeleted:
+          type: boolean
+        author:
+          $ref: '#/components/schemas/Caver'
+        reviewer:
+          $ref: '#/components/schemas/Caver'
+          nullable: true
+        language:
+          $ref: '#/components/schemas/Language'
+
     HealthStatus:
       type: object
       properties:
@@ -8836,8 +8939,14 @@ components:
           type: string
         type:
           type: string
-        ref_name:
+        refName:
           type: string
+          description: >-
+            The language's readable name (e.g. `French`). Serialized as
+            `refName`; `ref_name` is the underlying column name, not the API
+            attribute.
+        isPrefered:
+          type: boolean
         comment:
           type: string
 

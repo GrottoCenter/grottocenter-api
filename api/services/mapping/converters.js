@@ -23,6 +23,18 @@ const {
   getQualityBreakdown,
 } = require('../../utils/computeEntranceDataQuality');
 
+/**
+ * Derive a country code from an ISO 3166-2 region code ('FR-01' -> 'FR').
+ * Returns null for anything that isn't a string containing a '-' past the
+ * first character, so a malformed or already-numeric id yields no country
+ * rather than a bogus prefix.
+ */
+const extractCountryId = (regionId) => {
+  if (!regionId || typeof regionId !== 'string') return null;
+  const dash = regionId.indexOf('-');
+  return dash > 0 ? regionId.slice(0, dash) : null;
+};
+
 const c = {
   toCave: (source, meta) => {
     const result = {
@@ -988,6 +1000,30 @@ const c = {
     return result;
   },
 
+  // Detail view for GET /api/v1/guidelines/:id. Unlike toSimpleGuideline (used
+  // by the list, by-entity and snapshot endpoints, which keep the leaner
+  // shape), this hydrates the geographic relations and the language with
+  // readable names so the front end can render a standalone guideline page
+  // without follow-up requests. Relies on
+  // GuidelineService.getGuidelineDetail having populated `language` and the
+  // massifs' nested `names`.
+  toGuideline: (source) => ({
+    ...c.toSimpleGuideline(source),
+    countries: toList('countries', source, (country) =>
+      country instanceof Object
+        ? { id: country.id, name: country.nativeName }
+        : { id: country }
+    ),
+    regions: toList('regions', source, (region) => {
+      const id = region instanceof Object ? region.id : region;
+      return {
+        id,
+        name: region instanceof Object ? region.name : undefined,
+        countryId: extractCountryId(id),
+      };
+    }),
+  }),
+
   // Transform the typesense response
   toSearchResult: (source, meta) => {
     // For each result of the search, convert the item and add it to the json to send
@@ -1076,4 +1112,4 @@ const c = {
   }),
 };
 
-module.exports = c;
+module.exports = { ...c, extractCountryId };

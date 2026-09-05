@@ -333,6 +333,7 @@ module.exports.routes = {
   // Guideline
   'GET /api/v1/guidelines': 'v1/guideline/find-all',
   'POST /api/v1/guidelines': 'v1/guideline/create',
+  'GET /api/v1/guidelines/:id': 'v1/guideline/find',
   'PATCH /api/v1/guidelines/:id': 'v1/guideline/update',
   'DELETE /api/v1/guidelines/:id': 'v1/guideline/delete',
   'POST /api/v1/guidelines/:id/restore': 'v1/guideline/restore',
