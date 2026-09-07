@@ -11,6 +11,7 @@ describe('Guideline find', () => {
   // (mirroring rollback.test.js).
   let guidelineId;
   let deletedGuidelineId;
+  let unreviewedGuidelineId;
 
   before(async () => {
     const guideline = await TGuideline.create({
@@ -35,6 +36,17 @@ describe('Guideline find', () => {
       isDeleted: true,
     }).fetch();
     deletedGuidelineId = deleted.id;
+
+    // No reviewer: this is the state every guideline is created in, since
+    // `create` never sets one. Kept separate from the row above so the
+    // `reviewer: 2` assertions there stay meaningful.
+    const unreviewed = await TGuideline.create({
+      title: 'Find Guideline Without Reviewer',
+      author: 3,
+      language: 'fra',
+      dateInscription: new Date(),
+    }).fetch();
+    unreviewedGuidelineId = unreviewed.id;
   });
 
   describe('GET /api/v1/guidelines/:id', () => {
@@ -126,6 +138,20 @@ describe('Guideline find', () => {
       should(res.body.countries).be.an.Array().and.be.empty();
       should(res.body.regions).be.an.Array().and.be.empty();
       should(res.body.massifs).be.an.Array().and.be.empty();
+    });
+
+    // `reviewer` is null on every freshly created guideline (create never sets
+    // one) and the converter passes null straight through, so the detail
+    // response really does carry `reviewer: null`. This pins the OpenAPI
+    // contract: `GuidelineDetail.reviewer` must stay a nullable schema, which
+    // under OpenAPI 3.0 means `nullable` beside an `allOf` wrapper — a
+    // `nullable` sibling of `$ref` is ignored and would reject this response.
+    it('should return reviewer as null for a guideline that has no reviewer', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get(`/api/v1/guidelines/${unreviewedGuidelineId}`)
+        .expect(200);
+
+      should(res.body).have.property('reviewer', null);
     });
 
     // Req 2.8: soft-deleted guideline returns 404
