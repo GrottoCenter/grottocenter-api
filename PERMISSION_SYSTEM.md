@@ -236,9 +236,14 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 Guidelines are legal/regulatory notes attached to one or more geographic entities (country, region, massif).
 
 - **Read**: Fully public — list, single-guideline lookup by id, by-entity lookup, and snapshots require no
-  authentication. The by-id route is gated `['validateId']` only, so a malformed id yields `400` and a missing one `404`.
-  It returns `404` for soft-deleted guidelines **to every role**, including Moderators: unlike the core-content `find`
-  controllers, it has no `MODERATOR` branch revealing deleted records, so there is no authenticated way to read one back
+  authentication. The by-id route is gated `['validateId']` only, and that policy rejects through `res.notFound`, so a
+  malformed id and a missing one are indistinguishable — both yield `404`. The route also returns `404` for soft-deleted
+  guidelines **to every role**, including Moderators: unlike the core-content `find` controllers it has no `MODERATOR`
+  branch revealing deleted records. That hides the *live row* only, and does not make a deleted guideline's content
+  unreachable — `get-snapshots` is public and queries `h_guideline` by `t_id` without consulting the live row or its
+  `isDeleted` flag, while the update trigger snapshots the pre-delete title, description and language on soft-delete. An
+  unauthenticated caller can therefore still read a soft-deleted guideline's text via
+  `GET /api/v1/guidelines/:id/snapshots`. Treat soft-deleting a guideline as unpublishing it, not as redacting it
 - **Create**: Any authenticated user; no role check. At least one country, region, or massif must be referenced
 - **Update**: Any authenticated user; no ownership and no role check — `tokenAuth` is the only gate, so a plain user can
   edit another user's guideline, as with most other content
@@ -436,12 +441,12 @@ practice Administrators are granted every group, so they cumulate Moderator powe
    the outlier, accepting either role. Tracked in #1796.
 5. **Delete and restore disagree within the same entity.** `device`, `sensor-configuration` and `guideline` all accept
    either role to *delete*, but only `guideline` accepts either role to *restore*. Tracked in #1796.
-6. **Guidelines are writable by anyone but deletable only by moderators.** `guideline/update` and `guideline/rollback`
-   perform no ownership or role check, so any authenticated user can rewrite or roll back any guideline, while
-   `guideline/delete` still requires Moderator or Administrator. Rollback is the sharper edge: it replaces the live
-   title, description, and language from an arbitrary snapshot, giving any user a one-request way to revert another
-   user's edits. Deliberate — it matches how caves, entrances, and documents are already open to any authenticated user —
-   but it leaves comments as the only ownership-scoped update path.
+6. **Guidelines are writable by anyone but deletable only by Moderators or Administrators.** `guideline/update` and
+   `guideline/rollback` perform no ownership or role check, so any authenticated user can rewrite or roll back any
+   guideline, while `guideline/delete` requires Moderator or Administrator. Rollback is the sharper edge: it replaces
+   the live title, description, and language from an arbitrary snapshot, giving any user a one-request way to revert
+   another user's edits. Deliberate — it matches how caves, entrances, and documents are already open to any
+   authenticated user — but it leaves comments as the only ownership-scoped update path.
 
 If any of these are corrected in code, update the matrix rows and the "Soft Deletes" section together.
 
