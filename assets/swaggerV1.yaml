@@ -8773,8 +8773,9 @@ components:
         author:
           $ref: '#/components/schemas/Caver'
         reviewer:
-          $ref: '#/components/schemas/Caver'
           nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Caver'
         language:
           $ref: '#/components/schemas/Language'
         t_id:
@@ -8853,8 +8854,9 @@ components:
         author:
           $ref: '#/components/schemas/Caver'
         reviewer:
-          $ref: '#/components/schemas/Caver'
           nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Caver'
         language:
           $ref: '#/components/schemas/Language'
 
@@ -9904,8 +9906,9 @@ components:
         author:
           $ref: '#/components/schemas/SimpleCaver'
         reviewer:
-          $ref: '#/components/schemas/SimpleCaver'
           nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SimpleCaver'
 
     SensorConfigurationCreate:
       type: object
