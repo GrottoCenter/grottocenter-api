@@ -61,7 +61,11 @@ module.exports = {
    */
   getCaver: async (caverId) => {
     const caver = await TCaver.findOne(caverId)
+      // `authoredCount` below carries the real total. Deleted documents are
+      // filtered in the query rather than afterwards, so they cannot consume
+      // one of the slots.
       .populate('documents', {
+        where: { isDeleted: false },
         limit: 10,
         sort: [{ dateInscription: 'DESC' }],
       })
@@ -82,7 +86,14 @@ module.exports = {
       ? 'CAVER'
       : 'AUTHOR';
 
-    await Promise.all([
+    // Required here rather than at the top of the file: DocumentService pulls in
+    // utils/csvHelper, which requires this service back, so a top-level capture
+    // would resolve to a half-initialised module.
+    // eslint-disable-next-line global-require
+    const DocumentService = require('./DocumentService');
+
+    const [authoredCount] = await Promise.all([
+      DocumentService.countAuthoredByCaver(caverId),
       NameService.setNames(caver.exploredEntrances, 'entrance'),
       NameService.setNames(caver.grottos, 'grotto'),
       NameService.setNames(caver.subscribedToMassifs, 'massif'),
@@ -100,6 +111,7 @@ module.exports = {
       grottos: caver.grottos,
       exploredEntrances: caver.exploredEntrances,
       documents: caver.documents,
+      authoredCount,
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,
       subscribedToRegions: caver.subscribedToRegions,

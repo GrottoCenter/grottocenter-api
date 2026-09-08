@@ -7,6 +7,10 @@ const ORGANIZATION_PROPERTIES = [
   '@type',
   'id',
   'address',
+  'authoredCount',
+  'authoredDocuments',
+  'publishedCount',
+  'publishedDocuments',
   'city',
   'country',
   'county',
@@ -65,6 +69,25 @@ describe('Organization features', () => {
           should(organization).have.properties(ORGANIZATION_PROPERTIES);
           should(organization.name).not.be.empty();
           should(organization.dateInscription).not.be.empty();
+          return done();
+        });
+    });
+
+    it('should expose authored and published documents as separate lists', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/1')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const { body: organization } = res;
+          should(organization.authoredDocuments).be.an.Array();
+          should(organization.publishedDocuments).be.an.Array();
+          should(organization.authoredCount).be.a.Number();
+          should(organization.publishedCount).be.a.Number();
+          // Replaced by the two lists above.
+          should(organization).not.have.property('documents');
           return done();
         });
     });

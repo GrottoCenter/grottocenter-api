@@ -21,6 +21,25 @@ const {
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
 
+// Authorship is a many-to-many relation, which Waterline's count() cannot
+// filter on, hence the native queries. Both exclude soft-deleted documents so
+// the count agrees with the lists the callers render alongside it.
+const COUNT_DOCUMENTS_AUTHORED_BY_GROTTO = `
+  SELECT COUNT(d.id)::integer AS count
+  FROM j_document_grotto_author AS j
+  JOIN t_document AS d ON d.id = j.id_document
+  WHERE j.id_grotto = $1
+  AND d.is_deleted = false
+`;
+
+const COUNT_DOCUMENTS_AUTHORED_BY_CAVER = `
+  SELECT COUNT(d.id)::integer AS count
+  FROM j_document_caver_author AS j
+  JOIN t_document AS d ON d.id = j.id_document
+  WHERE j.id_caver = $1
+  AND d.is_deleted = false
+`;
+
 // Maps a populated authorsOrganization array to the Typesense-ready shape.
 // Exported so property tests can exercise the actual function rather than a copy.
 const mapAuthorsOrganizationForSearch = (orgs) =>
@@ -600,6 +619,34 @@ module.exports = {
     return documents;
   },
 
+  /**
+   * Total number of non-deleted documents authored by an organization.
+   * Unbounded, unlike the capped list the organization payload carries, so the
+   * UI can show "10 of 1954" and link out to a filtered search.
+   * @param {Integer} organizationId
+   * @returns {Promise<Integer>}
+   */
+  countAuthoredByOrganization: async (organizationId) => {
+    const result = await sails.sendNativeQuery(
+      COUNT_DOCUMENTS_AUTHORED_BY_GROTTO,
+      [organizationId]
+    );
+    return result.rows[0]?.count ?? 0;
+  },
+
+  /**
+   * Total number of non-deleted documents authored by a caver.
+   * @param {Integer} caverId
+   * @returns {Promise<Integer>}
+   */
+  countAuthoredByCaver: async (caverId) => {
+    const result = await sails.sendNativeQuery(
+      COUNT_DOCUMENTS_AUTHORED_BY_CAVER,
+      [caverId]
+    );
+    return result.rows[0]?.count ?? 0;
+  },
+
   getDocumentChildren: async (documentId) =>
     TDocument.find({ parent: documentId })
       .populate('descriptions')
@@ -650,38 +697,6 @@ module.exports = {
     if (!entrance) return [];
 
     return entrance.documents.map((doc) => ({ id: doc.id }));
-  },
-
-  getCollectionAncestors: async (documentIds) => {
-    if (documentIds.length === 0) return [];
-
-    // The CYCLE clause (PostgreSQL 14+) detects when a row has already appeared
-    // in the recursive path and stops traversal, so cyclic data (e.g. a document
-    // that is its own parent) can never produce an infinite loop.
-    const query = `
-      WITH RECURSIVE doc_hierarchy AS (
-        SELECT id, id_parent, id_type
-        FROM t_document
-        WHERE id = ANY($1)
-
-        UNION ALL
-
-        SELECT d.id, d.id_parent, d.id_type
-        FROM t_document d
-        JOIN doc_hierarchy dh ON d.id = dh.id_parent
-      )
-      CYCLE id SET is_cycle USING path
-      SELECT DISTINCT dh.id
-      FROM doc_hierarchy dh
-      JOIN t_type t ON dh.id_type = t.id
-      WHERE t.name = 'Collection'
-        AND dh.is_cycle = false
-    `;
-
-    const result = await sails.sendNativeQuery(query, [documentIds]);
-    const collectionIds = result.rows.map((row) => row.id);
-
-    return module.exports.getDocuments(collectionIds);
   },
 
   /**

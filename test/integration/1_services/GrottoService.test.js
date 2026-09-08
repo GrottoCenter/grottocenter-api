@@ -130,13 +130,103 @@ describe('GrottoService', () => {
       should(result).have.property('author');
       should(result).have.property('names');
       should(result).have.property('cavers');
-      should(result).have.property('documents');
+      should(result).have.property('authoredDocuments');
+      should(result).have.property('publishedDocuments');
+      should(result).have.property('authoredCount');
+      should(result).have.property('publishedCount');
       should(result).have.property('exploredNetworks');
       should(result).have.property('exploredEntrances');
       should(result).have.property('partnerNetworks');
       should(result).have.property('partnerEntrances');
       should(result.exploredCaves).be.undefined();
       should(result.partnerCaves).be.undefined();
+      // Superseded by the two lists above; leaving it would double-render docs.
+      should(result.documents).be.undefined();
+    });
+
+    it('should report authored and published documents separately', async () => {
+      const result = await GrottoService.getPopulatedOrganization(1);
+      should(result.authoredDocuments).be.an.Array();
+      should(result.publishedDocuments).be.an.Array();
+      should(result.authoredCount).be.a.Number();
+      should(result.publishedCount).be.a.Number();
+
+      // Each list is a preview page; the counts are the real totals, so they
+      // can never be smaller than what the lists carry.
+      should(result.authoredDocuments.length).be.lessThanOrEqual(10);
+      should(result.publishedDocuments.length).be.lessThanOrEqual(10);
+      should(result.authoredCount).be.greaterThanOrEqual(
+        result.authoredDocuments.length
+      );
+      should(result.publishedCount).be.greaterThanOrEqual(
+        result.publishedDocuments.length
+      );
+    });
+
+    it('should hydrate documents with their citation fields', async () => {
+      const result = await GrottoService.getPopulatedOrganization(1);
+      should(result.authoredDocuments.length).be.greaterThan(0);
+      // The organization page renders citations, so the lists must carry the
+      // citation joins rather than bare titles.
+      for (const document of result.authoredDocuments) {
+        should(document).have.property('authors');
+        should(document).have.property('authorsOrganization');
+        should(document).have.property('type');
+        should(document).have.property('parent');
+      }
+    });
+
+    describe('ordering', () => {
+      // The single-document fixture cannot show an ordering bug, so build a set
+      // whose registration dates run counter to the id order.
+      const createdDocIds = [];
+
+      before(async () => {
+        // Created one at a time on purpose: ids must ascend while the dates do
+        // not, so returning rows in id order would fail the assertion below.
+        /* eslint-disable no-await-in-loop */
+        const dates = ['2019-01-01', '2023-01-01', '2021-01-01'];
+        for (const date of dates) {
+          const doc = await TDocument.create({
+            author: 1,
+            type: 1,
+            editor: 1,
+            dateInscription: new Date(date),
+          }).fetch();
+          createdDocIds.push(doc.id);
+          await JDocumentGrottoAuthor.create({ document: doc.id, grotto: 1 });
+        }
+        /* eslint-enable no-await-in-loop */
+      });
+
+      after(async () => {
+        await JDocumentGrottoAuthor.destroy({ document: createdDocIds });
+        await TDocument.destroy({ id: createdDocIds });
+      });
+
+      it('should order both lists most recently registered first', async () => {
+        const result = await GrottoService.getPopulatedOrganization(1);
+        // getDocumentsForCitation re-queries by id, so without an explicit
+        // re-sort the lists come back in whatever order postgres chooses.
+        const isDescending = (documents) =>
+          documents.every(
+            (document, i) =>
+              i === 0 ||
+              new Date(documents[i - 1].dateInscription) >=
+                new Date(document.dateInscription)
+          );
+
+        should(result.authoredDocuments.length).be.greaterThan(2);
+        should(result.publishedDocuments.length).be.greaterThan(2);
+        should(isDescending(result.authoredDocuments)).be.true();
+        should(isDescending(result.publishedDocuments)).be.true();
+      });
+    });
+
+    it('should exclude deleted documents from the authored list', async () => {
+      const result = await GrottoService.getPopulatedOrganization(1);
+      should(result.authoredDocuments.every((d) => !d.isDeleted)).be.true();
+      should(result.publishedDocuments.every((d) => !d.isDeleted)).be.true();
     });
 
     it('should split caves into networks and entrances for explored', async () => {
@@ -355,6 +445,37 @@ describe('GrottoService', () => {
       should(callArg.reviewer).equal('Reviewer');
       should(callArg.country).equal('France');
       should(callArg.nbCavers).equal(2);
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should not leak the document lists into the search payload', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+
+      // updateInSearch spreads the leftover fields into the Typesense payload,
+      // so a display-only field that isn't destructured out would be indexed
+      // against a schema that doesn't declare it.
+      await GrottoService.updateInSearch({
+        id: 1,
+        author: { id: 1, nickname: 'Author' },
+        names: [{ name: 'Test Org', language: 'eng' }],
+        exploredNetworks: [],
+        exploredEntrances: [],
+        partnerNetworks: [],
+        partnerEntrances: [],
+        authoredDocuments: [{ id: 1 }],
+        publishedDocuments: [{ id: 2 }],
+        authoredCount: 1,
+        publishedCount: 1,
+      });
+
+      const callArg = updateStub.getCall(0).args[1];
+      should(callArg).not.have.property('authoredDocuments');
+      should(callArg).not.have.property('publishedDocuments');
+      should(callArg).not.have.property('authoredCount');
+      should(callArg).not.have.property('publishedCount');
+      should(callArg).not.have.property('documents');
       process.env.NODE_ENV = originalEnv;
     });
 

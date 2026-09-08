@@ -79,6 +79,9 @@ describe('CaverService', () => {
       should(caver.surname).equal('Cavo');
       should(caver.documents.length).equal(3);
       should(caver.documents).containDeep([{ id: 1 }, { id: 2 }, { id: 4 }]);
+      // `documents` is a capped preview, `authoredCount` the real total; here
+      // the fixture set is small enough that they agree.
+      should(caver.authoredCount).equal(3);
       should(caver.groups.length).equal(1);
       should(caver.grottos.length).equal(2);
       should(caver.grottos).containDeep([{ id: 1 }, { id: 2 }]);
