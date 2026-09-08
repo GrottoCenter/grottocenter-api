@@ -158,6 +158,80 @@ describe('DocumentService', () => {
     });
   });
 
+  describe('countAuthoredByOrganization()', () => {
+    let extraDocId;
+
+    afterEach(async () => {
+      if (extraDocId) {
+        await JDocumentGrottoAuthor.destroy({ document: extraDocId });
+        await TDocument.destroy({ id: extraDocId });
+        extraDocId = null;
+      }
+    });
+
+    it('should count the documents the organization authored', async () => {
+      // Fixture: organization 1 authors document 1.
+      const result = await DocumentService.countAuthoredByOrganization(1);
+      should(result).equal(1);
+    });
+
+    it('should return 0 for an organization that authored nothing', async () => {
+      const result = await DocumentService.countAuthoredByOrganization(99999);
+      should(result).equal(0);
+    });
+
+    it('should not count deleted documents', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        isDeleted: true,
+      }).fetch();
+      extraDocId = doc.id;
+      await JDocumentGrottoAuthor.create({ document: doc.id, grotto: 1 });
+
+      // The count backs a list that hides deleted documents, so a soft-deleted
+      // document must not inflate it.
+      const result = await DocumentService.countAuthoredByOrganization(1);
+      should(result).equal(1);
+    });
+  });
+
+  describe('countAuthoredByCaver()', () => {
+    let extraDocId;
+
+    afterEach(async () => {
+      if (extraDocId) {
+        await JDocumentCaverAuthor.destroy({ document: extraDocId });
+        await TDocument.destroy({ id: extraDocId });
+        extraDocId = null;
+      }
+    });
+
+    it('should count the documents the caver authored', async () => {
+      // Fixture: caver 1 authors documents 1, 2 and 4.
+      const result = await DocumentService.countAuthoredByCaver(1);
+      should(result).equal(3);
+    });
+
+    it('should return 0 for a caver that authored nothing', async () => {
+      const result = await DocumentService.countAuthoredByCaver(99999);
+      should(result).equal(0);
+    });
+
+    it('should not count deleted documents', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        isDeleted: true,
+      }).fetch();
+      extraDocId = doc.id;
+      await JDocumentCaverAuthor.create({ document: doc.id, caver: 1 });
+
+      const result = await DocumentService.countAuthoredByCaver(1);
+      should(result).equal(3);
+    });
+  });
+
   describe('getIdDocumentByEntranceId()', () => {
     it('should return empty array for null entrance', async () => {
       const result = await DocumentService.getIdDocumentByEntranceId(null);
@@ -166,18 +240,6 @@ describe('DocumentService', () => {
 
     it('should return document ids for entrance', async () => {
       const result = await DocumentService.getIdDocumentByEntranceId(1);
-      should(result).be.an.Array();
-    });
-  });
-
-  describe('getCollectionAncestors()', () => {
-    it('should return empty array for empty input', async () => {
-      const result = await DocumentService.getCollectionAncestors([]);
-      should(result).eql([]);
-    });
-
-    it('should return collection ancestors', async () => {
-      const result = await DocumentService.getCollectionAncestors([1]);
       should(result).be.an.Array();
     });
   });
@@ -849,7 +911,7 @@ describe('DocumentService', () => {
     });
   });
 
-  describe('getCollectionAncestors() - cycle safety', () => {
+  describe('checkParentCycle() - cycle safety', () => {
     let cyclicDocAId;
     let cyclicDocBId;
 
@@ -875,7 +937,7 @@ describe('DocumentService', () => {
       // data that may exist in production before the constraint was added.
       this.timeout(10000);
 
-      // Create doc A (a Collection, so getCollectionAncestors would normally walk up)
+      // Create doc A (a Collection, so the recursive CTE walks up from it)
       const docA = await TDocument.create({ author: 1, type: 1 }).fetch();
       cyclicDocAId = docA.id;
 
@@ -894,12 +956,9 @@ describe('DocumentService', () => {
         [docB.id, docA.id]
       );
 
-      // getCollectionAncestors must terminate and return a valid (possibly empty) array
-      const result = await DocumentService.getCollectionAncestors([
-        docA.id,
-        docB.id,
-      ]);
-      should(result).be.an.Array();
+      // The recursive CTE must terminate rather than loop forever on the cycle.
+      const result = await DocumentService.checkParentCycle(docA.id, docB.id);
+      should(result).be.a.Boolean();
     });
   });
 

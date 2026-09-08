@@ -7960,8 +7960,17 @@ components:
           type: string
         '@type':
           type: string
+        authoredCount:
+          type: integer
+          description: >-
+            Total number of non-deleted documents this person authored. May exceed
+            the length of documents, which is a capped preview. There is no
+            publishedCount counterpart: only organizations can be a document's editor.
         documents:
           type: array
+          description: >-
+            Most recently registered documents authored by this person, capped at
+            10. See authoredCount for the total.
           items:
             $ref: '#/components/schemas/CitationDocument'
         exploredEntrances:
@@ -9377,6 +9386,18 @@ components:
           type: 'string'
         author:
           $ref: '#/components/schemas/Caver'
+        authoredCount:
+          type: integer
+          description: >-
+            Total number of non-deleted documents this organization authored.
+            May exceed the length of authoredDocuments, which is a capped preview.
+        authoredDocuments:
+          type: array
+          description: >-
+            Most recently registered documents authored by this organization,
+            capped at 10. See authoredCount for the total.
+          items:
+            $ref: '#/components/schemas/CitationDocument'
         cavers:
           type: array
           items:
@@ -9497,6 +9518,19 @@ components:
           type: 'string'
         postalCode:
           type: 'string'
+        publishedCount:
+          type: integer
+          description: >-
+            Total number of non-deleted documents this organization published
+            (i.e. is the editor of). May exceed the length of publishedDocuments,
+            which is a capped preview.
+        publishedDocuments:
+          type: array
+          description: >-
+            Most recently registered documents published by this organization,
+            capped at 10. See publishedCount for the total.
+          items:
+            $ref: '#/components/schemas/CitationDocument'
         region:
           type: 'string'
         reviewer:

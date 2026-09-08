@@ -106,6 +106,10 @@ const c = {
       nickname: source.nickname,
       surname: source.surname,
       name: source.name,
+      // Real total behind the capped `documents` preview below. Cavers cannot
+      // be a document's editor (that relation is organization-only), so there
+      // is no publishedCount counterpart.
+      authoredCount: source.authoredCount,
       subscribedToCountries: source.subscribedToCountries?.map((e) => e.id),
       subscribedToMassifs: toList(
         'subscribedToMassifs',
@@ -803,7 +807,21 @@ const c = {
     yearBirth: source.yearBirth,
     nbCavers: source.nbCavers, // From search
     cavers: toList('cavers', source, c.toSimpleCaver),
-    documents: toList('documents', source, c.toSimpleDocument),
+    // Documents the organization wrote vs. documents it published, kept apart
+    // because they are distinct editorial relations. Both lists are a capped
+    // preview; the counts are the real totals.
+    authoredDocuments: toList(
+      'authoredDocuments',
+      source,
+      c.toCitationDocument
+    ),
+    publishedDocuments: toList(
+      'publishedDocuments',
+      source,
+      c.toCitationDocument
+    ),
+    authoredCount: source.authoredCount,
+    publishedCount: source.publishedCount,
     exploredEntrances: toList('exploredEntrances', source, c.toSimpleEntrance, {
       meta,
     }),
@@ -1059,7 +1077,10 @@ const c = {
         data = c.toOrganization(item.document, meta);
         // Strip arrays not needed in search responses
         delete data.cavers;
-        delete data.documents;
+        delete data.authoredDocuments;
+        delete data.publishedDocuments;
+        delete data.authoredCount;
+        delete data.publishedCount;
         delete data.exploredEntrances;
         delete data.exploredNetworks;
         delete data.partnerEntrances;

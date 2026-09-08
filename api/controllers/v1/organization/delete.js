@@ -112,10 +112,16 @@ module.exports = async (req, res) => {
       await JGrottoCaveExplorer.destroy({ grotto: organizationId });
     }
 
-    if (organization.documents.length > 0) {
+    // Authorship links must be read uncapped and straight from the association:
+    // the populated organization only carries a preview page of the documents it
+    // authored, which would silently drop the rest of the authorship rows.
+    const { documents: authoredDocuments } =
+      await TGrotto.findOne(organizationId).populate('documents');
+
+    if (authoredDocuments.length > 0) {
       if (shouldMergeInto) {
         const existingDocuments = mergeIntoEntity.documents.map((e) => e.id);
-        const documentsToAdd = organization.documents
+        const documentsToAdd = authoredDocuments
           .map((e) => e.id)
           .filter((e) => !existingDocuments.includes(e));
         await TGrotto.addToCollection(mergeIntoId, 'documents', documentsToAdd);

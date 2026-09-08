@@ -8,6 +8,11 @@ const RecentChangeService = require('./RecentChangeService');
 const coerceToNumeric = require('../utils/coerceToNumeric');
 const trimIfString = require('../utils/trimIfString');
 
+// An organization can author or publish thousands of documents (the FFS
+// publishes ~2000), so the payload carries a preview page and a total count
+// instead of the whole set. Matches the cap CaverService uses for cavers.
+const DOCUMENTS_PREVIEW_LIMIT = 10;
+
 module.exports = {
   // Extract everything from a request body except id
   getConvertedDataFromClientRequest: (req) => ({
@@ -32,7 +37,14 @@ module.exports = {
       .populate('names')
       .populate('cavers')
       .populate('country')
-      .populate('documents')
+      // Only the most recent few are rendered; `authoredCount` below carries the
+      // real total. Deleted documents are filtered in the query rather than
+      // afterwards, so they cannot consume one of the slots.
+      .populate('documents', {
+        where: { isDeleted: false },
+        limit: DOCUMENTS_PREVIEW_LIMIT,
+        sort: [{ dateInscription: 'DESC' }],
+      })
       .populate('exploredCaves')
       .populate('partnerCaves')
       .populate('managedCountries')
@@ -88,20 +100,47 @@ module.exports = {
     delete organization.exploredCaves;
     delete organization.partnerCaves;
 
-    // Get documents where organization is author (existing functionality)
-    const authorDocIds = organization.documents.map((e) => e.id);
+    // Authoring and publishing are distinct editorial relations, so they are
+    // reported as two separate lists rather than merged: an organization that
+    // wrote a topo is not the same as one that published someone else's.
+    const authoredIds = organization.documents.map((e) => e.id);
+    const publishedDocs = await TDocument.find({
+      editor: organizationId,
+      isDeleted: false,
+    })
+      .limit(DOCUMENTS_PREVIEW_LIMIT)
+      .sort([{ dateInscription: 'DESC' }]);
 
-    // Get documents where organization is editor
-    const editorDocs = await TDocument.find({ editor: organizationId });
+    const publishedIds = publishedDocs.map((d) => d.id);
 
-    // Combine both sets of documents and remove duplicates
-    const allDocIds = [
-      ...new Set([...authorDocIds, ...editorDocs.map((d) => d.id)]),
-    ];
+    const [
+      authoredDocuments,
+      publishedDocuments,
+      authoredCount,
+      publishedCount,
+    ] = await Promise.all([
+      DocumentService.getDocumentsForCitation(authoredIds),
+      DocumentService.getDocumentsForCitation(publishedIds),
+      DocumentService.countAuthoredByOrganization(organizationId),
+      TDocument.count({ editor: organizationId, isDeleted: false }),
+    ]);
 
-    // Get Collection ancestors of all organization documents
-    organization.documents =
-      await DocumentService.getCollectionAncestors(allDocIds);
+    // getDocumentsForCitation re-queries by id, which loses the ordering the two
+    // capped selections above were made with, so restore it here — the lists are
+    // a "most recent first" preview and the frontend renders them as given.
+    const orderByIds = (ids, documents) => {
+      const byId = new Map(documents.map((d) => [d.id, d]));
+      return ids.map((id) => byId.get(id)).filter(Boolean);
+    };
+
+    delete organization.documents;
+    organization.authoredDocuments = orderByIds(authoredIds, authoredDocuments);
+    organization.publishedDocuments = orderByIds(
+      publishedIds,
+      publishedDocuments
+    );
+    organization.authoredCount = authoredCount;
+    organization.publishedCount = publishedCount;
 
     return organization;
   },
@@ -188,6 +227,9 @@ module.exports = {
   },
 
   async updateInSearch(populatedOrganization) {
+    // The remaining fields are spread into the search payload, so anything the
+    // `organizations` collection schema doesn't declare must be destructured
+    // out here. The document lists and their counts are display-only.
     const {
       names,
       cavers,
@@ -196,6 +238,10 @@ module.exports = {
       exploredEntrances,
       partnerNetworks,
       partnerEntrances,
+      authoredDocuments,
+      publishedDocuments,
+      authoredCount,
+      publishedCount,
       ...o
     } = populatedOrganization;
     const organization = {

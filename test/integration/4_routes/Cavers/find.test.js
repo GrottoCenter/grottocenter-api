@@ -7,6 +7,7 @@ const CAVER_PROPERTIES = [
   '@id',
   '@type',
   'id',
+  'authoredCount',
   'documents',
   'exploredEntrances',
   'organizations',
