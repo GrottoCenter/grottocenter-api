@@ -3545,9 +3545,14 @@ paths:
       tags:
         - guidelines
       description: >-
-        Get a single guideline by ID. Public endpoint — no authentication
-        required. Geographic relations and the language are hydrated with
-        readable names (see `GuidelineDetail`).
+        Get a single guideline by ID. Public endpoint — no authentication is
+        required for an active guideline. Geographic relations and the language
+        are hydrated with readable names (see `GuidelineDetail`). Soft-deleted
+        guidelines are only visible to authenticated callers holding the
+        Moderator or the Administrator role, who receive the same full
+        `GuidelineDetail` response with `isDeleted: true`. Anonymous and
+        unprivileged callers receive `404` for a soft-deleted guideline, with the
+        same message as for a genuinely missing one.
       parameters:
         - name: id
           in: path
@@ -3563,7 +3568,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/GuidelineDetail'
         '404':
-          description: Guideline not found or soft-deleted.
+          description: >-
+            Guideline not found, or soft-deleted and the caller is neither a
+            Moderator nor an Administrator.
           content:
             application/json:
               schema:
@@ -8860,6 +8867,10 @@ components:
           nullable: true
         isDeleted:
           type: boolean
+          description: >-
+            True for a soft-deleted guideline. `GET /guidelines/{id}` only ever
+            returns `true` here to a Moderator or an Administrator; every other
+            caller receives `404` instead.
         author:
           $ref: '#/components/schemas/Caver'
         reviewer:
