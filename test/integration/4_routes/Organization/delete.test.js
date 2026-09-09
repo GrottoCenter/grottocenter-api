@@ -183,5 +183,57 @@ describe('Organization features', () => {
         [sharedCave.id, onlyCave.id].sort()
       );
     });
+
+    it('should hand over every authored document when merging, past the preview cap', async () => {
+      const targetOrg = await TGrotto.create({ author: 1 }).fetch();
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+
+      // More than the 10-document preview the organization payload carries: the
+      // merge must read the authorship association uncapped, or the documents
+      // past the cap are wiped rather than handed over.
+      const docs = await TDocument.createEach(
+        Array.from({ length: 12 }, () => ({ author: 1, type: 1 }))
+      ).fetch();
+      const docIds = docs.map((d) => d.id);
+
+      await JDocumentGrottoAuthor.createEach(
+        docIds.map((id) => ({ document: id, grotto: org.id }))
+      );
+      // Already shared with the survivor, so re-adding it would collide on the
+      // (id_document, id_grotto) primary key.
+      const sharedDocId = docIds[0];
+      await JDocumentGrottoAuthor.create({
+        document: sharedDocId,
+        grotto: targetOrg.id,
+      });
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
+        )
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+      should(await JDocumentGrottoAuthor.find({ grotto: org.id })).have.length(
+        0
+      );
+
+      // All 12 authorship links survive on the survivor, the shared one exactly
+      // once. Reading the capped preview instead would leave only 10.
+      const survivorLinks = await JDocumentGrottoAuthor.find({
+        grotto: targetOrg.id,
+      });
+      should(survivorLinks).have.length(12);
+      should(survivorLinks.map((r) => r.document).sort()).deepEqual(
+        [...docIds].sort()
+      );
+
+      await JDocumentGrottoAuthor.destroy({ document: docIds });
+      await TDocument.destroy({ id: docIds });
+      await TGrotto.destroy({ id: targetOrg.id });
+    });
   });
 });
