@@ -13,7 +13,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 - **Permissions**:
   - View public cave/entrance/document/organisation/massif/person data
   - Search through cave/entrance/document/organisation/massif/person/device data
-  - View legislation guidelines (list, single guideline by id, by geographic entity, and snapshots)
+  - View active legislation guidelines (list, single guideline by id, by geographic entity, and snapshots) — a
+    soft-deleted guideline yields 404 by id, though its text stays readable through snapshots
   - View the organizations responsible for a country/region/massif
   - View complete entity history
   - View statistics
@@ -71,6 +72,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - **Permanently** delete those same entities — the permanent path reuses the Moderator check with no additional
       Administrator gate (see "Known Permission Inconsistencies")
     - Delete/restore legislation guidelines (permanent deletion of these requires Administrator)
+    - View a soft-deleted legislation guideline by id, with the full detail representation
     - Delete/restore devices and sensor configurations (permanent deletion of these requires Administrator)
     - Update any device or sensor configuration (regardless of ownership)
     - Permanently delete author records (`type: AUTHOR`; deleting a `CAVER` account requires Administrator instead —
@@ -108,6 +110,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
   - **Content Moderation** (guideline deletion only; other content moderation is Moderator-only):
     - Delete/restore legislation guidelines — the only guideline operation an Administrator gates, since updating and
       rolling back them is open to any authenticated user
+    - View a soft-deleted legislation guideline by id — the only soft-deleted content an Administrator can read without
+      also holding the Moderator role (see "Known Permission Inconsistencies" #3)
   - **Sensitive Data Management**:
     - View coordinates of sensitive entrances
     - Remove sensitive flag from entrances
@@ -133,7 +137,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Search content (including devices)                            | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View statistics                                               | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View history/snapshots                                        | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View guidelines (list/by-id/by-entity/snapshots)              | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View active guidelines (list/by-id/by-entity/snapshots)       | ✅ | ✅ | ✅ | ✅ | ✅ |
 | View responsible organizations of country/region/massif       | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Content Creation**                                          |
 | Create caves/entrances/documents/organisations/massifs        | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -150,7 +154,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Reorder descriptions/locations/riggings/histories/comments    | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Soft-deleted Content Management**                           |
 | Soft delete core content (caves/entrances/documents/etc.)     | ❌ | ❌ | ❌ | ✅ | ❌ |
-| View soft-deleted content                                     | ❌ | ❌ | ❌ | ✅ | ❌ |
+| View soft-deleted core content                                | ❌ | ❌ | ❌ | ✅ | ❌ |
+| View a soft-deleted guideline by id                           | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Restore core content (caves/entrances/documents/etc.)         | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Soft delete/restore guidelines                                | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Permanently delete core content (caves/entrances/docs/etc.)   | ❌ | ❌ | ❌ | ✅ | ❌ |
@@ -235,15 +240,26 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 ### Legislation Guidelines
 Guidelines are legal/regulatory notes attached to one or more geographic entities (country, region, massif).
 
-- **Read**: Fully public — list, single-guideline lookup by id, by-entity lookup, and snapshots require no
-  authentication. The by-id route is gated `['validateId']` only, and that policy rejects through `res.notFound`, so a
-  malformed id and a missing one are indistinguishable — both yield `404`. The route also returns `404` for soft-deleted
-  guidelines **to every role**, including Moderators: unlike the core-content `find` controllers it has no `MODERATOR`
-  branch revealing deleted records. That hides the *live row* only, and does not make a deleted guideline's content
-  unreachable — `get-snapshots` is public and queries `h_guideline` by `t_id` without consulting the live row or its
-  `isDeleted` flag, while the update trigger snapshots the pre-delete title, description and language on soft-delete. An
-  unauthenticated caller can therefore still read a soft-deleted guideline's text via
-  `GET /api/v1/guidelines/:id/snapshots`. Treat soft-deleting a guideline as unpublishing it, not as redacting it
+- **Read**: Public for *active* guidelines — list, single-guideline lookup by id, by-entity lookup, and snapshots require
+  no authentication. The by-id route is gated `['validateId']` only, and that policy rejects through `res.notFound`, so a
+  malformed id and a missing one are indistinguishable — both yield `404`. Since #1804 the by-id route additionally
+  reveals **soft-deleted** guidelines to a Moderator **or** an Administrator: `guideline/find.js` reads the optional
+  `req.token` that the `parseAuthToken` middleware populates on any route and, when either group is present, returns
+  `200` with the full hydrated `GuidelineDetail` and `isDeleted: true`. It accepts either role because those are exactly
+  the two roles that can delete and restore a guideline, and unlike the core-content `find` controllers — which check
+  `MODERATOR` alone — it returns the **complete** representation, so the front end can render the deleted state and the
+  restore action after a page reload. Anonymous callers, a plain User and a Leader still receive `404`, with the same
+  message as a missing id, so the deleted row's existence is not leaked.
+  Hiding the live row was never a redaction anyway — `get-snapshots` is public and queries `h_guideline` by `t_id`
+  without consulting the live row or its `isDeleted` flag, while the update trigger snapshots the pre-delete title,
+  description and language on soft-delete, so an unauthenticated caller can still read a soft-deleted guideline's text
+  via `GET /api/v1/guidelines/:id/snapshots`. Treat soft-deleting a guideline as unpublishing it, not as redacting it
+- **Write paths still refuse a deleted guideline**: `PATCH /guidelines/:id` and
+  `POST /guidelines/:id/rollback/:snapshotId` return `404` when `isDeleted` is true, for **every** role including
+  Moderators and Administrators (matching `entrance/update.js`, `massif/update.js` and `device/update.js`). Restore is
+  the only operation that accepts a deleted row. So a Moderator can now *read* a deleted guideline but still cannot edit
+  it in place — which is also what keeps the audit trail honest, since `change_guideline()` only emits an `update` row in
+  `t_last_change` when `NEW.is_deleted = false`
 - **Create**: Any authenticated user; no role check. At least one country, region, or massif must be referenced
 - **Update**: Any authenticated user; no ownership and no role check — `tokenAuth` is the only gate, so a plain user can
   edit another user's guideline, as with most other content
@@ -436,11 +452,16 @@ practice Administrators are granted every group, so they cumulate Moderator powe
 3. **Administrators cannot see soft-deleted content** — *accepted, same reasoning as #2.* The `find` controllers for
    caves, entrances, documents, massifs, and organisations check `MODERATOR` only before revealing deleted records; a
    non-Moderator Administrator gets the redacted `toDeletedEntity` shape, and `cave/find.js` additionally forces
-   `isDeleted = false` on list queries.
+   `isDeleted = false` on list queries. Guidelines are the exception since #1804: `guideline/find.js` checks Moderator
+   **or** Administrator and returns the full representation, aligning the read gate with that entity's delete and restore
+   gates. If the core-content `find` controllers are ever widened the same way, update this item and the matrix rows
+   together.
 4. **Restore is Moderator-only almost everywhere.** 12 of 13 restore controllers check `MODERATOR` alone; guideline is
    the outlier, accepting either role. Tracked in #1796.
 5. **Delete and restore disagree within the same entity.** `device`, `sensor-configuration` and `guideline` all accept
-   either role to *delete*, but only `guideline` accepts either role to *restore*. Tracked in #1796.
+   either role to *delete*, but only `guideline` accepts either role to *restore*. Since #1804 `guideline` is also the
+   only entity whose `find` accepts either role, so its read, delete and restore gates all agree with each other while
+   diverging from every other entity. Tracked in #1796.
 6. **Guidelines are writable by anyone but deletable only by Moderators or Administrators.** `guideline/update` and
    `guideline/rollback` perform no ownership or role check, so any authenticated user can rewrite or roll back any
    guideline, while `guideline/delete` requires Moderator or Administrator. Rollback is the sharper edge: it replaces
