@@ -3553,6 +3553,13 @@ paths:
         `GuidelineDetail` response with `isDeleted: true`. Anonymous and
         unprivileged callers receive `404` for a soft-deleted guideline, with the
         same message as for a genuinely missing one.
+      # Optional authentication: the empty requirement keeps the operation
+      # callable anonymously, while `bearerAuth` tells tooling a token may be
+      # sent — without it, Swagger UI and generated clients would omit the
+      # configured token and could never reach the privileged deleted view.
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
