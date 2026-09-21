@@ -191,6 +191,18 @@ const MASSIFS_IN_BOUNDS = `
 const CommonService = require('./CommonService');
 const NameService = require('./NameService');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
+const computeBoundingBoxAreaKm2 = require('../utils/computeBoundingBoxAreaKm2');
+
+// Largest bounding box accepted by GET /api/v1/geoloc/entrances. That endpoint
+// returns full entrance records, so a wide box makes Node serialise six figures
+// of rows synchronously and every other request queues behind it.
+//
+// The value matches MassifService.MAX_AREA_KM2 today, but the two are
+// independent: that one limits a polygon a user draws in the massif editor,
+// this one limits how much ground a read query may cover. Sharing a constant
+// would let a change to the editor silently loosen this protection.
+const MAX_BBOX_AREA_KM2 = 35000;
+const BBOX_AREA_EXCEEDED = 'BBOX_AREA_EXCEEDED';
 
 /**
  * Group flat entrance rows into network objects with an entrances array.
@@ -292,11 +304,57 @@ const checkAndGetMassifParam = async (req, res) => {
   return { massifId, errorResponse: null };
 };
 
+/**
+ * Reject a bounding box that covers more ground than MAX_BBOX_AREA_KM2.
+ *
+ * Mirrors MassifService.validatePolygon: null when acceptable, a
+ * { code, message } object to hand straight to res.badRequest otherwise.
+ * Synchronous, because the area is arithmetic rather than a PostGIS call.
+ *
+ * Only GET /api/v1/geoloc/entrances uses this. Do not move it into
+ * checkAndGetCoordinatesParams: all eight geoloc controllers call that, and the
+ * web app legitimately requests world bounds from four of the others on every
+ * map page load.
+ *
+ * @param {{lat: number|string, lng: number|string}} southWestBound
+ * @param {{lat: number|string, lng: number|string}} northEastBound
+ * @returns {{code: string, message: string}|null}
+ */
+const validateBoundingBoxArea = (southWestBound, northEastBound) => {
+  const areaKm2 = computeBoundingBoxAreaKm2(southWestBound, northEastBound);
+
+  // Non-numeric coordinates give NaN, and NaN > limit is false, so they fall
+  // through untouched. That is deliberate: this guards the response size, it is
+  // not input validation, and reporting an area problem for ?sw_lat=abc would
+  // be misleading. Such a value fails later in Postgres on an empty result set,
+  // so there is nothing to protect against here.
+  if (!(areaKm2 > MAX_BBOX_AREA_KM2)) return null;
+
+  sails.log.warn(
+    `Bounding box area cap exceeded on /geoloc/entrances: ` +
+      `${areaKm2.toFixed(0)} km² > ${MAX_BBOX_AREA_KM2} km² ` +
+      `(sw=${southWestBound.lat},${southWestBound.lng} ` +
+      `ne=${northEastBound.lat},${northEastBound.lng})`
+  );
+
+  return {
+    code: BBOX_AREA_EXCEEDED,
+    message:
+      `The requested bounding box area (${areaKm2.toFixed(0)} km²) exceeds the ` +
+      `maximum allowed size of ${MAX_BBOX_AREA_KM2} km². Zoom in, or use ` +
+      `GET /api/v1/geoloc/entrancesCoordinates, which accepts bounding boxes ` +
+      `of any size.`,
+  };
+};
+
 // ====================================
 
 module.exports = {
+  MAX_BBOX_AREA_KM2,
+  BBOX_AREA_EXCEEDED,
   formatNetworks,
   checkAndGetMassifParam,
+  validateBoundingBoxArea,
   checkAndGetCoordinatesParams: (req) => {
     let errorMessage = '';
     const errors = [];
