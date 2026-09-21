@@ -5589,7 +5589,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Massif'
         '400':
-          description: Some required information are missing, or the polygon area exceeds the 8 000 km² limit.
+          description: Some required information are missing, or the polygon area exceeds the 35 000 km² limit.
         '403':
           description: You are not authorized to create a massif.
 
