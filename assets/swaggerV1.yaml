@@ -5205,7 +5205,7 @@ paths:
     get:
       tags:
         - geoloc
-      description: Get detailed entrances inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas.
+      description: Get detailed entrances inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas. The bounding box is limited to 35 000 km² of surface area; anything larger is rejected with 400 `BBOX_AREA_EXCEEDED`. Use `/geoloc/entrancesCoordinates` for wider coverage. Note that a bounding box given with `ne_lng` west of `sw_lng` is normalised to min/max rather than wrapped across the antimeridian, so it covers the complement of the intended strip and will usually exceed the limit.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
@@ -5257,6 +5257,24 @@ paths:
                       minimum: 0
                       maximum: 100
                       description: Overall data quality score (0–100) representing how complete and up-to-date the entrance's data is. Returns 0 if no quality data is available.
+        '400':
+          description: >-
+            Missing or out-of-range coordinates, or a bounding box larger than
+            35 000 km². The area check runs before the massif lookup, so an
+            oversized bounding box returns 400 even when `massif` refers to an
+            unknown id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BBOX_AREA_EXCEEDED
+                    description: Present only when the bounding box area limit was exceeded.
+                  message:
+                    type: string
         '404':
           description: Massif not found (when massif parameter is provided)
 

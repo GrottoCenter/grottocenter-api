@@ -17,6 +17,7 @@ describe('Geoloc features', () => {
         .expect(400, done);
     });
 
+    // Kept under the 35000 km² bounding box cap: 0,0 -> 5,5 is ~308700 km².
     it('should return code 200 with entrances', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/geoloc/entrances')
@@ -25,8 +26,8 @@ describe('Geoloc features', () => {
         .query({
           sw_lat: 0,
           sw_lng: 0,
-          ne_lat: 5,
-          ne_lng: 5,
+          ne_lat: 1,
+          ne_lng: 1,
         })
         .expect(200, done);
     });
@@ -59,17 +60,161 @@ describe('Geoloc features', () => {
     });
   });
 
+  // GET /geoloc/entrances returns full entrance records, so an unbounded box
+  // makes Node serialise six figures of rows on the single event loop and every
+  // other request queues behind it. The cap rejects those before any query runs.
+  describe('bounding box area cap', () => {
+    const get = (query) =>
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query(query);
+
+    it('should return 400 with BBOX_AREA_EXCEEDED on world bounds', (done) => {
+      get({ sw_lat: -90, sw_lng: -180, ne_lat: 90, ne_lng: 180 })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('BBOX_AREA_EXCEEDED');
+          should(res.body.message).match(
+            /exceeds the maximum allowed size of 35000 km²/
+          );
+          return done();
+        });
+    });
+
+    it('should point the client at entrancesCoordinates instead', (done) => {
+      get({ sw_lat: -90, sw_lng: -180, ne_lat: 90, ne_lng: 180 })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.message).match(/entrancesCoordinates/);
+          return done();
+        });
+    });
+
+    // 2 x 2 degrees at 45N is ~34354 km², 2.1 x 2 is ~36072 km². A tenth of a
+    // degree of longitude is the whole difference between these two cases.
+    it('should accept a box just under the limit', (done) => {
+      get({ sw_lat: 45, sw_lng: 0, ne_lat: 47, ne_lng: 2 })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.body.should.be.Array();
+          return done();
+        });
+    });
+
+    it('should reject a box just over the limit', (done) => {
+      get({ sw_lat: 45, sw_lng: 0, ne_lat: 47, ne_lng: 2.1 })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('BBOX_AREA_EXCEEDED');
+          return done();
+        });
+    });
+
+    // ST_MakeEnvelope normalises to min/max rather than wrapping, so inverted
+    // longitudes describe the 340 degree wide complement of the strip the client
+    // presumably meant. Those are among the most expensive requests the endpoint
+    // receives, so rejecting them is the point rather than a side effect.
+    it('should reject an inverted longitude range', (done) => {
+      get({ sw_lat: -10, sw_lng: 170, ne_lat: 10, ne_lng: -170 })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('BBOX_AREA_EXCEEDED');
+          return done();
+        });
+    });
+
+    // The check runs before the massif lookup, so it does not pay for a
+    // database round trip in order to reject. That ordering is observable.
+    it('should report the area rather than an unknown massif', (done) => {
+      get({
+        sw_lat: -90,
+        sw_lng: -180,
+        ne_lat: 90,
+        ne_lng: 180,
+        massif: 999999,
+      })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('BBOX_AREA_EXCEEDED');
+          return done();
+        });
+    });
+
+    it('should apply the cap even when a valid massif is given', (done) => {
+      get({ sw_lat: -90, sw_lng: -180, ne_lat: 90, ne_lng: 180, massif: 1 })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('BBOX_AREA_EXCEEDED');
+          return done();
+        });
+    });
+
+    // A full-longitude box spanning a hundredth of a degree of latitude at the
+    // pole: 6.5 degrees² but only a few km². This is what the web app sends when
+    // a search centre sits on a pole, and a cap expressed in degrees² would
+    // wrongly reject it — which is why the limit is in km².
+    it('should accept a polar full-longitude box', (done) => {
+      get({ sw_lat: 89.99102, sw_lng: -180, ne_lat: 90, ne_lng: 180 })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.body.should.be.Array();
+          return done();
+        });
+    });
+
+    // The shape the web app's tile cache actually requests, one zoom-12 tile at
+    // a time: ~67 km², well over two orders of magnitude below the cap.
+    it('should accept a zoom-12 tile sized box', (done) => {
+      get({
+        sw_lat: 45,
+        sw_lng: 6,
+        ne_lat: 45.0878,
+        ne_lng: 6.087890625,
+      })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          res.body.should.be.Array();
+          return done();
+        });
+    });
+
+    // Non-numeric coordinates are not this cap's problem, and must not be
+    // reported as an area error.
+    it('should not report an area error for non-numeric coordinates', (done) => {
+      get({ sw_lat: 'abc', sw_lng: 0, ne_lat: 47, ne_lng: 2 }).end(
+        (err, res) => {
+          if (err) return done(err);
+          should(res.body.code).not.equal('BBOX_AREA_EXCEEDED');
+          return done();
+        }
+      );
+    });
+  });
+
   describe('find entrances with massif filter', () => {
+    // A sub-box inside massif 1's extent, kept under the 35000 km² cap: the
+    // original 50,50 -> 75,110 box covers ~8.5 million km².
     it('should return code 200 with massif param and bounding box', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/geoloc/entrances')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .query({
-          sw_lat: 50,
-          sw_lng: 50,
-          ne_lat: 75,
-          ne_lng: 110,
+          sw_lat: 62,
+          sw_lng: 78,
+          ne_lat: 63,
+          ne_lng: 79,
           massif: 1,
         })
         .expect(200)
@@ -88,8 +233,8 @@ describe('Geoloc features', () => {
         .query({
           sw_lat: 0,
           sw_lng: 0,
-          ne_lat: 5,
-          ne_lng: 5,
+          ne_lat: 1,
+          ne_lng: 1,
           massif: 999999,
         })
         .expect(404, done);
@@ -973,6 +1118,53 @@ describe('Geoloc features', () => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/geoloc/massifs')
         .query({ sw_lat: 95, sw_lng: 0, ne_lat: 100, ne_lng: 5 })
+        .expect(400, done);
+    });
+  });
+
+  /**
+   * World bounds stay valid everywhere except /geoloc/entrances.
+   *
+   * The area cap lives in the entrances controller alone, never in the shared
+   * checkAndGetCoordinatesParams, because the web app asks four of these
+   * endpoints for the whole world on every map page load — entrancesCoordinates,
+   * networksCoordinates, massifsCoordinates and organizations (MAX_BOUNDS in the
+   * front end's actions/Map.js). Moving the cap into the shared validator would
+   * break the production map, so these assertions are the guard rail against it.
+   */
+  describe('World bounding box still accepted outside /geoloc/entrances', () => {
+    const WORLD = { sw_lat: -90, sw_lng: -180, ne_lat: 90, ne_lng: 180 };
+
+    const endpoints = [
+      'entrancesCoordinates',
+      'networksCoordinates',
+      'massifsCoordinates',
+      'organizations',
+      'networks',
+      'massifs',
+      'countEntrances',
+      // Deprecated aliases sharing the same controllers.
+      'countEntries',
+      'grottos',
+      'caves',
+      'cavesCoordinates',
+    ];
+
+    endpoints.forEach((endpoint) => {
+      it(`should return 200 for world bounds on ${endpoint}`, (done) => {
+        supertest(sails.hooks.http.app)
+          .get(`/api/v1/geoloc/${endpoint}`)
+          .set('Accept', 'application/json')
+          .query(WORLD)
+          .expect(200, done);
+      });
+    });
+
+    it('should still reject world bounds on entrances', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Accept', 'application/json')
+        .query(WORLD)
         .expect(400, done);
     });
   });
