@@ -70,6 +70,54 @@ describe('MassifService', () => {
     });
   });
 
+  describe('validatePolygon', () => {
+    it('should accept a polygon away from the antimeridian', async () => {
+      const wkt = await MassifService.geoJsonToWKT(massifPolygon.geoJsonSmall);
+      should(await MassifService.validatePolygon(wkt)).be.null();
+    });
+
+    it('should reject a polygon straddling the antimeridian', async () => {
+      const wkt = await MassifService.geoJsonToWKT(
+        massifPolygon.geoJsonCrossesAntimeridian
+      );
+      const error = await MassifService.validatePolygon(wkt);
+      should(error).not.be.null();
+      should(error.code).equal('POLYGON_CROSSES_ANTIMERIDIAN');
+      should(error.message).match(/180° meridian/);
+    });
+
+    it('should reject a polygon spanning more than 180° of longitude', async () => {
+      const wkt = await MassifService.geoJsonToWKT(
+        massifPolygon.geoJsonWideLongitudeSpan
+      );
+      const error = await MassifService.validatePolygon(wkt);
+      should(error).not.be.null();
+      should(error.code).equal('POLYGON_CROSSES_ANTIMERIDIAN');
+    });
+
+    // The point of the check: a polygon it lets through cannot be one where the
+    // && pre-filter and ST_Contains disagree, because the geodetic bounding box
+    // is then a superset of the planar one. See #1811.
+    it('should only accept polygons where the bbox pre-filter agrees with ST_Contains', async () => {
+      const accepted = await MassifService.geoJsonToWKT(
+        massifPolygon.geoJsonSmall
+      );
+      const rejected = await MassifService.geoJsonToWKT(
+        massifPolygon.geoJsonCrossesAntimeridian
+      );
+      const geodeticBoxCoversPlanar = (wkt) =>
+        `ST_Covers(Box2D(${wkt}::geometry::geography::geometry)::geometry,
+                   Box2D(${wkt}::geometry)::geometry)`;
+      const { rows } = await CommonService.query(
+        `SELECT ${geodeticBoxCoversPlanar('$1')} AS accepted_holds,
+                ${geodeticBoxCoversPlanar('$2')} AS rejected_holds`,
+        [accepted, rejected]
+      );
+      should(rows[0].accepted_holds).be.true();
+      should(rows[0].rejected_holds).be.false();
+    });
+  });
+
   describe('deleteInSearch', () => {
     it('should delete massif from search index', async () => {
       const originalEnv = process.env.NODE_ENV;
