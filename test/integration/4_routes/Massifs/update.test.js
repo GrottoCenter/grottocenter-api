@@ -188,6 +188,24 @@ describe('Massif features', () => {
         });
     });
 
+    it('should return 400 when polygon straddles the 180° meridian (#1811)', (done) => {
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/massifs/${testMassifId}`)
+        .send({
+          geogPolygon: massifPolygon.geoJsonCrossesAntimeridian,
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.body.code).equal('POLYGON_CROSSES_ANTIMERIDIAN');
+          should(res.body.message).match(/180° meridian/);
+          return done();
+        });
+    });
+
     it('should return 400 when polygon has invalid geometry (#1606)', (done) => {
       supertest(sails.hooks.http.app)
         .put(`/api/v1/massifs/${testMassifId}`)

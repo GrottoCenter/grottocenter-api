@@ -62,6 +62,7 @@ const POLYGON_ERROR_MESSAGES = [
 
 const POLYGON_AREA_EXCEEDED = 'POLYGON_AREA_EXCEEDED';
 const POLYGON_INVALID = 'POLYGON_INVALID';
+const POLYGON_CROSSES_ANTIMERIDIAN = 'POLYGON_CROSSES_ANTIMERIDIAN';
 
 /**
  * Find the first matching error for a raw PostGIS/GEOS error string.
@@ -187,8 +188,8 @@ module.exports = {
 
   /**
    * Validate a polygon's geometry and area constraints.
-   * Checks basic validity (ST_IsValid), geographic computability (ST_Area on
-   * geography), and maximum area limit.
+   * Checks basic validity (ST_IsValid), antimeridian span, geographic
+   * computability (ST_Area on geography), and maximum area limit.
    * @param {string} wktPolygon - WKT representation of the polygon
    * @returns {Promise<{code: string, message: string}|null>} null if valid, error object if invalid
    */
@@ -196,14 +197,58 @@ module.exports = {
     // Check basic geometry validity (self-intersections, etc.)
     // ST_IsValidDetail performs a single GEOS pass and returns both the
     // validity flag and the reason, avoiding a redundant traversal.
-    const validityQuery = `SELECT valid AS is_valid, reason FROM ST_IsValidDetail($1::geometry)`;
+    // The longitude bounds ride along in the same round trip: they are plain
+    // geometry arithmetic, so unlike ST_Area they cannot raise on a geometry
+    // that is valid in the plane but not computable as a geography.
+    const validityQuery = `
+      WITH g AS (SELECT $1::geometry AS geom)
+      SELECT d.valid AS is_valid,
+             d.reason,
+             ST_XMin(g.geom) AS lon_min,
+             ST_XMax(g.geom) AS lon_max
+      FROM g, ST_IsValidDetail(g.geom) d
+    `;
     const validityResult = await CommonService.query(validityQuery, [
       wktPolygon,
     ]);
-    const { is_valid: isValid, reason } = validityResult.rows[0];
+    const {
+      is_valid: isValid,
+      reason,
+      lon_min: lonMin,
+      lon_max: lonMax,
+    } = validityResult.rows[0];
     if (!isValid) {
       sails.log.warn(`Polygon validation failed (ST_IsValid): ${reason}`);
       return matchPolygonError(reason);
+    }
+
+    // Reject a polygon that straddles the 180° meridian.
+    //
+    // Every spatial join matching entrances to massifs pairs an && bounding-box
+    // pre-filter with an exact ST_Contains (see #1811). The pre-filter compares
+    // geographies, so its box follows great-circle edges, while ST_Contains
+    // compares geometries, so its box is planar. The two agree only while a
+    // polygon stays on one side of the antimeridian; for one that straddles it
+    // they invert, and the join silently returns nothing.
+    //
+    // Two shapes get here. A polygon with a longitude outside [-180, 180] is
+    // the common one: the map hands back coordinates from a repeated world copy
+    // when the user pans past the edge, and the geometry -> geography cast on
+    // write then wraps them (PostGIS: "Coordinate values were coerced into
+    // range"), turning a small box into one spanning nearly 360°. A polygon
+    // already in range but spanning more than 180° is the other.
+    //
+    // This is what keeps the pre-filter provably equivalent to a bare
+    // ST_Contains, so it has to hold for stored data, not just for the corpus
+    // that happened to be clean when the pre-filter was added.
+    if (lonMin < -180 || lonMax > 180 || lonMax - lonMin > 180) {
+      sails.log.warn(
+        `Polygon validation failed (antimeridian): longitude ${lonMin} to ${lonMax}`
+      );
+      return {
+        code: POLYGON_CROSSES_ANTIMERIDIAN,
+        message: `The polygon crosses the 180° meridian (longitude ${lonMin} to ${lonMax}). Please draw it on a single side of the antimeridian; if you panned past the edge of the map, pan back before drawing.`,
+      };
     }
 
     // Compute area — also catches geometry errors that only manifest when
