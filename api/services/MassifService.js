@@ -89,8 +89,10 @@ const FIND_NETWORKS_IN_MASSIF = `
   SELECT c.*, c.length AS "caveLength", count(e.id_cave) as "nbEntrances"
   FROM t_entrance AS e
   LEFT JOIN t_cave c ON c.id = e.id_cave
+  JOIN t_massif AS m ON m.id = $1
   WHERE c.is_deleted = false
-  AND ST_Contains((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), e.point_geom)
+  AND e.point_geom && m.geog_polygon::geometry
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   GROUP BY c.id
   HAVING count(e.id_cave) > 1
 `;
@@ -104,7 +106,8 @@ const FIND_CAVES_IN_MASSIF = `
   FROM t_cave AS c
   JOIN t_entrance AS e ON e.id_cave = c.id
   JOIN t_massif AS m ON m.id = $1
-  WHERE ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE e.point_geom && m.geog_polygon::geometry
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND c.is_deleted = false
   AND e.is_deleted = false
 `;
@@ -140,6 +143,19 @@ const COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   AND e.is_deleted = false
   AND e.is_sensitive = false
   AND e.is_sensitive_locked = true
+`;
+
+// Resolves the containing massifs for a batch of entrances in one round trip.
+// Shared by the search-index update path and the dbSync export so the spatial
+// join exists in exactly one place.
+const FIND_MASSIFS_BY_ENTRANCE_IDS = `
+  SELECT e.id AS id_entrance, m.id AS id_massif, n.name AS massif_name, n.id_language AS language
+  FROM t_entrance e
+  JOIN t_massif m ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+  WHERE e.id = ANY($1::int[])
+  AND e.is_deleted = false
+  AND m.is_deleted = false
 `;
 
 // Spatial queries using ST_Contains can throw when point_geom is null rather than
@@ -282,6 +298,38 @@ module.exports = {
 
   getCaves: async (massifId) =>
     querySpatialRows(FIND_CAVES_IN_MASSIF, massifId),
+
+  /**
+   * Resolve the containing massifs for many entrances in a single query.
+   *
+   * Callers that already hold a list of entrance ids should use this instead of
+   * letting EntranceService.updateInSearch run its per-entrance spatial lookup,
+   * which turns a bulk operation into N round trips.
+   *
+   * @param {number[]} entranceIds
+   * @returns {Promise<Object<number, Array>>} entrance id -> massifs (ids absent
+   *   from the result simply have no containing massif)
+   */
+  async findMassifsByEntranceIds(entranceIds) {
+    if (!entranceIds?.length) return {};
+    const { rows } = await CommonService.query(FIND_MASSIFS_BY_ENTRANCE_IDS, [
+      entranceIds,
+    ]);
+    const massifsByEntrance = {};
+    for (const row of rows) {
+      if (!massifsByEntrance[row.id_entrance]) {
+        massifsByEntrance[row.id_entrance] = [];
+      }
+      massifsByEntrance[row.id_entrance].push({
+        id: row.id_massif,
+        name: row.massif_name,
+        language: row.language,
+        isDeleted: false,
+      });
+    }
+    return massifsByEntrance;
+  },
+
   countEntrances: async (massifId) => {
     try {
       const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [

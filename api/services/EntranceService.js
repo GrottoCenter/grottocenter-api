@@ -5,6 +5,17 @@ const INTEREST_ENTRANCES_QUERY =
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
+// query to get the massifs containing a single entrance.
+// The `&&` bounding-box pre-filter is what lets PostGIS use the GiST index on
+// t_massif(geog_polygon); without it every massif polygon is tested exactly.
+const MASSIFS_CONTAINING_ENTRANCE_QUERY = `
+  SELECT m.id, n.name, n.id_language AS language
+  FROM t_massif m
+  JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+  WHERE e.id = $1 AND e.is_deleted = false AND m.is_deleted = false
+`;
+
 const CommonService = require('./CommonService');
 const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
@@ -413,7 +424,15 @@ module.exports = {
     await SearchService.deleteDocument('entrances', entranceId);
   },
 
-  async updateInSearch(populatedEntrance) {
+  /**
+   * @param {*} populatedEntrance
+   * @param {object} [options]
+   * @param {Array} [options.massifs] Containing massifs, already resolved by the
+   *   caller. Supply this from bulk paths that hold a list of entrance ids (see
+   *   MassifService.findMassifsByEntranceIds) to skip the per-entrance spatial
+   *   lookup; pass an empty array for an entrance in no massif.
+   */
+  async updateInSearch(populatedEntrance, { massifs } = {}) {
     // Warning: All linked entities may contain sensitive information (same as in document).
     // For example, the complete caver object for the 'author' and 'reviewer' fields.
     // Although we could leave them intact, since search results also pass through the converter,
@@ -468,7 +487,8 @@ module.exports = {
       entrance.longitude = null;
     }
 
-    // Compute data quality score and fetch massifs in parallel (independent queries)
+    // Compute data quality score and fetch massifs in parallel (independent queries).
+    // The spatial lookup is skipped when the caller already resolved the massifs.
     const [qualityRows, massifRows] = await Promise.all([
       CommonService.query(
         `SELECT general_latest_date_of_update, general_nb_contributions,
@@ -481,25 +501,24 @@ module.exports = {
          FROM v_data_quality_compute_entrance WHERE id_entrance = $1 ORDER BY id_massif ASC LIMIT 1`,
         [rawEntrance.id]
       ),
-      CommonService.query(
-        `SELECT m.id, n.name, n.id_language AS language
-         FROM t_massif m
-         JOIN t_entrance e ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
-         LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
-         WHERE e.id = $1 AND e.is_deleted = false AND m.is_deleted = false`,
-        [rawEntrance.id]
-      ),
+      massifs
+        ? null
+        : CommonService.query(MASSIFS_CONTAINING_ENTRANCE_QUERY, [
+            rawEntrance.id,
+          ]),
     ]);
     entrance.dataQuality = qualityRows?.rows?.[0]
       ? getQualityData(qualityRows.rows[0])
       : 0;
     entrance.massifs =
+      massifs ??
       massifRows?.rows?.map((r) => ({
         id: r.id,
         name: r.name,
         language: r.language,
         isDeleted: false,
-      })) ?? [];
+      })) ??
+      [];
 
     await SearchService.updateDocument('entrances', entrance);
   },

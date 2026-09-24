@@ -164,6 +164,7 @@ const MASSIFS_IN_BOUNDS = `
       SELECT COUNT(e.id)::integer
       FROM t_entrance AS e
       WHERE e.is_deleted = false
+        AND e.point_geom && m.geog_polygon::geometry
         AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
     ) AS "entranceCount",
     (
@@ -173,6 +174,7 @@ const MASSIFS_IN_BOUNDS = `
         JOIN t_cave AS c ON c.id = e.id_cave
         WHERE e.is_deleted = false
           AND c.is_deleted = false
+          AND e.point_geom && m.geog_polygon::geometry
           AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
         GROUP BY c.id
         HAVING COUNT(e.id) > 1
