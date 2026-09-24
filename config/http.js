@@ -329,6 +329,28 @@ module.exports.http = {
     // Logs each request response to the console (with status and time)
     responseTimeLogger(req, res, next) {
       const { traceId } = req;
+      const startedAt = Date.now();
+
+      // Aborts handling
+      res.on('close', () => {
+        // Normal completion also emits 'close', right after 'finish'.
+        if (res.writableEnded) return;
+
+        logger.run(traceId, () => {
+          // 499 is not a real HTTP status, it is the nginx convention for
+          // "client closed request". Reusing it here lets these lines be
+          // correlated with the proxy's access log.
+          sails.log.info(
+            'Res :: (client aborted)',
+            req.method,
+            req.url,
+            499,
+            `${Date.now() - startedAt}ms`
+          );
+        });
+      });
+
+      // 'finish' only fires when the response was fully handed off.
       res.on('finish', () => {
         logger.run(traceId, () => {
           const logLevel = res.statusCode >= 500 ? 'error' : 'info';
