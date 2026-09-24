@@ -448,6 +448,198 @@ describe('Document multiple-validate', () => {
           : null;
         should(rejectNotif).not.be.undefined();
       });
+
+      it('should auto-reject modifiedDocJson naming an author deleted since submission', async () => {
+        // A caver that exists when the modification is submitted and is deleted
+        // before the moderator gets to it. replaceCollection used to fail on
+        // j_document_caver_author_t_caver_fk and return 500 forever.
+        const doomedCaver = await TCaver.create({
+          nickname: `Doomed author ${Date.now()}`,
+          mail: `doomed-${Date.now()}@example.com`,
+          password: 'hashed',
+          language: '000',
+        }).fetch();
+        const doomedCaverId = doomedCaver.id;
+
+        const desc = await TDescription.create({
+          author: 1,
+          title: 'Stale author',
+          body: 'Body',
+        }).fetch();
+        createdDescIds.push(desc.id);
+
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          authors: [1],
+          descriptions: [desc.id],
+          modifiedDocJson: {
+            reviewerId: 2,
+            documentData: { type: 1, authors: [doomedCaverId] },
+            descriptionData: { title: 'Stale author', body: 'Body' },
+          },
+        }).fetch();
+        createdDocIds.push(doc.id);
+
+        await TCaver.destroyOne(doomedCaverId);
+
+        const beforeNotifIds = (await TNotification.find().select(['id'])).map(
+          (n) => n.id
+        );
+
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: doc.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+
+        const updated = await TDocument.findOne(doc.id).populate('authors');
+        should(updated.modifiedDocJson).be.null();
+        should(updated.validationComment).match(/auto-rejected/i);
+        should(updated.validationComment).match(/authors/);
+        should(updated.validationComment).match(
+          new RegExp(String(doomedCaverId))
+        );
+        // The last validated state must be intact — caver 1 still the author.
+        should(updated.authors.map((a) => a.id)).deepEqual([1]);
+
+        const afterNotifIds = (await TNotification.find().select(['id'])).map(
+          (n) => n.id
+        );
+        const newNotifIds = afterNotifIds.filter(
+          (id) => !beforeNotifIds.includes(id)
+        );
+        const VALIDATE_TYPE_ID = 4;
+        const REJECT_TYPE_ID = 7;
+        const validateNotif = newNotifIds.length
+          ? await TNotification.findOne({
+              id: newNotifIds,
+              notificationType: VALIDATE_TYPE_ID,
+            })
+          : null;
+        should(validateNotif).be.undefined();
+        const rejectNotif = newNotifIds.length
+          ? await TNotification.findOne({
+              id: newNotifIds,
+              notified: 1,
+              document: doc.id,
+              notificationType: REJECT_TYPE_ID,
+            })
+          : null;
+        should(rejectNotif).not.be.undefined();
+      });
+
+      // Regression guard for the blank-padding trap. In production
+      // t_subject.code is bpchar(8) and node-postgres returns it padded, so a
+      // snapshot stores subject code '1.0' as '1.0     '. If the existence check
+      // compares without trimming, that valid code looks missing and the whole
+      // modification gets auto-rejected instead of applied.
+      it('should apply a modification whose subject code is blank-padded', async () => {
+        const desc = await TDescription.create({
+          author: 1,
+          title: 'Padded subject',
+          body: 'Body',
+        }).fetch();
+        createdDescIds.push(desc.id);
+
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          descriptions: [desc.id],
+          modifiedDocJson: {
+            reviewerId: 2,
+            documentData: { type: 1, subjects: ['1.0     '] },
+            descriptionData: { title: 'Padded subject', body: 'Body' },
+          },
+        }).fetch();
+        createdDocIds.push(doc.id);
+
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: doc.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+
+        const updated = await TDocument.findOne(doc.id).populate('subjects');
+        should(updated.modifiedDocJson).be.null();
+        should(updated.isValidated).be.true();
+        // Not auto-rejected: the subject association was actually written.
+        should(updated.subjects.map((s) => s.id.trim())).deepEqual(['1.0']);
+      });
+
+      it('should keep processing the batch when one document is auto-rejected', async () => {
+        const doomedCaver = await TCaver.create({
+          nickname: `Doomed batch author ${Date.now()}`,
+          mail: `doomed-batch-${Date.now()}@example.com`,
+          password: 'hashed',
+          language: '000',
+        }).fetch();
+        const doomedCaverId = doomedCaver.id;
+
+        const staleDesc = await TDescription.create({
+          author: 1,
+          title: 'Stale',
+          body: 'Body',
+        }).fetch();
+        createdDescIds.push(staleDesc.id);
+
+        const staleDoc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          descriptions: [staleDesc.id],
+          modifiedDocJson: {
+            reviewerId: 2,
+            documentData: { type: 1, authors: [doomedCaverId] },
+            descriptionData: { title: 'Stale', body: 'Body' },
+          },
+        }).fetch();
+        createdDocIds.push(staleDoc.id);
+
+        await TCaver.destroyOne(doomedCaverId);
+
+        const cleanDoc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+        }).fetch();
+        createdDocIds.push(cleanDoc.id);
+
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [
+              { id: staleDoc.id, isValidated: 'true' },
+              { id: cleanDoc.id, isValidated: 'true' },
+            ],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+
+        const updatedStale = await TDocument.findOne(staleDoc.id);
+        should(updatedStale.modifiedDocJson).be.null();
+        should(updatedStale.validationComment).match(/auto-rejected/i);
+
+        // The rest of the batch must still have been applied.
+        const updatedClean = await TDocument.findOne(cleanDoc.id);
+        should(updatedClean.isValidated).be.true();
+      });
     });
   });
 
