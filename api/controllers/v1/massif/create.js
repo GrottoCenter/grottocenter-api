@@ -110,10 +110,17 @@ module.exports = async (req, res) => {
     });
 
   if (newMassif.isSensitive) {
+    // Resolve the containing massifs in one batch so the fan-out does not run a
+    // spatial query per entrance.
+    const massifsByEntrance =
+      await MassifService.findMassifsByEntranceIds(updatedEntranceIds);
     await Promise.all(
       updatedEntranceIds.map(async (id) => {
         const populated = await EntranceService.getPopulatedEntrance(id);
-        if (populated) await EntranceService.updateInSearch(populated);
+        if (populated)
+          await EntranceService.updateInSearch(populated, {
+            massifs: massifsByEntrance[id] ?? [],
+          });
       })
     );
   }

@@ -5,7 +5,6 @@ const {
 } = require('../../../config/constants/entrance');
 const { getQualityData } = require('../../utils/computeEntranceDataQuality');
 const { computeCommentsRating } = require('../../utils/commentsRating');
-const CommonService = require('../../services/CommonService');
 
 const query = `
     SELECT
@@ -108,30 +107,14 @@ async function* processRows(source) {
 
     await Promise.all(joins.map((e) => exportUtils.joinMany(e)));
 
-    // Spatial join: find massifs containing each entrance
-    const ids = rows.map((r) => r.id);
-    const massifQuery = `
-      SELECT e.id AS id_entrance, m.id AS id_massif, n.name AS massif_name, n.id_language AS language
-      FROM t_entrance e
-      JOIN t_massif m ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
-      LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
-      WHERE e.id = ANY($1::int[])
-      AND e.is_deleted = false
-      AND m.is_deleted = false
-    `;
-    const { rows: massifRows } = await CommonService.query(massifQuery, [ids]);
-    const massifsByEntrance = {};
-    for (const mr of massifRows) {
-      if (!massifsByEntrance[mr.id_entrance]) {
-        massifsByEntrance[mr.id_entrance] = [];
-      }
-      massifsByEntrance[mr.id_entrance].push({
-        id: mr.id_massif,
-        name: mr.massif_name,
-        language: mr.language,
-        isDeleted: false,
-      });
-    }
+    // Spatial join: find massifs containing each entrance.
+    // Had to require in the function to avoid a circular dependency: SearchService
+    // requires this module at load time to read its search schema.
+    // eslint-disable-next-line global-require
+    const MassifService = require('../../services/MassifService');
+    const massifsByEntrance = await MassifService.findMassifsByEntranceIds(
+      rows.map((r) => r.id)
+    );
 
     for (const row of rows) {
       if (row.geology) row.geology = row.geology.trim();

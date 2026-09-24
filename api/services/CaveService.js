@@ -123,7 +123,7 @@ module.exports = {
       const query = `
       SELECT DISTINCT m.*
       FROM t_massif AS m
-      JOIN t_entrance AS e ON ST_Contains(m.geog_polygon::geometry, e.point_geom)
+      JOIN t_entrance AS e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
       WHERE e.id_cave = $1
       AND e.is_deleted = false
       AND m.is_deleted = false
