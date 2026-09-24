@@ -173,6 +173,40 @@ const geoJsonSelfIntersecting = {
   ],
 };
 
+// A small polygon off Fiji straddling the 180° meridian, with a longitude past
+// 180 as the map reports it when the user pans into a repeated world copy.
+// Only 1879 km², so it clears the area cap, and valid in 2D, so ST_IsValid and
+// ST_Area on geography both pass — the antimeridian check is the only thing
+// standing between it and a stored polygon that spans nearly 360° of longitude
+// once the geography cast wraps it. See #1811.
+const geoJsonCrossesAntimeridian = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [179.8, -17.9],
+      [180.2, -17.9],
+      [180.2, -17.5],
+      [179.8, -17.5],
+      [179.8, -17.9],
+    ],
+  ],
+};
+
+// The same failure with every longitude already inside [-180, 180]: a thin band
+// spanning 340° of longitude, which no bounding box can pre-filter usefully.
+const geoJsonWideLongitudeSpan = {
+  type: 'Polygon',
+  coordinates: [
+    [
+      [-170, 0],
+      [170, 0],
+      [170, 0.01],
+      [-170, 0.01],
+      [-170, 0],
+    ],
+  ],
+};
+
 const massifPolygon = {
   geoJson1,
   geoJson2,
@@ -181,6 +215,8 @@ const massifPolygon = {
   geoJsonSharedEdgeMultiPolygon,
   geoJsonAntipodalEdge,
   geoJsonSelfIntersecting,
+  geoJsonCrossesAntimeridian,
+  geoJsonWideLongitudeSpan,
   geoJson1ToString: JSON.stringify(geoJson1),
   geoJson2ToString: JSON.stringify(geoJson2),
   geoJsonSmallToString: JSON.stringify(geoJsonSmall),

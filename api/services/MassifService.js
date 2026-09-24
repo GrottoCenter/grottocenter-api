@@ -62,6 +62,7 @@ const POLYGON_ERROR_MESSAGES = [
 
 const POLYGON_AREA_EXCEEDED = 'POLYGON_AREA_EXCEEDED';
 const POLYGON_INVALID = 'POLYGON_INVALID';
+const POLYGON_CROSSES_ANTIMERIDIAN = 'POLYGON_CROSSES_ANTIMERIDIAN';
 
 /**
  * Find the first matching error for a raw PostGIS/GEOS error string.
@@ -89,8 +90,10 @@ const FIND_NETWORKS_IN_MASSIF = `
   SELECT c.*, c.length AS "caveLength", count(e.id_cave) as "nbEntrances"
   FROM t_entrance AS e
   LEFT JOIN t_cave c ON c.id = e.id_cave
+  JOIN t_massif AS m ON m.id = $1
   WHERE c.is_deleted = false
-  AND ST_Contains((SELECT geog_polygon::geometry FROM t_massif WHERE id = $1 ), e.point_geom)
+  AND e.point_geom && m.geog_polygon::geometry
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   GROUP BY c.id
   HAVING count(e.id_cave) > 1
 `;
@@ -104,7 +107,8 @@ const FIND_CAVES_IN_MASSIF = `
   FROM t_cave AS c
   JOIN t_entrance AS e ON e.id_cave = c.id
   JOIN t_massif AS m ON m.id = $1
-  WHERE ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  WHERE e.point_geom && m.geog_polygon::geometry
+  AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND c.is_deleted = false
   AND e.is_deleted = false
 `;
@@ -142,6 +146,19 @@ const COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   AND e.is_sensitive_locked = true
 `;
 
+// Resolves the containing massifs for a batch of entrances in one round trip.
+// Shared by the search-index update path and the dbSync export so the spatial
+// join exists in exactly one place.
+const FIND_MASSIFS_BY_ENTRANCE_IDS = `
+  SELECT e.id AS id_entrance, m.id AS id_massif, n.name AS massif_name, n.id_language AS language
+  FROM t_entrance e
+  JOIN t_massif m ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
+  WHERE e.id = ANY($1::int[])
+  AND e.is_deleted = false
+  AND m.is_deleted = false
+`;
+
 // Spatial queries using ST_Contains can throw when point_geom is null rather than
 // returning an empty result set. This wrapper normalises that to an empty array.
 async function querySpatialRows(sql, param) {
@@ -171,8 +188,8 @@ module.exports = {
 
   /**
    * Validate a polygon's geometry and area constraints.
-   * Checks basic validity (ST_IsValid), geographic computability (ST_Area on
-   * geography), and maximum area limit.
+   * Checks basic validity (ST_IsValid), antimeridian span, geographic
+   * computability (ST_Area on geography), and maximum area limit.
    * @param {string} wktPolygon - WKT representation of the polygon
    * @returns {Promise<{code: string, message: string}|null>} null if valid, error object if invalid
    */
@@ -180,14 +197,58 @@ module.exports = {
     // Check basic geometry validity (self-intersections, etc.)
     // ST_IsValidDetail performs a single GEOS pass and returns both the
     // validity flag and the reason, avoiding a redundant traversal.
-    const validityQuery = `SELECT valid AS is_valid, reason FROM ST_IsValidDetail($1::geometry)`;
+    // The longitude bounds ride along in the same round trip: they are plain
+    // geometry arithmetic, so unlike ST_Area they cannot raise on a geometry
+    // that is valid in the plane but not computable as a geography.
+    const validityQuery = `
+      WITH g AS (SELECT $1::geometry AS geom)
+      SELECT d.valid AS is_valid,
+             d.reason,
+             ST_XMin(g.geom) AS lon_min,
+             ST_XMax(g.geom) AS lon_max
+      FROM g, ST_IsValidDetail(g.geom) d
+    `;
     const validityResult = await CommonService.query(validityQuery, [
       wktPolygon,
     ]);
-    const { is_valid: isValid, reason } = validityResult.rows[0];
+    const {
+      is_valid: isValid,
+      reason,
+      lon_min: lonMin,
+      lon_max: lonMax,
+    } = validityResult.rows[0];
     if (!isValid) {
       sails.log.warn(`Polygon validation failed (ST_IsValid): ${reason}`);
       return matchPolygonError(reason);
+    }
+
+    // Reject a polygon that straddles the 180° meridian.
+    //
+    // Every spatial join matching entrances to massifs pairs an && bounding-box
+    // pre-filter with an exact ST_Contains (see #1811). The pre-filter compares
+    // geographies, so its box follows great-circle edges, while ST_Contains
+    // compares geometries, so its box is planar. The two agree only while a
+    // polygon stays on one side of the antimeridian; for one that straddles it
+    // they invert, and the join silently returns nothing.
+    //
+    // Two shapes get here. A polygon with a longitude outside [-180, 180] is
+    // the common one: the map hands back coordinates from a repeated world copy
+    // when the user pans past the edge, and the geometry -> geography cast on
+    // write then wraps them (PostGIS: "Coordinate values were coerced into
+    // range"), turning a small box into one spanning nearly 360°. A polygon
+    // already in range but spanning more than 180° is the other.
+    //
+    // This is what keeps the pre-filter provably equivalent to a bare
+    // ST_Contains, so it has to hold for stored data, not just for the corpus
+    // that happened to be clean when the pre-filter was added.
+    if (lonMin < -180 || lonMax > 180 || lonMax - lonMin > 180) {
+      sails.log.warn(
+        `Polygon validation failed (antimeridian): longitude ${lonMin} to ${lonMax}`
+      );
+      return {
+        code: POLYGON_CROSSES_ANTIMERIDIAN,
+        message: `The polygon crosses the 180° meridian (longitude ${lonMin} to ${lonMax}). Please draw it on a single side of the antimeridian; if you panned past the edge of the map, pan back before drawing.`,
+      };
     }
 
     // Compute area — also catches geometry errors that only manifest when
@@ -282,6 +343,38 @@ module.exports = {
 
   getCaves: async (massifId) =>
     querySpatialRows(FIND_CAVES_IN_MASSIF, massifId),
+
+  /**
+   * Resolve the containing massifs for many entrances in a single query.
+   *
+   * Callers that already hold a list of entrance ids should use this instead of
+   * letting EntranceService.updateInSearch run its per-entrance spatial lookup,
+   * which turns a bulk operation into N round trips.
+   *
+   * @param {number[]} entranceIds
+   * @returns {Promise<Object<number, Array>>} entrance id -> massifs (ids absent
+   *   from the result simply have no containing massif)
+   */
+  async findMassifsByEntranceIds(entranceIds) {
+    if (!entranceIds?.length) return {};
+    const { rows } = await CommonService.query(FIND_MASSIFS_BY_ENTRANCE_IDS, [
+      entranceIds,
+    ]);
+    const massifsByEntrance = {};
+    for (const row of rows) {
+      if (!massifsByEntrance[row.id_entrance]) {
+        massifsByEntrance[row.id_entrance] = [];
+      }
+      massifsByEntrance[row.id_entrance].push({
+        id: row.id_massif,
+        name: row.massif_name,
+        language: row.language,
+        isDeleted: false,
+      });
+    }
+    return massifsByEntrance;
+  },
+
   countEntrances: async (massifId) => {
     try {
       const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [

@@ -67,6 +67,30 @@ describe('Massif features', () => {
       });
     });
 
+    describe('Antimeridian-crossing polygon (#1811)', () => {
+      it('should return code 400 when the polygon straddles the 180° meridian', (done) => {
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Fiji Massif',
+            description: 'straddles the antimeridian',
+            descriptionTitle: 'Title',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonCrossesAntimeridian,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400)
+          .end((err, res) => {
+            if (err) return done(err);
+            should(res.body.code).equal('POLYGON_CROSSES_ANTIMERIDIAN');
+            should(res.body.message).match(/180° meridian/);
+            return done();
+          });
+      });
+    });
+
     describe('Shared-edge MultiPolygon (#1606)', () => {
       it('should return 400 with POLYGON_SELF_INTERSECTION for shared-edge MultiPolygon', (done) => {
         supertest(sails.hooks.http.app)
