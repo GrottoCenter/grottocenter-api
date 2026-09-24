@@ -1781,7 +1781,11 @@ paths:
         '400':
           description: >-
             Bad request. Returned when a new description is missing the
-            required `language` field.
+            required `language` field, when the proposed `parent` would create a
+            cycle, or when any many-to-many collection field contains an id that
+            does not exist. In the last case the response lists the unresolved
+            ids per field, for example
+            `These linked entities do not exist: authors: 23871.`
         '401':
           description: Unauthorized. A valid bearer token is required.
         '404':
@@ -1857,7 +1861,29 @@ paths:
     put:
       tags:
         - documents
-      description: Validate or not multiple documents, with or without a comment.
+      description: >-
+        Validate or not multiple documents, with or without a comment.
+
+
+        **Auto-rejection.** A pending modification (`modifiedDocJson`) is a
+        snapshot taken when it was submitted, and the database may have changed
+        since. Before applying one, the API re-checks it against the current
+        state and auto-rejects it instead of applying it when either:
+
+
+        * the proposed `parent` would now create a cycle in the document
+        hierarchy, or
+
+        * any many-to-many collection field (`authors`,
+        `authorsOrganization`, `subjects`, `languages`, `massifs`,
+        `isoRegions`, `countries`) names an entity that no longer exists.
+
+
+        An auto-rejected document keeps its last validated state,
+        `modifiedDocJson` is cleared, `validationComment` is set to a message
+        prefixed `Auto-rejected:` naming the reason, and the author receives a
+        REJECT notification. The batch still succeeds — other documents in the
+        same request are processed normally.
       parameters:
         - name: documents
           description: Document(s) to validate / refuse with their optionnal validation comment.
