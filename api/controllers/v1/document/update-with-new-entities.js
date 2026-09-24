@@ -65,6 +65,23 @@ module.exports = async (req, res) => {
     if (parentError) return res.badRequest(parentError);
   }
 
+  // Reject unknown collection members before the transaction opens. Here the ids
+  // come straight from the client, so an id that does not resolve is a bad
+  // request — without this check replaceCollection fails on the foreign key and
+  // the client gets a 500. Only the client-supplied lists are checked: cavers
+  // created from `newAuthors` below exist by construction and are merged into
+  // the resolved lists afterwards.
+  const { missing: missingMembers, resolved } =
+    await DocumentService.resolveM2MMembers(collectionData);
+  if (missingMembers.length > 0) {
+    return res.badRequest(
+      `These linked entities do not exist: ${DocumentService.formatMissingM2MMembers(
+        missingMembers
+      )}.`
+    );
+  }
+  Object.assign(collectionData, resolved);
+
   // Wrap the scalar update, entity creation, and all replaceCollection calls in
   // a single transaction so the document is never left in a partially-updated state.
   let updatedDocument;

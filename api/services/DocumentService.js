@@ -21,6 +21,28 @@ const {
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
 
+// Normalize an m2m member to the string form used to compare it with a primary
+// key read back from the database.
+//
+// The trim is load-bearing. Several target primary keys are blank-padded
+// character types in production: t_subject.code is bpchar(8), t_language.id
+// bpchar(3) and t_country.iso bpchar(2) (see sql/0_tables.sql). node-postgres
+// returns bpchar values padded to their full width, so a modifiedDocJson
+// snapshot stores subject code '2' as the 8-character string '2       '.
+// PostgreSQL's bpchar operators ignore trailing blanks, but a `bpchar = text`
+// comparison casts the *column* to text — stripping its padding while leaving
+// the padding on the parameter — so the two never match. Comparing trimmed
+// strings on both sides is padding-proof regardless of the column type.
+const normalizeMemberKey = (member) => String(member).trim();
+
+// Resolve the Waterline model backing one of the DOCUMENT_M2M_COLLECTIONS
+// fields, e.g. 'authors' -> TCaver. Derived from the TDocument definition rather
+// than a second hardcoded map so the two cannot drift apart.
+const getCollectionTargetModel = (field) => {
+  const target = TDocument.attributes[field]?.collection;
+  return target ? sails.models[String(target).toLowerCase()] : undefined;
+};
+
 // Authorship is a many-to-many relation, which Waterline's count() cannot
 // filter on, hence the native queries. Both exclude soft-deleted documents so
 // the count agrees with the lists the callers render alongside it.
@@ -811,6 +833,146 @@ module.exports = {
     );
     await Promise.all(promises);
   },
+
+  /**
+   * Check every m2m member against its target table before replaceCollection
+   * touches anything, and hand back the members as the database actually stores
+   * their keys.
+   *
+   * Two problems this solves:
+   *
+   * 1. replaceCollection destroys the existing junction rows and then inserts the
+   *    given members, so a member that has been deleted in the meantime surfaces
+   *    as a raw foreign-key violation (PostgreSQL 23503) and a 500. That matters
+   *    most for modifiedDocJson, which is a snapshot taken at submission time: a
+   *    caver, organization or reference-data row named in it may be gone by the
+   *    time a moderator validates it, and the document then becomes permanently
+   *    unvalidatable.
+   * 2. Members arrive in whatever shape they were stored in, which for the
+   *    blank-padded key types means '1.0     ' rather than '1.0' (see
+   *    normalizeMemberKey). Writing that padding into the junction table makes
+   *    the row depend on the column type to still join. The resolved list carries
+   *    the keys as read back from the target table, so what gets written is
+   *    canonical either way. Duplicates are collapsed at the same time —
+   *    replaceCollection would otherwise fail on the junction table's composite
+   *    primary key.
+   *
+   * Fields set to `undefined` are passed through untouched (meaning "not sent —
+   * keep existing associations"); an empty array stays an empty array (meaning
+   * "clear all").
+   *
+   * @param {object} collectionData  — keys are m2m field names, values are id
+   *                                   arrays or undefined
+   * @param {object} [db]            — optional Waterline connection, when called
+   *                                   from inside an active transaction
+   * @returns {Promise<{missing: Array<{field: string, missing: Array<*>}>, resolved: object}>}
+   *          `missing` has one entry per field with at least one unresolvable
+   *          member, in DOCUMENT_M2M_COLLECTIONS order, and is empty when
+   *          everything resolves. `resolved` is a collectionData-shaped object
+   *          safe to pass to replaceM2MCollections; it is only complete when
+   *          `missing` is empty.
+   */
+  async resolveM2MMembers(collectionData, db) {
+    const resolved = {};
+    const missing = [];
+
+    const results = await Promise.all(
+      DOCUMENT_M2M_COLLECTIONS.map(async (field) => {
+        const members = collectionData[field];
+        if (!Array.isArray(members)) return { field, skip: true };
+        if (members.length === 0) return { field, keys: [], missing: [] };
+
+        const Model = getCollectionTargetModel(field);
+        if (!Model) {
+          // A field in DOCUMENT_M2M_COLLECTIONS with no matching association on
+          // TDocument is a programming error, not bad data — replaceCollection
+          // would throw on it anyway. Report every member so the caller refuses
+          // the write rather than failing mid-transaction.
+          sails.log.error(
+            `resolveM2MMembers: no TDocument association named "${field}".`
+          );
+          return { field, keys: [], missing: [...members] };
+        }
+
+        const pk = Model.primaryKey;
+        const isNumericKey = Model.attributes[pk]?.type === 'number';
+
+        // Members that can never satisfy the foreign key are reported without a
+        // round trip. Non-numeric values for a numeric key are singled out
+        // because Waterline rejects them as invalid criteria, which would turn
+        // one 500 into another.
+        const unusable = [];
+        const candidates = [];
+        for (const member of members) {
+          const key = member == null ? '' : normalizeMemberKey(member);
+          if (key === '' || (isNumericKey && !Number.isFinite(Number(key)))) {
+            unusable.push(member);
+          } else {
+            candidates.push(member);
+          }
+        }
+
+        if (candidates.length === 0)
+          return { field, keys: [], missing: unusable };
+
+        let query = Model.find({
+          where: { [pk]: [...new Set(candidates.map(normalizeMemberKey))] },
+          select: [pk],
+        });
+        if (db) query = query.usingConnection(db);
+        const found = await query;
+
+        // Keyed on the trimmed form so a padded member matches, but holding the
+        // value as stored so that is what gets written back.
+        const existing = new Map(
+          found.map((record) => [normalizeMemberKey(record[pk]), record[pk]])
+        );
+
+        const keys = [];
+        const unresolved = [];
+        for (const member of candidates) {
+          const key = normalizeMemberKey(member);
+          if (!existing.has(key)) {
+            unresolved.push(member);
+          } else if (!keys.includes(existing.get(key))) {
+            keys.push(existing.get(key));
+          }
+        }
+
+        return { field, keys, missing: [...unusable, ...unresolved] };
+      })
+    );
+
+    for (const result of results) {
+      if (result.skip) {
+        resolved[result.field] = undefined;
+      } else {
+        resolved[result.field] = result.keys;
+        if (result.missing.length > 0) {
+          missing.push({ field: result.field, missing: result.missing });
+        }
+      }
+    }
+
+    return { missing, resolved };
+  },
+
+  /**
+   * Render the `missing` half of resolveM2MMembers as a human-readable list, so
+   * the validation and update paths report it with the same wording.
+   *
+   * @param {Array<{field: string, missing: Array<*>}>} missingMembers
+   * @returns {string} e.g. "authors: 23871; subjects: 2.11"
+   */
+  formatMissingM2MMembers: (missingMembers) =>
+    missingMembers
+      .map(
+        ({ field, missing }) =>
+          // String() so a null or empty member is visible in the message rather
+          // than rendering as a gap in the list.
+          `${field}: ${missing.map((member) => String(member)).join(', ')}`
+      )
+      .join('; '),
 
   normalizeToId,
   mapAuthorsOrganizationForSearch,
