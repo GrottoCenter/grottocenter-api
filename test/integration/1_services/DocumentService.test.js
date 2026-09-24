@@ -911,6 +911,160 @@ describe('DocumentService', () => {
     });
   });
 
+  describe('resolveM2MMembers()', () => {
+    // An id far above the fixtures and above anything the serial sequences reach
+    // during a test run, so it is reliably absent from t_caver.
+    const ABSENT_CAVER_ID = 99999999;
+    // Not in test/fixtures/tsubject.json, which stops at 9.1.
+    const ABSENT_SUBJECT_CODE = '9.99';
+
+    it('should report nothing when no collection field is set', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({});
+      should(missing).be.an.Array().and.have.length(0);
+      // Every field stays undefined, i.e. "keep existing associations".
+      should(resolved.authors).be.undefined();
+      should(resolved.subjects).be.undefined();
+    });
+
+    it('should pass undefined through and keep an empty array empty', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        authors: undefined,
+        subjects: [],
+      });
+      should(missing).have.length(0);
+      should(resolved.authors).be.undefined();
+      should(resolved.subjects).deepEqual([]);
+    });
+
+    it('should resolve every member when they all exist', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        authors: [1],
+        authorsOrganization: [1],
+        subjects: ['1.0'],
+        languages: ['fra'],
+        massifs: [1],
+        isoRegions: ['FR-01'],
+        countries: ['FR'],
+      });
+      should(missing).have.length(0);
+      should(resolved.authors).deepEqual([1]);
+      should(resolved.subjects).deepEqual(['1.0']);
+      should(resolved.languages).deepEqual(['fra']);
+      should(resolved.countries).deepEqual(['FR']);
+    });
+
+    it('should report a caver that does not exist', async () => {
+      const { missing } = await DocumentService.resolveM2MMembers({
+        authors: [1, ABSENT_CAVER_ID],
+      });
+      should(missing).have.length(1);
+      should(missing[0].field).equal('authors');
+      should(missing[0].missing).deepEqual([ABSENT_CAVER_ID]);
+    });
+
+    it('should report a subject code that does not exist', async () => {
+      const { missing } = await DocumentService.resolveM2MMembers({
+        subjects: ['1.0', ABSENT_SUBJECT_CODE],
+      });
+      should(missing).have.length(1);
+      should(missing[0].field).equal('subjects');
+      should(missing[0].missing).deepEqual([ABSENT_SUBJECT_CODE]);
+    });
+
+    it('should report every unresolved field, in DOCUMENT_M2M_COLLECTIONS order', async () => {
+      const { missing } = await DocumentService.resolveM2MMembers({
+        authors: [ABSENT_CAVER_ID],
+        subjects: [ABSENT_SUBJECT_CODE],
+        languages: ['fra'],
+      });
+      should(missing.map((e) => e.field)).deepEqual(['authors', 'subjects']);
+    });
+
+    // t_subject.code is bpchar(8) in production and node-postgres returns bpchar
+    // values blank-padded, so a modifiedDocJson snapshot stores subject code
+    // '1.0' as '1.0     '. Comparing that to the column with text semantics
+    // never matches, which would report every short code as missing and discard
+    // valid pending edits. The test schema uses varchar, so the padding has to
+    // come from the member side — which is exactly where it comes from in
+    // production.
+    it('should resolve a blank-padded subject code to its canonical key', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        subjects: ['1.0     '],
+      });
+      should(missing).have.length(0);
+      // Canonical, not the padded input: the padding must not reach the
+      // junction table.
+      should(resolved.subjects).deepEqual(['1.0']);
+    });
+
+    it('should resolve blank-padded language and country codes', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        languages: ['fra '],
+        countries: ['FR '],
+      });
+      should(missing).have.length(0);
+      should(resolved.languages).deepEqual(['fra']);
+      should(resolved.countries).deepEqual(['FR']);
+    });
+
+    it('should collapse duplicate members', async () => {
+      // replaceCollection would otherwise fail on the junction table's
+      // composite primary key.
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        subjects: ['1.0', '1.0     '],
+        authors: [1, '1'],
+      });
+      should(missing).have.length(0);
+      should(resolved.subjects).deepEqual(['1.0']);
+      should(resolved.authors).deepEqual([1]);
+    });
+
+    it('should report null and empty members without querying', async () => {
+      const { missing } = await DocumentService.resolveM2MMembers({
+        authors: [null, 1],
+        subjects: [''],
+      });
+      should(missing).have.length(2);
+      should(missing[0]).deepEqual({ field: 'authors', missing: [null] });
+      should(missing[1]).deepEqual({ field: 'subjects', missing: [''] });
+    });
+
+    it('should report a non-numeric member for a numeric key instead of throwing', async () => {
+      const { missing } = await DocumentService.resolveM2MMembers({
+        authors: ['not-an-id'],
+      });
+      should(missing).have.length(1);
+      should(missing[0].missing).deepEqual(['not-an-id']);
+    });
+  });
+
+  describe('formatMissingM2MMembers()', () => {
+    it('should render one field', () => {
+      should(
+        DocumentService.formatMissingM2MMembers([
+          { field: 'authors', missing: [23871] },
+        ])
+      ).equal('authors: 23871');
+    });
+
+    it('should render several fields and members', () => {
+      should(
+        DocumentService.formatMissingM2MMembers([
+          { field: 'authors', missing: [23871, 23872] },
+          { field: 'subjects', missing: ['2.11'] },
+        ])
+      ).equal('authors: 23871, 23872; subjects: 2.11');
+    });
+
+    it('should render a null member visibly', () => {
+      should(
+        DocumentService.formatMissingM2MMembers([
+          { field: 'authors', missing: [null] },
+        ])
+      ).equal('authors: null');
+    });
+  });
+
   describe('checkParentCycle() - cycle safety', () => {
     let cyclicDocAId;
     let cyclicDocBId;

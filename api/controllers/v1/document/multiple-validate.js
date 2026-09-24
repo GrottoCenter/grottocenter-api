@@ -24,6 +24,36 @@ async function markDocumentValidated(
 // Waterline silently ignores collection fields passed to .update()/.set().
 // Defined in config/constants/document.js — single source of truth.
 
+// t_document.validation_comment is varchar(300) (sql/0_tables.sql), and Waterline
+// rejects a longer value outright. The auto-rejection reason is variable-length —
+// it can list several missing members — so it is truncated to fit. The untruncated
+// reason always goes to the log.
+const VALIDATION_COMMENT_MAX_LENGTH = 300;
+
+// Refuse a pending modification that can no longer be applied to the current
+// database state. The document returns to its last validated state and the
+// reason is recorded so the author and moderator can see why.
+//
+// Note this deliberately does not set isValidated — unlike the manual-rejection
+// path in markDocumentValidated. That asymmetry predates this helper and is left
+// untouched.
+async function autoRejectModification(documentId, reason, validationAuthor) {
+  const comment = `Auto-rejected: ${reason}`.slice(
+    0,
+    VALIDATION_COMMENT_MAX_LENGTH
+  );
+  await TDocument.updateOne(documentId).set({
+    modifiedDocJson: null,
+    validationComment: comment,
+    validator: validationAuthor,
+    dateValidation: new Date(),
+  });
+  sails.log.warn(
+    `Document ${documentId} modification auto-rejected: ${reason}`
+  );
+  return { rejected: true, reason: comment };
+}
+
 // modifiedDocJson may pre-date this fix and contain populated objects instead of plain IDs.
 // Returns { scalarData, collectionData } where collectionData[field] is either an array of
 // plain ids or undefined (meaning "not sent — keep existing associations").
@@ -90,19 +120,25 @@ async function validateAndUpdateDocument(
     );
     if (parentError) {
       // Reject the modification rather than persisting a corrupt hierarchy.
-      // Clear the pending modification so the document returns to its last
-      // validated state and the moderator is informed of why it was rejected.
-      await TDocument.updateOne(document.id).set({
-        modifiedDocJson: null,
-        validationComment: `Auto-rejected: ${parentError}`,
-        validator: validationAuthor,
-        dateValidation: new Date(),
-      });
-      sails.log.warn(
-        `Document ${document.id} modification auto-rejected: ${parentError}`
-      );
-      return { rejected: true, reason: `Auto-rejected: ${parentError}` };
+      return autoRejectModification(document.id, parentError, validationAuthor);
     }
+  }
+
+  // Re-validate the m2m collection members for the same reason as the parent:
+  // modifiedDocJson is a submission-time snapshot, and a caver, organization or
+  // reference-data row it names may have been deleted since. replaceCollection
+  // would then fail with a foreign-key violation, which used to 500 and left the
+  // document permanently unvalidatable.
+  const { missing: missingMembers, resolved: resolvedCollectionData } =
+    await DocumentService.resolveM2MMembers(collectionData);
+  if (missingMembers.length > 0) {
+    return autoRejectModification(
+      document.id,
+      `these linked entities no longer exist — ${DocumentService.formatMissingM2MMembers(
+        missingMembers
+      )}`,
+      validationAuthor
+    );
   }
 
   await sails.getDatastore().transaction(async (db) => {
@@ -130,7 +166,7 @@ async function validateAndUpdateDocument(
     // Fields not sent (undefined) are left untouched.
     await DocumentService.replaceM2MCollections(
       document.id,
-      collectionData,
+      resolvedCollectionData,
       db
     );
 
@@ -246,7 +282,8 @@ module.exports = async (req, res) => {
         req.token.id
       );
       if (result.rejected) {
-        // The pending modification was auto-rejected due to a parent cycle.
+        // The pending modification was auto-rejected — it would have created a
+        // parent cycle, or it named a linked entity that no longer exists.
         // Send a REJECT author notification with the auto-rejection reason,
         // matching the behaviour of the manual-rejection path above.
         // eslint-disable-next-line no-await-in-loop

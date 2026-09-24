@@ -333,5 +333,44 @@ describe('Document update-with-new-entities', () => {
       // At least one extra author was added
       should(doc.authors.length).be.greaterThan(1);
     });
+
+    it('should return 400 for an author id that does not exist', async () => {
+      await TDocument.replaceCollection(testDocId, 'authors').members([1]);
+
+      const res = await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${testDocId}/new-entities`)
+        .send({
+          document: { type: 1, authors: [99999999] },
+          newAuthors: [],
+          newDescriptions: [],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        // Without the pre-flight check replaceCollection fails on
+        // j_document_caver_author_t_caver_fk and this is a 500.
+        .expect(400);
+
+      should(JSON.stringify(res.body ?? res.text)).match(/99999999/);
+
+      // Nothing must have been written — the check runs before the transaction.
+      const doc = await TDocument.findOne(testDocId).populate('authors');
+      should(doc.authors.map((a) => a.id)).deepEqual([1]);
+    });
+
+    it('should return 400 for a subject code that does not exist', async () => {
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${testDocId}/new-entities`)
+        .send({
+          // 9.99 is absent from test/fixtures/tsubject.json
+          document: { type: 1, subjects: ['9.99'] },
+          newAuthors: [],
+          newDescriptions: [],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
   });
 });
