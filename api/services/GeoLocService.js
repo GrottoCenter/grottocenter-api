@@ -26,6 +26,22 @@ const QUALITY_LATERAL_JOIN = `
     LIMIT 1
   ) vq ON true`;
 
+// The row order of this query and of PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF is
+// deliberately unspecified.
+//
+// An `ORDER BY size_coef DESC` used to close both, so that a truncating LIMIT
+// would keep the most significant caves. It never truncated: the limit is
+// hardcoded at 100 000 (see find-entrances.js) while MAX_BBOX_AREA_KM2 below
+// holds a legal box to roughly 16 000 entrances even over the densest karst
+// measured. So the clause only reordered the JSON array, and it paid for a sort
+// carrying every projected column — ~205 bytes per row, which spilled to an
+// on-disk external merge past ~18 000 rows at the server's 4 MB work_mem.
+//
+// It also ranked the wrong way round: id_cave is nullable, so a cave-less
+// entrance has a NULL size_coef, and NULLS FIRST is the default under DESC.
+//
+// Re-adding an ORDER BY here re-adds that sort node. Sort client-side instead:
+// every row carries `quality` (size_coef) for exactly that purpose. See #1821.
 const PUBLIC_ENTRANCES_IN_BOUNDS = `
   SELECT e.id as id, ne.name as name, e.city as city,
   e.region as region, e.longitude as longitude, e.latitude as latitude,
@@ -40,10 +56,10 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND e.is_sensitive = false
   AND e.is_deleted = false
-  ORDER BY size_coef DESC
   LIMIT $5;
 `;
 
+// Unordered, for the reasons given above PUBLIC_ENTRANCES_IN_BOUNDS.
 const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
   SELECT e.id as id, ne.name as name, e.city as city,
   e.region as region, e.longitude as longitude, e.latitude as latitude,
@@ -60,7 +76,6 @@ const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
   AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   AND e.is_sensitive = false
   AND e.is_deleted = false
-  ORDER BY size_coef DESC
   LIMIT $5;
 `;
 const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS = `
