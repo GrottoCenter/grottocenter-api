@@ -34,15 +34,21 @@ const VALIDATION_COMMENT_MAX_LENGTH = 300;
 // database state. The document returns to its last validated state and the
 // reason is recorded so the author and moderator can see why.
 //
-// Note this deliberately does not set isValidated — unlike the manual-rejection
-// path in markDocumentValidated. That asymmetry predates this helper and is left
-// untouched.
+// isValidated must be restored to true, matching the manual-rejection path in
+// markDocumentValidated. Submitting a modification sets isValidated false and
+// dateValidation null (DocumentService.updateDocument); rejecting it sets
+// dateValidation but leaves the flag false, and find-all.js then returns
+// neither — the default list requires isValidated true, and the moderation queue
+// requires isValidated false *with* a null dateValidation. A document left in
+// that combination disappears from the site instead of reverting to its last
+// validated state.
 async function autoRejectModification(documentId, reason, validationAuthor) {
   const comment = `Auto-rejected: ${reason}`.slice(
     0,
     VALIDATION_COMMENT_MAX_LENGTH
   );
   await TDocument.updateOne(documentId).set({
+    isValidated: true,
     modifiedDocJson: null,
     validationComment: comment,
     validator: validationAuthor,
@@ -141,56 +147,73 @@ async function validateAndUpdateDocument(
     );
   }
 
-  await sails.getDatastore().transaction(async (db) => {
-    // Update associated data not handled by TDocument manually
-    // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
-    await TDescription.updateOne({ document: document.id })
-      .set(descriptionData)
-      .usingConnection(db);
+  try {
+    await sails.getDatastore().transaction(async (db) => {
+      // Update associated data not handled by TDocument manually
+      // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
+      await TDescription.updateOne({ document: document.id })
+        .set(descriptionData)
+        .usingConnection(db);
 
-    await TDocument.updateOne(document.id)
-      .set({
-        ...scalarData,
-        modifiedDocJson: null,
-        dateReviewed: new Date(),
-        reviewer: reviewerId,
-        dateValidation: new Date(),
-        isValidated: true,
-        validationComment,
-        validator: validationAuthor,
-      })
-      .usingConnection(db);
+      await TDocument.updateOne(document.id)
+        .set({
+          ...scalarData,
+          modifiedDocJson: null,
+          dateReviewed: new Date(),
+          reviewer: reviewerId,
+          dateValidation: new Date(),
+          isValidated: true,
+          validationComment,
+          validator: validationAuthor,
+        })
+        .usingConnection(db);
 
-    // Replace m2m collections for every field that was explicitly sent by the
-    // client (including an empty array, which means "clear all").
-    // Fields not sent (undefined) are left untouched.
-    await DocumentService.replaceM2MCollections(
+      // Replace m2m collections for every field that was explicitly sent by the
+      // client (including an empty array, which means "clear all").
+      // Fields not sent (undefined) are left untouched.
+      await DocumentService.replaceM2MCollections(
+        document.id,
+        resolvedCollectionData,
+        db
+      );
+
+      const filePromises = [];
+      // Files have already been created,
+      // they just need to be linked to the document.
+      if (newFiles) {
+        filePromises.push(
+          ...newFiles.map((f) =>
+            TFile.updateOne(f.id).set({ isValidated: true })
+          )
+        );
+      }
+      if (modifiedFiles) {
+        filePromises.push(
+          ...modifiedFiles.map((f) => FileService.document.update(f))
+        );
+      }
+
+      if (deletedFiles) {
+        filePromises.push(
+          ...deletedFiles.map((f) => FileService.document.delete(f))
+        );
+      }
+      await Promise.all(filePromises);
+    });
+  } catch (err) {
+    // A target row deleted between resolveM2MMembers and the inserts above lands
+    // here. The transaction rolled back, so the document is untouched and the
+    // same auto-reject policy applies — without this the modification would stay
+    // stuck exactly as it was before this guard existed. Anything that is not a
+    // foreign-key violation keeps propagating: see
+    // DocumentService.isForeignKeyViolation for why that distinction matters.
+    if (!DocumentService.isForeignKeyViolation(err)) throw err;
+    return autoRejectModification(
       document.id,
-      resolvedCollectionData,
-      db
+      'a linked entity was deleted while this modification was being validated',
+      validationAuthor
     );
-
-    const filePromises = [];
-    // Files have already been created,
-    // they just need to be linked to the document.
-    if (newFiles) {
-      filePromises.push(
-        ...newFiles.map((f) => TFile.updateOne(f.id).set({ isValidated: true }))
-      );
-    }
-    if (modifiedFiles) {
-      filePromises.push(
-        ...modifiedFiles.map((f) => FileService.document.update(f))
-      );
-    }
-
-    if (deletedFiles) {
-      filePromises.push(
-        ...deletedFiles.map((f) => FileService.document.delete(f))
-      );
-    }
-    await Promise.all(filePromises);
-  });
+  }
   return { rejected: false };
 }
 
