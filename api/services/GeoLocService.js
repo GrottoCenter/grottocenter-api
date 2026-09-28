@@ -26,6 +26,29 @@ const QUALITY_LATERAL_JOIN = `
     LIMIT 1
   ) vq ON true`;
 
+// Average interest rating of an entrance, for the map popup. See #1823.
+//
+// `aestheticism > 0` drops both 0 and NULL, since a comparison against NULL is
+// never true — the same partition CommentService.getStatsFromId works on. `avg`
+// over no rows yields NULL, which is exactly the "unrated" contract, so no
+// COALESCE is wanted here.
+//
+// Lateral rather than a GROUP BY subquery joined on id_entrance: a grouped
+// subquery cannot have the bounding box pushed into it, so it would hash the
+// whole comment table even for the twenty entrances a zoomed-in map asks for.
+// This form costs one idx_t_comment_entrance probe per returned row instead.
+//
+// It is an aggregate, so it yields exactly one row per entrance and cannot
+// multiply the result set — the invariant GeoLocNameFilter.test.js guards.
+const AESTHETICISM_LATERAL_JOIN = `
+  LEFT JOIN LATERAL (
+    SELECT avg(cm.aestheticism) AS aestheticism
+    FROM t_comment cm
+    WHERE cm.id_entrance = e.id
+      AND cm.aestheticism > 0
+      AND cm.is_deleted = false
+  ) ca ON true`;
+
 // The row order of this query and of PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF is
 // deliberately unspecified.
 //
@@ -46,13 +69,14 @@ const PUBLIC_ENTRANCES_IN_BOUNDS = `
   SELECT e.id as id, ne.name as name, e.city as city,
   e.region as region, e.longitude as longitude, e.latitude as latitude,
   c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,
-  c.length as lengthCave,
+  c.length as lengthCave, ca.aestheticism as aestheticism,
   ${QUALITY_SELECT}
   FROM t_entrance as e
   LEFT JOIN t_name as ne ON ne.id_entrance = e.id AND ne.is_main = true AND ne.is_deleted = false
   LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave AND nc.is_main = true AND nc.is_deleted = false
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
   ${QUALITY_LATERAL_JOIN}
+  ${AESTHETICISM_LATERAL_JOIN}
   WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND e.is_sensitive = false
   AND e.is_deleted = false
@@ -64,13 +88,14 @@ const PUBLIC_ENTRANCES_IN_BOUNDS_AND_MASSIF = `
   SELECT e.id as id, ne.name as name, e.city as city,
   e.region as region, e.longitude as longitude, e.latitude as latitude,
   c.size_coef as size_coef, e.id_cave as idCave, nc.name as nameCave, c.depth as depthCave,
-  c.length as lengthCave,
+  c.length as lengthCave, ca.aestheticism as aestheticism,
   ${QUALITY_SELECT}
   FROM t_entrance as e
   LEFT JOIN t_name as ne ON ne.id_entrance = e.id AND ne.is_main = true AND ne.is_deleted = false
   LEFT JOIN t_name as nc ON nc.id_cave = e.id_cave AND nc.is_main = true AND nc.is_deleted = false
   LEFT JOIN t_cave as c ON c.Id = e.id_cave
   ${QUALITY_LATERAL_JOIN}
+  ${AESTHETICISM_LATERAL_JOIN}
   JOIN t_massif AS m ON m.id = $6
   WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
   AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
@@ -269,6 +294,14 @@ const formatEntrances = (entrances) =>
     longitude: parseFloat(entrance.longitude),
     latitude: parseFloat(entrance.latitude),
     quality: entrance.size_coef,
+    // Rounded here rather than in SQL: round(...::numeric, 2) would come back
+    // from pg as a string, while avg(float8) arrives as a number. Two decimals
+    // keep a response that may carry thousands of entrances small; the front
+    // end renders stars from it, so the fraction still has to survive.
+    aestheticism:
+      entrance.aestheticism == null
+        ? null
+        : Math.round(Number(entrance.aestheticism) * 100) / 100,
     dataQuality:
       entrance.general_latest_date_of_update != null
         ? getQualityData(entrance)
