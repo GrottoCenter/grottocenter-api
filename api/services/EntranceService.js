@@ -479,7 +479,14 @@ module.exports = {
         temperature: cave.temperature,
         isDiving: cave.isDiving,
       },
-      commentsRating: computeCommentsRating(comments ?? []),
+      // Soft-deleted comments must not move the rating. The full-resync path
+      // (api/dbSync/utils.js) has always filtered them out, so leaving them in
+      // here made a single-entrance update disagree with a resync of the same
+      // entrance. Filtered at the call site to keep computeCommentsRating pure
+      // and to leave the indexed `comments` array untouched. See #1823.
+      commentsRating: computeCommentsRating(
+        (comments ?? []).filter((c) => !c.isDeleted)
+      ),
     };
 
     if (entrance.isSensitive) {

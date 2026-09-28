@@ -3,19 +3,26 @@ const dayjs = require('../utils/dayjs');
 const CommonService = require('./CommonService');
 
 module.exports = {
+  // `{ '>': 0 }` drops both 0 and NULL ratings. `isDeleted: false` keeps these
+  // averages in step with the map (GeoLocService AESTHETICISM_LATERAL_JOIN) and
+  // with the search index, whose comment fetch has always defaulted to
+  // `is_deleted = false` (api/dbSync/utils.js). See #1823.
   getStatsFromId: async (entranceId) => {
     const [aestheticism, caving, approach] = await Promise.all([
       TComment.avg('aestheticism').where({
         entrance: entranceId,
         aestheticism: { '>': 0 },
+        isDeleted: false,
       }),
       TComment.avg('caving').where({
         entrance: entranceId,
         caving: { '>': 0 },
+        isDeleted: false,
       }),
       TComment.avg('approach').where({
         entrance: entranceId,
         approach: { '>': 0 },
+        isDeleted: false,
       }),
     ]);
 
