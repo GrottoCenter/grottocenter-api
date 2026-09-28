@@ -149,6 +149,93 @@ describe('GeoLocService', () => {
         should(entrance.dataQuality).be.belowOrEqual(100);
       });
     });
+
+    /**
+     * Interest rating for the map popup (#1823).
+     *
+     * The wide box below covers entrances 1, 2, 4, 5, 7 and 8 at once, which no
+     * HTTP test can do: GET /geoloc/entrances caps a bounding box at
+     * 35 000 km² and the smallest box holding both a rated and an unrated
+     * entrance is ~75 000 km². Calling the service directly bypasses the
+     * controller's cap, the same way GeoLocNameFilter.test.js does.
+     *
+     * Nothing is asserted about entrances 1, 2 and 999: the Comments route
+     * tests rewrite their ratings, so an exact average on them would depend on
+     * shard ordering.
+     */
+    describe('aestheticism', () => {
+      const wideSouthWest = { lat: 55, lng: 70 };
+      const wideNorthEast = { lat: 65, lng: 80 };
+
+      const getWideMap = (massifId = null) =>
+        GeoLocService.getEntrancesMap(
+          wideSouthWest,
+          wideNorthEast,
+          1000,
+          massifId
+        );
+
+      const byId = (entrances) =>
+        new Map(entrances.map((entrance) => [entrance.id, entrance]));
+
+      it('should average only the positive ratings of the entrance itself', async () => {
+        const entrances = byId(await getWideMap());
+
+        // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.67. The 0, the NULL and the
+        // soft-deleted 2.0 on the same entrance must all stay out: counting the
+        // deleted one would give 6.25, counting the zero 5.75.
+        should(entrances.get(4).aestheticism).equal(7.67);
+      });
+
+      /**
+       * Entrance 5 shares cave 3 with the rated entrance 4, so an aggregate
+       * keyed on the cave instead of the entrance would hand it 7.67.
+       */
+      it('should return null for an entrance whose comments are all unrated', async () => {
+        const entrances = byId(await getWideMap());
+
+        should(entrances.get(5)).have.property('aestheticism', null);
+      });
+
+      it('should return null for an entrance with no comments at all', async () => {
+        const entrances = byId(await getWideMap());
+
+        should(entrances.get(7)).have.property('aestheticism', null);
+        should(entrances.get(8)).have.property('aestheticism', null);
+      });
+
+      it('should expose aestheticism as null or a number within the 0-10 scale', async () => {
+        const entrances = await getWideMap();
+
+        should(entrances.length).be.above(0);
+        entrances.forEach((entrance) => {
+          should(entrance).have.property('aestheticism');
+          if (entrance.aestheticism === null) return;
+          should(entrance.aestheticism).be.a.Number();
+          should(entrance.aestheticism).be.above(0);
+          should(entrance.aestheticism).be.belowOrEqual(10);
+        });
+      });
+
+      /**
+       * The rating join is an aggregate, so it must not turn one entrance into
+       * several rows the way a plain JOIN t_comment would.
+       */
+      it('should not multiply rows for an entrance with several comments', async () => {
+        const entrances = await getWideMap();
+
+        const ids = entrances.map((entrance) => entrance.id);
+        should(ids.length).equal(new Set(ids).size);
+      });
+
+      it('should compute the same averages on the massif-filtered query', async () => {
+        // Entrances 4 and 5 both sit inside massif 1.
+        const entrances = byId(await getWideMap(1));
+
+        should(entrances.get(4).aestheticism).equal(7.67);
+        should(entrances.get(5)).have.property('aestheticism', null);
+      });
+    });
   });
 
   describe('getGrottosMap()', () => {

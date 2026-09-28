@@ -9,6 +9,29 @@ describe('CommentService', () => {
       should(stats.caving).equal(8);
       should(stats.approach).equal(8);
     });
+
+    /**
+     * Soft-deleted comments must not move the average, so that the entrance page
+     * agrees with the map popup and the search index (#1823). Entrance 4 carries
+     * a deleted comment rated 2.0 alongside 7, 8 and 8: counting it would give
+     * 6.25 instead of 7.666... Unrounded here — only the geoloc response rounds.
+     */
+    it('should ignore soft-deleted comments', async () => {
+      const stats = await CommentService.getStatsFromId(4);
+      should(stats.aestheticism).be.approximately(7.6667, 0.0001);
+      should(stats.caving).equal(6);
+      should(stats.approach).equal(5);
+    });
+
+    /**
+     * Entrance 5 has comments, but none of them rates it. Waterline's .avg()
+     * reports 0 rather than null for an empty set — the geoloc endpoint returns
+     * null for the same entrance, and aligning the two is out of scope here.
+     */
+    it('should report 0 when no comment rates the entrance', async () => {
+      const stats = await CommentService.getStatsFromId(5);
+      should(stats.aestheticism).equal(0);
+    });
   });
   describe('postgreIntervalObjectToDbString()', () => {
     it('should convert a duration object into a DB string for API', async () => {
