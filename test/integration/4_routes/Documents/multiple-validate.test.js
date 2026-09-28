@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Document multiple-validate', () => {
@@ -455,10 +456,15 @@ describe('Document multiple-validate', () => {
         should(rejectNotif).not.be.undefined();
       });
 
-      it('should auto-reject modifiedDocJson naming an author deleted since submission', async () => {
+      it('should drop an author deleted since submission and apply the rest of the modification', async () => {
         // A caver that exists when the modification is submitted and is deleted
         // before the moderator gets to it. replaceCollection used to fail on
         // j_document_caver_author_t_caver_fk and return 500 forever.
+        //
+        // #1815 requires the validation to succeed with the vanished member
+        // dropped: refusing the whole edit would punish the contributor for an
+        // administrative action they had no part in. So the surviving author, the
+        // description change and the scalar change must all be applied.
         const doomedCaver = await TCaver.create({
           nickname: `Doomed author ${Date.now()}`,
           mail: `doomed-${Date.now()}@example.com`,
@@ -483,8 +489,12 @@ describe('Document multiple-validate', () => {
           descriptions: [desc.id],
           modifiedDocJson: {
             reviewerId: 2,
-            documentData: { type: 1, authors: [doomedCaverId] },
-            descriptionData: { title: 'Stale author', body: 'Body' },
+            // Caver 6 survives, the doomed one does not.
+            documentData: { type: 1, authors: [6, doomedCaverId] },
+            descriptionData: {
+              title: 'Applied despite the dropped author',
+              body: 'New body',
+            },
           },
         }).fetch();
         createdDocIds.push(doc.id);
@@ -507,22 +517,25 @@ describe('Document multiple-validate', () => {
 
         const updated = await TDocument.findOne(doc.id).populate('authors');
         should(updated.modifiedDocJson).be.null();
-        should(updated.validationComment).match(/auto-rejected/i);
-        should(updated.validationComment).match(/authors/);
-        should(updated.validationComment).match(
-          new RegExp(String(doomedCaverId))
-        );
-        // The last validated state must be intact — caver 1 still the author.
-        should(updated.authors.map((a) => a.id)).deepEqual([1]);
-        // ...and the document must still be reachable. isValidated false with a
-        // non-null dateValidation matches neither find-all.js list, so leaving
-        // the flag false would make the document disappear from the site.
         should(updated.isValidated).be.true();
         should(updated.dateValidation).be.ok();
+        // Not rejected — the edit went in.
+        should(updated.validationComment ?? '').not.match(/auto-rejected/i);
 
-        // Same property stated the way the user experiences it, using the exact
-        // clauses find-all.js builds: present in the default list, absent from
-        // the moderation queue (it is no longer awaiting review).
+        // The surviving member was applied and the vanished one dropped. Caver 1
+        // is gone because the snapshot replaced the collection, which is the
+        // contributor's intent; caver 6 is what they asked for minus the
+        // impossible part.
+        should(updated.authors.map((a) => a.id)).deepEqual([6]);
+
+        // The rest of the modification landed too — this is what auto-rejecting
+        // used to discard.
+        const updatedDesc = await TDescription.findOne({ document: doc.id });
+        should(updatedDesc.title).equal('Applied despite the dropped author');
+        should(updatedDesc.body).equal('New body');
+
+        // Reachable in the default list, absent from the moderation queue, using
+        // the exact clauses find-all.js builds.
         const inDefaultList = await TDocument.count().where({
           and: [{ isValidated: true, isDeleted: false }, { id: doc.id }],
         });
@@ -536,6 +549,7 @@ describe('Document multiple-validate', () => {
         should(inDefaultList).equal(1);
         should(inModerationQueue).equal(0);
 
+        // A successful validation notifies the author with VALIDATE, not REJECT.
         const afterNotifIds = (await TNotification.find().select(['id'])).map(
           (n) => n.id
         );
@@ -544,22 +558,75 @@ describe('Document multiple-validate', () => {
         );
         const VALIDATE_TYPE_ID = 4;
         const REJECT_TYPE_ID = 7;
-        const validateNotif = newNotifIds.length
+        const rejectNotif = newNotifIds.length
           ? await TNotification.findOne({
               id: newNotifIds,
-              notificationType: VALIDATE_TYPE_ID,
+              notificationType: REJECT_TYPE_ID,
             })
           : null;
-        should(validateNotif).be.undefined();
-        const rejectNotif = newNotifIds.length
+        should(rejectNotif).be.undefined();
+        const validateNotif = newNotifIds.length
           ? await TNotification.findOne({
               id: newNotifIds,
               notified: 1,
               document: doc.id,
-              notificationType: REJECT_TYPE_ID,
+              notificationType: VALIDATE_TYPE_ID,
             })
           : null;
-        should(rejectNotif).not.be.undefined();
+        should(validateNotif).not.be.undefined();
+      });
+
+      it('should clear a collection whose every member was deleted since submission', async () => {
+        // The degenerate case of the drop policy: nothing survives, so the
+        // collection ends up empty. That is still the snapshot's intent minus the
+        // impossible part, and it must not be mistaken for "field not sent".
+        const doomedCaver = await TCaver.create({
+          nickname: `Only author ${Date.now()}`,
+          mail: `only-author-${Date.now()}@example.com`,
+          password: 'hashed',
+          language: '000',
+        }).fetch();
+        const doomedCaverId = doomedCaver.id;
+
+        const desc = await TDescription.create({
+          author: 1,
+          title: 'All authors gone',
+          body: 'Body',
+        }).fetch();
+        createdDescIds.push(desc.id);
+
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          authors: [1],
+          descriptions: [desc.id],
+          modifiedDocJson: {
+            reviewerId: 2,
+            documentData: { type: 1, authors: [doomedCaverId] },
+            descriptionData: { title: 'All authors gone', body: 'Body' },
+          },
+        }).fetch();
+        createdDocIds.push(doc.id);
+
+        await TCaver.destroyOne(doomedCaverId);
+
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({
+            documents: [{ id: doc.id, isValidated: 'true' }],
+          })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(204);
+
+        const updated = await TDocument.findOne(doc.id).populate('authors');
+        should(updated.modifiedDocJson).be.null();
+        should(updated.isValidated).be.true();
+        should(updated.validationComment ?? '').not.match(/auto-rejected/i);
+        should(updated.authors).have.length(0);
       });
 
       // A snapshot can hold a value that is numeric but outside int4 — the
@@ -573,7 +640,7 @@ describe('Document multiple-validate', () => {
       ];
 
       outOfDomainIds.forEach(([label, badId]) => {
-        it(`should auto-reject a snapshot whose author id is ${label}`, async () => {
+        it(`should drop a snapshot author id that is ${label}`, async () => {
           const desc = await TDescription.create({
             author: 1,
             title: 'Out of domain',
@@ -590,7 +657,7 @@ describe('Document multiple-validate', () => {
             descriptions: [desc.id],
             modifiedDocJson: {
               reviewerId: 2,
-              documentData: { type: 1, authors: [badId] },
+              documentData: { type: 1, authors: [6, badId] },
               descriptionData: { title: 'Out of domain', body: 'Body' },
             },
           }).fetch();
@@ -606,10 +673,10 @@ describe('Document multiple-validate', () => {
 
           const updated = await TDocument.findOne(doc.id).populate('authors');
           should(updated.modifiedDocJson).be.null();
-          should(updated.validationComment).match(/auto-rejected/i);
           should(updated.isValidated).be.true();
-          // The last validated state survives untouched.
-          should(updated.authors.map((a) => a.id)).deepEqual([1]);
+          should(updated.validationComment ?? '').not.match(/auto-rejected/i);
+          // The unusable id is dropped, the valid one applied.
+          should(updated.authors.map((a) => a.id)).deepEqual([6]);
         });
       });
 
@@ -657,7 +724,10 @@ describe('Document multiple-validate', () => {
         should(updated.subjects.map((s) => s.id.trim())).deepEqual(['1.0']);
       });
 
-      it('should keep processing the batch when one document is auto-rejected', async () => {
+      // The production scenario from #1815: a five-document batch containing one
+      // document whose snapshot named a deleted caver returned 500 and the
+      // moderator had to bisect by hand.
+      it('should validate a whole batch when one document has a vanished member', async () => {
         const doomedCaver = await TCaver.create({
           nickname: `Doomed batch author ${Date.now()}`,
           mail: `doomed-batch-${Date.now()}@example.com`,
@@ -710,13 +780,169 @@ describe('Document multiple-validate', () => {
           .set('Accept', 'application/json')
           .expect(204);
 
-        const updatedStale = await TDocument.findOne(staleDoc.id);
+        const updatedStale = await TDocument.findOne(staleDoc.id).populate(
+          'authors'
+        );
         should(updatedStale.modifiedDocJson).be.null();
-        should(updatedStale.validationComment).match(/auto-rejected/i);
+        should(updatedStale.isValidated).be.true();
+        should(updatedStale.validationComment ?? '').not.match(
+          /auto-rejected/i
+        );
+        should(updatedStale.authors).have.length(0);
 
         // The rest of the batch must still have been applied.
         const updatedClean = await TDocument.findOne(cleanDoc.id);
         should(updatedClean.isValidated).be.true();
+      });
+
+      // The window between resolveM2MMembers and the replaceCollection insert
+      // cannot be hit from a test: the test schema carries no foreign keys, so a
+      // real 23503 is unreachable here even though production raises one. The
+      // violation is injected instead, which is what makes the retry testable at
+      // all — see api/services/DocumentService.js isForeignKeyViolation for the
+      // error shape being reproduced.
+      describe('Concurrent delete during validation', () => {
+        const FK_VIOLATION = Object.assign(
+          new Error(
+            'insert or update on table "j_document_caver_author" violates foreign key constraint "j_document_caver_author_t_caver_fk"'
+          ),
+          {
+            raw: {
+              code: '23503',
+              constraint: 'j_document_caver_author_t_caver_fk',
+              table: 'j_document_caver_author',
+            },
+          }
+        );
+
+        // Sails re-requires everything under api/ when it lifts, so the instance
+        // a top-level `require` in this file captured is a stale copy that no
+        // controller ever calls — stubbing it silently does nothing. Resolve the
+        // service after the lift instead.
+        let Service;
+        before(() => {
+          // eslint-disable-next-line global-require
+          Service = require('../../../../api/services/DocumentService');
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        const seedPendingDoc = async () => {
+          const desc = await TDescription.create({
+            author: 1,
+            title: 'Racing',
+            body: 'Body',
+          }).fetch();
+          createdDescIds.push(desc.id);
+
+          const doc = await TDocument.create({
+            author: 1,
+            type: 1,
+            license: 1,
+            isValidated: false,
+            authors: [1],
+            descriptions: [desc.id],
+            modifiedDocJson: {
+              reviewerId: 2,
+              documentData: { type: 1, authors: [6] },
+              descriptionData: { title: 'Racing applied', body: 'New body' },
+            },
+          }).fetch();
+          createdDocIds.push(doc.id);
+          return doc;
+        };
+
+        it('should retry and apply the modification when the first attempt loses the race', async () => {
+          const doc = await seedPendingDoc();
+
+          const original = Service.replaceM2MCollections;
+          let calls = 0;
+          sinon.stub(Service, 'replaceM2MCollections').callsFake((...args) => {
+            calls += 1;
+            if (calls === 1) return Promise.reject(FK_VIOLATION);
+            return original.apply(Service, args);
+          });
+
+          await supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(204);
+
+          should(calls).equal(2);
+
+          const updated = await TDocument.findOne(doc.id).populate('authors');
+          should(updated.isValidated).be.true();
+          should(updated.modifiedDocJson).be.null();
+          should(updated.validationComment ?? '').not.match(/auto-rejected/i);
+          // The whole edit went in on the second pass — the first attempt's
+          // writes were rolled back, so this also proves the retry re-applies
+          // the scalar and description changes rather than half of them.
+          should(updated.authors.map((a) => a.id)).deepEqual([6]);
+          const updatedDesc = await TDescription.findOne({ document: doc.id });
+          should(updatedDesc.title).equal('Racing applied');
+        });
+
+        it('should auto-reject after every attempt loses the race', async () => {
+          const doc = await seedPendingDoc();
+
+          const stub = sinon
+            .stub(Service, 'replaceM2MCollections')
+            .rejects(FK_VIOLATION);
+
+          await supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(204);
+
+          // Bounded: it must give up rather than retry forever.
+          should(stub.callCount).equal(2);
+
+          const updated = await TDocument.findOne(doc.id).populate('authors');
+          should(updated.modifiedDocJson).be.null();
+          should(updated.validationComment).match(/auto-rejected/i);
+          // Last validated state intact, and still reachable in the default list.
+          should(updated.authors.map((a) => a.id)).deepEqual([1]);
+          should(updated.isValidated).be.true();
+          const updatedDesc = await TDescription.findOne({ document: doc.id });
+          should(updatedDesc.title).equal('Racing');
+        });
+
+        it('should keep propagating a database error that is not a foreign-key violation', async () => {
+          const doc = await seedPendingDoc();
+
+          // A connection failure must not be absorbed as "the member is gone":
+          // auto-rejection clears modifiedDocJson, so that would destroy the
+          // contributor's pending edit over a transient fault.
+          const stub = sinon.stub(Service, 'replaceM2MCollections').rejects(
+            Object.assign(new Error('connection terminated'), {
+              raw: { code: '08006' },
+            })
+          );
+
+          await supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(500);
+
+          // No retry either — it is not a race.
+          should(stub.callCount).equal(1);
+
+          // The pending modification survives for a later attempt.
+          const updated = await TDocument.findOne(doc.id);
+          should(updated.modifiedDocJson).not.be.null();
+          should(updated.isValidated).be.false();
+        });
       });
     });
   });
