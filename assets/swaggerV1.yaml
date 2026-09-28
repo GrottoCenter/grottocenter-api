@@ -1785,7 +1785,11 @@ paths:
             cycle, or when any many-to-many collection field contains an id that
             does not exist. In the last case the response lists the unresolved
             ids per field, for example
-            `These linked entities do not exist: authors: 23871.`
+            `These linked entities do not exist: authors: 23871.` An id that is
+            numeric but outside PostgreSQL's 32-bit integer range, or not a whole
+            number, is reported the same way. Also returned — as a retryable
+            error — when a linked entity is deleted while the update is being
+            saved; nothing is written in that case.
         '401':
           description: Unauthorized. A valid bearer token is required.
         '404':
@@ -1876,14 +1880,21 @@ paths:
 
         * any many-to-many collection field (`authors`,
         `authorsOrganization`, `subjects`, `languages`, `massifs`,
-        `isoRegions`, `countries`) names an entity that no longer exists.
+        `isoRegions`, `countries`) names an entity that no longer exists, or
 
 
-        An auto-rejected document keeps its last validated state,
-        `modifiedDocJson` is cleared, `validationComment` is set to a message
-        prefixed `Auto-rejected:` naming the reason, and the author receives a
-        REJECT notification. The batch still succeeds — other documents in the
-        same request are processed normally.
+        * a linked entity is deleted while the modification is being applied,
+        which rolls the write back.
+
+
+        An auto-rejected document keeps its last validated state: its
+        associations are left as they were and `isValidated` returns to `true`,
+        so the document stays visible rather than sitting between the published
+        list and the moderation queue. `modifiedDocJson` is cleared,
+        `validationComment` is set to a message prefixed `Auto-rejected:` naming
+        the reason, and the author receives a REJECT notification. The batch
+        still succeeds — other documents in the same request are processed
+        normally.
       parameters:
         - name: documents
           description: Document(s) to validate / refuse with their optionnal validation comment.
