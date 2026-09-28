@@ -887,8 +887,9 @@ module.exports = {
         if (!Model) {
           // A field in DOCUMENT_M2M_COLLECTIONS with no matching association on
           // TDocument is a programming error, not bad data — replaceCollection
-          // would throw on it anyway. Report every member so the caller refuses
-          // the write rather than failing mid-transaction.
+          // would throw on it anyway. Report every member and log loudly, so a
+          // caller that inspects `missing` can refuse the write instead of
+          // failing mid-transaction.
           sails.log.error(
             `resolveM2MMembers: no TDocument association named "${field}".`
           );
@@ -989,8 +990,9 @@ module.exports = {
    * write transaction opens, so a target row can still be deleted in the window
    * between resolution and the replaceCollection insert. The transaction rolls
    * back in full when that happens (verified: the document's existing
-   * associations are left intact), so the caller can safely treat it exactly
-   * like a member that failed to resolve.
+   * associations are left intact), so the caller can safely re-resolve and
+   * re-apply — the second pass sees the delete and drops that member like any
+   * other that failed to resolve.
    *
    * Waterline wraps the pg error as an AdapterError carrying the code as a
    * string on `raw.code`, which is the shape replaceCollection produces (checked
@@ -999,9 +1001,9 @@ module.exports = {
    * are accepted: a 23503 is a 23503 whichever way it is wrapped.
    *
    * Deliberately narrow: only 23503. A connection failure or timeout must keep
-   * propagating as a 500, because the auto-rejection path clears
-   * modifiedDocJson — treating a transient database fault as "this member is
-   * gone" would silently destroy a contributor's pending edit.
+   * propagating as a 500, because the last-resort auto-rejection behind this
+   * check clears modifiedDocJson — treating a transient database fault as "this
+   * member is gone" would silently destroy a contributor's pending edit.
    *
    * @param {*} err
    * @returns {boolean}

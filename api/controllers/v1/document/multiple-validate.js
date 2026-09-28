@@ -25,10 +25,17 @@ async function markDocumentValidated(
 // Defined in config/constants/document.js — single source of truth.
 
 // t_document.validation_comment is varchar(300) (sql/0_tables.sql), and Waterline
-// rejects a longer value outright. The auto-rejection reason is variable-length —
-// it can list several missing members — so it is truncated to fit. The untruncated
-// reason always goes to the log.
+// rejects a longer value outright, so the auto-rejection reason is truncated to
+// fit rather than trading one failure for another. The untruncated reason always
+// goes to the log.
 const VALIDATION_COMMENT_MAX_LENGTH = 300;
+
+// resolveM2MMembers has to run before the write transaction opens, so a target
+// row can be deleted in between and the insert still fail with 23503. The
+// transaction rolls back in full, so re-resolving and re-applying is safe and
+// reaches the outcome the first pass would have reached had it seen the delete.
+// Two attempts: one to lose the race, one to act on what it learned.
+const MAX_APPLY_ATTEMPTS = 2;
 
 // Refuse a pending modification that can no longer be applied to the current
 // database state. The document returns to its last validated state and the
@@ -130,24 +137,32 @@ async function validateAndUpdateDocument(
     }
   }
 
-  // Re-validate the m2m collection members for the same reason as the parent:
+  // Re-resolve the m2m collection members for the same reason as the parent:
   // modifiedDocJson is a submission-time snapshot, and a caver, organization or
   // reference-data row it names may have been deleted since. replaceCollection
   // would then fail with a foreign-key violation, which used to 500 and left the
   // document permanently unvalidatable.
-  const { missing: missingMembers, resolved: resolvedCollectionData } =
-    await DocumentService.resolveM2MMembers(collectionData);
-  if (missingMembers.length > 0) {
-    return autoRejectModification(
-      document.id,
-      `these linked entities no longer exist — ${DocumentService.formatMissingM2MMembers(
-        missingMembers
-      )}`,
-      validationAuthor
-    );
-  }
+  //
+  // Members that no longer resolve are dropped and the rest of the edit is
+  // applied, per the acceptance criterion in #1815: the reference is gone either
+  // way, and refusing the whole modification would punish the contributor for an
+  // administrative action they had no part in. Note a collection whose every
+  // member has vanished therefore ends up cleared, which is what the snapshot
+  // asked for minus the impossible part.
+  //
+  // The drop is only recorded in the log. modifiedDocJson is cleared on success,
+  // so nothing else retains what the snapshot originally named.
+  const applyModification = async () => {
+    const { missing: missingMembers, resolved: resolvedCollectionData } =
+      await DocumentService.resolveM2MMembers(collectionData);
+    if (missingMembers.length > 0) {
+      sails.log.warn(
+        `Document ${document.id} validated with vanished linked entities dropped from its modification: ${DocumentService.formatMissingM2MMembers(
+          missingMembers
+        )}`
+      );
+    }
 
-  try {
     await sails.getDatastore().transaction(async (db) => {
       // Update associated data not handled by TDocument manually
       // Updated before the TDocument update so the last_change_document DB trigger will fetch the last updated name
@@ -200,21 +215,34 @@ async function validateAndUpdateDocument(
       }
       await Promise.all(filePromises);
     });
-  } catch (err) {
-    // A target row deleted between resolveM2MMembers and the inserts above lands
-    // here. The transaction rolled back, so the document is untouched and the
-    // same auto-reject policy applies — without this the modification would stay
-    // stuck exactly as it was before this guard existed. Anything that is not a
-    // foreign-key violation keeps propagating: see
-    // DocumentService.isForeignKeyViolation for why that distinction matters.
-    if (!DocumentService.isForeignKeyViolation(err)) throw err;
-    return autoRejectModification(
-      document.id,
-      'a linked entity was deleted while this modification was being validated',
-      validationAuthor
-    );
+  };
+
+  // A target row deleted between resolveM2MMembers and the inserts above lands
+  // in the catch. The transaction rolled back, so the retry re-resolves against
+  // the state that caused the failure and drops the member this time — the same
+  // outcome the first pass would have produced, rather than discarding the edit
+  // over a millisecond-wide race. Anything that is not a foreign-key violation
+  // keeps propagating: see DocumentService.isForeignKeyViolation for why that
+  // distinction matters.
+  for (let attempt = 1; attempt <= MAX_APPLY_ATTEMPTS; attempt += 1) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      await applyModification();
+      return { rejected: false };
+    } catch (err) {
+      if (!DocumentService.isForeignKeyViolation(err)) throw err;
+    }
   }
-  return { rejected: false };
+
+  // Every attempt lost the race, which takes a deletion landing inside the same
+  // narrow window twice over. Refusing is the last resort: it costs the edit, but
+  // it leaves the document in its last validated state instead of permanently
+  // unvalidatable, which is the failure #1815 reported.
+  return autoRejectModification(
+    document.id,
+    'linked entities kept being deleted while this modification was being validated',
+    validationAuthor
+  );
 }
 
 async function updateSearchAndNotify(req, documentId, userId) {
@@ -306,7 +334,9 @@ module.exports = async (req, res) => {
       );
       if (result.rejected) {
         // The pending modification was auto-rejected — it would have created a
-        // parent cycle, or it named a linked entity that no longer exists.
+        // parent cycle, or it repeatedly lost the race against a concurrent
+        // delete. A member that no longer exists does not land here: it is
+        // dropped and the rest of the edit is applied.
         // Send a REJECT author notification with the auto-rejection reason,
         // matching the behaviour of the manual-rejection path above.
         // eslint-disable-next-line no-await-in-loop
