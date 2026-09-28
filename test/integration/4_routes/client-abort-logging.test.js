@@ -1,4 +1,5 @@
 const http = require('http');
+const { EventEmitter } = require('events');
 const express = require('express');
 const should = require('should');
 const sinon = require('sinon');
@@ -19,6 +20,15 @@ const ABORT_AFTER = 100;
 // to the dead socket would have had time to emit a second log line.
 const SETTLE = HANDLER_DELAY + 200;
 
+// Fails the test with a clear message instead of a bare mocha timeout if the
+// request never reaches the handler at all.
+const REACH_TIMEOUT = 5000;
+
+// Signals that a request has reached the terminal handler, which is strictly
+// after responseTimeLogger has run. Lets the client anchor its timings on the
+// middleware actually watching, rather than on wall-clock guesses.
+const handlerReached = new EventEmitter();
+
 const startServer = () =>
   new Promise((resolve) => {
     const app = express();
@@ -30,6 +40,7 @@ const startServer = () =>
     // Terminal middleware rather than a route, to stay independent of Express
     // path-pattern syntax.
     app.use((req, res) => {
+      handlerReached.emit('reached');
       setTimeout(() => res.json([1, 2, 3]), HANDLER_DELAY);
     });
     const server = app.listen(0, () => resolve(server));
@@ -38,7 +49,7 @@ const startServer = () =>
 // Resolves once the request has settled, with every 'Res ::' line the
 // middleware produced.
 const captureResponseLogs = (port, { abort }) =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
     const lines = [];
     const collect =
       (level) =>
@@ -48,19 +59,39 @@ const captureResponseLogs = (port, { abort }) =>
       };
     const info = sinon.stub(sails.log, 'info').callsFake(collect('info'));
     const error = sinon.stub(sails.log, 'error').callsFake(collect('error'));
+    const restore = () => {
+      info.restore();
+      error.restore();
+    };
 
     const req = http.get(`http://127.0.0.1:${port}/slow`, (res) =>
       res.resume()
     );
     // An aborted request makes the client see ECONNRESET; that is the point.
     req.on('error', () => {});
-    if (abort) setTimeout(() => req.destroy(), ABORT_AFTER);
 
-    setTimeout(() => {
-      info.restore();
-      error.restore();
-      resolve(lines);
-    }, SETTLE);
+    let giveUp;
+
+    // Both timers hang off the handler being reached rather than off http.get().
+    // Connection setup is not instantaneous, and on a loaded worker it can take
+    // longer than ABORT_AFTER — destroying the socket then would happen before
+    // responseTimeLogger ever ran, so nothing would be logged and the test
+    // would fail for a reason that has nothing to do with the middleware.
+    const onReached = () => {
+      clearTimeout(giveUp);
+      if (abort) setTimeout(() => req.destroy(), ABORT_AFTER);
+      setTimeout(() => {
+        restore();
+        resolve(lines);
+      }, SETTLE);
+    };
+    handlerReached.once('reached', onReached);
+
+    giveUp = setTimeout(() => {
+      handlerReached.removeListener('reached', onReached);
+      restore();
+      reject(new Error('Request never reached the handler'));
+    }, REACH_TIMEOUT);
   });
 
 describe('Client abort logging middleware', () => {
