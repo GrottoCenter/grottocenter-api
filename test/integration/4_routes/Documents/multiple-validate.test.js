@@ -943,6 +943,112 @@ describe('Document multiple-validate', () => {
           should(updated.modifiedDocJson).not.be.null();
           should(updated.isValidated).be.false();
         });
+
+        // The drop is recorded nowhere but the log, so the log must not claim a
+        // document was validated by an attempt whose transaction rolled back.
+        describe('Drop logging', () => {
+          const DROP_MESSAGE =
+            /validated with vanished linked entities dropped/;
+
+          const dropWarnings = (warn) =>
+            warn
+              .getCalls()
+              .map((call) => String(call.args[0]))
+              .filter((message) => DROP_MESSAGE.test(message));
+
+          // Both cases need a snapshot that drops a member *and* a write that
+          // fails, which the injected violation is the only way to arrange.
+          const seedDoomedPendingDoc = async () => {
+            const doomedCaver = await TCaver.create({
+              nickname: `Doomed logging author ${Date.now()}`,
+              mail: `doomed-logging-${Date.now()}@example.com`,
+              password: 'hashed',
+              language: '000',
+            }).fetch();
+
+            const desc = await TDescription.create({
+              author: 1,
+              title: 'Logging',
+              body: 'Body',
+            }).fetch();
+            createdDescIds.push(desc.id);
+
+            const doc = await TDocument.create({
+              author: 1,
+              type: 1,
+              license: 1,
+              isValidated: false,
+              authors: [1],
+              descriptions: [desc.id],
+              modifiedDocJson: {
+                reviewerId: 2,
+                documentData: { type: 1, authors: [6, doomedCaver.id] },
+                descriptionData: { title: 'Logging applied', body: 'New body' },
+              },
+            }).fetch();
+            createdDocIds.push(doc.id);
+
+            await TCaver.destroyOne(doomedCaver.id);
+            return doc;
+          };
+
+          it('should log the drop once, from the attempt that committed', async () => {
+            const doc = await seedDoomedPendingDoc();
+
+            const original = Service.replaceM2MCollections;
+            let calls = 0;
+            sinon
+              .stub(Service, 'replaceM2MCollections')
+              .callsFake((...args) => {
+                calls += 1;
+                if (calls === 1) return Promise.reject(FK_VIOLATION);
+                return original.apply(Service, args);
+              });
+            const warn = sinon.spy(sails.log, 'warn');
+
+            await supertest(sails.hooks.http.app)
+              .put('/api/v1/documents/validate')
+              .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+              .set('Authorization', moderatorToken)
+              .set('Content-type', 'application/json')
+              .set('Accept', 'application/json')
+              .expect(204);
+
+            should(calls).equal(2);
+            // Not twice: the rolled-back attempt dropped the same member, but it
+            // validated nothing.
+            should(dropWarnings(warn)).have.length(1);
+
+            const updated = await TDocument.findOne(doc.id).populate('authors');
+            should(updated.authors.map((a) => a.id)).deepEqual([6]);
+          });
+
+          it('should not log a drop when no attempt commits', async () => {
+            const doc = await seedDoomedPendingDoc();
+
+            sinon.stub(Service, 'replaceM2MCollections').rejects(
+              Object.assign(new Error('connection terminated'), {
+                raw: { code: '08006' },
+              })
+            );
+            const warn = sinon.spy(sails.log, 'warn');
+
+            await supertest(sails.hooks.http.app)
+              .put('/api/v1/documents/validate')
+              .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+              .set('Authorization', moderatorToken)
+              .set('Content-type', 'application/json')
+              .set('Accept', 'application/json')
+              .expect(500);
+
+            should(dropWarnings(warn)).be.empty();
+
+            // Nothing was validated, so the snapshot still holds the member the
+            // log would have claimed was dropped.
+            const updated = await TDocument.findOne(doc.id);
+            should(updated.modifiedDocJson).not.be.null();
+          });
+        });
       });
     });
   });
