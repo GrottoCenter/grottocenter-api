@@ -155,13 +155,6 @@ async function validateAndUpdateDocument(
   const applyModification = async () => {
     const { missing: missingMembers, resolved: resolvedCollectionData } =
       await DocumentService.resolveM2MMembers(collectionData);
-    if (missingMembers.length > 0) {
-      sails.log.warn(
-        `Document ${document.id} validated with vanished linked entities dropped from its modification: ${DocumentService.formatMissingM2MMembers(
-          missingMembers
-        )}`
-      );
-    }
 
     await sails.getDatastore().transaction(async (db) => {
       // Update associated data not handled by TDocument manually
@@ -215,6 +208,20 @@ async function validateAndUpdateDocument(
       }
       await Promise.all(filePromises);
     });
+
+    // Logged after the commit, not before it: the line asserts the document was
+    // validated, and an attempt that loses the race never validates anything. A
+    // warning emitted up front would leave that claim in the log for a write
+    // that rolled back, and be repeated by the attempt that actually applied —
+    // misleading precisely where it matters, since this log line is the only
+    // record of what the snapshot originally named.
+    if (missingMembers.length > 0) {
+      sails.log.warn(
+        `Document ${document.id} validated with vanished linked entities dropped from its modification: ${DocumentService.formatMissingM2MMembers(
+          missingMembers
+        )}`
+      );
+    }
   };
 
   // A target row deleted between resolveM2MMembers and the inserts above lands
