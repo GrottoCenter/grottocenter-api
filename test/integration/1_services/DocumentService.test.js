@@ -1036,6 +1036,98 @@ describe('DocumentService', () => {
       should(missing).have.length(1);
       should(missing[0].missing).deepEqual(['not-an-id']);
     });
+
+    // The serial primary keys are int4. A value that is finite but outside that
+    // domain makes the adapter throw while evaluating the criterion, which used
+    // to surface as a 500 from both write paths instead of a reported member.
+    const outOfDomain = [
+      ['a fractional number', 1.5],
+      ['a fractional string', '1.5'],
+      ['an int4 overflow', 2147483648],
+      ['an int4 overflow as a string', '2147483648'],
+      ['a value far beyond int4', 1e20],
+      ['zero', 0],
+      ['a negative id', -5],
+    ];
+
+    for (const [label, member] of outOfDomain) {
+      it(`should report ${label} instead of throwing`, async () => {
+        const { missing, resolved } = await DocumentService.resolveM2MMembers({
+          authors: [member],
+        });
+        should(missing).have.length(1);
+        should(missing[0].field).equal('authors');
+        should(missing[0].missing).deepEqual([member]);
+        should(resolved.authors).deepEqual([]);
+      });
+    }
+
+    it('should keep resolving valid members alongside out-of-domain ones', async () => {
+      const { missing, resolved } = await DocumentService.resolveM2MMembers({
+        authors: [1, 1.5, 2147483648],
+      });
+      should(missing).have.length(1);
+      should(missing[0].missing).deepEqual([1.5, 2147483648]);
+      should(resolved.authors).deepEqual([1]);
+    });
+
+    it('should still accept the largest valid int4 id', async () => {
+      // Not present in the fixtures, so it must come back as missing — the point
+      // is that it is reported rather than throwing, unlike 2147483648.
+      const { missing } = await DocumentService.resolveM2MMembers({
+        authors: [2147483647],
+      });
+      should(missing).have.length(1);
+      should(missing[0].missing).deepEqual([2147483647]);
+    });
+  });
+
+  describe('isForeignKeyViolation()', () => {
+    // Shape verified against the running database: Waterline raises an
+    // AdapterError carrying the pg code as a string on `raw.code`.
+    it('should recognise a foreign-key violation', () => {
+      should(
+        DocumentService.isForeignKeyViolation({
+          name: 'AdapterError',
+          raw: {
+            code: '23503',
+            constraint: 'j_document_caver_author_t_caver_fk',
+            detail: 'Key (id_caver)=(23871) is not present in table "t_caver".',
+          },
+        })
+      ).equal(true);
+    });
+
+    it('should reject other database errors', () => {
+      // 23505 is the junction-table primary-key violation, 08006 a lost
+      // connection. Absorbing either would clear modifiedDocJson for a reason
+      // that is not "the linked entity is gone".
+      should(
+        DocumentService.isForeignKeyViolation({ raw: { code: '23505' } })
+      ).equal(false);
+      should(
+        DocumentService.isForeignKeyViolation({ raw: { code: '08006' } })
+      ).equal(false);
+    });
+
+    it('should reject errors with no pg code at all', () => {
+      should(DocumentService.isForeignKeyViolation(new Error('boom'))).equal(
+        false
+      );
+      should(DocumentService.isForeignKeyViolation(undefined)).equal(false);
+      should(DocumentService.isForeignKeyViolation(null)).equal(false);
+      should(DocumentService.isForeignKeyViolation({})).equal(false);
+    });
+
+    it('should also recognise the nested sendNativeQuery shape', () => {
+      // replaceCollection reports at raw.code; sendNativeQuery nests the pg
+      // error at raw.error.code (see MassifService.validatePolygon).
+      should(
+        DocumentService.isForeignKeyViolation({
+          raw: { error: { code: '23503' } },
+        })
+      ).equal(true);
+    });
   });
 
   describe('formatMissingM2MMembers()', () => {

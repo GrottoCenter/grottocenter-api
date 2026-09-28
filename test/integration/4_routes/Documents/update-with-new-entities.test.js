@@ -372,5 +372,34 @@ describe('Document update-with-new-entities', () => {
         .set('Accept', 'application/json')
         .expect(400);
     });
+
+    // The primary keys are int4. A finite value outside that domain makes the
+    // adapter throw while evaluating the lookup criterion, so these returned 500
+    // even with the existence check in place.
+    const outOfDomainIds = [
+      ['a fractional author id', 1.5],
+      ['an author id beyond int4', 2147483648],
+    ];
+
+    outOfDomainIds.forEach(([label, badId]) => {
+      it(`should return 400 for ${label}`, async () => {
+        await TDocument.replaceCollection(testDocId, 'authors').members([1]);
+
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/documents/${testDocId}/new-entities`)
+          .send({
+            document: { type: 1, authors: [badId] },
+            newAuthors: [],
+            newDescriptions: [],
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+
+        const doc = await TDocument.findOne(testDocId).populate('authors');
+        should(doc.authors.map((a) => a.id)).deepEqual([1]);
+      });
+    });
   });
 });
