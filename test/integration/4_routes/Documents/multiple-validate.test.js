@@ -419,6 +419,12 @@ describe('Document multiple-validate', () => {
         should(updated.parent).not.equal(docB.id);
         // The auto-rejection comment must be set
         should(updated.validationComment).match(/auto-rejected/i);
+        // The document must return to its last validated state, not vanish:
+        // find-all.js returns isValidated true for the default list and
+        // isValidated false only when dateValidation is null, so the
+        // false + dateValidation-set combination is in neither list.
+        should(updated.isValidated).be.true();
+        should(updated.dateValidation).be.ok();
 
         // No VALIDATE notification must have been sent — only a REJECT one
         const afterNotifIds = (await TNotification.find().select(['id'])).map(
@@ -508,6 +514,27 @@ describe('Document multiple-validate', () => {
         );
         // The last validated state must be intact — caver 1 still the author.
         should(updated.authors.map((a) => a.id)).deepEqual([1]);
+        // ...and the document must still be reachable. isValidated false with a
+        // non-null dateValidation matches neither find-all.js list, so leaving
+        // the flag false would make the document disappear from the site.
+        should(updated.isValidated).be.true();
+        should(updated.dateValidation).be.ok();
+
+        // Same property stated the way the user experiences it, using the exact
+        // clauses find-all.js builds: present in the default list, absent from
+        // the moderation queue (it is no longer awaiting review).
+        const inDefaultList = await TDocument.count().where({
+          and: [{ isValidated: true, isDeleted: false }, { id: doc.id }],
+        });
+        const inModerationQueue = await TDocument.count().where({
+          and: [
+            { isValidated: false, isDeleted: false },
+            { dateValidation: null },
+            { id: doc.id },
+          ],
+        });
+        should(inDefaultList).equal(1);
+        should(inModerationQueue).equal(0);
 
         const afterNotifIds = (await TNotification.find().select(['id'])).map(
           (n) => n.id
@@ -533,6 +560,57 @@ describe('Document multiple-validate', () => {
             })
           : null;
         should(rejectNotif).not.be.undefined();
+      });
+
+      // A snapshot can hold a value that is numeric but outside int4 — the
+      // ordinary update path will persist one, since nothing validated the
+      // domain on the way in. Looking it up makes the adapter throw, so this
+      // 500'd on every retry: the same permanently-stuck document the guard
+      // exists to prevent, reached by a different route.
+      const outOfDomainIds = [
+        ['fractional', 1.5],
+        ['beyond int4', 2147483648],
+      ];
+
+      outOfDomainIds.forEach(([label, badId]) => {
+        it(`should auto-reject a snapshot whose author id is ${label}`, async () => {
+          const desc = await TDescription.create({
+            author: 1,
+            title: 'Out of domain',
+            body: 'Body',
+          }).fetch();
+          createdDescIds.push(desc.id);
+
+          const doc = await TDocument.create({
+            author: 1,
+            type: 1,
+            license: 1,
+            isValidated: false,
+            authors: [1],
+            descriptions: [desc.id],
+            modifiedDocJson: {
+              reviewerId: 2,
+              documentData: { type: 1, authors: [badId] },
+              descriptionData: { title: 'Out of domain', body: 'Body' },
+            },
+          }).fetch();
+          createdDocIds.push(doc.id);
+
+          await supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(204);
+
+          const updated = await TDocument.findOne(doc.id).populate('authors');
+          should(updated.modifiedDocJson).be.null();
+          should(updated.validationComment).match(/auto-rejected/i);
+          should(updated.isValidated).be.true();
+          // The last validated state survives untouched.
+          should(updated.authors.map((a) => a.id)).deepEqual([1]);
+        });
       });
 
       // Regression guard for the blank-padding trap. In production
