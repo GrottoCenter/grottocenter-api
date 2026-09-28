@@ -1869,22 +1869,32 @@ paths:
         Validate or not multiple documents, with or without a comment.
 
 
-        **Auto-rejection.** A pending modification (`modifiedDocJson`) is a
-        snapshot taken when it was submitted, and the database may have changed
-        since. Before applying one, the API re-checks it against the current
-        state and auto-rejects it instead of applying it when either:
+        A pending modification (`modifiedDocJson`) is a snapshot taken when it
+        was submitted, and the database may have changed since. Before applying
+        one, the API re-checks it against the current state.
+
+
+        **Vanished collection members are dropped.** If a many-to-many
+        collection field (`authors`, `authorsOrganization`, `subjects`,
+        `languages`, `massifs`, `isoRegions`, `countries`) names an entity that
+        no longer exists, that member is silently dropped and the rest of the
+        modification is applied — the reference is gone either way, and refusing
+        the edit would discard unrelated changes the contributor did make. A
+        collection whose every member has vanished therefore ends up empty. What
+        was dropped is written to the server log only; it is not reported in the
+        response or the notification.
+
+
+        **Auto-rejection.** The modification is refused outright, rather than
+        partially applied, when either:
 
 
         * the proposed `parent` would now create a cycle in the document
         hierarchy, or
 
-        * any many-to-many collection field (`authors`,
-        `authorsOrganization`, `subjects`, `languages`, `massifs`,
-        `isoRegions`, `countries`) names an entity that no longer exists, or
 
-
-        * a linked entity is deleted while the modification is being applied,
-        which rolls the write back.
+        * a linked entity is deleted while the modification is being applied and
+        the retry hits the same race again, which rolls the write back.
 
 
         An auto-rejected document keeps its last validated state: its
@@ -1892,9 +1902,11 @@ paths:
         so the document stays visible rather than sitting between the published
         list and the moderation queue. `modifiedDocJson` is cleared,
         `validationComment` is set to a message prefixed `Auto-rejected:` naming
-        the reason, and the author receives a REJECT notification. The batch
-        still succeeds — other documents in the same request are processed
-        normally.
+        the reason, and the author receives a REJECT notification.
+
+
+        Either way the batch still succeeds — other documents in the same
+        request are processed normally.
       parameters:
         - name: documents
           description: Document(s) to validate / refuse with their optionnal validation comment.
