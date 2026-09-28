@@ -58,6 +58,54 @@ describe('Geoloc features', () => {
           return done();
         });
     });
+
+    /**
+     * Interest rating for the map popup (#1823).
+     *
+     * Box sw 61,73 -> ne 62,74 is 5 900 km², inside the 35 000 km² cap, and
+     * holds entrances 4 (rated) and 5 (commented but unrated). Both belong to
+     * cave 3, so a cave-scoped aggregate would leak entrance 4's average onto
+     * entrance 5. Entrances 1 and 999 are avoided on purpose: the Comments
+     * route tests rewrite their ratings before this file runs.
+     */
+    const aestheticismBox = { sw_lat: 61, sw_lng: 73, ne_lat: 62, ne_lng: 74 };
+
+    const getAestheticismBox = (extraQuery = {}) =>
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({ ...aestheticismBox, ...extraQuery });
+
+    it('should include the aestheticism average of each entrance', (done) => {
+      getAestheticismBox()
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const rated = res.body.find((entrance) => entrance.id === 4);
+          const unrated = res.body.find((entrance) => entrance.id === 5);
+
+          // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.67. The 0, the NULL and
+          // the soft-deleted 2.0 on entrance 4 are all excluded.
+          should(rated).have.property('aestheticism', 7.67);
+          should(unrated).have.property('aestheticism', null);
+          return done();
+        });
+    });
+
+    it('should match a reference average computed straight from t_comment', async () => {
+      const res = await getAestheticismBox().expect(200);
+      const rated = res.body.find((entrance) => entrance.id === 4);
+
+      const ref = await CommonService.query(
+        `SELECT avg(aestheticism) AS avg FROM t_comment
+         WHERE id_entrance = 4 AND aestheticism > 0 AND is_deleted = false`,
+        []
+      );
+      const expected = Math.round(Number(ref.rows[0].avg) * 100) / 100;
+
+      should(rated.aestheticism).equal(expected);
+    });
   });
 
   // GET /geoloc/entrances returns full entrance records, so an unbounded box
@@ -238,6 +286,35 @@ describe('Geoloc features', () => {
           massif: 999999,
         })
         .expect(404, done);
+    });
+
+    /**
+     * The massif variant is a second SQL statement, so the rating join has to be
+     * proved present there too. Entrances 4 and 5 both sit inside massif 1, so
+     * the values must match the unfiltered query exactly (#1823).
+     */
+    it('should include the same aestheticism averages as the unfiltered query', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .query({
+          sw_lat: 61,
+          sw_lng: 73,
+          ne_lat: 62,
+          ne_lng: 74,
+          massif: 1,
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const rated = res.body.find((entrance) => entrance.id === 4);
+          const unrated = res.body.find((entrance) => entrance.id === 5);
+
+          should(rated).have.property('aestheticism', 7.67);
+          should(unrated).have.property('aestheticism', null);
+          return done();
+        });
     });
   });
 

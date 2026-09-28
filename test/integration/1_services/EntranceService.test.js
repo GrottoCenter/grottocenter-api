@@ -440,6 +440,33 @@ describe('EntranceService', () => {
       should(callArg.commentsRating).have.property('approach', 3);
       process.env.NODE_ENV = originalEnv;
     });
+
+    /**
+     * The full-resync path (api/dbSync/utils.js) has always fetched comments with
+     * `is_deleted = false`, so leaving deleted comments in here made a
+     * single-entrance update disagree with a resync of the same entrance (#1823).
+     */
+    it('should exclude soft-deleted comments from commentsRating', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+
+      await EntranceService.updateInSearch({
+        id: 1,
+        dateInscription: new Date(),
+        comments: [
+          { aestheticism: 8, caving: 8, approach: 8 },
+          { aestheticism: 2, caving: 2, approach: 2, isDeleted: true },
+        ],
+      });
+
+      const callArg = updateStub.getCall(0).args[1];
+      // Counting the deleted comment would average both down to 5.
+      should(callArg.commentsRating).have.property('aestheticism', 8);
+      should(callArg.commentsRating).have.property('caving', 8);
+      should(callArg.commentsRating).have.property('approach', 8);
+      process.env.NODE_ENV = originalEnv;
+    });
   });
 
   describe('getHEntrancesWithName()', () => {
