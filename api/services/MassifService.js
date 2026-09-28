@@ -102,6 +102,12 @@ const FIND_NETWORKS_IN_MASSIF = `
 // point_geom. A cave with no entrance will not appear in these results, which
 // is acceptable because every cave in the domain model must have at least one
 // entrance.
+//
+// The massif is fixed by id here, so the pre-filter carries the ::geometry cast.
+// Its box is then exactly the box of the ST_Contains argument beside it, which
+// makes the pre-filter provably unable to drop a row ST_Contains would match.
+// The geography form (no cast) belongs only where the entrance is the fixed side
+// and idx_t_massif_geog is the index to reach — see FIND_MASSIFS_BY_ENTRANCE_IDS.
 const FIND_CAVES_IN_MASSIF = `
   SELECT DISTINCT c.*
   FROM t_cave AS c
@@ -117,7 +123,7 @@ const COUNT_ENTRANCES_IN_MASSIF = `
   SELECT COUNT(e.id)::integer AS count
   FROM t_entrance AS e
   JOIN t_massif AS m
-  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   WHERE m.id = $1
   AND e.is_deleted = false
 `;
@@ -126,7 +132,7 @@ const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   SELECT COUNT(e.id)::integer AS count
   FROM t_entrance AS e
   JOIN t_massif AS m
-  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   WHERE m.id = $1
   AND e.is_deleted = false
   AND e.is_sensitive = false
@@ -139,7 +145,7 @@ const COUNT_LOCKED_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   SELECT COUNT(e.id)::integer AS count
   FROM t_entrance AS e
   JOIN t_massif AS m
-  ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
+  ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
   WHERE m.id = $1
   AND e.is_deleted = false
   AND e.is_sensitive = false
@@ -482,7 +488,7 @@ module.exports = {
       FROM t_entrance AS e
       JOIN t_massif AS m ON m.id = $1
       WHERE e.is_deleted = false
-      AND e.point_geom && m.geog_polygon
+      AND e.point_geom && m.geog_polygon::geometry
       AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
       AND e.is_sensitive = false
       AND e.is_sensitive_locked = false

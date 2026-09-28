@@ -17,7 +17,7 @@ const query = `
     LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true
     LEFT JOIN t_caver a ON a.id = m.id_author
     LEFT JOIN t_caver r ON r.id = m.id_reviewer
-    LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom) AND e.is_deleted = false
+    LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom) AND e.is_deleted = false
     WHERE m.is_deleted = false
     GROUP BY m.id, m.geog_polygon, n.name, n.id_language, r.nickname, a.nickname
     ORDER BY m.id ASC
