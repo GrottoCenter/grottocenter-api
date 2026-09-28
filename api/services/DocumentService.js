@@ -16,6 +16,7 @@ const {
 const {
   computeDocumentAuthorsSort,
 } = require('../utils/computeDocumentAuthorsSort');
+const isValidId = require('../utils/isValidId');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -898,14 +899,21 @@ module.exports = {
         const isNumericKey = Model.attributes[pk]?.type === 'number';
 
         // Members that can never satisfy the foreign key are reported without a
-        // round trip. Non-numeric values for a numeric key are singled out
-        // because Waterline rejects them as invalid criteria, which would turn
-        // one 500 into another.
+        // round trip.
+        //
+        // For a numeric key the value must be inside PostgreSQL's int4 domain,
+        // not merely finite. The serial-backed primary keys are `integer`, and
+        // querying them with a fractional or out-of-range number makes the
+        // adapter throw (verified: 1.5, '1.5', 2147483648 and 1e20 all raise
+        // AdapterError) — which would turn the 500 this guard exists to prevent
+        // into a different 500. isValidId encodes that domain and is the same
+        // check the route policies use; it is applied to the numeric coercion so
+        // that ids arriving as strings from modifiedDocJson still pass.
         const unusable = [];
         const candidates = [];
         for (const member of members) {
           const key = member == null ? '' : normalizeMemberKey(member);
-          if (key === '' || (isNumericKey && !Number.isFinite(Number(key)))) {
+          if (key === '' || (isNumericKey && !isValidId(Number(key)))) {
             unusable.push(member);
           } else {
             candidates.push(member);
@@ -973,6 +981,34 @@ module.exports = {
           `${field}: ${missing.map((member) => String(member)).join(', ')}`
       )
       .join('; '),
+
+  /**
+   * True when an error is a PostgreSQL foreign-key violation (23503).
+   *
+   * resolveM2MMembers closes the common case, but it necessarily runs before the
+   * write transaction opens, so a target row can still be deleted in the window
+   * between resolution and the replaceCollection insert. The transaction rolls
+   * back in full when that happens (verified: the document's existing
+   * associations are left intact), so the caller can safely treat it exactly
+   * like a member that failed to resolve.
+   *
+   * Waterline wraps the pg error as an AdapterError carrying the code as a
+   * string on `raw.code`, which is the shape replaceCollection produces (checked
+   * against the running database rather than assumed). sendNativeQuery instead
+   * nests it at `raw.error.code` — see MassifService.validatePolygon — so both
+   * are accepted: a 23503 is a 23503 whichever way it is wrapped.
+   *
+   * Deliberately narrow: only 23503. A connection failure or timeout must keep
+   * propagating as a 500, because the auto-rejection path clears
+   * modifiedDocJson — treating a transient database fault as "this member is
+   * gone" would silently destroy a contributor's pending edit.
+   *
+   * @param {*} err
+   * @returns {boolean}
+   */
+  isForeignKeyViolation: (err) =>
+    String(err?.raw?.code) === '23503' ||
+    String(err?.raw?.error?.code) === '23503',
 
   normalizeToId,
   mapAuthorsOrganizationForSearch,

@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
   // Wrap the scalar update, entity creation, and all replaceCollection calls in
   // a single transaction so the document is never left in a partially-updated state.
   let updatedDocument;
-  await sails.getDatastore().transaction(async (db) => {
+  const applyUpdate = async (db) => {
     // Create new cavers inside the transaction so they roll back if the update fails.
     if (isArrNotEmpty(newAuthors)) {
       const authorParams = newAuthors.map((author) => ({
@@ -137,7 +137,21 @@ module.exports = async (req, res) => {
     // client (including an empty array, which means "clear all").
     // Fields absent from the request (undefined) are left untouched.
     await DocumentService.replaceM2MCollections(documentId, collectionData, db);
-  });
+  };
+
+  try {
+    await sails.getDatastore().transaction(applyUpdate);
+  } catch (err) {
+    // The existence check above closes the common case, but a target row can be
+    // deleted in the window between it and the inserts here. The transaction
+    // rolled back, so nothing was written and this is still a bad request
+    // rather than a server fault. Only foreign-key violations are absorbed —
+    // see DocumentService.isForeignKeyViolation.
+    if (!DocumentService.isForeignKeyViolation(err)) throw err;
+    return res.badRequest(
+      'One of the linked entities was deleted while this update was being saved. Please retry.'
+    );
+  }
 
   await NotificationService.notifySubscribers(
     updatedDocument,
