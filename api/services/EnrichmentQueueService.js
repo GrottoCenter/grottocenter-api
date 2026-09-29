@@ -68,6 +68,15 @@ module.exports = {
     const connectionString = module.exports.getConnectionString();
     sails.enrichmentBoss = new PgBoss({
       connectionString,
+      // The database user is not allowed to create schemas. pg-boss issues
+      // `CREATE SCHEMA IF NOT EXISTS pgboss` on its install path, and unlike
+      // `CREATE TABLE IF NOT EXISTS` that statement checks CREATE on the
+      // *database* before it checks whether the schema already exists — so it
+      // fails with "permission denied for database" even though the schema is
+      // there. The schema is created instead by sql/zz_ownership_and_grants.sql,
+      // owned by the application role so that pg-boss can still migrate its own
+      // tables.
+      createSchema: false,
       retryLimit: 5,
       retryDelay: 30,
       retryBackoff: true,
