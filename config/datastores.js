@@ -35,9 +35,13 @@ module.exports.datastores = {
    *                                                                          *
    ************************************************************************** */
 
+  // Connects as gc_app, not as the superuser: the dev server is the only thing
+  // that catches a missing GRANT before production does. See sql/00_roles.sql.
+  // The test suite deliberately stays on root (test/test-config.js) — its
+  // container only mounts 0_initDatabase.sql, so the roles do not exist there.
   default: {
     adapter: require('sails-postgresql'),
-    url: 'postgres://root:root@localhost:33060/grottoce',
+    url: 'postgres://gc_app:gc_app@localhost:33060/grottoce',
   },
 
   /** *************************************************************************
