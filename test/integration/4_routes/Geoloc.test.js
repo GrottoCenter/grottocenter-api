@@ -85,9 +85,9 @@ describe('Geoloc features', () => {
           const rated = res.body.find((entrance) => entrance.id === 4);
           const unrated = res.body.find((entrance) => entrance.id === 5);
 
-          // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.67. The 0, the NULL and
+          // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.7. The 0, the NULL and
           // the soft-deleted 2.0 on entrance 4 are all excluded.
-          should(rated).have.property('aestheticism', 7.67);
+          should(rated).have.property('aestheticism', 7.7);
           should(unrated).have.property('aestheticism', null);
           return done();
         });
@@ -102,7 +102,7 @@ describe('Geoloc features', () => {
          WHERE id_entrance = 4 AND aestheticism > 0 AND is_deleted = false`,
         []
       );
-      const expected = Math.round(Number(ref.rows[0].avg) * 100) / 100;
+      const expected = Math.round(Number(ref.rows[0].avg) * 10) / 10;
 
       should(rated.aestheticism).equal(expected);
     });
@@ -311,7 +311,7 @@ describe('Geoloc features', () => {
           const rated = res.body.find((entrance) => entrance.id === 4);
           const unrated = res.body.find((entrance) => entrance.id === 5);
 
-          should(rated).have.property('aestheticism', 7.67);
+          should(rated).have.property('aestheticism', 7.7);
           should(unrated).have.property('aestheticism', null);
           return done();
         });

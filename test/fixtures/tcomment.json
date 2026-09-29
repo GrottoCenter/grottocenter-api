@@ -86,7 +86,7 @@
     "language": "fra"
   },
   {
-    "_comment": "Issue #1823 fixtures: entrances 4 and 5 both belong to cave 3 and both sit inside massif 1, so they give /geoloc/entrances a rated and an unrated entrance in one legal bounding box (sw 61,73 -> ne 62,74). Unlike entrances 1 and 999 they are never mutated by the Comments route tests, so the averages below are stable whatever order the shards run in. Entrance 4 averages (7+8+8)/3 = 7.666... -> 7.67; the three rows after it must each be excluded, and comment 12 in particular fails the is_deleted filter (including it would give 6.25). Entrance 5 has only unratable comments, so it must come back null — a cave-scoped aggregate would wrongly give it 7.67.",
+    "_comment": "Issue #1823 fixtures: entrances 4 and 5 both belong to cave 3 and both sit inside massif 1, so they give /geoloc/entrances a rated and an unrated entrance in one legal bounding box (sw 61,73 -> ne 62,74). Unlike entrances 1 and 999 they are never mutated by the Comments route tests, so the averages below are stable whatever order the shards run in. Entrance 4 averages (7+8+8)/3 = 7.666... -> 7.7; the three rows after it must each be excluded, and comment 12 in particular fails the is_deleted filter (including it would give 6.3). Entrance 5 has only unratable comments, so it must come back null — a cave-scoped aggregate would wrongly give it 7.7.",
     "id": 7,
     "author": 1,
     "dateInscription": "2020-06-01T10:00:00.000Z",
@@ -149,7 +149,7 @@
     "language": "fra"
   },
   {
-    "_comment": "Excluded from the average: soft-deleted. Rated 2.0 on purpose, so forgetting the is_deleted filter is detectable (7.67 -> 6.25).",
+    "_comment": "Excluded from the average: soft-deleted. Rated 2.0 on purpose, so forgetting the is_deleted filter is detectable (7.7 -> 6.3).",
     "id": 12,
     "author": 3,
     "dateInscription": "2020-06-06T10:00:00.000Z",

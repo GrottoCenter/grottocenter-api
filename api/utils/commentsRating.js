@@ -14,16 +14,24 @@ const filterPositive = (e) => e && e > 0;
  * Compute the commentsRating aggregate from an array of comment objects.
  * Each comment is expected to have { aestheticism, caving, approach } numeric fields.
  *
- * @param {Array<Object>} comments - Array of comment objects
+ * Soft-deleted comments must not reach this function: it does not read
+ * `isDeleted` and will happily average a deleted rating in. Both callers filter
+ * first — dbSync via the `is_deleted = false` default in api/dbSync/utils.js,
+ * EntranceService.updateInSearch at its call site — and a third caller has to do
+ * the same. The filter is deliberately left outside so this stays a pure
+ * numeric aggregate over whatever set the caller decided counts. See #1823.
+ *
+ * @param {Array<Object>} nonDeletedComments - Comment objects, already filtered on !isDeleted
  * @returns {{ aestheticism: number|null, caving: number|null, approach: number|null }}
  */
-function computeCommentsRating(comments) {
+function computeCommentsRating(nonDeletedComments) {
+  const rated = (field) =>
+    average(nonDeletedComments.map((c) => c[field]).filter(filterPositive));
+
   return {
-    aestheticism: average(
-      comments.map((c) => c.aestheticism).filter(filterPositive)
-    ),
-    caving: average(comments.map((c) => c.caving).filter(filterPositive)),
-    approach: average(comments.map((c) => c.approach).filter(filterPositive)),
+    aestheticism: rated('aestheticism'),
+    caving: rated('caving'),
+    approach: rated('approach'),
   };
 }
 
