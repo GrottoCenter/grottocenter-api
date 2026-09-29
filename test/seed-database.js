@@ -72,6 +72,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.UPDATE_SEQUENCES_QUERY,
                 customSQL.POPULATE_ENTRANCE_POINT_GEOM,
                 customSQL.CONVERT_MEASUREMENT_TO_PARTITIONED,
+                customSQL.CREATE_MEASUREMENT_PARTITION_FUNCTION,
                 customSQL.INDEX_OPTIMIZATION_MIGRATION,
                 customSQL.QUERY_PERFORMANCE_FIXES_MIGRATION,
                 customSQL.CREATE_BIBLIOGRAPHIC_METADATA_TABLE,

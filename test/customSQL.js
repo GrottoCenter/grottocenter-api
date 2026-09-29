@@ -228,6 +228,75 @@ BEGIN
 END $$;
 `;
 
+// PartitionManager creates partitions through this function rather than issuing
+// PARTITION OF itself, because the API's database role does not own
+// t_measurement. Mirrors sql/9_21_2026_09_29_measurement_partition_function.sql,
+// minus its REVOKE/GRANT pair: the gc_* roles are cluster-level and the test
+// container only ever loads 0_initDatabase.sql, so they do not exist here. The
+// test suite therefore exercises the function but not the privilege boundary it
+// exists for — that is the dev server's job.
+const CREATE_MEASUREMENT_PARTITION_FUNCTION = `
+CREATE OR REPLACE FUNCTION gc_ensure_measurement_partition(
+  p_name  text,
+  p_start date,
+  p_end   date
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+SET timezone = 'UTC'
+AS $fn$
+DECLARE
+  v_start timestamptz;
+  v_end   timestamptz;
+BEGIN
+  IF p_name IS NULL OR p_name !~ '^t_measurement_[0-9]{4}_q[1-4]$' THEN
+    RAISE EXCEPTION
+      'refusing to create partition %: name must match t_measurement_<year>_q<1-4>',
+      p_name
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  IF p_start IS NULL OR p_end IS NULL THEN
+    RAISE EXCEPTION 'refusing to create partition %: boundaries must not be null', p_name
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  v_start := p_start::timestamptz;
+  v_end := p_end::timestamptz;
+
+  IF v_start <> date_trunc('quarter', v_start) THEN
+    RAISE EXCEPTION 'refusing to create partition %: % is not the start of a quarter', p_name, v_start
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  IF v_end <> v_start + interval '3 months' THEN
+    RAISE EXCEPTION 'refusing to create partition %: [%, %) is not a whole quarter', p_name, v_start, v_end
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = p_name
+  ) THEN
+    RETURN;
+  END IF;
+
+  EXECUTE format(
+    'CREATE TABLE IF NOT EXISTS public.%I PARTITION OF public.t_measurement '
+    'FOR VALUES FROM (%L) TO (%L)',
+    p_name, v_start, v_end
+  );
+EXCEPTION
+  WHEN duplicate_table OR unique_violation THEN
+    RETURN;
+END
+$fn$;
+`;
+
 const QUERY_PERFORMANCE_FIXES_MIGRATION = `
 -- Fix 4: Add synthetic PK to t_last_change
 DO $$
@@ -785,6 +854,7 @@ module.exports = {
   DROP_HISTORY_PARENT_FK_CONSTRAINTS,
   ADMIN_MFA_MIGRATION,
   CONVERT_MEASUREMENT_TO_PARTITIONED,
+  CREATE_MEASUREMENT_PARTITION_FUNCTION,
   CREATE_GUIDELINE_TRIGGERS,
   CREATE_COMMENT_TRIGGERS,
   CREATE_SUB_ENTITY_TRIGGERS,
