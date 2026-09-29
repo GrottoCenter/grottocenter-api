@@ -5311,7 +5311,7 @@ paths:
                       nullable: true
                       minimum: 0
                       maximum: 10
-                      description: Average of the positive aestheticism (interest) ratings carried by this entrance's non-deleted comments, on the 0–10 scale, rounded to 2 decimals. Ratings of `0` and unrated comments are excluded, and `null` is returned when no comment rates the entrance. Only comments attached to this entrance count — ratings on sibling entrances of the same cave do not contribute.
+                      description: Average of the positive aestheticism (interest) ratings carried by this entrance's non-deleted comments, on the 0–10 scale, rounded to 1 decimal. Ratings of `0` and unrated comments are excluded, and `null` is returned when no comment rates the entrance. Only comments attached to this entrance count — ratings on sibling entrances of the same cave do not contribute.
         '400':
           description: >-
             Missing or out-of-range coordinates, or a bounding box larger than

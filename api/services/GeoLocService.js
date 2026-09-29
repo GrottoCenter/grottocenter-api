@@ -36,7 +36,13 @@ const QUALITY_LATERAL_JOIN = `
 // Lateral rather than a GROUP BY subquery joined on id_entrance: a grouped
 // subquery cannot have the bounding box pushed into it, so it would hash the
 // whole comment table even for the twenty entrances a zoomed-in map asks for.
-// This form costs one idx_t_comment_entrance probe per returned row instead.
+// This form costs one probe per returned row instead, served by
+// idx_t_comment_entrance on t_comment(id_entrance) — created in
+// sql/0_tables.sql, recreated by sql/94_01_2026_03_17_query_performance_fixes.sql
+// and mirrored into the test database by test/customSQL.js, so it is present in
+// every environment. EXPLAIN gives a Nested Loop Left Join whose inner side the
+// planner wraps in a Memoize keyed on e.id, so one probe per row is an upper
+// bound: entrances repeated across a result set are answered from that cache.
 //
 // It is an aggregate, so it yields exactly one row per entrance and cannot
 // multiply the result set — the invariant GeoLocNameFilter.test.js guards.
@@ -294,14 +300,15 @@ const formatEntrances = (entrances) =>
     longitude: parseFloat(entrance.longitude),
     latitude: parseFloat(entrance.latitude),
     quality: entrance.size_coef,
-    // Rounded here rather than in SQL: round(...::numeric, 2) would come back
-    // from pg as a string, while avg(float8) arrives as a number. Two decimals
-    // keep a response that may carry thousands of entrances small; the front
-    // end renders stars from it, so the fraction still has to survive.
+    // Rounded here rather than in SQL: round(...::numeric, 1) would come back
+    // from pg as a string, while avg(float8) arrives as a number. One decimal
+    // keeps a response that may carry thousands of entrances small, and is all
+    // the precision the popup can show — it renders half stars out of 5 from a
+    // 0-10 rating, so anything finer than 0.1 is invisible. See #1825.
     aestheticism:
       entrance.aestheticism == null
         ? null
-        : Math.round(Number(entrance.aestheticism) * 100) / 100,
+        : Math.round(Number(entrance.aestheticism) * 10) / 10,
     dataQuality:
       entrance.general_latest_date_of_update != null
         ? getQualityData(entrance)

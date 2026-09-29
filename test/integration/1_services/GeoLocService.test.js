@@ -181,15 +181,15 @@ describe('GeoLocService', () => {
       it('should average only the positive ratings of the entrance itself', async () => {
         const entrances = byId(await getWideMap());
 
-        // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.67. The 0, the NULL and the
+        // (7 + 8 + 8) / 3 = 7.666..., rounded to 7.7. The 0, the NULL and the
         // soft-deleted 2.0 on the same entrance must all stay out: counting the
-        // deleted one would give 6.25, counting the zero 5.75.
-        should(entrances.get(4).aestheticism).equal(7.67);
+        // deleted one would give 6.3, counting the zero 5.8.
+        should(entrances.get(4).aestheticism).equal(7.7);
       });
 
       /**
        * Entrance 5 shares cave 3 with the rated entrance 4, so an aggregate
-       * keyed on the cave instead of the entrance would hand it 7.67.
+       * keyed on the cave instead of the entrance would hand it 7.7.
        */
       it('should return null for an entrance whose comments are all unrated', async () => {
         const entrances = byId(await getWideMap());
@@ -232,7 +232,7 @@ describe('GeoLocService', () => {
         // Entrances 4 and 5 both sit inside massif 1.
         const entrances = byId(await getWideMap(1));
 
-        should(entrances.get(4).aestheticism).equal(7.67);
+        should(entrances.get(4).aestheticism).equal(7.7);
         should(entrances.get(5)).have.property('aestheticism', null);
       });
     });
