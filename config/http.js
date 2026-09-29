@@ -367,7 +367,7 @@ module.exports.http = {
               'Request data:',
               JSON.stringify({
                 body: sanitize(req.body),
-                params: req.params,
+                params: sanitize(req.params),
                 query: sanitize(req.query),
               })
             );

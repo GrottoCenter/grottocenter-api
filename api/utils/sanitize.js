@@ -29,3 +29,6 @@ const sanitize = (obj, maxDepth = 3, currentDepth = 0) => {
 };
 
 module.exports = sanitize;
+// Exposed so the log-redaction util can share one definition of "sensitive"
+// without duplicating the list. See api/utils/redactLogArgs.js.
+module.exports.SENSITIVE_FIELDS = SENSITIVE_FIELDS;
