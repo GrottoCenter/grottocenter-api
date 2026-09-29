@@ -8,8 +8,12 @@
  * Partition naming convention matches the DDL in sql/9_04_scientific_observations_ddl.sql:
  *   t_measurement_<year>_q<quarter>
  *
- * Uses CREATE TABLE IF NOT EXISTS … PARTITION OF, which is idempotent — safe
- * for concurrent imports and repeated calls with overlapping date ranges.
+ * Partition creation goes through gc_ensure_measurement_partition(), a
+ * SECURITY DEFINER function owned by the table owner (see
+ * sql/9_21_2026_09_29_measurement_partition_function.sql). The API's database
+ * role does not own t_measurement, so it cannot issue PARTITION OF itself.
+ * The function is idempotent — safe for concurrent imports and repeated calls
+ * with overlapping date ranges.
  *
  * Design decisions:
  *   - Runs inside the caller's transaction (receives the `db` connection).
@@ -116,13 +120,12 @@ const ensurePartitions = async (timestamps, db) => {
     const partitionName = `t_measurement_${year}_q${quarter}`;
     const { start, end } = computeBoundaries(year, quarter);
 
-    // CREATE TABLE IF NOT EXISTS is idempotent — no error if partition exists.
-    // Using identifier quoting (%I equivalent) is unnecessary here because
-    // partition names are derived from integers, making injection impossible.
+    // The function re-validates the name and the boundaries and quotes the
+    // identifier itself, so nothing derived here is interpolated into DDL.
     // eslint-disable-next-line no-await-in-loop
     await CommonService.query(
-      `CREATE TABLE IF NOT EXISTS ${partitionName} PARTITION OF t_measurement FOR VALUES FROM ('${start}') TO ('${end}')`,
-      [],
+      'SELECT gc_ensure_measurement_partition($1, $2, $3)',
+      [partitionName, start, end],
       db
     );
 
