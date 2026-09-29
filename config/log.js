@@ -11,6 +11,9 @@
  */
 
 const winston = require('winston');
+// Pure util with no reference to the `sails` global, so it is safe to require
+// here -- this file is evaluated before Sails lifts.
+const { scrubString } = require('../api/utils/redactLogArgs');
 
 module.exports.log = {
   level: 'info',
@@ -19,6 +22,13 @@ module.exports.log = {
   // Custom formatter for production to handle multiline logs in Azure
   // Custom formatter for non-production to add timestamps
   // No custom logger in test environment
+  //
+  // `scrubString` here is a backstop, not the main defence. By this point
+  // captains-log has already flattened everything into one string, so only a
+  // textual scrub is possible. The structured redaction happens upstream in
+  // api/utils/logger.js; this catches what that patch does not wrap -- the
+  // `silly` and `crit` levels, the callable `sails.log(...)` form, and any future
+  // call site added outside the patch. It does not see raw console.log output.
   ...(process.env.NODE_ENV !== 'test' && {
     custom: winston.createLogger({
       format:
@@ -26,7 +36,7 @@ module.exports.log = {
           ? winston.format.printf(({ message }) => {
               const msg =
                 typeof message === 'string' ? message : JSON.stringify(message);
-              return msg.replace(/\n/g, '\\n');
+              return scrubString(msg).replace(/\n/g, '\\n');
             })
           : winston.format.combine(
               winston.format.timestamp(),
@@ -35,7 +45,7 @@ module.exports.log = {
                   typeof message === 'string'
                     ? message
                     : JSON.stringify(message);
-                return `${timestamp} ${msg}`;
+                return `${timestamp} ${scrubString(msg)}`;
               })
             ),
       transports: [new winston.transports.Console()],

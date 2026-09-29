@@ -1,4 +1,5 @@
 const { AsyncLocalStorage } = require('async_hooks');
+const redactLogArgs = require('./redactLogArgs');
 
 // Use a singleton stored on global to survive Sails' require-cache clearing.
 // Without this, different require() calls get different AsyncLocalStorage
@@ -19,9 +20,14 @@ const patchSailsLog = () => {
     verbose: sails.log.verbose,
   };
 
+  // Redacting here rather than at the call sites is deliberate: this is the only
+  // place that sees the raw arguments of every sails.log.* call, so it covers
+  // api/helpers/log-response.js, the responseTimeLogger in config/http.js, the
+  // queue services and every other error-logging site at once. config/log.js
+  // holds a string-level backstop for the log methods not patched here.
   Object.keys(originalMethods).forEach((level) => {
     sails.log[level] = (...args) => {
-      originalMethods[level](`[${getTraceId()}]`, ...args);
+      originalMethods[level](`[${getTraceId()}]`, ...args.map(redactLogArgs));
     };
   });
 };
