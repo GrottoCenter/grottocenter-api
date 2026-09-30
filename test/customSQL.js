@@ -247,8 +247,11 @@ SET search_path = public, pg_temp
 SET timezone = 'UTC'
 AS $fn$
 DECLARE
-  v_start timestamptz;
-  v_end   timestamptz;
+  v_start          timestamptz;
+  v_end            timestamptz;
+  v_expected_name  text;
+  v_expected_bound text;
+  v_existing       record;
 BEGIN
   IF p_name IS NULL OR p_name !~ '^t_measurement_[0-9]{4}_q[1-4]$' THEN
     RAISE EXCEPTION
@@ -275,14 +278,45 @@ BEGIN
       USING ERRCODE = 'invalid_parameter_value';
   END IF;
 
-  IF EXISTS (
-    SELECT 1
-    FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'public'
-      AND c.relname = p_name
-  ) THEN
-    RETURN;
+  v_expected_name := format(
+    't_measurement_%s_q%s',
+    extract(year from v_start)::int,
+    extract(quarter from v_start)::int
+  );
+
+  IF p_name <> v_expected_name THEN
+    RAISE EXCEPTION
+      'refusing to create partition %: [%, %) is the range of %',
+      p_name, v_start, v_end, v_expected_name
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  v_expected_bound := format('FOR VALUES FROM (%L) TO (%L)', v_start, v_end);
+
+  SELECT c.relkind,
+         c.relispartition,
+         i.inhparent,
+         pg_get_expr(c.relpartbound, c.oid) AS bound
+    INTO v_existing
+  FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    LEFT JOIN pg_inherits i ON i.inhrelid = c.oid
+  WHERE n.nspname = 'public'
+    AND c.relname = p_name;
+
+  IF FOUND THEN
+    IF v_existing.relkind IN ('r', 'p')
+      AND v_existing.relispartition
+      AND v_existing.inhparent = 'public.t_measurement'::regclass
+      AND v_existing.bound = v_expected_bound
+    THEN
+      RETURN;
+    END IF;
+
+    RAISE EXCEPTION
+      'refusing to create partition %: public.% already exists and is not that partition (relkind %, bounds %)',
+      p_name, p_name, v_existing.relkind, coalesce(v_existing.bound, '<not a partition>')
+      USING ERRCODE = 'invalid_object_definition';
   END IF;
 
   EXECUTE format(

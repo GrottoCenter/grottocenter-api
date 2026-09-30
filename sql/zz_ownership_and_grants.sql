@@ -235,14 +235,26 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- application's own routines, and ownership of schema pgboss.
 --
 -- What it deliberately does not get: SUPERUSER, CREATEDB, CREATEROLE, BYPASSRLS,
--- REPLICATION, membership in gc_owner or azure_pg_admin, or any access to the
--- postgres and superset_meta databases.
+-- REPLICATION, CREATE on schema public, membership in gc_owner or
+-- azure_pg_admin, or any access to the postgres and superset_meta databases.
 --
--- CREATE ON SCHEMA public is still needed today for one reason only:
--- PartitionManager creates t_measurement partitions at runtime. Once that goes
--- through a SECURITY DEFINER function, this grant can be revoked.
+-- CREATE ON SCHEMA public is absent because nothing in the API issues DDL any
+-- more. PartitionManager was the last one, and it now goes through
+-- gc_ensure_measurement_partition() — see
+-- sql/9_21_2026_09_29_measurement_partition_function.sql. Waterline runs with
+-- `migrate: 'safe'` in every environment, so it never emits DDL either.
+-- TEMPORARY is granted at database level and is what keeps pg_temp usable
+-- without CREATE on the schema.
 GRANT CONNECT, TEMPORARY ON DATABASE grottoce TO gc_app;
-GRANT USAGE, CREATE ON SCHEMA public TO gc_app;
+GRANT USAGE ON SCHEMA public TO gc_app;
+
+-- Not the same thing as dropping CREATE from the line above. GRANT is not a
+-- diff: on a database where an earlier revision of this file already granted
+-- CREATE, narrowing the grant leaves the privilege sitting in nspacl. The
+-- REVOKE is what makes fresh and existing installations converge, and it is a
+-- harmless no-op where the grant was never made.
+REVOKE CREATE ON SCHEMA public FROM gc_app;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO gc_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO gc_app;
 

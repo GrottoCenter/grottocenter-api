@@ -135,6 +135,96 @@ describe('PartitionManager.ensurePartitions (integration)', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// gc_ensure_measurement_partition — the privileged entry point's own validation
+// ---------------------------------------------------------------------------
+//
+// PartitionManager cannot produce these arguments: it derives the name and the
+// boundaries from one (year, quarter) pair, so they always agree. That is
+// exactly the caller assumption a SECURITY DEFINER function granted to gc_app
+// must not rely on, so the checks are exercised directly against the function.
+
+describe('gc_ensure_measurement_partition (validation)', () => {
+  const ensure = (name, start, end) =>
+    CommonService.query('SELECT gc_ensure_measurement_partition($1, $2, $3)', [
+      name,
+      start,
+      end,
+    ]);
+
+  // sendNativeQuery wraps the driver error: the SQLSTATE sits under
+  // raw.error.code, while the RAISE text ends up in the outer message.
+  const sqlState = (error) => error.raw.error.code;
+
+  const relationExists = async (name) => {
+    const result = await CommonService.query(
+      "SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = $1",
+      [name]
+    );
+    return result.rows.length > 0;
+  };
+
+  afterEach(async () => {
+    await CommonService.query('DROP TABLE IF EXISTS t_measurement_2030_q1');
+    await CommonService.query('DROP TABLE IF EXISTS t_measurement_1971_q1');
+  });
+
+  it('should reject a name that does not describe the given range', async () => {
+    let error;
+    try {
+      // Would otherwise attach the 2031 range under a 2030 name, sending later
+      // 2030 rows to t_measurement_default and blocking the real 2031 partition.
+      await ensure('t_measurement_2030_q1', '2031-01-01', '2031-04-01');
+    } catch (e) {
+      error = e;
+    }
+
+    should.exist(error);
+    should(sqlState(error)).equal('22023');
+    should(error.message).match(/is the range of t_measurement_2031_q1/);
+    should(await relationExists('t_measurement_2030_q1')).equal(false);
+  });
+
+  it('should reject a range that is not a whole quarter', async () => {
+    let error;
+    try {
+      await ensure('t_measurement_2030_q1', '2030-01-01', '2030-03-01');
+    } catch (e) {
+      error = e;
+    }
+
+    should.exist(error);
+    should(sqlState(error)).equal('22023');
+    should(await relationExists('t_measurement_2030_q1')).equal(false);
+  });
+
+  it('should reject a name already held by something other than that partition', async () => {
+    // A plain table, not a partition of t_measurement. The old existence check
+    // matched on name alone and reported this as success.
+    await CommonService.query(
+      'CREATE TABLE t_measurement_1971_q1 (unrelated int)'
+    );
+
+    let error;
+    try {
+      await ensure('t_measurement_1971_q1', '1971-01-01', '1971-04-01');
+    } catch (e) {
+      error = e;
+    }
+
+    should.exist(error);
+    should(sqlState(error)).equal('42P17');
+    should(error.message).match(/already exists and is not that partition/);
+  });
+
+  it('should return without error when the exact partition already exists', async () => {
+    await ensure('t_measurement_2030_q1', '2030-01-01', '2030-04-01');
+    await ensure('t_measurement_2030_q1', '2030-01-01', '2030-04-01');
+
+    should(await relationExists('t_measurement_2030_q1')).equal(true);
+  });
+});
+
 describe('PartitionManager.computeBoundaries', () => {
   it('should compute Q1 boundaries', () => {
     const { start, end } = PartitionManager.computeBoundaries(2024, 1);

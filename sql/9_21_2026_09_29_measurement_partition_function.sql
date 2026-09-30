@@ -41,8 +41,10 @@
 -- boundaries stay derived in PartitionManager.js, where they are unit- and
 -- property-tested; this function only validates what it is handed.  The
 -- validation is what makes a SECURITY DEFINER function safe to expose: the name
--- regex bounds it to t_measurement partitions, and the boundary checks stop a
--- caller bug from carving the table into something other than whole quarters.
+-- regex bounds it to t_measurement partitions, the boundary checks stop a caller
+-- bug from carving the table into something other than whole quarters, and the
+-- name is then checked against the boundaries so that a partition cannot be
+-- attached under the label of a different quarter.
 --
 -- WHY NO `SET ROLE gc_owner;` EITHER: on a freshly initialised PostgreSQL 16
 -- cluster, schema public is owned by pg_database_owner and PUBLIC holds only
@@ -69,8 +71,11 @@ SET search_path = public, pg_temp
 SET timezone = 'UTC'
 AS $fn$
 DECLARE
-  v_start timestamptz;
-  v_end   timestamptz;
+  v_start          timestamptz;
+  v_end            timestamptz;
+  v_expected_name  text;
+  v_expected_bound text;
+  v_existing       record;
 BEGIN
   IF p_name IS NULL OR p_name !~ '^t_measurement_[0-9]{4}_q[1-4]$' THEN
     RAISE EXCEPTION
@@ -98,14 +103,67 @@ BEGIN
       USING ERRCODE = 'invalid_parameter_value';
   END IF;
 
-  IF EXISTS (
-    SELECT 1
-    FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'public'
-      AND c.relname = p_name
-  ) THEN
-    RETURN;
+  -- The name and the boundaries have been shape-checked independently, which
+  -- says nothing about whether they agree with each other.  Without this check
+  -- ('t_measurement_2030_q1', '2031-01-01', '2031-04-01') passes everything
+  -- above and attaches the 2031 range under a 2030 name; the next genuine 2030
+  -- import then finds the name taken, returns, and its rows land in
+  -- t_measurement_default while the 2031 import can never create its own
+  -- partition.
+  --
+  -- The expected name is derived here to be *compared*, not to be used.  Using
+  -- it would silently repair a caller bug and make this function a second home
+  -- for a naming convention that PartitionManager.js owns; comparing it keeps
+  -- that convention in one place and turns any disagreement into a loud failure.
+  v_expected_name := format(
+    't_measurement_%s_q%s',
+    extract(year from v_start)::int,
+    extract(quarter from v_start)::int
+  );
+
+  IF p_name <> v_expected_name THEN
+    RAISE EXCEPTION
+      'refusing to create partition %: [%, %) is the range of %',
+      p_name, v_start, v_end, v_expected_name
+      USING ERRCODE = 'invalid_parameter_value';
+  END IF;
+
+  -- Idempotence, but narrowly: "some relation is called this" is a weaker claim
+  -- than "the partition we were asked for is already there".  Matching on the
+  -- parent and the bounds as well as the name means the early return only fires
+  -- when re-running really is a no-op, and that an index, a view or a partition
+  -- carrying different bounds is raised rather than reported as success.
+  --
+  -- Bounds are compared as text because PostgreSQL exposes no structural
+  -- accessor for them.  That is exact rather than approximate: pg_get_expr and
+  -- format('%L') both render the boundary through the type's own output
+  -- function, so the session's DateStyle and TimeZone move both sides together.
+  v_expected_bound := format('FOR VALUES FROM (%L) TO (%L)', v_start, v_end);
+
+  SELECT c.relkind,
+         c.relispartition,
+         i.inhparent,
+         pg_get_expr(c.relpartbound, c.oid) AS bound
+    INTO v_existing
+  FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    LEFT JOIN pg_inherits i ON i.inhrelid = c.oid
+  WHERE n.nspname = 'public'
+    AND c.relname = p_name;
+
+  IF FOUND THEN
+    IF v_existing.relkind IN ('r', 'p')
+      AND v_existing.relispartition
+      AND v_existing.inhparent = 'public.t_measurement'::regclass
+      AND v_existing.bound = v_expected_bound
+    THEN
+      RETURN;
+    END IF;
+
+    RAISE EXCEPTION
+      'refusing to create partition %: public.% already exists and is not that partition (relkind %, bounds %)',
+      p_name, p_name, v_existing.relkind, coalesce(v_existing.bound, '<not a partition>')
+      USING ERRCODE = 'invalid_object_definition';
   END IF;
 
   EXECUTE format(
@@ -115,8 +173,10 @@ BEGIN
   );
 EXCEPTION
   -- Two concurrent imports covering the same new quarter both get past the
-  -- EXISTS check. The loser of the race still ends up with the partition it
-  -- asked for, which is all the caller cares about.
+  -- existence check above. The loser of the race still ends up with the
+  -- partition it asked for, which is all the caller cares about — and since both
+  -- callers passed the same validation, the winner cannot have created something
+  -- other than the partition the loser wanted.
   WHEN duplicate_table OR unique_violation THEN
     RETURN;
 END
