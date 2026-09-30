@@ -183,12 +183,126 @@ describe('redactLogArgs', () => {
       should(redactLogArgs(line)).equal(line);
     });
 
-    it('should leave a non-secret value that merely mentions a keyword', () => {
-      // `passwordAuth: Enabled` is configuration state, not a credential.
-      // Over-matching costs the diagnostics this change exists to protect.
-      const line = 'passwordAuth: Enabled, activeDirectoryAuth: Disabled';
+    it('should keep a value util.inspect renders from internal state', () => {
+      // Rebuilding these from Object.keys() would print `{}` -- or a map of byte
+      // indices for a Buffer -- and lose the diagnostic entirely.
+      const date = new Date('2026-09-30T12:00:00Z');
+      const pattern = /^t_measurement_/i;
+      const buffer = Buffer.from('ab');
 
-      should(redactLogArgs(line)).equal(line);
+      should(redactLogArgs(date)).equal(date);
+      should(redactLogArgs(pattern)).equal(pattern);
+      should(redactLogArgs(buffer)).equal(buffer);
+    });
+
+    it('should rebuild a Map with its sensitive entries redacted', () => {
+      const redacted = redactLogArgs(
+        new Map([
+          ['password', SECRET],
+          ['host', 'db.example.org'],
+        ])
+      );
+
+      should(redacted).be.an.instanceOf(Map);
+      should(redacted.get('password')).equal(REDACTED);
+      should(redacted.get('host')).equal('db.example.org');
+    });
+
+    it('should rebuild a Set, redacting its members', () => {
+      const redacted = redactLogArgs(new Set(['primary', { token: SECRET }]));
+
+      should(redacted).be.an.instanceOf(Set);
+      should(render(redacted)).not.containEql(SECRET);
+      should(render(redacted)).containEql('primary');
+    });
+  });
+
+  // `util.inspect` and `JSON.stringify` quote their strings, so an unquoted value
+  // in a log line comes from an environment dump, a connection string or a
+  // hand-concatenated message -- all of which do carry credentials.
+  describe('unquoted values', () => {
+    it('should scrub an unquoted assignment', () => {
+      const scrubbed = scrubString(`password=${SECRET}`);
+
+      should(scrubbed).equal(`password=${REDACTED}`);
+    });
+
+    it('should scrub an unquoted colon form', () => {
+      const scrubbed = scrubString(`x-api-key: ${SECRET}`);
+
+      should(scrubbed).equal(`x-api-key: ${REDACTED}`);
+    });
+
+    it('should scrub a credential behind an auth scheme', () => {
+      // Redacting only the first token after the separator would leave the
+      // credential and take `Bearer` instead, so the scheme is kept explicitly.
+      const scrubbed = scrubString(`Authorization: Bearer ${SECRET}`);
+
+      should(scrubbed).equal(`Authorization: Bearer ${REDACTED}`);
+    });
+
+    it('should scrub one keyword=value pair out of a keyword connection string', () => {
+      const scrubbed = scrubString(
+        `host=db.example.org port=5432 password=${SECRET} sslmode=require`
+      );
+
+      should(scrubbed).not.containEql(SECRET);
+      should(scrubbed).containEql('host=db.example.org');
+      should(scrubbed).containEql('sslmode=require');
+    });
+
+    it('should take the value but not the rest of the line', () => {
+      // Documents the accepted over-match: `passwordAuth: Enabled` is
+      // configuration state rather than a credential, and it loses its value.
+      // Masking a word is a better failure than emitting a credential, and the
+      // narrow value class keeps the loss to that one word.
+      const scrubbed = scrubString(
+        'passwordAuth: Enabled, activeDirectoryAuth: Disabled'
+      );
+
+      should(scrubbed).equal(
+        `passwordAuth: ${REDACTED}, activeDirectoryAuth: Disabled`
+      );
+    });
+
+    it('should leave the line and column of a stack frame alone', () => {
+      // Regression guard, and the reason the unquoted pattern refuses a key that
+      // follows a slash. This repo has `change-password.js` and
+      // `forgot-password.js`, so without that guard every frame through the auth
+      // controllers reads `change-password.js:[REDACTED]` -- losing the stack in
+      // exactly the flows where it is needed most.
+      const frames = [
+        '    at exports.fn (/app/api/controllers/v1/account/change-password.js:44:7)',
+        '    at run (/app/api/controllers/v1/account/forgot-password.js:25:5)',
+        '    at C:\\app\\api\\utils\\change-password.js:12:3',
+      ];
+
+      frames.forEach((frame) => {
+        should(scrubString(frame)).equal(frame);
+      });
+    });
+
+    it('should leave the surrounding prose of a real log line alone', () => {
+      // Taken from actual call sites: the sensitive word is there, but no
+      // separator follows it, so nothing should fire.
+      const lines = [
+        'Banned caver 42 attempted password reset',
+        'Failed to send password change notification: Error: SMTP down',
+        'Token verification failed: jwt expired',
+        'Token revoked for user 42',
+      ];
+
+      lines.forEach((line) => {
+        should(scrubString(line)).equal(line);
+      });
+    });
+
+    it('should not run past the end of a line', () => {
+      // The separator allows spaces and tabs but not newlines, so a dangling
+      // `password:` cannot swallow the first word of the next line.
+      const scrubbed = scrubString('password:\n  at Object.<anonymous>');
+
+      should(scrubbed).containEql('at Object.<anonymous>');
     });
   });
 
@@ -297,6 +411,47 @@ describe('redactLogArgs', () => {
       should(scrubbed).equal(
         `/api/v1/x?userToken=${REDACTED}&tokenCount=${REDACTED}`
       );
+    });
+
+    it('should scrub the array forms of a parameter name', () => {
+      // `qs` accepts both, and `req.param('token')` resolves either -- so both
+      // carry a live credential while putting nothing named `token` directly
+      // before the `=`.
+      should(scrubString(`/api/v1/verify-email?token[]=${SECRET}`)).equal(
+        `/api/v1/verify-email?token[]=${REDACTED}`
+      );
+      should(scrubString(`/api/v1/verify-email?token[0]=${SECRET}`)).equal(
+        `/api/v1/verify-email?token[0]=${REDACTED}`
+      );
+    });
+
+    it('should scrub a percent-encoded parameter name', () => {
+      // `%74oken` is `token` once decoded, so the application reads it as the
+      // credential it is. It also contains no sentinel, which is why the cheap
+      // pre-check has to let a percent escape through.
+      should(scrubString(`/api/v1/verify-email?%74oken=${SECRET}`)).equal(
+        `/api/v1/verify-email?%74oken=${REDACTED}`
+      );
+      should(
+        scrubString(`/api/v1/verify-email?to%6Ben=${SECRET}&lang=fr`)
+      ).equal(`/api/v1/verify-email?to%6Ben=${REDACTED}&lang=fr`);
+    });
+
+    it('should leave a percent-encoded name alone that is not a credential', () => {
+      // `qs` decodes once, so `%2574oken` arrives as the parameter `%74oken` and
+      // is not the credential it imitates. Decoding twice here would redact
+      // values the application never treats as sensitive.
+      const line = '/api/v1/x?%2574oken=not-a-credential';
+
+      should(scrubString(line)).equal(line);
+    });
+
+    it('should leave a percent-encoded non-sensitive parameter alone', () => {
+      // Any percent escape bypasses the sentinel pre-check, so the regex does
+      // run here -- it just has to find nothing.
+      const line = 'Req :: GET /api/v1/caves?name=Gouffre%20Berger';
+
+      should(scrubString(line)).equal(line);
     });
 
     it('should leave a path that merely mentions a keyword alone', () => {

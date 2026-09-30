@@ -95,6 +95,57 @@ describe('redactLogArgs - Property: a secret never survives redaction', () => {
     );
   });
 
+  it('should remove a secret from a query parameter however its name is written', () => {
+    // The four spellings that all reach `req.param(<key>)`: bare, the two array
+    // forms `qs` accepts, and percent-encoded on the first character. Only the
+    // first puts the sensitive word directly before the `=`.
+    const spellingArb = fc.constantFrom(
+      (key) => key,
+      (key) => `${key}[]`,
+      (key) => `${key}[0]`,
+      (key) => `%${key.charCodeAt(0).toString(16)}${key.slice(1)}`
+    );
+
+    fc.assert(
+      fc.property(secretArb, keyArb, spellingArb, (secret, key, spell) => {
+        const line = `Req :: GET /api/v1/verify-email?${spell(
+          key
+        )}=${secret}&lang=fr`;
+
+        const scrubbed = redactLogArgs(line);
+
+        should(scrubbed).not.containEql(secret);
+        should(scrubbed).containEql('lang=fr');
+      }),
+      { numRuns: 300 }
+    );
+  });
+
+  it('should remove an unquoted secret whatever separator introduces it', () => {
+    const separatorArb = fc.constantFrom(': ', ':', ' = ', '=', '\t');
+    const schemeArb = fc.constantFrom('', 'Bearer ', 'Basic ', 'Token ');
+
+    fc.assert(
+      fc.property(
+        secretArb,
+        keyArb,
+        separatorArb,
+        schemeArb,
+        (secret, key, separator, scheme) => {
+          const sep = separator === '\t' ? ':\t' : separator;
+          const line = `connecting with ${key}${sep}${scheme}${secret} to db.example.org`;
+
+          const scrubbed = redactLogArgs(line);
+
+          should(scrubbed).not.containEql(secret);
+          // The tail of the line has to survive, or the scrub is eating the log.
+          should(scrubbed).containEql('to db.example.org');
+        }
+      ),
+      { numRuns: 300 }
+    );
+  });
+
   it('should remove a secret carried by an Error, in message, stack and meta', () => {
     fc.assert(
       fc.property(secretArb, (secret) => {
