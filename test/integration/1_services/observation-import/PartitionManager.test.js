@@ -169,19 +169,71 @@ describe('gc_ensure_measurement_partition (validation)', () => {
     await CommonService.query('DROP TABLE IF EXISTS t_measurement_1971_q1');
   });
 
-  it('should reject a name that does not describe the given range', async () => {
+  // Ordered as the function checks them: name shape, null boundaries, quarter
+  // alignment, whole quarter, name against range, then what already holds the
+  // name.
+  it('should reject a name outside the partition naming pattern', async () => {
+    const rejected = [
+      't_measurement_2030_q5', // no fifth quarter
+      't_measurement_30_q1', // two-digit year
+      't_measurement_2030_q1_extra', // trailing junk
+      'public.t_measurement_2030_q1', // schema-qualified
+      't_cave', // a real table, but not a partition name
+      't_measurement_2030_q1; DROP TABLE t_cave', // statement injection
+    ];
+
+    for (const name of rejected) {
+      let error;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await ensure(name, '2030-01-01', '2030-04-01');
+      } catch (e) {
+        error = e;
+      }
+
+      should.exist(error, `expected ${name} to be rejected`);
+      should(sqlState(error)).equal('22023');
+      should(error.message).match(/name must match/);
+    }
+
+    // Nothing partial: the parent gained no partitions and t_cave is intact.
+    should(await relationExists('t_cave')).equal(true);
+  });
+
+  it('should reject a null boundary', async () => {
+    for (const [start, end] of [
+      [null, '2030-04-01'],
+      ['2030-01-01', null],
+    ]) {
+      let error;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await ensure('t_measurement_2030_q1', start, end);
+      } catch (e) {
+        error = e;
+      }
+
+      should.exist(error);
+      should(sqlState(error)).equal('22023');
+      should(error.message).match(/boundaries must not be null/);
+    }
+
+    should(await relationExists('t_measurement_2030_q1')).equal(false);
+  });
+
+  it('should reject a start that is not the first day of a quarter', async () => {
     let error;
     try {
-      // Would otherwise attach the 2031 range under a 2030 name, sending later
-      // 2030 rows to t_measurement_default and blocking the real 2031 partition.
-      await ensure('t_measurement_2030_q1', '2031-01-01', '2031-04-01');
+      // A whole three-month span, just not aligned to a quarter: carving the
+      // parent on this boundary would leave the real Q1 uncoverable.
+      await ensure('t_measurement_2030_q1', '2030-02-01', '2030-05-01');
     } catch (e) {
       error = e;
     }
 
     should.exist(error);
     should(sqlState(error)).equal('22023');
-    should(error.message).match(/is the range of t_measurement_2031_q1/);
+    should(error.message).match(/is not the start of a quarter/);
     should(await relationExists('t_measurement_2030_q1')).equal(false);
   });
 
@@ -195,6 +247,22 @@ describe('gc_ensure_measurement_partition (validation)', () => {
 
     should.exist(error);
     should(sqlState(error)).equal('22023');
+    should(await relationExists('t_measurement_2030_q1')).equal(false);
+  });
+
+  it('should reject a name that does not describe the given range', async () => {
+    let error;
+    try {
+      // Would otherwise attach the 2031 range under a 2030 name, sending later
+      // 2030 rows to t_measurement_default and blocking the real 2031 partition.
+      await ensure('t_measurement_2030_q1', '2031-01-01', '2031-04-01');
+    } catch (e) {
+      error = e;
+    }
+
+    should.exist(error);
+    should(sqlState(error)).equal('22023');
+    should(error.message).match(/is the range of t_measurement_2031_q1/);
     should(await relationExists('t_measurement_2030_q1')).equal(false);
   });
 

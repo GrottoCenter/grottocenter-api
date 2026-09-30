@@ -66,9 +66,16 @@ SECURITY DEFINER
 -- without it, a caller could shadow pg_class or format() from a schema of its
 -- own.  timezone is pinned because the date -> timestamptz coercion below is
 -- session-dependent, and a partition boundary that lands an hour off is a
--- silently misrouted row.
+-- silently misrouted row.  DateStyle is pinned because the partition bound is
+-- compared as text below and both sides of that comparison render through
+-- timestamptz_out, which honours it: they already agree whatever the caller has
+-- set, since both run inside one invocation, so this only turns an invariant
+-- that holds by arrangement into one that is declared.  It does not affect how
+-- p_start and p_end are parsed — that happens in the calling query, before this
+-- SET list applies, and PartitionManager sends unambiguous ISO dates.
 SET search_path = public, pg_temp
 SET timezone = 'UTC'
+SET DateStyle = 'ISO, MDY'
 AS $fn$
 DECLARE
   v_start          timestamptz;

@@ -245,6 +245,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 SET timezone = 'UTC'
+SET DateStyle = 'ISO, MDY'
 AS $fn$
 DECLARE
   v_start          timestamptz;
