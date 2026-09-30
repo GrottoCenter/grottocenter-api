@@ -212,8 +212,10 @@ $$;
 --
 -- A database with a NULL datacl carries the built-in default, where PUBLIC holds
 -- CONNECT and TEMPORARY — i.e. every role that exists can connect. Revoking is
--- what makes CONNECT an explicit grant; TEMPORARY is re-granted to gc_app below
--- because this strips it.
+-- what makes CONNECT an explicit grant. It also strips TEMPORARY from every role
+-- that was silently relying on the default, so both roles that need it are
+-- re-granted it explicitly below: gc_app to use pg_temp, gc_owner to be
+-- refreshed on behalf of.
 REVOKE ALL ON DATABASE grottoce FROM PUBLIC;
 
 -- Schema public carries the pre-PostgreSQL-15 layout on this cluster: its ACL
@@ -226,6 +228,29 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- SELECT on spatial_ref_sys, geography_columns and geometry_columns, and
 -- ST_Transform needs it. A database-level REVOKE leaves those table ACLs alone,
 -- which is the intent.
+
+-- ---------------------------------------------------------------------------
+-- gc_owner — the group that owns schema public
+-- ---------------------------------------------------------------------------
+--
+-- TEMPORARY is the only database-level privilege gc_owner needs, and not for its
+-- own use: it is a NOLOGIN group with no password, so nothing can connect as it
+-- and reach this grant. No CONNECT, for the same reason.
+--
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY switches the current user to the
+-- matview's *owner* for the duration of the command, then builds its diff in a
+-- TEMP table — so the create-temp check runs against gc_owner rather than against
+-- whoever issued the REFRESH. Holding TEMPORARY in one's own right is neither
+-- sufficient nor necessary: a probe role that had it while gc_owner did not
+-- still got 42501, and kept succeeding after its own TEMPORARY was revoked once
+-- gc_owner held the grant.
+--
+-- Without this every pg_cron job in sql/1_cron.sql fails with "permission denied
+-- to create temporary tables in database grottoce". pg_cron records that in
+-- cron.job_run_details and notifies nobody, so the four views go stale in
+-- silence. Plain REFRESH rebuilds into a transient heap and needs no temp table,
+-- which is why sql/99_refresh_views.sql never surfaced it. See issue #1839.
+GRANT TEMPORARY ON DATABASE grottoce TO gc_owner;
 
 -- ---------------------------------------------------------------------------
 -- gc_app — the API's role
@@ -345,6 +370,26 @@ ALTER DEFAULT PRIVILEGES FOR ROLE gc_owner, grottoce IN SCHEMA public
 -- Verification
 -- ---------------------------------------------------------------------------
 --
+-- This one executes, because a comment would not have caught #1839. Every other
+-- privilege in this file is checked by the API on its next request; the gc_owner
+-- TEMPORARY grant is checked by nothing until a 04:20 UTC cron job fails
+-- unwatched, and the local path cannot reach it by accident — CONCURRENTLY
+-- appears only in sql/1_cron.sql, which targets the postgres database.
+--
+-- SET ROLE is load-bearing. This file runs as the container superuser locally,
+-- and a superuser bypasses ACL checks entirely, so a bare refresh here would
+-- pass whether or not the grant exists. SET ROLE to a non-superuser drops
+-- superuser-ness, which is what gives the check the ability to fail. Costs about
+-- 140 ms on a development dataset, 7 s in production.
+--
+-- The matview is already populated: 91_materialized_views.sql creates it WITH
+-- DATA and 99_refresh_views.sql refreshes it, both before this file. If a re-run
+-- against a live database trips the 5 s lock_timeout set at the top, that is a
+-- harmless failure of the last statement — everything above it has applied.
+SET ROLE gc_owner;
+REFRESH MATERIALIZED VIEW CONCURRENTLY v_region_info;
+RESET ROLE;
+
 -- Expected in production: 192 relations in public (125 r, 1 p, 59 S, 5 m, 2 v)
 -- owned by gc_owner, and 12 in pgboss owned by gc_app.
 --

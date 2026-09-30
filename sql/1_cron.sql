@@ -1,6 +1,12 @@
 \c postgres;
 CREATE EXTENSION pg_cron;
 
+-- Every job below uses REFRESH MATERIALIZED VIEW CONCURRENTLY, which runs as the
+-- matview's owner and builds its diff in a TEMP table. Any new job here needs
+-- that owner to hold TEMPORARY on grottoce — granted to gc_owner in
+-- sql/zz_ownership_and_grants.sql. Without it the job fails with 42501 and
+-- pg_cron only records it in cron.job_run_details. See issue #1839.
+
 SELECT cron.schedule_in_database(
     'Refresh data quality view daily',
     '20 4 * * *', -- every day at 4h20
