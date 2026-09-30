@@ -191,6 +191,20 @@ describe('SearchService', () => {
       const call = typesenseStub.multiSearch.getCall(0);
       should(call.args[0][0]).have.property('filter_by');
     });
+
+    it('should raise max_candidates above the Typesense default', async () => {
+      typesenseStub.multiSearch = sinon
+        .stub(typesense, 'multiSearch')
+        .resolves({ results: [] });
+
+      await SearchService.multiCollectionsSearch({
+        query: 'GZ3',
+        entities: ['entrances'],
+      });
+
+      const call = typesenseStub.multiSearch.getCall(0);
+      should(call.args[1].max_candidates).equal(1000);
+    });
   });
 
   describe('collectionSearch()', () => {
@@ -330,6 +344,21 @@ describe('SearchService', () => {
 
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].per_page).equal(500);
+    });
+
+    it('should raise max_candidates above the Typesense default', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        query: 'GZ3',
+        entity: 'entrances',
+        size: 200,
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].max_candidates).equal(1000);
     });
   });
 
@@ -552,6 +581,21 @@ describe('SearchService', () => {
 
       should(result.found).equal(2);
       should(result.found_docs).equal(5);
+    });
+
+    it('should raise max_candidates above the Typesense default', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves(facetResponse());
+
+      await SearchService.fieldSearch({
+        entity: 'entrances',
+        field: 'name',
+        query: 'GZ3',
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].max_candidates).equal(1000);
     });
   });
 
