@@ -5,6 +5,9 @@ const SENSITIVE_FIELDS = [
   'secret',
   'apikey',
   'api_key',
+  // The hyphenated spelling is how the header is actually written (`x-api-key`),
+  // and neither of the two above matches it.
+  'api-key',
 ];
 
 const sanitize = (obj, maxDepth = 3, currentDepth = 0) => {

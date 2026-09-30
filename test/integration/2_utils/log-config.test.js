@@ -96,6 +96,35 @@ describe('Log Configuration', () => {
       should(output).not.containEql(SECRET);
     });
 
+    it('should scrub an unquoted assignment in the production logger', () => {
+      // The backstop only ever sees a flattened string, so the unquoted forms
+      // matter most here: by this point nothing is left to redact by key.
+      const output = formatWith('production', `password=${SECRET}`);
+
+      should(output).not.containEql(SECRET);
+      should(output).match(/\[REDACTED\]/);
+    });
+
+    it('should scrub a credential behind an auth scheme in the production logger', () => {
+      const output = formatWith(
+        'production',
+        `Authorization: Bearer ${SECRET}`
+      );
+
+      should(output).not.containEql(SECRET);
+      should(output).containEql('Bearer [REDACTED]');
+    });
+
+    it('should scrub a percent-encoded query parameter in the production logger', () => {
+      const output = formatWith(
+        'production',
+        `Res :: GET /api/v1/verify-email?%74oken=${SECRET} 500 4ms`
+      );
+
+      should(output).not.containEql(SECRET);
+      should(output).containEql('500 4ms');
+    });
+
     it('should scrub a secret in the development logger', () => {
       const output = formatWith(
         'development',
