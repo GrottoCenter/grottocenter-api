@@ -414,4 +414,32 @@ describe('Auth features', () => {
       await TCaver.destroyOne({ mail: newAccount2.email });
     });
   });
+  describe('Check', () => {
+    it('Should return success true when the user is logged in', async () => {
+      const login = await supertest(sails.hooks.http.app)
+        .post('/api/v1/login')
+        .send({
+          email: 'user1@user1.com',
+          password: 'testtest',
+        })
+        .expect(200);
+
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/auth/check')
+        .set('Authorization', `Bearer ${login.body.token}`)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200)
+        .expect((res) => {
+          should(res.body.success).be.true();
+        });
+    });
+    it('Should return 401 when the user is not logged in', async () => {
+      await supertest(sails.hooks.http.app)
+        .get('/api/v1/auth/check')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(401);
+    });
+  });
 });
