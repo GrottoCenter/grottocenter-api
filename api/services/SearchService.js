@@ -19,6 +19,16 @@ const allEntities = {
 };
 const allEntitiesKeys = Object.keys(allEntities);
 
+// Typesense caps how many distinct index words a prefix/typo query may expand
+// to. The server default depends on the collection size: 10 below 500k
+// documents, 4 at or above (NUM_CANDIDATES_DEFAULT_MAX/MIN in src/collection.cpp).
+// With identifier-like names such as GZ301, GZ302, … every value is its own
+// word matching a single document, so the default silently caps a search at 10
+// hits whatever per_page asks for. 1000 is upstream's own recommendation and
+// costs ~18ms worst case on a 150k collection; exhaustive_search is not a
+// substitute as it also exhausts typo variants and so degrades precision.
+const MAX_CANDIDATES = 1000;
+
 function buildFilter(filter, isLogicalCompareAnd = true) {
   let hasPrefixFilter = false;
   const out = Object.entries(filter)
@@ -114,6 +124,7 @@ async function multiCollectionsSearch({
   return typesense.multiSearch(collections, {
     per_page: 20,
     q,
+    max_candidates: MAX_CANDIDATES,
     // Typesense defaults max_filter_by_candidates to 4, which is too low
     // for prefix filters like datePublication:=2025* that can match many
     // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
@@ -146,6 +157,7 @@ async function collectionSearch({
     query_by: allEntities[entity].query.query_by,
     page, // Page starts at 1
     per_page: perPage,
+    max_candidates: MAX_CANDIDATES,
     ...(sort && { sort_by: `${sort},_text_match:desc` }),
     ...(filterBy && { filter_by: filterBy }),
     ...(fields && { include_fields: fields.join(',') }),
@@ -193,6 +205,9 @@ async function fieldSearch({
     facet_by: field,
     max_facet_values: maxFacetValues,
     per_page: 0, // We only need facet counts, not document hits
+    // facet_query prefix-matches facet values and is subject to the same
+    // candidate cap as a regular query, so it needs max_candidates too.
+    max_candidates: MAX_CANDIDATES,
     ...(q !== '*' && { facet_query: `${field}:${q}` }),
     ...(filterBy && { filter_by: filterBy }),
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
@@ -211,8 +226,9 @@ async function fieldSearch({
   // distinct document count. This is acceptable for the UI's display purpose.
   const totalDocuments = counts.reduce((sum, c) => sum + c.count, 0);
 
-  // Use stats.total_values for the true count of distinct facet values
-  // matching the query, which is not capped by max_facet_values.
+  // Use stats.total_values for the count of distinct facet values matching the
+  // query, which is not capped by max_facet_values. It is still bounded by
+  // max_candidates above, so it under-reports past that many distinct values.
   const totalDistinct = facetInfo?.stats?.total_values ?? counts.length;
 
   return {
