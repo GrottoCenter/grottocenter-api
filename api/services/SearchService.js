@@ -227,8 +227,13 @@ async function fieldSearch({
   const totalDocuments = counts.reduce((sum, c) => sum + c.count, 0);
 
   // Use stats.total_values for the count of distinct facet values matching the
-  // query, which is not capped by max_facet_values. It is still bounded by
-  // max_candidates above, so it under-reports past that many distinct values.
+  // query: unlike counts, it is not capped by max_facet_values. It is not exact
+  // either, and for two independent reasons. With a facet_query it is bounded by
+  // max_candidates above. And Typesense's default `automatic` facet strategy
+  // falls back to top_values when it judges the field cheap enough to intersect,
+  // which caps total_values at max_facet_values whatever the candidate budget is
+  // — only facet_strategy: exhaustive reports a true count. Treat it as a lower
+  // bound rather than a total.
   const totalDistinct = facetInfo?.stats?.total_values ?? counts.length;
 
   return {
