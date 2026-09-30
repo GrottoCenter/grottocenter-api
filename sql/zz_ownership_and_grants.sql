@@ -382,10 +382,17 @@ ALTER DEFAULT PRIVILEGES FOR ROLE gc_owner, grottoce IN SCHEMA public
 -- superuser-ness, which is what gives the check the ability to fail. Costs about
 -- 140 ms on a development dataset, 7 s in production.
 --
--- The matview is already populated: 91_materialized_views.sql creates it WITH
--- DATA and 99_refresh_views.sql refreshes it, both before this file. If a re-run
--- against a live database trips the 5 s lock_timeout set at the top, that is a
--- harmless failure of the last statement — everything above it has applied.
+-- CONCURRENTLY requires the matview to be populated, and on a fresh build exactly
+-- one file does that. 91_materialized_views.sql recreates v_region_info WITH NO
+-- DATA, so 99_refresh_views.sql is the only thing standing between that and this
+-- check — a real ordering dependency rather than a coincidence. If the plain
+-- refresh there is ever dropped, this line fails with "CONCURRENTLY cannot be
+-- used when the materialized view is not populated", which is its own
+-- explanation.
+--
+-- If a re-run against a live database trips the 5 s lock_timeout set at the top,
+-- that is a harmless failure of the last statement — everything above it has
+-- applied.
 SET ROLE gc_owner;
 REFRESH MATERIALIZED VIEW CONCURRENTLY v_region_info;
 RESET ROLE;
