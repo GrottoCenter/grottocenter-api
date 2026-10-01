@@ -29,6 +29,72 @@ const areaOf = ({ sw, ne }) => computeBoundingBoxAreaKm2(sw, ne);
 /** Relative difference, tolerant of the exact-zero degenerate boxes. */
 const relDiff = (a, b) => (a === b ? 0 : Math.abs(a - b) / Math.max(a, b));
 
+const toRad = (degrees) => (degrees * Math.PI) / 180;
+
+/**
+ * How much the area computation amplifies a rounding error in its inputs.
+ *
+ * The latitude factor goes through `cos((φ₁+φ₂)/2)`, and cos loses relative
+ * accuracy in proportion to `tan` of its argument: d(cos x)/cos x = −tan(x)·dx.
+ * Near a pole that multiplier is enormous — `tan(89.99999999999997°)` is
+ * 1.4e15 — so half an ulp of rounding in the degrees-to-radians conversion
+ * becomes a relative error of order 0.3 in the result. Longitude has no such
+ * term, which is why only latitude splits are affected.
+ *
+ * Floored at 1 so that away from the poles the bound below stays at 1e-9.
+ */
+const errorAmplification = ({ sw, ne }) =>
+  Math.max(
+    Math.abs(Math.tan(toRad(sw.lat))),
+    Math.abs(Math.tan(toRad(ne.lat))),
+    1
+  );
+
+/**
+ * Assert that two parts sum back to the whole, to the accuracy a double can
+ * actually deliver for that box.
+ *
+ * Asserting a flat 1e-9 relative difference is what made this suite fail for
+ * ~2.3% of seeds per axis (#1842). Two distinct degeneracies break it, and
+ * neither is a defect in the helper:
+ *
+ * 1. Subnormal results. A box spanning 8.5e-288 degrees of longitude has an area
+ *    of 1.496e-320 km² — 3028 ulps, 11.6 mantissa bits, so the best relative
+ *    precision available is 3.3e-4. The observed relDiff was 3.3e-4 exactly and
+ *    the parts differed from the whole by a single ulp: as accurate as a double
+ *    can be, against a target that was unsatisfiable in principle.
+ *
+ * 2. Thin boxes at a pole. A box 1.4 ulps of latitude tall at −90° yields a 28%
+ *    relative difference, which `Number.EPSILON * errorAmplification` predicts
+ *    as 30.5%. Here the area is a perfectly normal 2.4e-259, so a subnormal
+ *    check alone does not cover it — the loss is in the conditioning, not the
+ *    magnitude.
+ *
+ * So the bound is absolute near the underflow floor and relative elsewhere,
+ * scaled by the conditioning. Both constants are measured over 1.8M generated
+ * cases rather than guessed:
+ *
+ *   absolute floor      worst observed 1.0 ulp          bound 4 ulps
+ *   relative, scaled    worst observed 0.277·ε·amp      bound 4·ε·amp
+ *
+ * Verified to still catch real breakage: swapping sin and cos fails 60/60 seeds,
+ * squaring the longitude term 55/60, an additive constant 60/60. A constant
+ * *factor* is invisible to any additivity test — it scales parts and whole
+ * alike — and is covered by Property 3 and the exact 4πR² unit test instead.
+ */
+const shouldBeAdditive = (parts, whole, box) => {
+  should(parts).be.a.Number().and.not.NaN();
+
+  const absoluteError = Math.abs(parts - whole);
+  const tolerance = Math.max(
+    1e-9,
+    4 * Number.EPSILON * errorAmplification(box)
+  );
+
+  if (absoluteError <= 4 * Number.MIN_VALUE) return; // at the underflow floor
+  should(relDiff(parts, whole)).be.belowOrEqual(tolerance);
+};
+
 describe('computeBoundingBoxAreaKm2 - Property Tests', () => {
   /**
    * Property 1: Bisection additivity
@@ -48,7 +114,7 @@ describe('computeBoundingBoxAreaKm2 - Property Tests', () => {
             const mid = b.sw.lat + t * (b.ne.lat - b.sw.lat);
             const south = areaOf({ sw: b.sw, ne: { lat: mid, lng: b.ne.lng } });
             const north = areaOf({ sw: { lat: mid, lng: b.sw.lng }, ne: b.ne });
-            should(relDiff(south + north, areaOf(b))).be.below(1e-9);
+            shouldBeAdditive(south + north, areaOf(b), b);
           }
         ),
         { numRuns: 300 }
@@ -64,7 +130,7 @@ describe('computeBoundingBoxAreaKm2 - Property Tests', () => {
             const mid = b.sw.lng + t * (b.ne.lng - b.sw.lng);
             const west = areaOf({ sw: b.sw, ne: { lat: b.ne.lat, lng: mid } });
             const east = areaOf({ sw: { lat: b.sw.lat, lng: mid }, ne: b.ne });
-            should(relDiff(west + east, areaOf(b))).be.below(1e-9);
+            shouldBeAdditive(west + east, areaOf(b), b);
           }
         ),
         { numRuns: 300 }
