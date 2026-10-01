@@ -51,11 +51,13 @@ async function aggregateTranslations(supportedLanguages) {
   return translation;
 }
 
-// Safely escapes a value for use as a single-quoted SQL string literal,
-// neutralizing both backslash and quote based escape sequences so that
-// data coming from external HTTP sources cannot break out of the literal.
+// Safely escapes a value for use as a SQL string literal, neutralizing both
+// backslash and quote based escape sequences so that data coming from
+// external HTTP sources cannot break out of the literal. Uses PostgreSQL's
+// E'...' escape-string syntax so the backslash doubling below is actually
+// honored regardless of the standard_conforming_strings setting.
 function escapeSqlLiteral(value) {
-  return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+  return `E'${value.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
 }
 
 function writeSQLFile(supportedLanguages, codes, translations) {
@@ -124,4 +126,9 @@ async function main() {
   writeSQLFile(supportedLanguages, codes['3166-2'], translations);
   console.log(`All done`);
 }
-main();
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { escapeSqlLiteral };
