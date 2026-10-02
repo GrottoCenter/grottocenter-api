@@ -72,17 +72,42 @@ ALTER ROLE gc_readonly
 ALTER ROLE gc_app
   LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOREPLICATION INHERIT;
 
--- CONNECTION LIMIT 5 is not hygiene theatre: the App Service Plan is a single
--- B2 Basic worker shared with Superset, and the database is a Standard_B2s
--- Burstable instance in another region.  A runaway BI query is a production
--- incident.
+-- A CONNECTION LIMIT here is not hygiene theatre: the App Service Plan is a
+-- single B2 Basic worker shared with Superset, and the database is a
+-- Standard_B2s Burstable instance in another region.
+--
+-- But the limit is not what protects that server from a runaway BI query — a
+-- connection cap bounds concurrency, not CPU.  The guard for that is
+-- statement_timeout = '120s', set further down.  What this cap is actually for
+-- is keeping Superset from eating into the connection budget the API shares;
+-- max_connections is 429 in production (verified 2026-10-02), so 20 is under 5%
+-- of it while still being a hard ceiling.
+--
+-- It was 5 until 2026-10-02.  Five is below what Superset needs: a dashboard
+-- with eight charts fires eight concurrent queries, across gunicorn workers
+-- that each hold their own SQLAlchemy pool — the metadata role alone was
+-- observed holding 6 connections.  The failure mode is the reason to be
+-- generous: some charts on a dashboard fail with `FATAL: too many connections
+-- for role` and others do not, only under load, which reads like a query bug
+-- rather than a quota.
 ALTER ROLE gc_superset_ro
   LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOREPLICATION INHERIT
-  CONNECTION LIMIT 5;
+  CONNECTION LIMIT 20;
 
--- Superset runs Alembic migrations at container start, so this role needs full
--- DDL — but only inside the superset_meta database, which it will own.  It gets
--- no rights at all in grottoce.
+-- Superset's Alembic migrations need full DDL — but only inside the
+-- superset_meta database, which it owns.  It gets no rights at all in grottoce,
+-- and as of 2026-10-02 it cannot even connect there: CONNECT on that database is
+-- revoked from PUBLIC and this role was never granted it.
+--
+-- Owning the objects is not sufficient by itself.  `ALTER ... OWNER TO` checks
+-- that the *new* owner holds CREATE on the object's schema, so transferring
+-- superset_meta to this role required `GRANT USAGE, CREATE ON SCHEMA public TO
+-- gc_superset_meta` first.  That grant is per-database, so it has no home in
+-- this cluster-level file, and superset_meta is not built by anything under
+-- sql/ — it is applied by hand.  Recorded here because the failure it prevents
+-- is deferred and misleading: the grant is only exercised when Superset is
+-- upgraded, so a missing one surfaces months later as a container that will not
+-- boot.
 ALTER ROLE gc_superset_meta
   LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS NOREPLICATION INHERIT;
 
@@ -128,6 +153,35 @@ $$;
 -- grant rather than per role, and the default is taken from the member role's
 -- own INHERIT attribute at GRANT time.  Nothing here should depend on that.
 GRANT gc_owner TO grottoce WITH INHERIT TRUE;
+
+-- The same hinge for the Superset metadata database.  `superset_meta` holds 53
+-- tables, 50 sequences and 1 routine owned by grottoce, because Superset's
+-- Alembic migrations created them over that connection.  Moving them to
+-- gc_superset_meta revokes grottoce's access to all of them, and Superset is
+-- still connecting as grottoce at that moment — so without this membership the
+-- transfer is an immediate outage on bi.grottocenter.org, from a statement that
+-- reads like pure bookkeeping.  grottoce is the Flexible Server administrator
+-- but not a SUPERUSER, and neither BYPASSRLS nor azure_pg_admin membership
+-- confers table privileges.
+--
+-- Not redundant with PostgreSQL 16's automatic grant.  A CREATEROLE non-superuser
+-- that creates a role is automatically granted membership in it, which is why
+-- grottoce is already a member of all five roles in this file.  But that grant
+-- carries ADMIN OPTION only — verified in production 2026-10-01, every automatic
+-- row has `inherit_option = false` with `azuresu` as grantor, since
+-- `createrole_self_grant` defaults to empty.  ADMIN OPTION manages a role; it
+-- does not confer its privileges.  INHERIT is what this line adds.
+--
+-- Rollback hinge as above, but note the asymmetry: `REASSIGN OWNED BY
+-- gc_superset_meta TO grottoce` is safe, while the forward direction is not.
+-- REASSIGN OWNED reaches shared catalog objects, and grottoce owns two
+-- *databases* — grottoce and superset_meta (verified in production 2026-10-02) —
+-- so a forward REASSIGN run inside superset_meta would hand the main production
+-- database to the Superset role.  The forward transfer is therefore explicit
+-- ALTERs over the relations and routines in superset_meta.  gc_superset_meta
+-- owns nothing outside that database, which is exactly what makes the reverse
+-- safe.
+GRANT gc_superset_meta TO grottoce WITH INHERIT TRUE;
 
 GRANT gc_readonly TO gc_superset_ro WITH INHERIT TRUE;
 
