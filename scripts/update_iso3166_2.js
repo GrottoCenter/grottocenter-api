@@ -51,6 +51,15 @@ async function aggregateTranslations(supportedLanguages) {
   return translation;
 }
 
+// Safely escapes a value for use as a SQL string literal, neutralizing both
+// backslash and quote based escape sequences so that data coming from
+// external HTTP sources cannot break out of the literal. Uses PostgreSQL's
+// E'...' escape-string syntax so the backslash doubling below is actually
+// honored regardless of the standard_conforming_strings setting.
+function escapeSqlLiteral(value) {
+  return `E'${value.replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+}
+
 function writeSQLFile(supportedLanguages, codes, translations) {
   const sqlColumnsName = supportedLanguages.map((e) => `name_${e}`).join(',');
   const sqlHeader = `\\c grottoce;
@@ -64,13 +73,12 @@ INSERT INTO public.t_iso3166_2 (iso, name, ${sqlColumnsName}) VALUES`;
     if (!translation) translation = Array(supportedLanguages.length).fill(null);
 
     const languages = translation
-      .map((e) => (e ? `'${e.replace(/'/g, "''")}'` : 'NULL'))
+      .map((e) => (e ? escapeSqlLiteral(e) : 'NULL'))
       .join(', ');
     lines.push(
-      `\t('${codeObj.code}', '${codeObj.name.replace(
-        /'/g,
-        "''"
-      )}', ${languages})`
+      `\t(${escapeSqlLiteral(codeObj.code)}, ${escapeSqlLiteral(
+        codeObj.name
+      )}, ${languages})`
     );
   }
 
@@ -118,4 +126,9 @@ async function main() {
   writeSQLFile(supportedLanguages, codes['3166-2'], translations);
   console.log(`All done`);
 }
-main();
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { escapeSqlLiteral };
