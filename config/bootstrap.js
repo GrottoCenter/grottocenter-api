@@ -12,6 +12,7 @@
 const dbSync = require('../api/dbSync/dbSync');
 const sesSuppressionPoller = require('../api/sesSuppressionPoller/sesSuppressionPoller');
 const logger = require('../api/utils/logger');
+const guardPgPool = require('../api/utils/guardPgPool');
 const TurnstileService = require('../api/services/TurnstileService');
 
 // eslint-disable-next-line func-names
@@ -26,6 +27,10 @@ module.exports.bootstrap = async function (done) {
   }
 
   logger.patchSailsLog();
+
+  // Before any DB work: a leased pg connection whose socket dies must not
+  // crash the process (#1826).
+  guardPgPool(sails.getDatastore().manager.pool, sails.log);
 
   // Condense primary key validation warnings for all models to save on log output
   /* eslint-disable no-console */
