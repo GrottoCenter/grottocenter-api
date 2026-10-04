@@ -33,9 +33,14 @@ process.chdir(__dirname);
 // See config/pg-utc-fix.js for the detailed explanation.
 require('./config/pg-utc-fix');
 
-// Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 let sails;
 let rc;
+
+// Log, drain and exit on uncaught exceptions; log unhandled rejections.
+// See api/utils/crashHandler.js.
+require('./api/utils/crashHandler').install({ getSails: () => sails });
+
+// Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 try {
   sails = require('sails');
   rc = require('sails/accessible/rc');
