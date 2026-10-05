@@ -121,6 +121,25 @@ describe('TurnstileService', () => {
       should(result).deepEqual({ pass: true, errorCode: null });
     });
 
+    [undefined, ''].forEach((clientIp) => {
+      it(`should omit remoteip when the client IP is ${JSON.stringify(clientIp)}`, async () => {
+        process.env.TURNSTILE_SECRET_KEY = 'secret';
+        const fetchStub = sinon.stub(global, 'fetch').resolves({
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true }),
+        });
+
+        await TurnstileService.verifyToken('valid-token', clientIp);
+
+        const body = new URLSearchParams(
+          fetchStub.firstCall.args[1].body.toString()
+        );
+        should(body.has('remoteip')).be.false();
+        should(body.get('response')).equal('valid-token');
+      });
+    });
+
     it('should return CAPTCHA_INVALID when Cloudflare responds success: false', async () => {
       sinon.stub(global, 'fetch').resolves({
         ok: true,

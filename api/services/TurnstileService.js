@@ -52,7 +52,8 @@ module.exports = {
    * Verify a Turnstile captcha token against the Cloudflare siteverify API.
    *
    * @param {string|undefined|null} token - The captchaToken from the request body
-   * @param {string} clientIp - The client IP (req.ip)
+   * @param {string|undefined} clientIp - The client IP, without port. Omitted
+   *   from the siteverify call when blank.
    * @returns {Promise<TurnstileResult>}
    */
   async verifyToken(token, clientIp) {
@@ -73,10 +74,11 @@ module.exports = {
       const response = await fetch(SITEVERIFY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        // URLSearchParams would send a missing IP as the literal "undefined".
         body: new URLSearchParams({
           secret,
           response: token,
-          remoteip: clientIp,
+          ...(clientIp ? { remoteip: clientIp } : {}),
         }),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
