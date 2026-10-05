@@ -19,7 +19,8 @@
  *
  * It also turns on TCP keepalive. machinepack-postgresql's `meta` whitelist
  * drops `keepAlive`, but pg-pool builds every client from `pool.options`, so
- * setting it there reaches each new connection. The delay is kept under the
+ * setting it there reaches each new connection; connections opened before the
+ * guard get it set on their socket directly. The delay is kept under the
  * 4 minute idle timeout after which Azure drops a flow without notice.
  */
 
@@ -63,9 +64,17 @@ const guardPgPool = (pool, log) => {
   pool.on('acquire', (client) => leasedAt.set(client, Date.now()));
   pool.on('release', (err, client) => leasedAt.delete(client));
 
-  // Clients opened before the guard was installed.
+  // Clients opened before the guard was installed missed both the 'connect'
+  // event and the keepalive options. A TLS stream forwards setKeepAlive to
+  // its TCP socket.
   // eslint-disable-next-line no-underscore-dangle
-  (pool._clients || []).forEach(attach);
+  (pool._clients || []).forEach((client) => {
+    attach(client);
+    const stream = client.connection && client.connection.stream;
+    if (stream && typeof stream.setKeepAlive === 'function') {
+      stream.setKeepAlive(true, KEEP_ALIVE_INITIAL_DELAY_MS);
+    }
+  });
 };
 
 module.exports = guardPgPool;

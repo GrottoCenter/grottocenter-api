@@ -2,7 +2,13 @@
 const EventEmitter = require('events');
 const should = require('should');
 const sinon = require('sinon');
-const { Pool } = require('machinepack-postgresql/node_modules/pg');
+// The pg copy Waterline actually uses, wherever npm put it.
+// eslint-disable-next-line import/no-dynamic-require
+const { Pool } = require(
+  require.resolve('pg', {
+    paths: [require.resolve('machinepack-postgresql')],
+  })
+);
 const guardPgPool = require('../../../api/utils/guardPgPool');
 
 const socketError = () =>
@@ -83,6 +89,17 @@ describe('guardPgPool', () => {
 
       should(() => client.emit('error', socketError())).not.throw();
       sinon.assert.calledOnce(log.error);
+    });
+
+    it('turns on TCP keepalive for clients opened before it was installed', () => {
+      const setKeepAlive = sinon.stub();
+      const client = Object.assign(new EventEmitter(), {
+        connection: { stream: { setKeepAlive } },
+      });
+      pool._clients.push(client);
+      guardPgPool(pool, log);
+
+      sinon.assert.calledOnceWithExactly(setKeepAlive, true, 60000);
     });
 
     it('is idempotent', () => {
