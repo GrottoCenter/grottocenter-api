@@ -39,7 +39,6 @@ const install = ({
       logError(`[crash] Shutdown did not finish in ${timeoutMs}ms, exiting`);
       exit(code);
     }, timeoutMs);
-    if (timer.unref) timer.unref();
 
     const sails = getSails();
     if (!sails || !sails.isLifted || typeof sails.lower !== 'function') {
