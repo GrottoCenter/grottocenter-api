@@ -3,15 +3,18 @@ const CaverService = require('../../../services/CaverService');
 const HoneypotGuard = require('../../../services/HoneypotGuard');
 const LanguageService = require('../../../services/LanguageService');
 const TurnstileService = require('../../../services/TurnstileService');
+const { normalizeClientIp } = require('../../../utils/clientIp');
 
 module.exports = async (req, res) => {
+  const clientIp = normalizeClientIp(req.ip);
+
   // --- Anti-bot defense layers (order matters) ---
 
   // Layer 1: Honeypot
   const honeypotResult = HoneypotGuard.check(req.allParams());
   if (honeypotResult.trapped) {
     sails.log.warn('[AntiBot:Honeypot] Bot trapped', {
-      ip: req.ip,
+      ip: clientIp,
       website: String(honeypotResult.value).slice(0, 200),
     });
     return res.ok(); // Deceptive response — res.ok() returns 204 to mimic normal signup success
@@ -21,11 +24,11 @@ module.exports = async (req, res) => {
   if (TurnstileService.isEnabled()) {
     const turnstileResult = await TurnstileService.verifyToken(
       req.param('captchaToken'),
-      req.ip
+      clientIp
     );
     if (!turnstileResult.pass) {
       sails.log.warn('[AntiBot:Turnstile] Rejected', {
-        ip: req.ip,
+        ip: clientIp,
         errorCode: turnstileResult.errorCode,
       });
       if (turnstileResult.errorCode === 'CAPTCHA_SERVICE_UNAVAILABLE') {

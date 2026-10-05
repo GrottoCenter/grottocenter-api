@@ -1,22 +1,29 @@
 const rateLimit = require('express-rate-limit');
 const RightService = require('../../api/services/RightService');
+const { normalizeClientIp, rateLimitKey } = require('../../api/utils/clientIp');
 
 /**
- * Custom key generator that uses req.ip as-is, bypassing express-rate-limit's
- * built-in IP validation. Azure App Service may forward IPs with a port suffix
- * (e.g. "1.2.3.4:52241") which the library's default ipKeyGenerator rejects
- * with ERR_ERL_INVALID_IP_ADDRESS. Since the key only needs to be a consistent
- * string per client, req.ip works directly without normalization.
+ * Keys every limiter on the client IP with its source port stripped.
  *
- * We also set `validate: { keyGeneratorIpFallback: false }` on each limiter to
- * suppress the ERR_ERL_KEY_GEN_IPV6 warning. The library detects that we
- * reference req.ip without calling its ipKeyGenerator helper, but our use-case
- * is safe: we treat the IP as an opaque string key rather than parsing it.
+ * Behind Azure App Service (`trustProxy: 1`), `req.ip` carries the client's
+ * ephemeral source port (e.g. "1.2.3.4:52241"). Keying on it verbatim gave
+ * each TCP connection its own bucket, so a client opening a fresh connection
+ * per request was never throttled (#1787). `rateLimitKey` strips the port
+ * shape-aware and groups IPv6 by /56 via the library's ipKeyGenerator.
+ *
+ * This assumes requests reach App Service directly. api.grottocenter.org is a
+ * DNS-only (not Cloudflare-proxied) CNAME; if a proxy or CDN is ever put in
+ * front, `trustProxy` must account for the extra hop, or every client would
+ * be keyed on the proxy's IP and share one bucket.
+ *
+ * `validate: { keyGeneratorIpFallback: false }` stays on each limiter: the
+ * library flags any keyGenerator whose source mentions req.ip without the
+ * literal text "ipKeyGenerator", even though rateLimitKey calls it.
  *
  * @see https://express-rate-limit.github.io/ERR_ERL_INVALID_IP_ADDRESS/
  * @see https://express-rate-limit.github.io/ERR_ERL_KEY_GEN_IPV6/
  */
-const keyGenerator = (req) => req.ip || 'unknown';
+const keyGenerator = (req) => rateLimitKey(req.ip);
 
 // 10-minute window for general requests
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -78,7 +85,8 @@ const limitExceededHandler = (limiterName) => (req, res, next, options) => {
       'Rate limit exceeded:',
       JSON.stringify({
         limiter: limiterName,
-        ip: req.ip,
+        ip: normalizeClientIp(req.ip),
+        rawIp: req.ip,
         method: req.method,
         path: req.path,
         userId: req.token ? req.token.id : undefined,
@@ -282,7 +290,7 @@ module.exports = {
       'Too many authentication attempts from this IP, please try again later.',
     standardHeaders: true,
     statusCode: 429,
-    keyGenerator: (req) => `admin:${req.ip || 'unknown'}`,
+    keyGenerator: (req) => `admin:${keyGenerator(req)}`,
     validate: { keyGeneratorIpFallback: false },
     handler: limitExceededHandler('adminAuth'),
     skip: () => isTestOrDev(),

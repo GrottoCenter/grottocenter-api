@@ -164,6 +164,47 @@ describe('Auth features', () => {
       should(res.status).equal(429);
     });
 
+    // Behind App Service (trustProxy: 1) req.ip carries the source port. A
+    // script opening one connection per attempt must still be throttled.
+    describe('when every attempt arrives on a new source port', () => {
+      const attempt = (app, email, i) =>
+        supertest(app)
+          .post('/api/v1/login')
+          .set('X-Forwarded-For', `198.51.100.23:${40000 + i}`)
+          .set('Content-Type', 'application/json')
+          .send({ email, password: 'wrong' });
+
+      const statusesFor = async (email, count) => {
+        const app = createTestApp(freshRateLimiter());
+        app.set('trust proxy', 1);
+        const statuses = [];
+        for (let i = 0; i < count; i += 1) {
+          statuses.push((await attempt(app, email, i)).status);
+        }
+        return statuses;
+      };
+
+      it('should return 429 on the 6th attempt against an admin email', async () => {
+        const statuses = await statusesFor(
+          'admin1@admin1.com',
+          ADMIN_LIMIT + 1
+        );
+
+        should(statuses.slice(0, ADMIN_LIMIT)).matchEach(200);
+        should(statuses[ADMIN_LIMIT]).equal(429);
+      });
+
+      it('should return 429 on the 11th attempt against a non-admin email', async () => {
+        const statuses = await statusesFor(
+          'user1@user1.com',
+          NON_ADMIN_LIMIT + 1
+        );
+
+        should(statuses.slice(0, NON_ADMIN_LIMIT)).matchEach(200);
+        should(statuses[NON_ADMIN_LIMIT]).equal(429);
+      });
+    });
+
     it('should use non-admin limit for non-existent email addresses', async () => {
       const rateLimiter = freshRateLimiter();
       const app = createTestApp(rateLimiter);
