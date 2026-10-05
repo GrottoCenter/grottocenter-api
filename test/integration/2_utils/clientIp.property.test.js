@@ -65,6 +65,8 @@ describe('clientIp - Property: rate-limit key identifies the client, not the con
           should(rateLimitKey(`::ffff:${ip}`)).equal(ip);
           should(rateLimitKey(`::FFFF:${ip}:${p}`)).equal(ip);
           should(normalizeClientIp(`::ffff:${ip}`)).equal(ip);
+          should(normalizeClientIp(`[::ffff:${ip}]:${p}`)).equal(ip);
+          should(normalizeClientIp(`[::ffff:${ip}]`)).equal(ip);
         }),
         { numRuns: 200 }
       );
@@ -87,16 +89,23 @@ describe('clientIp - Property: rate-limit key identifies the client, not the con
 
     // The naive replace(/:\d+$/, '') turned "2001:db8::1" into "2001:db8:",
     // truncating bare IPv6 and colliding unrelated addresses.
+    // fc.ipV6() supplies the compressed and dotted-tail wire forms; it never
+    // emits "::ffff:" or upper case, both of which are normalised away.
     it('should leave a bare IPv6 address intact', function () {
       this.timeout(10000);
       fc.assert(
-        fc.property(hextets, (h) => {
-          const ip = toV6(h);
+        fc.property(fc.oneof(fc.ipV6(), hextets.map(toV6)), (ip) => {
           should(normalizeClientIp(ip)).equal(ip);
           should(normalizeClientIp(ip.toUpperCase())).equal(ip);
         }),
         { numRuns: 200 }
       );
+    });
+
+    ['::', '1::', '::1', '2001:db8::1'].forEach((ip) => {
+      it(`should leave the compressed form ${ip} intact`, () => {
+        should(normalizeClientIp(ip)).equal(ip);
+      });
     });
 
     it('should give IPv6 addresses in different /56 subnets distinct keys', function () {

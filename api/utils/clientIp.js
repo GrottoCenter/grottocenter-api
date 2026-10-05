@@ -14,7 +14,8 @@ const BRACKETED_V6 = /^\[([^\]]+)\](?::\d+)?$/;
  * Shape-aware, because a bare IPv6 address usually ends in a numeric group
  * and a naive `replace(/:\d+$/, '')` would corrupt it (and collide distinct
  * addresses, e.g. "2001:db8::1" and "2001:db8::2" both becoming "2001:db8:"):
- *   - "[v6]:port" / "[v6]"         -> "v6"
+ *   - "[v6]:port" / "[v6]"         -> "v6", then normalised again so
+ *                                    "[::ffff:a.b.c.d]:port" -> "a.b.c.d"
  *   - "::ffff:a.b.c.d[:port]"     -> "a.b.c.d" (IPv4-mapped IPv6)
  *   - exactly one ":" ("v4:port") -> "v4"; an IPv6 address always has two or more
  *   - anything else (bare IPv6)   -> unchanged
@@ -31,7 +32,7 @@ const normalizeClientIp = (raw) => {
   if (ip.length === 0) return undefined;
 
   const bracketed = ip.match(BRACKETED_V6);
-  if (bracketed) return bracketed[1];
+  if (bracketed) return normalizeClientIp(bracketed[1]);
 
   const mapped = ip.match(V4_MAPPED);
   if (mapped) return mapped[1];
