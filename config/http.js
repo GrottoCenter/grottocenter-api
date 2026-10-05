@@ -18,6 +18,7 @@ const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
 const RightService = require('../api/services/RightService');
 const logger = require('../api/utils/logger');
+const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
 
 // Auth endpoints that receive credentials and need stricter limits.
@@ -318,7 +319,8 @@ module.exports.http = {
       sails.log.info(
         'Client data:',
         JSON.stringify({
-          ip: req.ip || req.headers['x-forwarded-for'],
+          ip: normalizeClientIp(req.ip),
+          rawIp: req.ip || req.headers['x-forwarded-for'],
           userAgent: req.headers['user-agent'],
           origin: req.headers.origin || req.headers.referer || 'unknown',
         })

@@ -275,6 +275,138 @@ describe('Rate Limiter', () => {
       });
     });
 
+    // Mirrors production: behind App Service with `trustProxy: 1`, req.ip is
+    // the last X-Forwarded-For entry and carries the client's source port,
+    // which changes with every TCP connection.
+    describe('client IP keying behind a proxy', () => {
+      const proxiedApp = (limiter, method, path) => {
+        const app = express();
+        app.set('trust proxy', 1);
+        app.use(limiter);
+        app[method](path, (req, res) => res.status(200).send('ok'));
+        return app;
+      };
+
+      // A fresh supertest request (no agent) per call, each with a different
+      // forwarded source port, as a client opening one connection per request.
+      const statusesFrom = async (app, method, path, forwardedFors) => {
+        const statuses = [];
+        for (const xff of forwardedFors) {
+          const res = await supertest(app)
+            [method](path)
+            .set('X-Forwarded-For', xff);
+          statuses.push(res.status);
+        }
+        return statuses;
+      };
+
+      const withPorts = (ip, count, firstPort = 50000) =>
+        Array.from({ length: count }, (_, i) => `${ip}:${firstPort + i}`);
+
+      it('should count requests from one IP on different ports in one auth bucket', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(rateLimiter.authRateLimit, 'post', '/login');
+
+        const statuses = await statusesFrom(
+          app,
+          'post',
+          '/login',
+          withPorts('203.0.113.7', TEST_AUTH_LIMIT + 1)
+        );
+
+        should(statuses.slice(0, TEST_AUTH_LIMIT)).matchEach(200);
+        should(statuses[TEST_AUTH_LIMIT]).be.exactly(429);
+      });
+
+      it('should count requests from one IP on different ports in one admin auth bucket', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(
+          rateLimiter.adminAuthRateLimit,
+          'post',
+          '/login'
+        );
+
+        const statuses = await statusesFrom(
+          app,
+          'post',
+          '/login',
+          withPorts('203.0.113.7', TEST_ADMIN_AUTH_LIMIT + 1)
+        );
+
+        should(statuses.slice(0, TEST_ADMIN_AUTH_LIMIT)).matchEach(200);
+        should(statuses[TEST_ADMIN_AUTH_LIMIT]).be.exactly(429);
+      });
+
+      it('should count requests from one IP on different ports in one general bucket', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(rateLimiter.generalRateLimit, 'get', '/test');
+
+        const statuses = await statusesFrom(
+          app,
+          'get',
+          '/test',
+          withPorts('203.0.113.7', TEST_VISITOR_LIMIT + 1)
+        );
+
+        should(statuses.slice(0, TEST_VISITOR_LIMIT)).matchEach(200);
+        should(statuses[TEST_VISITOR_LIMIT]).be.exactly(429);
+      });
+
+      it('should still give a different IP its own bucket', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(rateLimiter.authRateLimit, 'post', '/login');
+
+        await statusesFrom(
+          app,
+          'post',
+          '/login',
+          withPorts('203.0.113.7', TEST_AUTH_LIMIT + 1)
+        );
+        const other = await statusesFrom(app, 'post', '/login', [
+          '203.0.113.8:50000',
+        ]);
+
+        should(other).eql([200]);
+      });
+
+      it('should share one bucket across addresses in the same IPv6 /56', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(rateLimiter.authRateLimit, 'post', '/login');
+
+        const statuses = await statusesFrom(
+          app,
+          'post',
+          '/login',
+          Array.from(
+            { length: TEST_AUTH_LIMIT + 1 },
+            (_, i) => `[2001:db8:0:${i}::1]:${50000 + i}`
+          )
+        );
+
+        should(statuses.slice(0, TEST_AUTH_LIMIT)).matchEach(200);
+        should(statuses[TEST_AUTH_LIMIT]).be.exactly(429);
+      });
+
+      it('should log the port-free IP alongside the raw req.ip', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = proxiedApp(rateLimiter.authRateLimit, 'post', '/login');
+
+        await statusesFrom(
+          app,
+          'post',
+          '/login',
+          withPorts('203.0.113.7', TEST_AUTH_LIMIT + 1)
+        );
+
+        const logs = exceededLogs();
+        should(logs.length).be.exactly(1);
+        should(logs[0].ip).be.exactly('203.0.113.7');
+        should(logs[0].rawIp).be.exactly(
+          `203.0.113.7:${50000 + TEST_AUTH_LIMIT}`
+        );
+      });
+    });
+
     describe('generalRateLimit', () => {
       it('should not rate limit visitors under the limit', async () => {
         const rateLimiter = freshRateLimiter();

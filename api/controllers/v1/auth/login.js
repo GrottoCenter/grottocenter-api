@@ -4,6 +4,7 @@ const CaverService = require('../../../services/CaverService');
 const RightService = require('../../../services/RightService');
 const MfaService = require('../../../services/MfaService');
 const AdminLoginProtectionService = require('../../../services/AdminLoginProtectionService');
+const { normalizeClientIp } = require('../../../utils/clientIp');
 
 // Constant-time delay (ms) applied to all failed-login responses to prevent
 // timing-based enumeration of admin accounts (issue: DB lookup for admin
@@ -53,7 +54,7 @@ module.exports = async (req, res) => {
       if (caverByEmail) {
         await AdminLoginProtectionService.recordFailedLogin(
           caverByEmail,
-          req.ip
+          normalizeClientIp(req.ip)
         );
       }
     }
