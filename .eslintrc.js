@@ -39,6 +39,7 @@ module.exports = {
     JGuidelineCountry: 'readonly',
     JGuidelineMassif: 'readonly',
     JGuidelineRegion: 'readonly',
+    JOrganizationMassif: 'readonly',
     TCave: 'readonly',
     TCaver: 'readonly',
     TComment: 'readonly',
