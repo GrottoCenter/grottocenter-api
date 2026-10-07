@@ -29,19 +29,19 @@ async function setDeleteRestoreAuthor(
   changeType,
   entityType,
   entityId,
-  authorId
+  authorId,
+  db
 ) {
   const query = `
   UPDATE t_last_change
   SET id_author = $4
   WHERE type_entity = $2 AND type_change = $1 AND id_entity = $3 AND date_change > current_timestamp - interval '1 minute';
   `;
-  await CommonService.query(query, [
-    changeType,
-    entityType,
-    entityId,
-    authorId,
-  ]);
+  await CommonService.query(
+    query,
+    [changeType, entityType, entityId, authorId],
+    db
+  );
 }
 
 // To make the change list more relevant we groups change event when they are from the same author and about the same entity
