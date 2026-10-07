@@ -44,28 +44,13 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  if (!massif.isDeleted) {
-    const redirectTo = parseInt(req.param('entityId'), 10);
-    if (!Number.isNaN(redirectTo)) {
-      massif.redirectTo = redirectTo;
-      await TMassif.updateOne(massifId)
-        .set({ redirectTo })
-        .catch(() => {});
-    }
-
-    await TMassif.destroyOne({ id: massifId }); // Soft delete
-    massif.isDeleted = true;
-
-    await MassifService.deleteInSearch(massifId);
-    await RecentChangeService.setDeleteRestoreAuthor(
-      'delete',
-      'massif',
-      massifId,
-      req.token.id
-    );
-  }
-
-  const deletePermanently = !!req.param('isPermanent');
+  // The web client sends `?isPermanent=1`; accept the common truthy encodings
+  // ('1'/'true', or a real boolean) while treating explicit falsy values
+  // ('0'/'false') and an absent param as a soft delete. A bare `!!req.param(...)`
+  // would wrongly treat `isPermanent=0`/`false` as permanent.
+  const deletePermanently = [true, 'true', '1'].includes(
+    req.param('isPermanent')
+  );
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   let mergeIntoEntity;
@@ -76,11 +61,49 @@ module.exports = async (req, res) => {
     shouldMergeInto = !!mergeIntoEntity;
   }
 
+  const wasDeleted = massif.isDeleted;
+  const hasRedirect = !wasDeleted && !Number.isNaN(mergeIntoId);
+  if (hasRedirect) {
+    massif.redirectTo = mergeIntoId;
+  }
+  massif.isDeleted = true;
+
+  if (!deletePermanently && !wasDeleted) {
+    if (hasRedirect) {
+      await TMassif.updateOne(massifId)
+        .set({ redirectTo: mergeIntoId })
+        .catch(() => {});
+    }
+    await TMassif.destroyOne({ id: massifId }); // Soft delete
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'massif',
+      massifId,
+      req.token.id
+    );
+  }
+
   if (deletePermanently) {
-    // Every step runs in one transaction: a failure on the final hard delete
-    // (e.g. an FK not cleared below) must not leave behind a soft-deleted
-    // massif already stripped of its names, documents and subscribers.
+    // Every step runs in one transaction, the initial soft delete included: a
+    // failure on the final hard delete (e.g. an FK not cleared below) must
+    // leave the massif exactly as it was, not soft-deleted or stripped of its
+    // names, documents and subscribers.
     await sails.getDatastore().transaction(async (db) => {
+      if (!wasDeleted) {
+        // The histo_delete trigger turns a DELETE on a live row into a soft
+        // delete; the hard delete at the end only goes through once
+        // is_deleted is set. redirectTo is not written: the row is gone on
+        // commit.
+        await TMassif.destroyOne({ id: massifId }).usingConnection(db);
+        await RecentChangeService.setDeleteRestoreAuthor(
+          'delete',
+          'massif',
+          massifId,
+          req.token.id,
+          db
+        );
+      }
+
       await TMassif.update({ redirectTo: massifId })
         .set({ redirectTo: shouldMergeInto ? mergeIntoId : null })
         .usingConnection(db);
@@ -179,6 +202,10 @@ module.exports = async (req, res) => {
       await HMassif.destroy({ id: massifId }).usingConnection(db);
       await TMassif.destroyOne({ id: massifId }).usingConnection(db); // Hard delete
     });
+  }
+
+  if (!wasDeleted) {
+    await MassifService.deleteInSearch(massifId);
   }
 
   await NotificationService.notifySubscribers(

@@ -5790,8 +5790,9 @@ paths:
           schema:
             type: boolean
           description: >
-            When true, permanently (hard) delete the massif instead of
-            soft-deleting it.
+            When true (`true` or `1`), permanently (hard) delete the massif
+            instead of soft-deleting it. Any other value, `false` and `0`
+            included, performs a soft delete.
         - name: entityId
           in: query
           required: false

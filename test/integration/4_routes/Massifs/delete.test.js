@@ -123,18 +123,34 @@ describe('Massif features', () => {
       const DOCUMENT_ID = 1;
       const H_DOCUMENT_ID = 999001;
       let NameService;
+      let MassifService;
 
-      before(() => {
-        // Resolved after the Sails lift so the stub hits the instance the
+      before(async () => {
+        // Resolved after the Sails lift so the stubs hit the instances the
         // controller uses.
-        // eslint-disable-next-line global-require
+        /* eslint-disable global-require */
         NameService = require('../../../../api/services/NameService');
+        MassifService = require('../../../../api/services/MassifService');
+        /* eslint-enable global-require */
+        // The test schema has no soft-delete trigger on t_massif, so a DELETE
+        // always hard-deletes. Attach the production one (histo_delete() is
+        // created by test/customSQL.js) so a DELETE on a live row soft-deletes.
+        await CommonService.query(
+          `CREATE OR REPLACE TRIGGER histo_delete_massif BEFORE DELETE ON t_massif
+           FOR EACH ROW EXECUTE PROCEDURE histo_delete()`
+        );
       });
 
-      const createLinkedMassif = async () => {
+      after(async () => {
+        await CommonService.query(
+          'DROP TRIGGER IF EXISTS histo_delete_massif ON t_massif'
+        );
+      });
+
+      const createLinkedMassif = async ({ isDeleted = true } = {}) => {
         const massif = await TMassif.create({
           author: 1,
-          isDeleted: true,
+          isDeleted,
         }).fetch();
         await TName.create({
           name: 'Massif to purge',
@@ -258,6 +274,60 @@ describe('Massif features', () => {
         );
         should(withSubs.subscribedCavers.map((c) => c.id)).eql([1]);
         should(await TName.count({ massif: massif.id })).equal(1);
+      });
+
+      it('should permanently delete an active massif in one request', async () => {
+        const massif = await createLinkedMassif({ isDeleted: false });
+
+        const res = await permanentDelete(massif.id).expect(200);
+
+        should(res.body.isDeleted).be.true();
+        should(await TMassif.findOne(massif.id)).be.undefined();
+        should(await linksOf(massif.id)).eql({
+          guidelines: [],
+          organizations: [],
+        });
+      });
+
+      it('should leave an active massif untouched when the permanent delete fails', async () => {
+        const target = await TMassif.create({ author: 1 }).fetch();
+        const massif = await createLinkedMassif({ isDeleted: false });
+        sinon
+          .stub(NameService, 'permanentDelete')
+          .rejects(new Error('simulated failure'));
+        const deleteInSearch = sinon.spy(MassifService, 'deleteInSearch');
+
+        await permanentDelete(massif.id, `&entityId=${target.id}`).expect(500);
+
+        const unchanged = await TMassif.findOne(massif.id);
+        should(unchanged.isDeleted).be.false();
+        should(unchanged.redirectTo).be.null();
+        should(await linksOf(massif.id)).eql({
+          guidelines: [4],
+          organizations: [1],
+        });
+        should(await linksOf(target.id)).eql({
+          guidelines: [],
+          organizations: [],
+        });
+        should(deleteInSearch.called).be.false();
+      });
+
+      ['false', '0'].forEach((value) => {
+        it(`should only soft delete when isPermanent=${value}`, async () => {
+          const massif = await TMassif.create({ author: 1 }).fetch();
+
+          await supertest(sails.hooks.http.app)
+            .delete(`/api/v1/massifs/${massif.id}?isPermanent=${value}`)
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+          const softDeleted = await TMassif.findOne(massif.id);
+          should(softDeleted).not.be.undefined();
+          should(softDeleted.isDeleted).be.true();
+        });
       });
     });
   });
