@@ -206,6 +206,10 @@ ALTER ROLE gc_app SET idle_in_transaction_session_timeout = '5min';
 -- Deliberately no statement_timeout for gc_app.  CSV imports and observation
 -- imports issue legitimately long-running statements, and there is no value
 -- that is both safe for them and tight enough to be useful.
+-- Runaway temp-file usage is bounded by temp_file_limit (4 GB), set server-wide
+-- in grottocenter3-private/cloud_azure/postgres/ (#1784).  ALTER ROLE gc_app SET
+-- temp_file_limit is permitted too; server-wide was chosen so that pg_cron and
+-- Superset sessions are bounded as well.
 
 ALTER ROLE gc_superset_ro SET search_path = public;
 ALTER ROLE gc_superset_ro SET default_transaction_read_only = on;
