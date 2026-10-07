@@ -88,9 +88,11 @@ module.exports = {
    * HName.destroy() via Waterline silently fails anyway (composite PK),
    * but we explicitly skip it to make the intent clear.
    */
-  async permanentDelete(where) {
-    await TName.destroy(where); // Soft delete (is_deleted = true)
-    await TName.destroy(where); // Hard delete (removes row)
+  async permanentDelete(where, db) {
+    const destroy = () =>
+      db ? TName.destroy(where).usingConnection(db) : TName.destroy(where);
+    await destroy(); // Soft delete (is_deleted = true)
+    await destroy(); // Hard delete (removes row)
   },
 };
 

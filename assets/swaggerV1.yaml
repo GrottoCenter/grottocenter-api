@@ -5761,6 +5761,61 @@ paths:
         '403':
           description: Forbidden you don't have the rights to update massifs
 
+    delete:
+      tags:
+        - massifs
+      description: >
+        Delete a massif (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted massif is a no-op that
+        still returns 200. When `isPermanent=true`, the massif is soft-deleted
+        first if needed, then permanently removed together with its names,
+        descriptions, history snapshots, notifications, subscriptions and
+        document, guideline and organization links — this is irreversible and
+        runs in a single transaction, so a failure leaves the massif
+        untouched. If `entityId` points to an existing massif, the deleted
+        massif's documents, subscribers, guideline and organization links and
+        incoming redirects are moved to it instead of being dropped.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Massif id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: >
+            When true, permanently (hard) delete the massif instead of
+            soft-deleting it.
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: >
+            Id of the massif this one is a duplicate of. Sets `redirectTo` on a
+            soft-delete, and is used as the merge target on a permanent delete.
+      responses:
+        '200':
+          description: >
+            Successful operation. Returns the deleted massif with
+            `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete a massif.
+        '404':
+          description: Massif not found.
+
   '/massifs/{id}/subscribe':
     post:
       tags:
