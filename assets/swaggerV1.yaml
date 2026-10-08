@@ -82,7 +82,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthStatus'
         503:
-          description: API is unhealthy
+          description: 'At least one dependency is unhealthy or did not answer within the per-check timeout (5 s). The body has the same shape as the 200 response.'
           content:
             application/json:
               schema:
@@ -9041,6 +9041,10 @@ components:
                   enum: [healthy, unhealthy]
                 message:
                   type: string
+                  enum:
+                    - Database connection successful
+                    - Database connection failed
+                    - Database check timed out
             search:
               type: object
               properties:
@@ -9049,6 +9053,10 @@ components:
                   enum: [healthy, unhealthy]
                 message:
                   type: string
+                  enum:
+                    - Search connection successful
+                    - Search connection failed
+                    - Search check timed out
         build:
           type: object
           properties:
@@ -9061,7 +9069,8 @@ components:
               description: Timestamp when the current build was generated
             error:
               type: string
-              description: Error message if build information could not be retrieved
+              enum: [Failed to read build info]
+              description: Present only when build information could not be retrieved
 
     History:
       type: object

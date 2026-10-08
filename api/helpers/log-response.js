@@ -51,6 +51,9 @@ module.exports = {
       case 500:
         responseType = 'Server Error';
         break;
+      case 503:
+        responseType = 'Service Unavailable';
+        break;
       default:
         responseType = 'UNKOWN';
     }

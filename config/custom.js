@@ -127,4 +127,13 @@ module.exports.custom = {
 
   // --- Cooldowns (milliseconds) ---
   suspiciousActivityEmailCooldown: 900000, // 15 minutes in milliseconds
+
+  /** *************************************************************************
+   *                                                                          *
+   * Health check settings.                                                   *
+   *                                                                          *
+   ************************************************************************** */
+  // Per-dependency budget for GET /api/v1/health. Keep it well under the 30s
+  // timeout of the external uptime monitor.
+  healthCheckTimeoutMs: 5000,
 };
