@@ -12,7 +12,10 @@ module.exports = async (req, res) => {
   }
 
   // Confirm enrollment with the provided TOTP code
-  const result = await MfaService.confirmEnrollment(req.token.id, totpCode);
+  const result = await MfaService.confirmEnrollment(
+    req.mfaEnrollmentToken.id,
+    totpCode
+  );
 
   if (!result.success) {
     return res.unauthorized({
@@ -22,7 +25,9 @@ module.exports = async (req, res) => {
   }
 
   // Issue a full Auth_Token with admin TTL
-  const caver = await TCaver.findOne({ id: req.token.id }).populate('groups');
+  const caver = await TCaver.findOne({
+    id: req.mfaEnrollmentToken.id,
+  }).populate('groups');
   const tokenTTL =
     sails.config.custom.adminAuthTokenTTL || sails.config.custom.authTokenTTL;
 

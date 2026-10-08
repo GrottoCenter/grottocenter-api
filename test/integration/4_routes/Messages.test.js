@@ -44,7 +44,7 @@ describe('Messages features', () => {
       login: null,
     });
 
-    senderToken = TokenService.issue({ id: sender.id }, 3600, 'auth');
+    senderToken = TokenService.issue({ id: sender.id }, 3600, 'Authentication');
   });
 
   after(async () => {

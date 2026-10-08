@@ -338,7 +338,9 @@ cannot detach it either.
 ### JWT Token Authentication
 - All authenticated endpoints require valid JWT tokens
 - Tokens contain user ID and role memberships
-- Tokens are validated by the `tokenAuth` policy
+- Tokens are validated by the `tokenAuth` policy, which accepts only subject `Authentication`
+- The `parseAuthToken` middleware sets `req.token` only for `Authentication` tokens; a token with any other subject
+  leaves the request anonymous, so public routes never grant role-based extras to it
 - Tokens can be revoked via the ban mechanism (iat-based blacklist)
 
 ### Token Blacklist
@@ -350,6 +352,8 @@ cannot detach it either.
 ### MFA Enrollment Tokens
 - Separate token type with subject `MfaEnrollment`
 - Only accepted by MFA-specific endpoints (`enroll`, `verify`)
+- `parseAuthToken` puts it in `req.mfaEnrollmentToken`, never in `req.token`, even though it carries the admin's
+  groups: `tokenAuth` routes answer `401` and public routes treat the caller as anonymous
 - Full authentication tokens are rejected by MFA enrollment endpoints
 - Only Administrators can initiate the enrollment flow
 
