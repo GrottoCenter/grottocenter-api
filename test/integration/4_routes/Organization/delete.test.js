@@ -240,6 +240,7 @@ describe('Organization features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TGrotto,
     createEntity: () => TGrotto.create({ author: 1 }).fetch(),
     deleteUrl: (id) => `/api/v1/organizations/${id}`,
     findEntity: (id) => TGrotto.findOne(id),

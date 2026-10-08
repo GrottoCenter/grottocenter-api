@@ -61,6 +61,7 @@ describe('Rigging features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TRigging,
     createEntity: () =>
       TRigging.create({ author: 1, title: 'Test', entrance: 999 }).fetch(),
     deleteUrl: (id) => `/api/v1/riggings/${id}`,

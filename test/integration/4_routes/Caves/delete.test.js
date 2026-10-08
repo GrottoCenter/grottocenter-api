@@ -153,6 +153,7 @@ describe('Cave features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TCave,
     createEntity: () => TCave.create({}).fetch(),
     deleteUrl: (id) => `/api/v1/caves/${id}`,
     findEntity: (id) => TCave.findOne(id),

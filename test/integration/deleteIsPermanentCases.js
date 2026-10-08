@@ -19,6 +19,9 @@ const sinon = require('sinon');
  *
  * @param {object} options
  * @param {() => string} options.getToken moderator bearer token
+ * @param {() => object} options.getModel the Waterline model of the entity,
+ *   used to destroy what the cases created (a getter: models are globals set
+ *   by the lift, after this is called)
  * @param {() => Promise<{ id: number }>} options.createEntity creates a fresh,
  *   non-deleted entity
  * @param {(id: number) => string} options.deleteUrl the DELETE path
@@ -28,7 +31,8 @@ const sinon = require('sinon');
  */
 module.exports = ({
   getToken,
-  createEntity,
+  getModel,
+  createEntity: createRawEntity,
   deleteUrl,
   findEntity,
   observe,
@@ -36,6 +40,16 @@ module.exports = ({
   describe('isPermanent parsing', () => {
     let NotificationService;
     let notifySpy;
+    let createdIds;
+
+    // Rejected deletes leave their entity behind. Under `npm run coverage` every
+    // file shares one database, so a leftover comment on entrance 1 shows up in
+    // the Entrances tests.
+    const createEntity = async () => {
+      const entity = await createRawEntity();
+      createdIds.push(entity.id);
+      return entity;
+    };
 
     before(() => {
       // Resolved after the lift: a top-level require returns a copy of the
@@ -45,11 +59,13 @@ module.exports = ({
     });
 
     beforeEach(() => {
+      createdIds = [];
       notifySpy = sinon.spy(NotificationService, 'notifySubscribers');
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       notifySpy.restore();
+      await getModel().destroy({ id: createdIds });
     });
 
     const sendDelete = (id, query) =>

@@ -183,6 +183,7 @@ describe('Device features', () => {
 
     deleteIsPermanentCases({
       getToken: () => moderatorToken,
+      getModel: () => TDevice,
       createEntity: () =>
         TDevice.create({ name: 'isPermanent parsing', author: 1 }).fetch(),
       deleteUrl: (id) => `/api/v1/devices/${id}`,

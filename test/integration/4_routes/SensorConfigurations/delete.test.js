@@ -247,6 +247,7 @@ describe('SensorConfiguration features', () => {
 
     deleteIsPermanentCases({
       getToken: () => moderatorToken,
+      getModel: () => TSensorConfiguration,
       createEntity: () =>
         TSensorConfiguration.create({
           device: DEVICE_ID,
