@@ -1315,6 +1315,50 @@ paths:
           description: The entity you want to link your new description to was not found.
 
   '/descriptions/{id}':
+    delete:
+      tags:
+        - descriptions
+      description: >
+        Delete a description (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted description is a no-op that
+        still returns 200. When `isPermanent=true`, the description is
+        soft-deleted first if needed, then permanently removed together with
+        its history snapshots and notifications — this is irreversible.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Description id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the description
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted description with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete description.
+        '404':
+          description: Description not found.
     patch:
       tags:
         - descriptions
@@ -1631,6 +1675,64 @@ paths:
                       $ref: '#/components/schemas/Document'
 
   '/documents/{id}':
+    delete:
+      tags:
+        - documents
+      description: >
+        Delete a document (moderators only). By default this is a reversible
+        soft-delete that also removes the document from search; deleting an
+        already soft-deleted document is a no-op that still returns 200. When
+        `isPermanent=true`, the document is soft-deleted first if needed, then
+        permanently removed together with its descriptions, history snapshots,
+        notifications, bibliographic metadata, files and country, entrance,
+        region, language, massif, subject and author links — this is
+        irreversible. If `entityId` points to an existing document, the
+        deleted document's files, links, children and incoming redirects are
+        moved to it instead of being dropped.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Document id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the document
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: >
+            Id of the document this one is a duplicate of. Sets `redirectTo`
+            on a soft-delete, and is used as the merge target on a permanent
+            delete.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted document with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete a document.
+        '404':
+          description: Document not found.
     get:
       tags:
         - documents
@@ -3173,6 +3275,50 @@ paths:
           description: The entrance which the location is refering to was not found.
 
   '/locations/{id}':
+    delete:
+      tags:
+        - locations
+      description: >
+        Delete a location (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted location is a no-op that
+        still returns 200. When `isPermanent=true`, the location is
+        soft-deleted first if needed, then permanently removed together with
+        its history snapshots and notifications — this is irreversible.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Location id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the location
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted location with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete location.
+        '404':
+          description: Location not found.
     put:
       tags:
         - locations
@@ -3299,6 +3445,50 @@ paths:
           description: The entrance which the history is referring to was not found.
 
   '/histories/{id}':
+    delete:
+      tags:
+        - histories
+      description: >
+        Delete a history (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted history is a no-op that
+        still returns 200. When `isPermanent=true`, the history is
+        soft-deleted first if needed, then permanently removed together with
+        its history snapshots and notifications — this is irreversible.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: History id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the history
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted history with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete history.
+        '404':
+          description: History not found.
     patch:
       tags:
         - histories
@@ -3370,6 +3560,50 @@ paths:
           description: The entrance/cave which the comment is referring to was not found.
 
   '/comments/{id}':
+    delete:
+      tags:
+        - comments
+      description: >
+        Delete a comment (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted comment is a no-op that
+        still returns 200. When `isPermanent=true`, the comment is
+        soft-deleted first if needed, then permanently removed together with
+        its history snapshots and notifications — this is irreversible.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Comment id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the comment
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted comment with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete comment.
+        '404':
+          description: Comment not found.
     patch:
       tags:
         - comments
@@ -3474,6 +3708,50 @@ paths:
           description: The entrance/cave which the rigging is referring to was not found.
 
   '/riggings/{id}':
+    delete:
+      tags:
+        - riggings
+      description: >
+        Delete a rigging (moderators only). By default this is a reversible
+        soft-delete; deleting an already soft-deleted rigging is a no-op that
+        still returns 200. When `isPermanent=true`, the rigging is
+        soft-deleted first if needed, then permanently removed together with
+        its history snapshots and notifications — this is irreversible.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Rigging id
+          required: true
+          schema:
+            type: string
+        - name: isPermanent
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+          description: >
+            When true (`true` or `1`), permanently (hard) delete the rigging
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
+      responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted rigging with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rigging'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete rigging.
+        '404':
+          description: Rigging not found.
     patch:
       tags:
         - riggings
