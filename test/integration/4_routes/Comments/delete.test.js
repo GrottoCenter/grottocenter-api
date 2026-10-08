@@ -88,6 +88,7 @@ describe('Comment delete', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TComment,
     createEntity: () =>
       TComment.create({
         author: 1,

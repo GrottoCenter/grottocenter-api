@@ -269,6 +269,7 @@ describe('Document delete', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TDocument,
     createEntity: () =>
       TDocument.create({ author: 1, type: 1, license: 1 }).fetch(),
     deleteUrl: (id) => `/api/v1/documents/${id}`,

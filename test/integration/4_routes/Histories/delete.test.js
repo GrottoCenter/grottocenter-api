@@ -66,6 +66,7 @@ describe('History features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => THistory,
     createEntity: () =>
       THistory.create({
         author: 1,

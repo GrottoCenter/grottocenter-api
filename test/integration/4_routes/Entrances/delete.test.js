@@ -142,6 +142,7 @@ describe('Entrance features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TEntrance,
     createEntity: () =>
       TEntrance.create({ author: 1, latitude: '0', longitude: '0' }).fetch(),
     deleteUrl: (id) => `/api/v1/entrances/${id}`,

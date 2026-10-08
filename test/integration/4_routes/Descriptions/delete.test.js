@@ -64,6 +64,7 @@ describe('Description features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TDescription,
     createEntity: () =>
       TDescription.create({ author: 1, title: 'Test', entrance: 1 }).fetch(),
     deleteUrl: (id) => `/api/v1/descriptions/${id}`,

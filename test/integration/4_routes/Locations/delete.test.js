@@ -63,6 +63,7 @@ describe('Location features', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TLocation,
     createEntity: () =>
       TLocation.create({
         author: 1,

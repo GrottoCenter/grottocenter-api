@@ -199,6 +199,7 @@ describe('Guideline delete', () => {
 
   deleteIsPermanentCases({
     getToken: () => moderatorToken,
+    getModel: () => TGuideline,
     createEntity: () =>
       TGuideline.create({
         title: 'isPermanent parsing',

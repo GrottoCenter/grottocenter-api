@@ -153,7 +153,8 @@ describe('Boolean request parameters', () => {
     const app = () => supertest(sails.hooks.http.app);
 
     it('should list the review queue for isValidated=0 as for isValidated=false', async () => {
-      // The fixtures hold only validated documents
+      // Other test files leave pending documents behind when run in the same
+      // database, so compare the two encodings rather than an exact list.
       const pending = await TDocument.create({
         author: 1,
         type: 1,
@@ -162,15 +163,21 @@ describe('Boolean request parameters', () => {
       const ids = async (value) => {
         const res = await app()
           .get('/api/v1/documents')
-          .query({ isValidated: value, limit: 100 })
+          .query({
+            isValidated: value,
+            limit: 100,
+            sortBy: 'id',
+            orderBy: 'DESC',
+          })
           .set('Authorization', token);
         should([200, 206]).containEql(res.status);
-        return res.body.documents.map((d) => d.id);
+        return res.body.documents.map((d) => d.id).sort((a, b) => a - b);
       };
 
       try {
-        should(await ids('false')).eql([pending.id]);
-        should(await ids('0')).eql([pending.id]);
+        const queue = await ids('false');
+        should(queue).containEql(pending.id);
+        should(await ids('0')).eql(queue);
         should(await ids('true')).not.containEql(pending.id);
       } finally {
         await TDocument.destroyOne({ id: pending.id });

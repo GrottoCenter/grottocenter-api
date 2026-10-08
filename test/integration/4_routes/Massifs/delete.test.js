@@ -335,6 +335,7 @@ describe('Massif features', () => {
       // a permanent delete of a live massif loses its row to the first DELETE.
       deleteIsPermanentCases({
         getToken: () => moderatorToken,
+        getModel: () => TMassif,
         createEntity: () => TMassif.create({ author: 1 }).fetch(),
         deleteUrl: (id) => `/api/v1/massifs/${id}`,
         findEntity: (id) => TMassif.findOne(id),
