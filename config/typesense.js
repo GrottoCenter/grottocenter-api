@@ -8,8 +8,17 @@ const client = new Typesense.Client({
   // logLevel: "debug",
 });
 
+// Used only by the health check: a single short attempt, so a hung Typesense
+// fails the probe quickly instead of riding out the retries above.
+const healthClient = new Typesense.Client({
+  nodes: [{ url: process.env.TYPESENSE_HOST ?? 'http://localhost:8108' }],
+  apiKey: process.env.TYPESENSE_API_KEY ?? 'localhost_typesense_api_key',
+  numRetries: 0,
+  connectionTimeoutSeconds: 5,
+});
+
 async function isAlive() {
-  const rep = await client.health.retrieve();
+  const rep = await healthClient.health.retrieve();
   return rep?.ok === true;
 }
 
