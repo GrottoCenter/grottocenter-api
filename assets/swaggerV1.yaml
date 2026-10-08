@@ -1320,8 +1320,9 @@ paths:
         - descriptions
       description: >
         Delete a description (moderators only). By default this is a reversible
-        soft-delete; deleting an already soft-deleted description is a no-op that
-        still returns 200. When `isPermanent=true`, the description is
+        soft-delete. Deleting an already soft-deleted description leaves it
+        unchanged and returns 200, but notifies its subscribers again (a new
+        notification, plus an email for those who opted in). When `isPermanent=true`, the description is
         soft-deleted first if needed, then permanently removed together with
         its history snapshots and notifications — this is irreversible.
       security:
@@ -1680,15 +1681,20 @@ paths:
         - documents
       description: >
         Delete a document (moderators only). By default this is a reversible
-        soft-delete that also removes the document from search; deleting an
-        already soft-deleted document is a no-op that still returns 200. When
-        `isPermanent=true`, the document is soft-deleted first if needed, then
-        permanently removed together with its descriptions, history snapshots,
-        notifications, bibliographic metadata, files and country, entrance,
-        region, language, massif, subject and author links — this is
-        irreversible. If `entityId` points to an existing document, the
-        deleted document's files, links, children and incoming redirects are
-        moved to it instead of being dropped.
+        soft-delete that also removes the document from search. Deleting an
+        already soft-deleted document leaves it unchanged and returns 200, but
+        notifies its subscribers again (a new notification, plus an email for
+        those who opted in). When `isPermanent=true`, the document is
+        soft-deleted first if needed, then permanently removed together with its
+        descriptions, history snapshots, notifications, bibliographic metadata,
+        files and country, entrance, ISO region, legacy region, language,
+        massif, subject and author links — this is irreversible. Documents that
+        used it as their authorization document lose that reference. If
+        `entityId` points to an existing document, its files, children,
+        incoming redirects and country, entrance, ISO region, language, massif,
+        subject and author links are moved to that document instead of being
+        dropped; the legacy region links (`j_document_region`) are discarded
+        even then.
       security:
         - bearerAuth: []
       parameters:
@@ -3280,8 +3286,9 @@ paths:
         - locations
       description: >
         Delete a location (moderators only). By default this is a reversible
-        soft-delete; deleting an already soft-deleted location is a no-op that
-        still returns 200. When `isPermanent=true`, the location is
+        soft-delete. Deleting an already soft-deleted location leaves it
+        unchanged and returns 200, but notifies its subscribers again (a new
+        notification, plus an email for those who opted in). When `isPermanent=true`, the location is
         soft-deleted first if needed, then permanently removed together with
         its history snapshots and notifications — this is irreversible.
       security:
@@ -3450,8 +3457,9 @@ paths:
         - histories
       description: >
         Delete a history (moderators only). By default this is a reversible
-        soft-delete; deleting an already soft-deleted history is a no-op that
-        still returns 200. When `isPermanent=true`, the history is
+        soft-delete. Deleting an already soft-deleted history leaves it
+        unchanged and returns 200, but notifies its subscribers again (a new
+        notification, plus an email for those who opted in). When `isPermanent=true`, the history is
         soft-deleted first if needed, then permanently removed together with
         its history snapshots and notifications — this is irreversible.
       security:
@@ -3565,8 +3573,9 @@ paths:
         - comments
       description: >
         Delete a comment (moderators only). By default this is a reversible
-        soft-delete; deleting an already soft-deleted comment is a no-op that
-        still returns 200. When `isPermanent=true`, the comment is
+        soft-delete. Deleting an already soft-deleted comment leaves it
+        unchanged and returns 200, but notifies its subscribers again (a new
+        notification, plus an email for those who opted in). When `isPermanent=true`, the comment is
         soft-deleted first if needed, then permanently removed together with
         its history snapshots and notifications — this is irreversible.
       security:
@@ -3713,8 +3722,9 @@ paths:
         - riggings
       description: >
         Delete a rigging (moderators only). By default this is a reversible
-        soft-delete; deleting an already soft-deleted rigging is a no-op that
-        still returns 200. When `isPermanent=true`, the rigging is
+        soft-delete. Deleting an already soft-deleted rigging leaves it
+        unchanged and returns 200, but notifies its subscribers again (a new
+        notification, plus an email for those who opted in). When `isPermanent=true`, the rigging is
         soft-deleted first if needed, then permanently removed together with
         its history snapshots and notifications — this is irreversible.
       security:
