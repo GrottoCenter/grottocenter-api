@@ -1,6 +1,7 @@
 const should = require('should');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Device features', () => {
   describe('delete', () => {
@@ -178,6 +179,15 @@ describe('Device features', () => {
             });
         });
       });
+    });
+
+    deleteIsPermanentCases({
+      getToken: () => moderatorToken,
+      createEntity: () =>
+        TDevice.create({ name: 'isPermanent parsing', author: 1 }).fetch(),
+      deleteUrl: (id) => `/api/v1/devices/${id}`,
+      findEntity: (id) => TDevice.findOne(id),
+      observe: 'forbidden',
     });
   });
 });

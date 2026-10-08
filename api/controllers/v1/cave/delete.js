@@ -4,6 +4,7 @@ const CaveService = require('../../../services/CaveService');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toCave } = require('../../../services/mapping/converters');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -15,6 +16,14 @@ module.exports = async (req, res) => {
   }
 
   // Check if cave exists and if it's not already deleted
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
+
   const caveId = req.param('id');
   const cave = await CaveService.getPopulatedCave(caveId);
   if (!cave) {
@@ -44,7 +53,6 @@ module.exports = async (req, res) => {
     ]);
   }
 
-  const deletePermanently = !!req.param('isPermanent');
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   if (shouldMergeInto) {

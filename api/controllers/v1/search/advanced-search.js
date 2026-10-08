@@ -5,6 +5,7 @@ const {
 } = require('../../../services/TypesenseErrorService');
 const { toSearchResult } = require('../../../services/mapping/converters');
 const normalizeDataQualityFilter = require('../../../utils/normalizeDataQualityFilter');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 // Sort fields that are only valid for specific entities
 const ENTITY_SPECIFIC_SORT_FIELDS = {
@@ -13,8 +14,12 @@ const ENTITY_SPECIFIC_SORT_FIELDS = {
 };
 
 module.exports = async (req, res) => {
-  let matchAllFields = req.param('matchAllFields') ?? true;
-  if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
+  const { value: matchAllFields, error: matchAllFieldsError } = readBoolParam(
+    req,
+    'matchAllFields',
+    true
+  );
+  if (matchAllFieldsError) return res.badRequest(matchAllFieldsError);
 
   const entity = req.param('entity') ?? '';
   const rawSort = req.param('sort');
@@ -42,7 +47,7 @@ module.exports = async (req, res) => {
       entity,
       sort,
       filter,
-      isLogicalCompareAnd: !!matchAllFields,
+      isLogicalCompareAnd: matchAllFields,
       page: req.param('page') ?? 1,
       size: req.param('size') ?? 10,
     });

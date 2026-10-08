@@ -38,7 +38,7 @@ const HistoryService = require('./HistoryService');
 const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
-const coerceBool = require('../utils/coerceBool');
+const parseBool = require('../utils/parseBool');
 const { getQualityData } = require('../utils/computeEntranceDataQuality');
 const { computeCommentsRating } = require('../utils/commentsRating');
 
@@ -72,7 +72,25 @@ const mapHNameRow = (row, { includeAuthorReviewer = false } = {}) => {
   return mapped;
 };
 
+// Boolean entrance attributes a client may send. Controllers validate them with
+// readBoolParam.firstError before calling getConvertedDataFromClientRequest.
+const BOOLEAN_FIELDS = [
+  'isSensitive',
+  'isSensitiveLocked',
+  'hasBat',
+  'dangerFlooding',
+  'dangerCo2',
+  'dangerRockfall',
+  'dangerPollution',
+  'needCleanGear',
+  'needStayOnTrail',
+  'hasRules',
+  'isTouristic',
+];
+
 module.exports = {
+  BOOLEAN_FIELDS,
+
   getConvertedNameFromClientRequest: (req) => {
     const result = {
       name: {
@@ -94,17 +112,11 @@ module.exports = {
       precision: coerceToInt(reqBodyWithoutId.precision),
       yearDiscovery: coerceToInt(reqBodyWithoutId.yearDiscovery),
       geology: req.body.geology ?? 'Q35758',
-      isSensitive: coerceBool(req, 'isSensitive'),
-      isSensitiveLocked: coerceBool(req, 'isSensitiveLocked'),
-      hasBat: coerceBool(req, 'hasBat'),
-      dangerFlooding: coerceBool(req, 'dangerFlooding'),
-      dangerCo2: coerceBool(req, 'dangerCo2'),
-      dangerRockfall: coerceBool(req, 'dangerRockfall'),
-      dangerPollution: coerceBool(req, 'dangerPollution'),
-      needCleanGear: coerceBool(req, 'needCleanGear'),
-      needStayOnTrail: coerceBool(req, 'needStayOnTrail'),
-      hasRules: coerceBool(req, 'hasRules'),
-      isTouristic: coerceBool(req, 'isTouristic'),
+      // Absent or null leaves the column untouched (undefined is dropped by
+      // Waterline); every one of these columns is NOT NULL.
+      ...Object.fromEntries(
+        BOOLEAN_FIELDS.map((field) => [field, parseBool(req.param(field))])
+      ),
     };
   },
 
@@ -127,7 +139,7 @@ module.exports = {
   // If the entrance do not belong to a network the associated cave is populated
   getHEntrancesById: async (entranceId, isNetwork, token) => {
     let entrancesH;
-    if (isNetwork === 'true') {
+    if (isNetwork) {
       entrancesH = await HEntrance.find({ t_id: entranceId })
         .populate('reviewer')
         .populate('author');

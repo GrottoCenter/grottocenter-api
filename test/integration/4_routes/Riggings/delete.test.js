@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Rigging features', () => {
   let userToken;
@@ -56,5 +57,14 @@ describe('Rigging features', () => {
       const deleted = await TRigging.findOne(rig.id);
       should(deleted).be.undefined();
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TRigging.create({ author: 1, title: 'Test', entrance: 999 }).fetch(),
+    deleteUrl: (id) => `/api/v1/riggings/${id}`,
+    findEntity: (id) => TRigging.findOne(id),
+    observe: 'notification',
   });
 });

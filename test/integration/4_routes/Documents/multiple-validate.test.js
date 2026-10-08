@@ -1237,4 +1237,156 @@ describe('Document multiple-validate', () => {
       should(rejectNotification.notifier).equal(2);
     });
   });
+
+  // A pending modification changing the type from 1 to 17 tells an accepted
+  // document from a refused one: both end up isValidated true, but only an
+  // acceptance applies the modification.
+  describe('isValidated parsing', () => {
+    const createModifiedDocument = async () => {
+      const desc = await TDescription.create({
+        author: 1,
+        title: 'Original',
+        body: 'Original body',
+      }).fetch();
+      return TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+        descriptions: [desc.id],
+        modifiedDocJson: {
+          reviewerId: 2,
+          documentData: { type: 17 },
+          descriptionData: { title: 'Updated', body: 'Updated body' },
+        },
+      }).fetch();
+    };
+
+    const sendDocuments = (documents) =>
+      supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({ documents })
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json');
+
+    [
+      { label: 'JSON false', value: false },
+      { label: "'false'", value: 'false' },
+      { label: "'0'", value: '0' },
+    ].forEach(({ label, value }) => {
+      it(`should refuse the modification when isValidated is ${label}`, async () => {
+        const doc = await createModifiedDocument();
+
+        await sendDocuments([
+          { id: doc.id, isValidated: value, validationComment: 'No' },
+        ]).expect(204);
+
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.type).equal(1);
+        should(updated.modifiedDocJson).be.null();
+        should(updated.validationComment).equal('No');
+      });
+    });
+
+    [
+      { label: 'JSON true', value: true },
+      { label: "'true'", value: 'true' },
+      { label: "'1'", value: '1' },
+      { label: 'absent', value: undefined },
+    ].forEach(({ label, value }) => {
+      it(`should apply the modification when isValidated is ${label}`, async () => {
+        const doc = await createModifiedDocument();
+
+        await sendDocuments([{ id: doc.id, isValidated: value }]).expect(204);
+
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.type).equal(17);
+        should(updated.modifiedDocJson).be.null();
+      });
+    });
+
+    it('should return 400 when refusing with JSON false and no comment', async () => {
+      const doc = await createModifiedDocument();
+
+      await sendDocuments([{ id: doc.id, isValidated: false }]).expect(400);
+
+      const unchanged = await TDocument.findOne(doc.id);
+      should(unchanged.isValidated).be.false();
+      should(unchanged.modifiedDocJson).not.be.null();
+    });
+
+    ['yes', 'TRUE', 'False', 1, 0, {}, []].forEach((value) => {
+      it(`should return 400 and change nothing when isValidated is ${JSON.stringify(
+        value
+      )}`, async () => {
+        const doc = await createModifiedDocument();
+
+        const res = await sendDocuments([
+          { id: doc.id, isValidated: value, validationComment: 'x' },
+        ]).expect(400);
+
+        should(res.body.code).equal('E_BAD_REQUEST');
+        should(res.body.metadata.field).equal('isValidated');
+        const unchanged = await TDocument.findOne(doc.id);
+        should(unchanged.isValidated).be.false();
+        should(unchanged.modifiedDocJson).not.be.null();
+      });
+    });
+
+    it('should reject the whole batch when a later entry is invalid', async () => {
+      const first = await createModifiedDocument();
+      const second = await createModifiedDocument();
+
+      await sendDocuments([
+        { id: first.id, isValidated: true },
+        { id: second.id, isValidated: 'maybe' },
+      ]).expect(400);
+
+      const untouched = await TDocument.findOne(first.id);
+      should(untouched.isValidated).be.false();
+      should(untouched.type).equal(1);
+    });
+  });
+
+  describe('documents input validation', () => {
+    const sendBody = (body) =>
+      supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send(body)
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json');
+
+    [
+      { label: 'absent', body: {} },
+      { label: 'a string', body: { documents: 'abc' } },
+      { label: 'an object', body: { documents: { id: 1 } } },
+      { label: 'a number', body: { documents: 1 } },
+    ].forEach(({ label, body }) => {
+      it(`should return 400 when documents is ${label}`, async () => {
+        const res = await sendBody(body).expect(400);
+        should(res.body.code).equal('E_BAD_REQUEST');
+        should(res.body.metadata.field).equal('documents');
+      });
+    });
+
+    [null, 'abc', 1, [1]].forEach((entry) => {
+      it(`should return 400 when an entry is ${JSON.stringify(entry)}`, async () => {
+        const res = await sendBody({ documents: [entry] }).expect(400);
+        should(res.body.code).equal('E_BAD_REQUEST');
+        should(res.body.metadata.field).equal('documents');
+      });
+    });
+
+    [undefined, null, '12', 0, -1, 1.5, 2147483648, 'abc'].forEach((id) => {
+      it(`should return 400 when an entry id is ${JSON.stringify(id)}`, async () => {
+        const res = await sendBody({
+          documents: [{ id, isValidated: true }],
+        }).expect(400);
+        should(res.body.code).equal('E_BAD_REQUEST');
+        should(res.body.metadata.field).equal('id');
+      });
+    });
+  });
 });

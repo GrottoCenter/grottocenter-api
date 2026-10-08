@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Entrance features', () => {
   let userToken;
@@ -137,5 +138,14 @@ describe('Entrance features', () => {
       // Clean up target entrance
       await TEntrance.destroy({ id: targetEntrance.id });
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TEntrance.create({ author: 1, latitude: '0', longitude: '0' }).fetch(),
+    deleteUrl: (id) => `/api/v1/entrances/${id}`,
+    findEntity: (id) => TEntrance.findOne(id),
+    observe: 'notification',
   });
 });

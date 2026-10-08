@@ -6,6 +6,7 @@ const {
   serializers,
   filterDocuments,
 } = require('../../../services/geo-serializers');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 function escapeCSV(v) {
   // Escape double quotes
@@ -144,8 +145,15 @@ module.exports = async (req, res) => {
   }
 
   // 3. Column validation
-  let matchAllFields = req.param('matchAllFields') ?? true;
-  if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
+  const { value: matchAllFields, error: matchAllFieldsError } = readBoolParam(
+    req,
+    'matchAllFields',
+    true
+  );
+  if (matchAllFieldsError) {
+    res.badRequest(matchAllFieldsError);
+    return;
+  }
   const columns = req.param('columns');
   const columnsName = req.param('columnsName');
 
@@ -189,7 +197,7 @@ module.exports = async (req, res) => {
       entity,
       sort: req.param('sort'),
       filter: req.param('filter') ?? {},
-      isLogicalCompareAnd: !!matchAllFields,
+      isLogicalCompareAnd: matchAllFields,
     };
 
     let hasSentHeader = false;
@@ -292,7 +300,7 @@ module.exports = async (req, res) => {
     entity,
     sort: req.param('sort'),
     filter: req.param('filter') ?? {},
-    isLogicalCompareAnd: !!matchAllFields,
+    isLogicalCompareAnd: matchAllFields,
     fields: columns,
   };
 

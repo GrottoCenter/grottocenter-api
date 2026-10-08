@@ -6,6 +6,7 @@ const { toMassif } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 // Re-points a massif's rows in a join table keyed on (otherColumn, id_massif)
 // to the merge target, dropping those the target already has. `table` and
@@ -38,19 +39,20 @@ module.exports = async (req, res) => {
   }
 
   // Check if massif exists and if it's not already deleted
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
+
   const massifId = req.param('id');
   const massif = await MassifService.getPopulatedMassif(massifId);
   if (!massif) {
     return res.notFound({ message: `Massif of id ${massifId} not found.` });
   }
 
-  // The web client sends `?isPermanent=1`; accept the common truthy encodings
-  // ('1'/'true', or a real boolean) while treating explicit falsy values
-  // ('0'/'false') and an absent param as a soft delete. A bare `!!req.param(...)`
-  // would wrongly treat `isPermanent=0`/`false` as permanent.
-  const deletePermanently = [true, 'true', '1'].includes(
-    req.param('isPermanent')
-  );
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   let mergeIntoEntity;

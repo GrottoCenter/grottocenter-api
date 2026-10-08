@@ -8,8 +8,12 @@ const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
 const { toCave } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const { error: isDivingError } = readBoolParam(req, 'isDiving');
+  if (isDivingError) return res.badRequest(isDivingError);
+
   const rawDescriptionsData = req.param('descriptions');
   const rawNameData = req.param('name');
 

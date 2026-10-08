@@ -15,8 +15,16 @@ const {
   toSimpleHistory,
 } = require('../../../services/mapping/converters');
 const { getMetaFromRequest } = require('../../../services/mapping/utils');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const { value: isNetwork, error: isNetworkError } = readBoolParam(
+    req,
+    'isNetwork',
+    false
+  );
+  if (isNetworkError) return res.badRequest(isNetworkError);
+
   const hasRight = RightService.hasGroup(
     req.token?.groups,
     RightService.G.MODERATOR
@@ -46,7 +54,7 @@ module.exports = async (req, res) => {
 
   const hEntrances = await EntranceService.getHEntrancesById(
     entranceId,
-    req.query.isNetwork,
+    isNetwork,
     req.token
   );
 

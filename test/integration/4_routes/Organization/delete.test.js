@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Organization features', () => {
   let userToken;
@@ -235,5 +236,13 @@ describe('Organization features', () => {
       await TDocument.destroy({ id: docIds });
       await TGrotto.destroy({ id: targetOrg.id });
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () => TGrotto.create({ author: 1 }).fetch(),
+    deleteUrl: (id) => `/api/v1/organizations/${id}`,
+    findEntity: (id) => TGrotto.findOne(id),
+    observe: 'notification',
   });
 });

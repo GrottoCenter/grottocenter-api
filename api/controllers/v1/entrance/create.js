@@ -2,8 +2,15 @@ const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
 const RightService = require('../../../services/RightService');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const boolError = readBoolParam.firstError(
+    req,
+    EntranceService.BOOLEAN_FIELDS
+  );
+  if (boolError) return res.badRequest(boolError);
+
   const name = req.param('name');
   if (!name?.text || !name?.language) {
     return res.badRequest(

@@ -6,6 +6,7 @@ const {
   toDeletedEntity,
   toDocumentDescriptions,
 } = require('../../../services/mapping/converters');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 async function getModifiedDocumentData(documentId) {
   const { id, modifiedDocJson } = await TDocument.findOne(documentId);
@@ -59,10 +60,16 @@ module.exports = async (req, res) => {
     RightService.G.MODERATOR
   );
 
+  const { value: requireUpdate, error: requireUpdateError } = readBoolParam(
+    req,
+    'requireUpdate',
+    false
+  );
+  if (requireUpdateError) return res.badRequest(requireUpdateError);
+
   let document;
   // Get the modified document
-  if (req.param('requireUpdate') === 'true')
-    document = await getModifiedDocumentData(documentId);
+  if (requireUpdate) document = await getModifiedDocumentData(documentId);
 
   // Get the base document
   if (!document)

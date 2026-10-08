@@ -1,5 +1,6 @@
 const BibliographicMetadataService = require('../../../services/BibliographicMetadataService');
 const ControllerService = require('../../../services/ControllerService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 /**
  * Bibliographic Metadata Records Controller
@@ -20,6 +21,13 @@ const ControllerService = require('../../../services/ControllerService');
  */
 module.exports = async (req, res) => {
   try {
+    const { value: includeDeleted, error: includeDeletedError } = readBoolParam(
+      req,
+      'includeDeleted',
+      false
+    );
+    if (includeDeletedError) return res.badRequest(includeDeletedError);
+
     // Validate date parameters
     if (req.query.from && Number.isNaN(Date.parse(req.query.from))) {
       return res.badRequest({
@@ -40,7 +48,7 @@ module.exports = async (req, res) => {
     };
 
     const filter = {};
-    if (req.query.includeDeleted !== 'true') {
+    if (!includeDeleted) {
       filter.metadataStatus = 'registered';
     }
 

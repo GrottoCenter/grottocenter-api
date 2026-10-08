@@ -6,9 +6,13 @@ const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
 const RightService = require('../../../services/RightService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 // eslint-disable-next-line consistent-return
 module.exports = async (req, res) => {
+  const boolError = readBoolParam.firstError(req, MassifService.BOOLEAN_FIELDS);
+  if (boolError) return res.badRequest(boolError);
+
   // Check params
   const requiredParams = ['name', 'descriptionAndNameLanguage', 'geogPolygon'];
 

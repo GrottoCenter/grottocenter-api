@@ -156,7 +156,8 @@ paths:
           in: query
           description: If the cave is flooded or not
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: latitude
           in: query
@@ -196,6 +197,8 @@ paths:
             type: number
             format: double
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         200:
           description: Successful operation
           content:
@@ -258,11 +261,12 @@ paths:
           required: false
           schema:
             type: string
+        - $ref: '#/components/parameters/isPermanent'
       responses:
         '204':
           description: Successful operation
         '400':
-          description: Cave(s) not found
+          description: Cave(s) not found, or `isPermanent` is not a `BooleanLike` value.
         '410':
           description: Cave already deleted
 
@@ -278,6 +282,8 @@ paths:
           schema:
             type: string
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         200:
           description: Successful operation
           content:
@@ -1556,7 +1562,8 @@ paths:
           required: false
           schema:
             default: true
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
         - name: skip
           in: query
           description: Number of documents to skip.
@@ -1593,6 +1600,8 @@ paths:
           schema:
             type: string
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -1622,9 +1631,12 @@ paths:
           description: Specify if you want to retrieve the current update (not validated) of the document
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -1916,20 +1928,33 @@ paths:
             type: array
             items:
               type: object
+              required: [id]
               properties:
                 id:
-                  type: number
+                  type: integer
+                  minimum: 1
                 isValidated:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
+                  default: true
                 validationComment:
                   type: string
       responses:
         '200':
-          description: Successful operation
-        '404':
-          description: Document(s) to update not found.
+          description: >
+            Successful operation. Ids that match no document are skipped, so
+            the call still succeeds.
         '400':
-          description: Bad request. If you are refusing a document, you must provide a validationComment.
+          description: >
+            Bad request: `documents` is not an array, an entry is not an
+            object, an `id` is not a positive integer, an `isValidated` is not
+            a `BooleanLike` value, or a document is refused without a
+            `validationComment`. The whole batch is checked before anything is
+            written, so a 400 leaves every document untouched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
 
   '/documents/identifierTypes':
     get:
@@ -2251,10 +2276,12 @@ paths:
             Optional flag to include deleted records (with metadataStatus = 'deleted').
             Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: string
-            enum: ['true', 'false']
-            default: 'false'
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+            default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -2315,10 +2342,12 @@ paths:
             Optional flag to include deleted records (with metadataStatus = 'deleted').
             Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: string
-            enum: ['true', 'false']
-            default: 'false'
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+            default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -2398,10 +2427,12 @@ paths:
             Optional flag to include deleted records (with metadataStatus = 'deleted').
             Defaults to 'false', meaning only registered records are returned.
           schema:
-            type: string
-            enum: ['true', 'false']
-            default: 'false'
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+            default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -2498,10 +2529,12 @@ paths:
             Optional flag to include deleted records (with metadataStatus = 'deleted').
             Defaults to 'false', meaning only registered records are returned.
           schema:
-            type: string
-            enum: ['true', 'false']
-            default: 'false'
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+            default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -2602,10 +2635,12 @@ paths:
             Optional flag to include deleted records (with metadataStatus = 'deleted').
             Defaults to 'false', meaning only registered records are counted.
           schema:
-            type: string
-            enum: ['true', 'false']
-            default: 'false'
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+            default: false
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -3730,11 +3765,14 @@ paths:
           in: query
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
           description: >
             When true, permanently (hard) delete the guideline instead of
             soft-deleting it. Administrators only.
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: >
             Successful operation. Returns the deleted guideline (with
@@ -4053,11 +4091,14 @@ paths:
               type: object
               properties:
                 alert_for_news:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                 send_notification_by_email:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                 send_message_notification_by_email:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
       responses:
         '200':
           description: Successful operation
@@ -4073,7 +4114,9 @@ paths:
                   send_message_notification_by_email:
                     type: boolean
         '400':
-          description: Invalid preference value provided
+          description: >
+            No preference provided, or a preference is not a `BooleanLike`
+            value (`metadata.field` names it).
         '401':
           description: Unauthorized
         '404':
@@ -4457,66 +4500,77 @@ paths:
         - name: isSensitive
           in: query
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
         - name: isSensitiveLocked
           in: query
           description: When true, only administrators can change isSensitive (administrator-only field)
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: hasBat
           in: query
           description: The cave is a known bat habitat
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: dangerFlooding
           in: query
           description: Flooding risk present
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: dangerCo2
           in: query
           description: CO2 accumulation risk
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: dangerRockfall
           in: query
           description: Rockfall risk
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: dangerPollution
           in: query
           description: Pollution risk (water contamination etc.)
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: needCleanGear
           in: query
           description: Clean/decontaminated gear required (biosecurity)
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: needStayOnTrail
           in: query
           description: Visitors must stay on the marked trail
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: hasRules
           in: query
           description: Specific entry rules apply (permit, reservation…)
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: isTouristic
           in: query
           description: Developed/touristic cave open to the public
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: false
         - name: latitude
           in: query
@@ -4574,6 +4628,8 @@ paths:
           schema:
             type: number
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -4715,7 +4771,10 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/isPermanent'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '204':
           description: Successful operation
         '404':
@@ -4735,6 +4794,8 @@ paths:
           schema:
             type: string
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         200:
           description: Successful operation
           content:
@@ -5060,7 +5121,8 @@ paths:
                       example: [50, 100]
                   additionalProperties: true
                 matchAllFields:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
                 page:
@@ -5079,7 +5141,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Search'
         '400':
-          description: Invalid sort parameter (unknown field, non-sortable field, or bad format)
+          description: Invalid sort parameter (unknown field, non-sortable field, or bad format), or `matchAllFields` is not a `BooleanLike` value.
         '404':
           description: Resource not found
 
@@ -5132,7 +5194,8 @@ paths:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
                 matchAllFields:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
                 columns:
@@ -5179,6 +5242,7 @@ paths:
             - Geographic format requested for non-entrance entity
             - Missing or invalid columns/columnsName (CSV format only)
             - Search results exceed 10,000 row limit
+            - `matchAllFields` is not a `BooleanLike` value
 
   '/field-search':
     post:
@@ -5213,10 +5277,13 @@ paths:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
                 matchAllFields:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -5662,7 +5729,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Massif'
         '400':
-          description: Some required information are missing, or the polygon area exceeds the 35 000 km² limit.
+          description: Some required information are missing, the polygon area exceeds the 35 000 km² limit, or a flag is not a `BooleanLike` value.
         '403':
           description: You are not authorized to create a massif.
 
@@ -5731,7 +5798,8 @@ paths:
                   items:
                     type: object
                 isSensitiveLocked:
-                  type: boolean
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
                   description: When true, only administrators can change the massif sensitivity. Administrator-only field; stripped for other users.
                 name:
                   type: object
@@ -5755,7 +5823,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Massif'
         '400':
-          description: Bad request, name too long, language null or not found, or the polygon area exceeds the 35 000 km² limit.
+          description: Bad request, name too long, language null or not found, the polygon area exceeds the 35 000 km² limit, or a flag is not a `BooleanLike` value.
         '404':
           description: Resource not found
         '403':
@@ -5788,11 +5856,12 @@ paths:
           in: query
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
           description: >
             When true (`true` or `1`), permanently (hard) delete the massif
-            instead of soft-deleting it. Any other value, `false` and `0`
-            included, performs a soft delete.
+            instead of soft-deleting it. `false`, `0` or no value performs a
+            soft delete; any other value is a 400.
         - name: entityId
           in: query
           required: false
@@ -5802,6 +5871,8 @@ paths:
             Id of the massif this one is a duplicate of. Sets `redirectTo` on a
             soft-delete, and is used as the merge target on a permanent delete.
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: >
             Successful operation. Returns the deleted massif with
@@ -6157,7 +6228,8 @@ paths:
           in: query
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
           description: >
             When true, permanently (hard) delete the organization instead of
             soft-deleting it.
@@ -6171,6 +6243,8 @@ paths:
             `redirectTo` on a soft-delete, and is used as the merge target on a
             permanent delete.
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
         '403':
@@ -7004,8 +7078,11 @@ paths:
           description: If true, permanently deletes the device (Administrator only).
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation. Returns the deleted device.
           content:
@@ -7237,8 +7314,11 @@ paths:
           description: If true, permanently deletes the sensor configuration (Administrator only).
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation. Returns the deleted sensor configuration.
           content:
@@ -7726,12 +7806,45 @@ components:
           - asc
           - desc
         default: asc
+    isPermanent:
+      name: isPermanent
+      in: query
+      required: false
+      description: >
+        When true, permanently (hard) delete the entity instead of
+        soft-deleting it.
+      schema:
+        allOf:
+          - $ref: '#/components/schemas/BooleanLike'
+        default: false
+  responses:
+    InvalidBoolean:
+      description: >
+        Bad request. Among other causes, a boolean parameter holds a value
+        other than those accepted by `BooleanLike`. `metadata.field` names the
+        parameter and `metadata.value` echoes the rejected value. Nothing is
+        written.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StructuredError'
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    BooleanLike:
+      description: >
+        A boolean flag. Accepted values are the JSON booleans `true` and
+        `false` and the strings `'true'`, `'false'`, `'1'` and `'0'`. Matching
+        is exact: `'TRUE'`, `' true'`, `'yes'` or the number `1` are rejected
+        with a 400. `null` and the empty string count as absent, so the
+        default (if any) applies.
+      oneOf:
+        - type: boolean
+        - type: string
+          enum: ['true', 'false', '1', '0']
     ImportBatchAccepted:
       type: object
       properties:

@@ -2,6 +2,9 @@ const DocumentService = require('../../../services/DocumentService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
 const NotificationService = require('../../../services/NotificationService');
+const isValidId = require('../../../utils/isValidId');
+const parseBool = require('../../../utils/parseBool');
+const readBoolParam = require('../../../utils/readBoolParam');
 const {
   DOCUMENT_M2M_COLLECTIONS,
 } = require('../../../../config/constants/document');
@@ -277,13 +280,55 @@ module.exports = async (req, res) => {
     );
   }
 
+  const documents = req.param('documents');
+  if (!Array.isArray(documents)) {
+    return res.badRequest(
+      sails.helpers.formatStructuredError(
+        req,
+        'documents must be an array.',
+        'E_BAD_REQUEST',
+        { field: 'documents', value: documents }
+      )
+    );
+  }
+
+  // Validate the whole batch before writing anything, so a bad entry cannot
+  // leave the documents before it processed and the ones after it not.
   const documentChanges = [];
-  // Validate input
-  for (const doc of req.param('documents') ?? []) {
+  for (const doc of documents) {
+    if (typeof doc !== 'object' || doc === null || Array.isArray(doc)) {
+      return res.badRequest(
+        sails.helpers.formatStructuredError(
+          req,
+          'Each entry of documents must be an object.',
+          'E_BAD_REQUEST',
+          { field: 'documents', value: doc }
+        )
+      );
+    }
+
+    if (!isValidId(doc.id)) {
+      return res.badRequest(
+        sails.helpers.formatStructuredError(
+          req,
+          'Each entry of documents must have a positive integer id.',
+          'E_BAD_REQUEST',
+          { field: 'id', value: doc.id }
+        )
+      );
+    }
+
     // Whether or not the pending changes are accepted or not
-    const isValidated = doc.isValidated
-      ? doc.isValidated.toLowerCase() !== 'false'
-      : true;
+    const isValidated = parseBool(doc.isValidated) ?? true;
+    if (isValidated === parseBool.INVALID) {
+      return res.badRequest(
+        readBoolParam.formatInvalidBoolError(
+          req,
+          'isValidated',
+          doc.isValidated
+        )
+      );
+    }
 
     if (isValidated === false && !doc.validationComment) {
       return res.badRequest(

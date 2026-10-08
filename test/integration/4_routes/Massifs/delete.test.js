@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Massif features', () => {
   let userToken;
@@ -328,6 +329,16 @@ describe('Massif features', () => {
           should(softDeleted).not.be.undefined();
           should(softDeleted.isDeleted).be.true();
         });
+      });
+
+      // Inside this describe so the soft-delete trigger is attached: without it
+      // a permanent delete of a live massif loses its row to the first DELETE.
+      deleteIsPermanentCases({
+        getToken: () => moderatorToken,
+        createEntity: () => TMassif.create({ author: 1 }).fetch(),
+        deleteUrl: (id) => `/api/v1/massifs/${id}`,
+        findEntity: (id) => TMassif.findOne(id),
+        observe: 'notification',
       });
     });
   });

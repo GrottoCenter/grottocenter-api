@@ -5,6 +5,7 @@ const SensorConfigurationService = require('../../../services/SensorConfiguratio
 const {
   toSensorConfiguration,
 } = require('../../../services/mapping/converters');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   // 1. Check permissions: Moderator or Administrator required
@@ -48,7 +49,13 @@ module.exports = async (req, res) => {
     });
   }
 
-  const isPermanent = req.param('isPermanent') === 'true';
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: isPermanent, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   if (isPermanent) {
     // 5a. Permanent delete: require Administrator

@@ -3,6 +3,7 @@ const SearchService = require('../../../services/SearchService');
 const {
   handleTypesenseError,
 } = require('../../../services/TypesenseErrorService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const field = req.param('field');
@@ -16,8 +17,15 @@ module.exports = async (req, res) => {
     return;
   }
 
-  let matchAllFields = req.param('matchAllFields') ?? true;
-  if (!matchAllFields || matchAllFields === 'false') matchAllFields = false;
+  const { value: matchAllFields, error: matchAllFieldsError } = readBoolParam(
+    req,
+    'matchAllFields',
+    true
+  );
+  if (matchAllFieldsError) {
+    res.badRequest(matchAllFieldsError);
+    return;
+  }
 
   let r;
   try {
@@ -27,7 +35,7 @@ module.exports = async (req, res) => {
       query: req.param('query'),
       size: req.param('size') ?? 10,
       filter: req.param('filter') ?? {},
-      isLogicalCompareAnd: !!matchAllFields,
+      isLogicalCompareAnd: matchAllFields,
     });
   } catch (error) {
     if (handleTypesenseError(res, error)) return;

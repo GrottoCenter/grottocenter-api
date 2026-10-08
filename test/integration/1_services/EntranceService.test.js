@@ -521,7 +521,7 @@ describe('EntranceService', () => {
     it('should handle network entrances', async () => {
       const result = await EntranceService.getHEntrancesById(
         1,
-        'true',
+        true,
         userReq.token
       );
       should(result).be.an.Array();
@@ -530,7 +530,7 @@ describe('EntranceService', () => {
     it('should handle non-network entrances', async () => {
       const result = await EntranceService.getHEntrancesById(
         1,
-        'false',
+        false,
         userReq.token
       );
       should(result).be.an.Array();

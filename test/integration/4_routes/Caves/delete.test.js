@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Cave features', () => {
   let moderatorToken;
@@ -148,5 +149,13 @@ describe('Cave features', () => {
           .expect(400);
       });
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () => TCave.create({}).fetch(),
+    deleteUrl: (id) => `/api/v1/caves/${id}`,
+    findEntity: (id) => TCave.findOne(id),
+    observe: 'notification',
   });
 });

@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const DeviceService = require('../../../services/DeviceService');
 const RightService = require('../../../services/RightService');
 const { toDevice } = require('../../../services/mapping/converters');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const hasModeratorRight = RightService.hasGroup(
@@ -23,7 +24,13 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Device of id ${deviceId} not found.` });
   }
 
-  const isPermanent = req.param('isPermanent') === 'true';
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: isPermanent, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   if (isPermanent) {
     if (!hasAdminRight) {
