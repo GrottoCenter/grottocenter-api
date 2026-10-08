@@ -1,5 +1,6 @@
 const BibliographicMetadataService = require('../../../services/BibliographicMetadataService');
 const ControllerService = require('../../../services/ControllerService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 /**
  * Bibliographic Metadata Count Controller
@@ -18,6 +19,13 @@ const ControllerService = require('../../../services/ControllerService');
  */
 module.exports = async (req, res) => {
   try {
+    const { value: includeDeleted, error: includeDeletedError } = readBoolParam(
+      req,
+      'includeDeleted',
+      false
+    );
+    if (includeDeletedError) return res.badRequest(includeDeletedError);
+
     // Extract and structure OAI-PMH query parameters
     const parameters = {
       set: req.query.set,
@@ -26,7 +34,7 @@ module.exports = async (req, res) => {
     };
 
     const filter = {};
-    if (req.query.includeDeleted !== 'true') {
+    if (!includeDeleted) {
       filter.metadataStatus = 'registered';
     }
 

@@ -3,6 +3,7 @@ const GuidelineService = require('../../../services/GuidelineService');
 const { toSimpleGuideline } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const isModerator = RightService.hasGroup(
@@ -25,11 +26,13 @@ module.exports = async (req, res) => {
     });
   }
 
-  // The web client sends `?isPermanent=1`; accept the common truthy encodings
-  // ('1'/'true', or a real boolean from a JSON body) while treating explicit
-  // falsy values ('0'/'false') and an absent param as a soft delete. A bare
-  // `!!req.param(...)` would wrongly treat `isPermanent=0`/`false` as permanent.
-  const isPermanent = [true, 'true', '1'].includes(req.param('isPermanent'));
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: isPermanent, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   if (isPermanent) {
     // Permanent (irreversible) deletion is gated to administrators; moderators

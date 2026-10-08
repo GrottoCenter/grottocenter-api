@@ -5,8 +5,15 @@ const CaveService = require('../../../services/CaveService');
 const NotificationService = require('../../../services/NotificationService');
 const { toCave } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const { value: newIsDiving, error: isDivingError } = readBoolParam(
+    req,
+    'isDiving'
+  );
+  if (isDivingError) return res.badRequest(isDivingError);
+
   const caveId = req.param('id');
   const rawCave = await TCave.findOne(caveId);
   if (!rawCave || rawCave.isDeleted) {
@@ -20,7 +27,6 @@ module.exports = async (req, res) => {
   const newDepth = req.param('depth');
   const newLength = req.param('length');
   const newTemperature = req.param('temperature');
-  const newIsDiving = req.param('isDiving');
 
   const updatedFields = {
     reviewer: req.token.id,

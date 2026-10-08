@@ -4,6 +4,7 @@ const { toSimpleComment } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 const CommentService = require('../../../services/CommentService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -12,6 +13,14 @@ module.exports = async (req, res) => {
   );
   if (!hasRight)
     return res.forbidden('You are not authorized to delete comment.');
+
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   const commentId = req.param('id');
   const comment = await CommentService.getComment(commentId);
@@ -31,7 +40,6 @@ module.exports = async (req, res) => {
     );
   }
 
-  const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HComment.destroy({ t_id: commentId });
     await TNotification.destroy({ comment: commentId });

@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Location features', () => {
   let userToken;
@@ -58,5 +59,19 @@ describe('Location features', () => {
       const deleted = await TLocation.findOne(loc.id);
       should(deleted).be.undefined();
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TLocation.create({
+        author: 1,
+        title: 'Test',
+        body: 'Test',
+        entrance: 1,
+      }).fetch(),
+    deleteUrl: (id) => `/api/v1/locations/${id}`,
+    findEntity: (id) => TLocation.findOne(id),
+    observe: 'notification',
   });
 });

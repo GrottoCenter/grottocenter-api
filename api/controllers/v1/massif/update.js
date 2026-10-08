@@ -4,8 +4,12 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toMassif } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const boolError = readBoolParam.firstError(req, MassifService.BOOLEAN_FIELDS);
+  if (boolError) return res.badRequest(boolError);
+
   const massifId = req.param('id');
   const rawMassif = await TMassif.findOne(massifId);
   if (!rawMassif || rawMassif.isDeleted) {

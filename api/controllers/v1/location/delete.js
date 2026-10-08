@@ -4,6 +4,7 @@ const LocationService = require('../../../services/LocationService');
 const { toSimpleLocation } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -12,6 +13,14 @@ module.exports = async (req, res) => {
   );
   if (!hasRight)
     return res.forbidden('You are not authorized to delete location.');
+
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   const locationId = req.param('id');
   const location = await LocationService.getLocation(locationId);
@@ -31,7 +40,6 @@ module.exports = async (req, res) => {
     );
   }
 
-  const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HLocation.destroy({ t_id: locationId });
     await TNotification.destroy({ location: locationId });

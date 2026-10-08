@@ -2,12 +2,16 @@ const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   // By default get only the validated ones
-  const isValidated = req.param('isValidated')
-    ? !(req.param('isValidated').toLowerCase() === 'false')
-    : true;
+  const { value: isValidated, error: isValidatedError } = readBoolParam(
+    req,
+    'isValidated',
+    true
+  );
+  if (isValidatedError) return res.badRequest(isValidatedError);
 
   const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
     'orderBy',

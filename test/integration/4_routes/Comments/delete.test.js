@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Comment delete', () => {
   let userToken;
@@ -83,5 +84,19 @@ describe('Comment delete', () => {
       const deleted = await TComment.findOne(comment.id);
       should(deleted).be.undefined();
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TComment.create({
+        author: 1,
+        title: 'Test',
+        body: 'Test',
+        entrance: 1,
+      }).fetch(),
+    deleteUrl: (id) => `/api/v1/comments/${id}`,
+    findEntity: (id) => TComment.findOne(id),
+    observe: 'notification',
   });
 });

@@ -1,6 +1,7 @@
 const CommonService = require('./CommonService');
 const coerceToInt = require('../utils/coerceToInt');
 const coerceToNumeric = require('../utils/coerceToNumeric');
+const parseBool = require('../utils/parseBool');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
@@ -98,7 +99,7 @@ module.exports = {
     // The TCave.create() function doesn't work with TCave field alias. See TCave.js Model
     depth: coerceToInt(req.param('depth')),
     documents: req.param('documents'),
-    isDiving: req.param('isDiving'),
+    isDiving: parseBool(req.param('isDiving')),
     latitude: coerceToNumeric(req.param('latitude')),
     longitude: coerceToNumeric(req.param('longitude')),
     caveLength: coerceToInt(req.param('length')),

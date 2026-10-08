@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Document delete', () => {
   let userToken;
@@ -264,5 +265,14 @@ describe('Document delete', () => {
       );
       should(rows).have.length(0);
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TDocument.create({ author: 1, type: 1, license: 1 }).fetch(),
+    deleteUrl: (id) => `/api/v1/documents/${id}`,
+    findEntity: (id) => TDocument.findOne(id),
+    observe: 'notification',
   });
 });

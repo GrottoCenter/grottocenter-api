@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Guideline delete', () => {
   let userToken;
@@ -194,5 +195,19 @@ describe('Guideline delete', () => {
 
       await TGuideline.destroy({ id: guideline.id }); // cleanup
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      TGuideline.create({
+        title: 'isPermanent parsing',
+        author: 3,
+        language: 'fra',
+        dateInscription: new Date(),
+      }).fetch(),
+    deleteUrl: (id) => `/api/v1/guidelines/${id}`,
+    findEntity: (id) => TGuideline.findOne(id),
+    observe: 'forbidden',
   });
 });

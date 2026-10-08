@@ -4,6 +4,7 @@ const DescriptionService = require('../../../services/DescriptionService');
 const { toSimpleDescription } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -12,6 +13,14 @@ module.exports = async (req, res) => {
   );
   if (!hasRight)
     return res.forbidden('You are not authorized to delete description.');
+
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
 
   const descriptionId = req.param('id');
   const description = await DescriptionService.getDescription(descriptionId);
@@ -33,7 +42,6 @@ module.exports = async (req, res) => {
     );
   }
 
-  const deletePermanently = !!req.param('isPermanent');
   if (deletePermanently) {
     await HDescription.destroy({ t_id: descriptionId });
     await TNotification.destroy({ description: descriptionId });

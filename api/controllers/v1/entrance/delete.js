@@ -7,6 +7,7 @@ const NameService = require('../../../services/NameService');
 const CaveService = require('../../../services/CaveService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 /**
  * Hard-delete rows matching `criteria` from `model`.
@@ -66,6 +67,14 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to delete a entrance.');
   }
 
+  // Read before any write: an invalid value must not leave a half-done delete.
+  const { value: deletePermanently, error: isPermanentError } = readBoolParam(
+    req,
+    'isPermanent',
+    false
+  );
+  if (isPermanentError) return res.badRequest(isPermanentError);
+
   const entranceId = Number(req.param('id'));
   const entrance = await EntranceService.getPopulatedEntrance(entranceId);
   if (!entrance) {
@@ -95,7 +104,6 @@ module.exports = async (req, res) => {
     ]);
   }
 
-  const deletePermanently = !!req.param('isPermanent');
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   let mergeIntoEntity;

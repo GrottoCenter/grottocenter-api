@@ -1,6 +1,7 @@
 const should = require('should');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('SensorConfiguration features', () => {
   describe('delete', () => {
@@ -242,6 +243,21 @@ describe('SensorConfiguration features', () => {
             .expect(409, done);
         });
       });
+    });
+
+    deleteIsPermanentCases({
+      getToken: () => moderatorToken,
+      createEntity: () =>
+        TSensorConfiguration.create({
+          device: DEVICE_ID,
+          quantityKind: VALID_QUANTITY_KIND,
+          unit: VALID_UNIT,
+          author: 1,
+          dateInscription: new Date(),
+        }).fetch(),
+      deleteUrl: (id) => `/api/v1/devices/${DEVICE_ID}/configurations/${id}`,
+      findEntity: (id) => TSensorConfiguration.findOne(id),
+      observe: 'forbidden',
     });
   });
 });

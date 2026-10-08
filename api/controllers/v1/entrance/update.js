@@ -6,8 +6,15 @@ const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
+  const boolError = readBoolParam.firstError(
+    req,
+    EntranceService.BOOLEAN_FIELDS
+  );
+  if (boolError) return res.badRequest(boolError);
+
   const entranceId = req.param('id');
   const currentEntrance = await TEntrance.findOne(entranceId);
   if (!currentEntrance || currentEntrance.isDeleted) {

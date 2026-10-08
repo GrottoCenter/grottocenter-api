@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('History features', () => {
   let userToken;
@@ -61,5 +62,19 @@ describe('History features', () => {
       const deleted = await THistory.findOne(hist.id);
       should(deleted).be.undefined();
     });
+  });
+
+  deleteIsPermanentCases({
+    getToken: () => moderatorToken,
+    createEntity: () =>
+      THistory.create({
+        author: 1,
+        title: 'Test',
+        body: 'Test',
+        entrance: 1,
+      }).fetch(),
+    deleteUrl: (id) => `/api/v1/histories/${id}`,
+    findEntity: (id) => THistory.findOne(id),
+    observe: 'notification',
   });
 });

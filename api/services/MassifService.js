@@ -3,7 +3,7 @@ const NameService = require('./NameService');
 const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
-const coerceBool = require('../utils/coerceBool');
+const parseBool = require('../utils/parseBool');
 
 const MAX_AREA_KM2 = 35000;
 
@@ -176,7 +176,13 @@ async function querySpatialRows(sql, param) {
   }
 }
 
+// Boolean massif attributes a client may send. Controllers validate them with
+// readBoolParam.firstError before calling getConvertedDataFromClientRequest.
+const BOOLEAN_FIELDS = ['isSensitive', 'isSensitiveLocked'];
+
 module.exports = {
+  BOOLEAN_FIELDS,
+
   MAX_AREA_KM2,
   matchPolygonError,
 
@@ -294,8 +300,8 @@ module.exports = {
     documents: req.param('documents'),
     geogPolygon: req.param('geogPolygon'),
     names: req.param('names'),
-    isSensitive: coerceBool(req, 'isSensitive'),
-    isSensitiveLocked: coerceBool(req, 'isSensitiveLocked'),
+    isSensitive: parseBool(req.param('isSensitive')),
+    isSensitiveLocked: parseBool(req.param('isSensitiveLocked')),
   }),
 
   async getPopulatedMassif(massifId) {
