@@ -525,8 +525,11 @@ paths:
                   type: string
                   description: Nickname (display name, must be unique)
                 sendNotificationByEmail:
-                  type: boolean
-                  description: Whether to receive notifications by email
+                  allOf:
+                    - $ref: '#/components/schemas/BooleanLike'
+                  description: >
+                    Whether to receive notifications by email. `null` leaves the
+                    preference unchanged.
       responses:
         '200':
           description: Pending email change cancelled.
@@ -541,7 +544,17 @@ paths:
         '204':
           description: Successful operation
         '400':
-          description: Invalid input (unknown property, missing value, or validation error).
+          description: >
+            Invalid input (unknown property, missing value, or validation
+            error). An invalid `sendNotificationByEmail` returns the
+            `InvalidBoolean` structured error, with `metadata.field` and
+            `metadata.value`. Nothing is written.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: string
+                  - $ref: '#/components/schemas/StructuredError'
         '401':
           description: Unauthorized — valid JWT required.
         '403':
@@ -1975,6 +1988,51 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-identifierType'
 
+  '/documents/types':
+    get:
+      tags:
+        - documents
+      description: Get the document types.
+      parameters:
+        - name: isAvailable
+          in: query
+          description: >
+            Only list the types that can (`true`) or cannot (`false`) be chosen
+            for a new document. Absent or empty, all types are listed.
+          required: false
+          schema:
+            $ref: '#/components/schemas/BooleanLike'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentTypes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        comment:
+                          type: string
+                          nullable: true
+                        isAvailable:
+                          type: boolean
+                        parent:
+                          type: integer
+                          nullable: true
+                        url:
+                          type: string
+                          nullable: true
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+
   '/documents/{id}/snapshots':
     get:
       tags:
@@ -3030,12 +3088,17 @@ paths:
       parameters:
         - name: isPrefered
           in: query
-          description: Languages prefered or not.
+          description: >
+            List the preferred languages (`true`, the default) or the other
+            ones (`false`). An empty value counts as absent.
           required: false
           schema:
-            type: boolean
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
             default: true
       responses:
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
           content:
@@ -7843,8 +7906,9 @@ components:
         default (if any) applies.
       oneOf:
         - type: boolean
+          nullable: true
         - type: string
-          enum: ['true', 'false', '1', '0']
+          enum: ['true', 'false', '1', '0', '']
     ImportBatchAccepted:
       type: object
       properties:
