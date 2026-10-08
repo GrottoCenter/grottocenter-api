@@ -1,6 +1,7 @@
 const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
 const CaverService = require('../../../services/CaverService');
+const readBoolParam = require('../../../utils/readBoolParam');
 
 // Fields that can be updated via this endpoint. `currentPassword` is handled
 // as an out-of-band credential (required when changing password) and is not
@@ -136,11 +137,15 @@ module.exports = async (req, res) => {
     updates.surname = req.body.surname === '' ? null : req.body.surname;
   }
 
-  if (req.body.sendNotificationByEmail !== undefined) {
-    if (typeof req.body.sendNotificationByEmail !== 'boolean') {
-      return res.badRequest('sendNotificationByEmail must be a boolean.');
-    }
-    updates.sendNotificationByEmail = req.body.sendNotificationByEmail;
+  const {
+    value: sendNotificationByEmail,
+    error: sendNotificationByEmailError,
+  } = readBoolParam(req, 'sendNotificationByEmail');
+  if (sendNotificationByEmailError) {
+    return res.badRequest(sendNotificationByEmailError);
+  }
+  if (sendNotificationByEmail !== undefined) {
+    updates.sendNotificationByEmail = sendNotificationByEmail;
   }
 
   if (req.body.nickname !== undefined) {

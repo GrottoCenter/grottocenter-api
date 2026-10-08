@@ -71,6 +71,13 @@ const ENDPOINTS = [
     url: '/api/v1/entrances/1',
     param,
   })),
+  { method: 'get', url: '/api/v1/languages', param: 'isPrefered' },
+  { method: 'get', url: '/api/v1/documents/types', param: 'isAvailable' },
+  {
+    method: 'patch',
+    url: '/api/v1/account',
+    param: 'sendNotificationByEmail',
+  },
   { method: 'post', url: '/api/v1/massifs', param: 'isSensitive' },
   { method: 'put', url: '/api/v1/massifs/1', param: 'isSensitiveLocked' },
 ];
@@ -283,6 +290,99 @@ describe('Boolean request parameters', () => {
       });
       should(off.body.alert_for_news).be.false();
       should(off.body.send_notification_by_email).be.false();
+    });
+
+    describe('reference lists', () => {
+      // Fixtures: 2 of the 3 languages are preferred, 7 of the 19 document
+      // types available.
+      const listLanguages = async (query) =>
+        (await app().get('/api/v1/languages').query(query).expect(200)).body
+          .languages;
+      const listTypes = async (query) =>
+        (await app().get('/api/v1/documents/types').query(query).expect(200))
+          .body.documentTypes;
+
+      it('should list preferred languages by default, also for an empty isPrefered', async () => {
+        const preferred = await listLanguages({});
+        should(preferred).have.length(2);
+        preferred.forEach((language) => should(language.isPrefered).be.true());
+        should(await listLanguages({ isPrefered: '' })).have.length(2);
+        should(await listLanguages({ isPrefered: '1' })).have.length(2);
+      });
+
+      it('should list the other languages for isPrefered=0 and isPrefered=false', async () => {
+        const others = await listLanguages({ isPrefered: '0' });
+        should(others).have.length(1);
+        should(others[0].isPrefered).be.false();
+        should(await listLanguages({ isPrefered: 'false' })).eql(others);
+      });
+
+      it('should filter document types only when isAvailable is given', async () => {
+        should(await listTypes({})).have.length(19);
+        should(await listTypes({ isAvailable: '' })).have.length(19);
+
+        const available = await listTypes({ isAvailable: '1' });
+        should(available).have.length(7);
+        available.forEach((type) => should(type.isAvailable).be.true());
+        should(await listTypes({ isAvailable: 'true' })).eql(available);
+
+        const unavailable = await listTypes({ isAvailable: '0' });
+        should(unavailable).have.length(12);
+        unavailable.forEach((type) => should(type.isAvailable).be.false());
+      });
+    });
+
+    describe('PATCH /account sendNotificationByEmail', () => {
+      const patchAccount = (body) =>
+        app().patch('/api/v1/account').set('Authorization', token).send(body);
+      const storedFlag = async () =>
+        (await TCaver.findOne({ mail: 'all1@all1.com' }))
+          .sendNotificationByEmail;
+      let original;
+
+      before(async () => {
+        original = await TCaver.findOne({ mail: 'all1@all1.com' });
+      });
+
+      after(async () => {
+        await TCaver.updateOne({ mail: 'all1@all1.com' }).set({
+          name: original.name,
+          sendNotificationByEmail: original.sendNotificationByEmail,
+        });
+      });
+
+      it('should store the string encodings', async () => {
+        await patchAccount({ sendNotificationByEmail: '1' }).expect(204);
+        should(await storedFlag()).be.true();
+        await patchAccount({ sendNotificationByEmail: 'false' }).expect(204);
+        should(await storedFlag()).be.false();
+        await patchAccount({ sendNotificationByEmail: true }).expect(204);
+        should(await storedFlag()).be.true();
+      });
+
+      it('should leave the preference untouched when it is null', async () => {
+        await patchAccount({ sendNotificationByEmail: true }).expect(204);
+
+        await patchAccount({
+          sendNotificationByEmail: null,
+          name: 'Boolean params',
+        }).expect(204);
+
+        should(await storedFlag()).be.true();
+      });
+
+      it('should not apply the other fields when the flag is invalid', async () => {
+        const before = await TCaver.findOne({ mail: 'all1@all1.com' });
+
+        await patchAccount({
+          sendNotificationByEmail: 'yes',
+          name: 'Should not be stored',
+        }).expect(400);
+
+        should((await TCaver.findOne({ mail: 'all1@all1.com' })).name).equal(
+          before.name
+        );
+      });
     });
   });
 });
