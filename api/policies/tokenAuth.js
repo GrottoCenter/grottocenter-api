@@ -2,14 +2,15 @@
  * tokenAuth
  *
  * @module      :: Policy
- * @description :: JSON Web Token authentication. Check if a bearer token is present in req.token.
+ * @description :: JSON Web Token authentication. Check if a full 'Authentication' bearer
+ *                  token is present in req.token.
  *                  The token is put in req.token & verified by the parseAuthToken()
  *                  middleware in the http.js file
  * @docs        :: http://sailsjs.org/#!documentation/policies
  *
  */
 module.exports = (req, res, next) => {
-  if (req.token) {
+  if (req.token && req.token.sub === 'Authentication') {
     return next();
   }
   return res.unauthorized(

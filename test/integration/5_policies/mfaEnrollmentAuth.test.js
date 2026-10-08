@@ -19,8 +19,8 @@ describe('mfaEnrollmentAuth policy', () => {
     sinon.restore();
   });
 
-  it('should call next() when token has subject MfaEnrollment', () => {
-    req.token = { id: 1, sub: 'MfaEnrollment', groups: [] };
+  it('should call next() when req.mfaEnrollmentToken has subject MfaEnrollment', () => {
+    req.mfaEnrollmentToken = { id: 1, sub: 'MfaEnrollment', groups: [] };
 
     mfaEnrollmentAuth(req, res, next);
 
@@ -28,7 +28,7 @@ describe('mfaEnrollmentAuth policy', () => {
     should(res.unauthorized.called).be.false();
   });
 
-  it('should return 401 when req.token is missing', () => {
+  it('should return 401 when no token is present', () => {
     mfaEnrollmentAuth(req, res, next);
 
     should(res.unauthorized.calledOnce).be.true();
@@ -40,17 +40,9 @@ describe('mfaEnrollmentAuth policy', () => {
     should(next.called).be.false();
   });
 
-  it('should return 401 when req.token is undefined', () => {
-    req.token = undefined;
-
-    mfaEnrollmentAuth(req, res, next);
-
-    should(res.unauthorized.calledOnce).be.true();
-    should(next.called).be.false();
-  });
-
-  it('should return 401 when req.token is null', () => {
+  it('should return 401 when both tokens are null', () => {
     req.token = null;
+    req.mfaEnrollmentToken = null;
 
     mfaEnrollmentAuth(req, res, next);
 
@@ -58,7 +50,7 @@ describe('mfaEnrollmentAuth policy', () => {
     should(next.called).be.false();
   });
 
-  it('should return 401 when token has subject Authentication', () => {
+  it('should return 401 when only a full Authentication token is present', () => {
     req.token = { id: 1, sub: 'Authentication', groups: [] };
 
     mfaEnrollmentAuth(req, res, next);
@@ -72,8 +64,17 @@ describe('mfaEnrollmentAuth policy', () => {
     should(next.called).be.false();
   });
 
-  it('should return 401 when token has no sub claim', () => {
-    req.token = { id: 1, groups: [] };
+  it('should return 401 when req.token has subject MfaEnrollment but req.mfaEnrollmentToken is unset', () => {
+    req.token = { id: 1, sub: 'MfaEnrollment', groups: [] };
+
+    mfaEnrollmentAuth(req, res, next);
+
+    should(res.unauthorized.calledOnce).be.true();
+    should(next.called).be.false();
+  });
+
+  it('should return 401 when req.mfaEnrollmentToken has no sub claim', () => {
+    req.mfaEnrollmentToken = { id: 1, groups: [] };
 
     mfaEnrollmentAuth(req, res, next);
 
@@ -86,8 +87,8 @@ describe('mfaEnrollmentAuth policy', () => {
     should(next.called).be.false();
   });
 
-  it('should return 401 when token has an arbitrary subject', () => {
-    req.token = { id: 1, sub: 'SomethingElse', groups: [] };
+  it('should return 401 when req.mfaEnrollmentToken has an arbitrary subject', () => {
+    req.mfaEnrollmentToken = { id: 1, sub: 'SomethingElse', groups: [] };
 
     mfaEnrollmentAuth(req, res, next);
 
@@ -95,8 +96,8 @@ describe('mfaEnrollmentAuth policy', () => {
     should(next.called).be.false();
   });
 
-  it('should return 401 when token sub is empty string', () => {
-    req.token = { id: 1, sub: '', groups: [] };
+  it('should return 401 when req.mfaEnrollmentToken sub is empty string', () => {
+    req.mfaEnrollmentToken = { id: 1, sub: '', groups: [] };
 
     mfaEnrollmentAuth(req, res, next);
 

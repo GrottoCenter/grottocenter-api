@@ -268,6 +268,22 @@ module.exports.http = {
           return res.json({ message: 'Token has been revoked.' });
         }
 
+        // Only full 'Authentication' tokens authenticate a request. The
+        // restricted MFA enrollment token carries the admin's groups, so it is
+        // kept apart for the mfaEnrollmentAuth policy alone. Any other subject
+        // is treated as anonymous.
+        if (responseToken.sub === 'MfaEnrollment') {
+          req.mfaEnrollmentToken = responseToken;
+          return next();
+        }
+        if (responseToken.sub !== 'Authentication') {
+          sails.log.warn(
+            'Token with unexpected subject ignored:',
+            JSON.stringify({ id: responseToken.id, sub: responseToken.sub })
+          );
+          return next();
+        }
+
         const groupNames = (responseToken.groups || []).map((g) => g.name);
         sails.log.info(
           'Authenticated user:',

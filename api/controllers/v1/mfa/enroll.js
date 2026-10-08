@@ -4,7 +4,7 @@ const MfaService = require('../../../services/MfaService');
 module.exports = async (req, res) => {
   // 1. Check permissions — must be an Administrator
   const hasRight = RightService.hasGroup(
-    req.token.groups,
+    req.mfaEnrollmentToken.groups,
     RightService.G.ADMINISTRATOR
   );
   if (!hasRight) {
@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
   }
 
   // 2. Load caver record to check MFA status
-  const caver = await TCaver.findOne({ id: req.token.id });
+  const caver = await TCaver.findOne({ id: req.mfaEnrollmentToken.id });
   if (!caver) {
     return res.serverError('Could not find the authenticated caver record.');
   }
@@ -23,7 +23,9 @@ module.exports = async (req, res) => {
   }
 
   // 4. Start enrollment — generate and store the TOTP secret
-  const { secret, otpauthUri } = await MfaService.startEnrollment(req.token.id);
+  const { secret, otpauthUri } = await MfaService.startEnrollment(
+    req.mfaEnrollmentToken.id
+  );
 
   // 5. Return secret and otpauth URI
   return res.ok({ secret, otpauthUri });
