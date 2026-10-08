@@ -127,4 +127,53 @@ describe('Auth features', () => {
       should(res.body).have.property('otpauthUri').which.is.a.String();
     });
   });
+
+  describe('Signed tokens with an unexpected subject', () => {
+    let adminClaims;
+
+    before(async () => {
+      const admin = await TCaver.findOne({ id: ADMIN_ID }).populate('groups');
+      adminClaims = {
+        id: admin.id,
+        groups: admin.groups,
+        nickname: admin.nickname,
+      };
+    });
+
+    const signWithSubject = (sub) =>
+      sub === undefined
+        ? jwt.sign(adminClaims, sails.services.tokenservice.tokenSalt, {
+            expiresIn: 60,
+          })
+        : sails.services.tokenservice.issue(adminClaims, 60, sub);
+
+    [
+      { label: 'an unknown subject', sub: 'SomethingElse' },
+      { label: 'no subject', sub: undefined },
+    ].forEach(({ label, sub }) => {
+      it(`should reject a token with ${label} on a tokenAuth route`, async () => {
+        const token = signWithSubject(sub);
+        should(jwt.decode(token).sub).equal(sub);
+
+        const res = await supertest(sails.hooks.http.app)
+          .get('/api/v1/cavers/banned')
+          .set('Authorization', `Bearer ${token}`)
+          .set('Accept', 'application/json');
+
+        should(res.status).equal(401);
+        should(res.body).not.have.property('banned');
+      });
+
+      it(`should treat a token with ${label} as anonymous on a public route`, async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .get(`/api/v1/cavers/${OTHER_CAVER_ID}`)
+          .set('Authorization', `Bearer ${signWithSubject(sub)}`)
+          .set('Accept', 'application/json')
+          .expect(200);
+
+        should(res.body).have.property('id', OTHER_CAVER_ID);
+        should(res.body).not.have.property('isBanned');
+      });
+    });
+  });
 });
