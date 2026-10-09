@@ -1,37 +1,107 @@
 /**
  * CoordinatesSnapshotService
  *
- * Holds an in-memory snapshot of all public entrance coordinates.
- * The snapshot is loaded from PostgreSQL on server bootstrap and
- * refreshed in the background when the configured TTL expires.
+ * Holds an in-memory snapshot of every public entrance as an enriched tuple,
+ * [longitude, latitude, size, dataQuality, aestheticism], so the map can
+ * filter its low-zoom clusters on the same criteria as its markers. See #1863.
+ *
+ * The snapshot is loaded from PostgreSQL on server bootstrap and refreshed in
+ * the background when the configured TTL expires. Each load also serializes
+ * the worldwide response once, to a buffer with its weak ETag, so a worldwide
+ * request neither stringifies nor hashes the dataset.
+ *
+ * A failed load leaves the published snapshot in service and blocks automatic
+ * attempts for coordinatesSnapshotRetryDelay seconds; invalidate() ignores
+ * that delay. Until a first load succeeds, the controller awaits one per
+ * request (ensureLoaded) and falls back to the database in between.
  *
  * State is stored in module-level variables (not on the exported object)
  * so that Sails' _.bindAll() cannot interfere with it.
- *
- * NOTE: If load() fails at bootstrap, there is no automatic retry.
- * The DB fallback in the controller will handle requests correctly,
- * but without the snapshot's performance benefit. A server restart
- * is required to restore the in-memory snapshot.
  */
 
-const CommonService = require('./CommonService');
-
-const ALL_PUBLIC_ENTRANCE_COORDINATES = `
-  SELECT e.longitude AS longitude, e.latitude AS latitude
-  FROM t_entrance AS e
-  WHERE e.is_sensitive = false
-    AND e.is_deleted = false;
-`;
+const etag = require('etag');
+const GeoLocService = require('./GeoLocService');
+const {
+  getCaveSize,
+  roundAestheticism,
+  getEntranceDataQuality,
+} = require('../utils/entranceMapCriteria');
 
 // --------------- State ---------------
 
-let coordinates = null;
-let lastRefreshedAt = null;
+// { lng, lat, size, quality, interest, length, body, etag, refreshedAt },
+// replaced by a single assignment so that no reader can see new columns with
+// an old buffer, or the reverse.
+let snapshot = null;
 let loadPromise = null;
+// Date.now() of the last failed load, or null once a load succeeds.
+let lastFailedAt = null;
+// The one extra load queued by invalidate() while a load is running.
+let followUpPromise = null;
 
 // --------------- Helpers ---------------
 
 const getTTL = () => sails.config.custom?.coordinatesSnapshotTTL ?? 86400;
+
+const getRetryDelay = () =>
+  sails.config.custom?.coordinatesSnapshotRetryDelay ?? 300;
+
+const isWorldwide = (swLat, swLng, neLat, neLng) =>
+  swLat <= -90 && neLat >= 90 && swLng <= -180 && neLng >= 180;
+
+// Columns rather than one small array per entrance: typed arrays take about
+// 3.5 MB for 136k entrances, and the old and new snapshots coexist during a
+// refresh. A Float64Array holds the same double as Number(row.longitude), so
+// precision is unchanged. NaN stands for a null interest.
+const buildColumns = (rows) => {
+  const { length } = rows;
+  const cols = {
+    lng: new Float64Array(length),
+    lat: new Float64Array(length),
+    size: new Uint8Array(length),
+    quality: new Uint8Array(length),
+    interest: new Float64Array(length),
+    length,
+  };
+  for (let i = 0; i < length; i += 1) {
+    const row = rows[i];
+    cols.lng[i] = Number(row.longitude);
+    cols.lat[i] = Number(row.latitude);
+    cols.size[i] = getCaveSize(row.depth, row.length);
+    cols.quality[i] = getEntranceDataQuality(row);
+    cols.interest[i] = roundAestheticism(row.aestheticism) ?? NaN;
+  }
+  return cols;
+};
+
+const toTuple = (cols, i) => [
+  cols.lng[i],
+  cols.lat[i],
+  cols.size[i],
+  cols.quality[i],
+  Number.isNaN(cols.interest[i]) ? null : cols.interest[i],
+];
+
+// The same text JSON.stringify gives for the tuples: a finite double converts
+// to the same string through a template literal as through JSON.stringify.
+const serializeTuple = (cols, i) => {
+  const interest = cols.interest[i];
+  return `[${cols.lng[i]},${cols.lat[i]},${cols.size[i]},${cols.quality[i]},${
+    Number.isNaN(interest) ? 'null' : interest
+  }]`;
+};
+
+/**
+ * @param {Object} cols the snapshot columns
+ * @param {number[]} [indices] the entries to serialize, all when omitted
+ * @returns {string} the JSON array of their tuples
+ */
+const serialize = (cols, indices) => {
+  const parts = indices
+    ? indices.map((i) => serializeTuple(cols, i))
+    : Array.from({ length: cols.length }, (_, i) => serializeTuple(cols, i));
+  return `[${parts.join(',')}]`;
+};
 
 // --------------- Service ---------------
 
@@ -40,17 +110,21 @@ const load = () => {
   loadPromise = (async () => {
     const startTime = Date.now();
     try {
-      const results = await CommonService.query(
-        ALL_PUBLIC_ENTRANCE_COORDINATES
-      );
-      coordinates = results.rows.map((row) => [
-        Number(row.longitude),
-        Number(row.latitude),
-      ]);
-      lastRefreshedAt = new Date();
+      const rows = await GeoLocService.getAllPublicEntranceCriteriaRows();
+      const cols = buildColumns(rows);
+      const body = Buffer.from(serialize(cols), 'utf8');
+      snapshot = {
+        ...cols,
+        body,
+        // The call Express's default `etag fn` makes, so a client holding an
+        // ETag from res.json() keeps getting 304s.
+        etag: etag(body, { weak: true }),
+        refreshedAt: new Date(Date.now()),
+      };
+      lastFailedAt = null;
       const elapsed = Date.now() - startTime;
       sails.log.info(
-        `CoordinatesSnapshot loaded ${coordinates.length} coordinates in ${elapsed}ms`
+        `CoordinatesSnapshot loaded ${cols.length} entrances (${body.length} bytes) in ${elapsed}ms`
       );
     } catch (err) {
       const elapsed = Date.now() - startTime;
@@ -58,7 +132,7 @@ const load = () => {
         `CoordinatesSnapshotService.load() failed after ${elapsed}ms:`,
         err
       );
-      lastRefreshedAt = lastRefreshedAt || new Date(0);
+      lastFailedAt = Date.now();
       throw err;
     } finally {
       loadPromise = null;
@@ -67,29 +141,64 @@ const load = () => {
   return loadPromise;
 };
 
+const canRetry = () =>
+  lastFailedAt === null || Date.now() - lastFailedAt >= getRetryDelay() * 1000;
+
+const isDue = () =>
+  snapshot === null ||
+  Date.now() - snapshot.refreshedAt.getTime() > getTTL() * 1000;
+
+// Stale-while-revalidate: called by every read accessor, never blocks it.
+const maybeRefresh = () => {
+  if (isDue() && canRetry() && !loadPromise) {
+    sails.log.info(
+      'CoordinatesSnapshot TTL expired, triggering background refresh'
+    );
+    load().catch(() => {});
+  }
+};
+
 module.exports = {
   load,
 
-  isLoaded: () => coordinates !== null,
+  isWorldwide,
 
-  getLastRefreshedAt: () => lastRefreshedAt,
+  isLoaded: () => snapshot !== null,
+
+  getLastRefreshedAt: () => snapshot?.refreshedAt ?? null,
 
   getTTL,
 
-  getCoordinates(swLat, swLng, neLat, neLng) {
-    if (coordinates === null) return null;
+  getRetryDelay,
 
-    // Stale-while-revalidate: trigger background refresh if TTL expired
-    if (
-      lastRefreshedAt &&
-      Date.now() - lastRefreshedAt.getTime() > getTTL() * 1000 &&
-      !loadPromise
-    ) {
-      sails.log.info(
-        'CoordinatesSnapshot TTL expired, triggering background refresh'
-      );
-      load().catch(() => {});
+  /**
+   * Awaits the running load, or starts one if the retry delay allows.
+   * @returns {Promise<boolean>} whether a snapshot is loaded; never rejects
+   */
+  async ensureLoaded() {
+    if (snapshot !== null) return true;
+    if (loadPromise) {
+      await loadPromise.catch(() => {});
+    } else if (canRetry()) {
+      await load().catch(() => {});
     }
+    return snapshot !== null;
+  },
+
+  /**
+   * @returns {{ body: Buffer, etag: string }|null} the prebuilt worldwide
+   *   response, not a copy
+   */
+  getWorldResponse() {
+    maybeRefresh();
+    if (snapshot === null) return null;
+    return { body: snapshot.body, etag: snapshot.etag };
+  },
+
+  getCoordinates(swLat, swLng, neLat, neLng) {
+    maybeRefresh();
+    if (snapshot === null) return null;
+    const cols = snapshot;
 
     // Strict inequalities (>) are intentional: coordinates exactly on the bbox
     // boundary are excluded to match Leaflet's convention where tile edges
@@ -101,42 +210,64 @@ module.exports = {
     const fullLat = swLat <= -90 && neLat >= 90;
     const fullLng = swLng <= -180 && neLng >= 180;
 
-    if (fullLat && fullLng) return coordinates.slice();
-
-    if (fullLat) {
-      return coordinates.filter(
-        (coord) => coord[0] >= swLng && coord[0] <= neLng
-      );
+    let isInside;
+    if (fullLat && fullLng) isInside = () => true;
+    else if (fullLat) {
+      isInside = (i) => cols.lng[i] >= swLng && cols.lng[i] <= neLng;
+    } else if (fullLng) {
+      isInside = (i) => cols.lat[i] >= swLat && cols.lat[i] <= neLat;
+    } else {
+      isInside = (i) =>
+        cols.lng[i] > swLng &&
+        cols.lng[i] < neLng &&
+        cols.lat[i] > swLat &&
+        cols.lat[i] < neLat;
     }
 
-    if (fullLng) {
-      return coordinates.filter(
-        (coord) => coord[1] >= swLat && coord[1] <= neLat
-      );
+    const result = [];
+    for (let i = 0; i < cols.length; i += 1) {
+      if (isInside(i)) result.push(toTuple(cols, i));
     }
-
-    return coordinates.filter(
-      (coord) =>
-        coord[0] > swLng &&
-        coord[0] < neLng &&
-        coord[1] > swLat &&
-        coord[1] < neLat
-    );
+    return result;
   },
 
+  /**
+   * Reloads regardless of the retry delay. While a load is running, that load
+   * may have read the database before the caller's rows were committed, so
+   * one follow-up load is queued after it instead, shared by every
+   * invalidate() made in the meantime: a burst of CSV chunks causes at most
+   * two loads. load()'s `finally` clears loadPromise before the follow-up
+   * starts, so the follow-up runs a new query.
+   *
+   * @returns {Promise<void>} settles with the load that will include the
+   *   caller's committed rows
+   */
   invalidate() {
     sails.log.info(
-      'CoordinatesSnapshot TTL invalidated, triggering background refresh'
+      'CoordinatesSnapshot invalidated, triggering background refresh'
     );
-    // Keep lastRefreshedAt at its previous value so the controller computes
-    // a correct (increasing) Cache-Control age while the refresh runs.
-    load().catch(() => {});
+    // The snapshot stays published, so the controller keeps computing a
+    // correct (increasing) Cache-Control age while the refresh runs.
+    if (!loadPromise) return load();
+    if (!followUpPromise) {
+      followUpPromise = loadPromise
+        .catch(() => {}) // the follow-up runs whatever the outcome
+        .then(() => {
+          followUpPromise = null; // a later invalidate() queues the next one
+          return load();
+        });
+    }
+    return followUpPromise;
   },
+
+  // Exposed for tests
+  serialize,
 
   // Test helper — not for production use
   reset() {
-    coordinates = null;
-    lastRefreshedAt = null;
+    snapshot = null;
     loadPromise = null;
+    lastFailedAt = null;
+    followUpPromise = null;
   },
 };

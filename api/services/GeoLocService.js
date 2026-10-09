@@ -129,6 +129,41 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
   LIMIT $5;
 `;
 
+// Every public entrance with the columns the map filter criteria are computed
+// from, for CoordinatesSnapshotService. See #1863.
+//
+// Grouped subqueries rather than the laterals above: this query reads every
+// public entrance (135,989 in production on 2026-10-08), so the planner can
+// hash each subquery once instead of probing it per row. The comment above
+// AESTHETICISM_LATERAL_JOIN explains why the lateral wins for a small box;
+// this is the opposite case.
+//
+// The quality subquery keeps the same row the lateral picks: the lowest
+// id_massif, NULL last under ASC in both. 1,706 production entrances have more
+// than one row in v_data_quality_compute_entrance (at most 3), none of them two
+// with a NULL massif, so the choice is deterministic. Both subqueries are keyed
+// on id_entrance, so neither multiplies the result: one row per entrance.
+const ALL_PUBLIC_ENTRANCE_CRITERIA = `
+  SELECT e.longitude AS longitude, e.latitude AS latitude,
+  c.depth AS depth, c.length AS length, ca.aestheticism AS aestheticism,
+  ${QUALITY_SELECT}
+  FROM t_entrance AS e
+  LEFT JOIN t_cave AS c ON c.id = e.id_cave
+  LEFT JOIN (
+    SELECT DISTINCT ON (id_entrance) id_entrance, ${QUALITY_COLUMNS.join(', ')}
+    FROM v_data_quality_compute_entrance
+    ORDER BY id_entrance, id_massif ASC
+  ) AS vq ON vq.id_entrance = e.id
+  LEFT JOIN (
+    SELECT id_entrance, avg(aestheticism) AS aestheticism
+    FROM t_comment
+    WHERE aestheticism > 0 AND is_deleted = false
+    GROUP BY id_entrance
+  ) AS ca ON ca.id_entrance = e.id
+  WHERE e.is_sensitive = false
+  AND e.is_deleted = false;
+`;
+
 const NETWORKS_IN_BOUNDS = `
   WITH qualifying_networks AS (
     SELECT c.id AS cave_id
@@ -508,6 +543,15 @@ module.exports = {
       Number(coord.longitude),
       Number(coord.latitude),
     ]);
+  },
+
+  /**
+   * @returns {Promise<Object[]>} one raw row per public entrance: longitude,
+   *   latitude, depth, length, aestheticism and the quality columns
+   */
+  getAllPublicEntranceCriteriaRows: async () => {
+    const results = await CommonService.query(ALL_PUBLIC_ENTRANCE_CRITERIA);
+    return results.rows;
   },
 
   getNetworksCoordinates: async (

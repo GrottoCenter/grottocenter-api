@@ -2,8 +2,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const fc = require('fast-check');
+const etag = require('etag');
 const CoordinatesSnapshotService = require('../../../api/services/CoordinatesSnapshotService');
-const CommonService = require('../../../api/services/CommonService');
+const GeoLocService = require('../../../api/services/GeoLocService');
 
 // --- Shared arbitraries ---
 
@@ -48,20 +49,50 @@ const bboxArb = fc
   )
   .map(([[swLat, neLat], [swLng, neLng]]) => ({ swLat, swLng, neLat, neLng }));
 
+// Criteria columns attached to the generated coordinates, cycled by index, with
+// the tuple tail each must produce: one per size, rated and unrated, with and
+// without quality data. A fresh general category with two contributors scores
+// round(14 / 98 * 100) = 14.
+const CRITERIA = [
+  { row: { depth: 150, length: null, aestheticism: 7.65 }, tail: [3, 0, 7.7] },
+  { row: { depth: 30, length: 10, aestheticism: null }, tail: [2, 0, null] },
+  {
+    row: {
+      depth: null,
+      length: null,
+      aestheticism: '4',
+      general_latest_date_of_update: new Date(),
+      general_nb_contributions: 2,
+    },
+    tail: [1, 14, 4],
+  },
+  { row: { depth: 0, length: 1000 }, tail: [3, 0, null] },
+];
+
+const expectedTuple = ([lng, lat], i) => [
+  lng,
+  lat,
+  ...CRITERIA[i % CRITERIA.length].tail,
+];
+
 // --- Shared setup/teardown ---
 
 function setupSnapshotSuite() {
   let queryStub;
   let originalTTL;
+  let originalRetryDelay;
 
   beforeEach(async () => {
     CoordinatesSnapshotService.reset();
     originalTTL = sails.config.custom.coordinatesSnapshotTTL;
+    originalRetryDelay = sails.config.custom.coordinatesSnapshotRetryDelay;
     sails.config.custom.coordinatesSnapshotTTL = 999999;
   });
 
   afterEach(() => {
     sails.config.custom.coordinatesSnapshotTTL = originalTTL;
+    sails.config.custom.coordinatesSnapshotRetryDelay = originalRetryDelay;
+    CoordinatesSnapshotService.reset();
     if (queryStub) {
       queryStub.restore();
       queryStub = null;
@@ -73,16 +104,21 @@ function setupSnapshotSuite() {
   return {
     stubCoords(coords) {
       if (queryStub) queryStub.restore();
-      queryStub = sinon.stub(CommonService, 'query').resolves({
-        rows: coords.map(([lng, lat]) => ({
-          longitude: lng,
-          latitude: lat,
-        })),
-      });
+      queryStub = sinon
+        .stub(GeoLocService, 'getAllPublicEntranceCriteriaRows')
+        .resolves(
+          coords.map(([lng, lat], i) => ({
+            longitude: lng,
+            latitude: lat,
+            ...CRITERIA[i % CRITERIA.length].row,
+          }))
+        );
     },
     stubError(err) {
       if (queryStub) queryStub.restore();
-      queryStub = sinon.stub(CommonService, 'query').rejects(err);
+      queryStub = sinon
+        .stub(GeoLocService, 'getAllPublicEntranceCriteriaRows')
+        .rejects(err);
     },
     releaseStub() {
       if (queryStub) {
@@ -95,8 +131,10 @@ function setupSnapshotSuite() {
 
 /**
  * Bounding box filter is both sound and complete: every returned coordinate
- * is strictly within bounds, and every in-bounds coordinate is returned.
- * Encodes: the filter uses strict inequality (not <=) on all four edges.
+ * is strictly within bounds, and every in-bounds coordinate is returned, as
+ * its full enriched tuple, in snapshot order.
+ * Encodes: the filter uses strict inequality (not <=) on all four edges, and
+ * filtering never separates an entrance from its criteria.
  * Covers: arbitrary coordinate sets with arbitrary valid bounding boxes.
  */
 describe('CoordinatesSnapshotService - Property: Bounding Box Filter Correctness', () => {
@@ -118,6 +156,24 @@ describe('CoordinatesSnapshotService - Property: Bounding Box Filter Correctness
 
         const fullLat = bbox.swLat <= -90 && bbox.neLat >= 90;
         const fullLng = bbox.swLng <= -180 && bbox.neLng >= 180;
+
+        const isExpected = (() => {
+          if (fullLat && fullLng) return () => true;
+          if (fullLat) {
+            return ([lng]) => lng >= bbox.swLng && lng <= bbox.neLng;
+          }
+          if (fullLng) {
+            return ([, lat]) => lat >= bbox.swLat && lat <= bbox.neLat;
+          }
+          return ([lng, lat]) =>
+            lng > bbox.swLng &&
+            lng < bbox.neLng &&
+            lat > bbox.swLat &&
+            lat < bbox.neLat;
+        })();
+        should(result).eql(
+          coords.map(expectedTuple).filter((tuple, i) => isExpected(coords[i]))
+        );
 
         if (fullLat && fullLng) {
           // Shortcut returns all coordinates
@@ -316,11 +372,9 @@ describe('CoordinatesSnapshotService - Property 1: Fault Condition', () => {
 
   /**
    * Bug 2 — Stuck Cache: after invalidate() + failed load(), lastRefreshedAt must be non-null.
-   * Encodes: cache recovery requires lastRefreshedAt to be truthy for stale-while-revalidate.
-   * Covers: invalidate() followed by a failed background load().
-   *
-   * On UNFIXED code: lastRefreshedAt stays null (stuck cache) — test FAILS.
-   * On FIXED code: lastRefreshedAt is set to epoch new Date(0) — test PASSES.
+   * Encodes: a failed reload keeps the published snapshot, and with it
+   * lastRefreshedAt, so the controller keeps serving it with a correct age.
+   * Covers: invalidate() followed by a failed load().
    *
    * Validates: Requirements 1.2, 2.2
    */
@@ -358,24 +412,11 @@ describe('CoordinatesSnapshotService - Property 1: Fault Condition', () => {
 
           should(CoordinatesSnapshotService.getLastRefreshedAt()).be.a.Date();
 
-          // Step 2: invalidate() preserves lastRefreshedAt, then triggers background load()
-          // Stub DB to fail BEFORE calling invalidate() so the background load() fails
+          // Step 2: invalidate() reloads; stub the DB to fail first so that load fails
           stubs.stubError(new Error(errorMsg));
-          CoordinatesSnapshotService.invalidate();
-
-          // Step 3: Wait for the background load() to complete
-          // invalidate() calls load().catch(() => {}), so we call load() again to get the same promise
-          // (single-flight guard) and await it, catching the expected rejection
-          try {
-            await CoordinatesSnapshotService.load();
-          } catch (e) {
-            // Expected on fixed code — load() rejects
-          }
-
-          // Small delay to ensure the fire-and-forget promise settles
-          await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-          });
+          await CoordinatesSnapshotService.invalidate().should.be.rejectedWith(
+            errorMsg
+          );
 
           // Expected behavior: lastRefreshedAt is NOT null (recovery state preserved)
           const refreshedAt = CoordinatesSnapshotService.getLastRefreshedAt();
@@ -692,7 +733,9 @@ describe('CoordinatesSnapshotService - Property 2: Preservation', () => {
     const slowPromise = new Promise((resolve) => {
       resolveQuery = resolve;
     });
-    const queryStub = sinon.stub(CommonService, 'query').returns(slowPromise);
+    const queryStub = sinon
+      .stub(GeoLocService, 'getAllPublicEntranceCriteriaRows')
+      .returns(slowPromise);
 
     // Fire two concurrent load() calls
     const promise1 = CoordinatesSnapshotService.load();
@@ -701,11 +744,11 @@ describe('CoordinatesSnapshotService - Property 2: Preservation', () => {
     // Both should return the same promise (single-flight guard)
     should(promise1).equal(promise2);
 
-    // CommonService.query should have been called exactly once
+    // The query should have run exactly once
     should(queryStub.callCount).equal(1);
 
     // Resolve the query so load() completes
-    resolveQuery({ rows: [{ longitude: 10, latitude: 20 }] });
+    resolveQuery([{ longitude: 10, latitude: 20 }]);
     await promise1;
 
     queryStub.restore();
@@ -721,8 +764,376 @@ describe('CoordinatesSnapshotService - Property 2: Preservation', () => {
    */
   it('should return null from getCoordinates() when snapshot is not loaded (Preservation D)', () => {
     CoordinatesSnapshotService.reset();
+    // The accessor starts a load; hold it so it cannot reach the database
+    sinon
+      .stub(GeoLocService, 'getAllPublicEntranceCriteriaRows')
+      .returns(new Promise(() => {}));
 
     const result = CoordinatesSnapshotService.getCoordinates(-45, -90, 45, 90);
     should(result).be.null();
+  });
+});
+
+// =============================================================================
+// ENRICHED SNAPSHOT AND LIFECYCLE PROPERTIES (#1863)
+// =============================================================================
+
+const finiteDouble = (min, max) =>
+  fc.double({ min, max, noNaN: true, noDefaultInfinity: true });
+
+// One enriched tuple as the snapshot serves it. Coordinates span the full
+// range, including -0 and the extremes; interest is null or one decimal.
+const tupleArb = fc.tuple(
+  finiteDouble(-180, 180),
+  finiteDouble(-90, 90),
+  fc.integer({ min: 1, max: 3 }),
+  fc.integer({ min: 0, max: 100 }),
+  fc.option(
+    fc.integer({ min: 1, max: 100 }).map((n) => n / 10),
+    { nil: null }
+  )
+);
+
+const toColumns = (tuples) => ({
+  lng: Float64Array.from(tuples, (t) => t[0]),
+  lat: Float64Array.from(tuples, (t) => t[1]),
+  size: Uint8Array.from(tuples, (t) => t[2]),
+  quality: Uint8Array.from(tuples, (t) => t[3]),
+  interest: Float64Array.from(tuples, (t) => (t[4] === null ? NaN : t[4])),
+  length: tuples.length,
+});
+
+/**
+ * Property: Serialization round-trips
+ *
+ * For any tuples and any subset of their indices, serialize() produces the
+ * same bytes JSON.stringify gives for that subset, so JSON.parse rebuilds it.
+ * Encodes: the hand-built JSON is interchangeable with res.json(), including
+ * for -0, exponents and null interest.
+ * Covers: full-range doubles, every size and quality, rated and unrated.
+ *
+ * Validates: Requirements 4.4, 5.1
+ */
+describe('CoordinatesSnapshotService - Property: Serialization round-trips', () => {
+  it('should serialize any subset exactly as JSON.stringify does', () => {
+    fc.assert(
+      fc.property(
+        fc.array(tupleArb, { maxLength: 50 }).chain((tuples) =>
+          fc.tuple(
+            fc.constant(tuples),
+            fc.subarray(
+              tuples.map((_, i) => i),
+              { minLength: 0 }
+            )
+          )
+        ),
+        ([tuples, indices]) => {
+          const cols = toColumns(tuples);
+          const expected = indices.map((i) => tuples[i]);
+
+          const all = CoordinatesSnapshotService.serialize(cols);
+          const subset = CoordinatesSnapshotService.serialize(cols, indices);
+
+          should(all).equal(JSON.stringify(tuples));
+          should(subset).equal(JSON.stringify(expected));
+          should(JSON.parse(subset)).have.length(expected.length);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+/**
+ * Property: Publication is atomic
+ *
+ * Over any sequence of loads, each succeeding with arbitrary rows or failing,
+ * the worldwide body always parses to the full-box tuples and carries the
+ * ETag of its own bytes; a failure leaves body, ETag and lastRefreshedAt
+ * exactly as they were published before it.
+ * Encodes: columns, buffer, ETag and timestamp are published together, only
+ * after a complete build.
+ * Covers: first-load failure (nothing published), failure after success,
+ * successive successes with different row counts, empty datasets.
+ *
+ * Validates: Requirements 5.1, 6.2, 6.3
+ */
+describe('CoordinatesSnapshotService - Property: Publication is atomic', () => {
+  afterEach(() => {
+    sinon.restore();
+    CoordinatesSnapshotService.reset();
+  });
+
+  const rowArb = fc.record({
+    longitude: finiteDouble(-180, 180),
+    latitude: finiteDouble(-90, 90),
+    depth: fc.option(fc.integer({ min: 0, max: 2000 }), { nil: null }),
+    length: fc.option(fc.integer({ min: 0, max: 200000 }), { nil: null }),
+    aestheticism: fc.option(finiteDouble(0.1, 10), { nil: null }),
+  });
+
+  const stepArb = fc.oneof(
+    fc.array(rowArb, { maxLength: 15 }).map((rows) => ({ ok: true, rows })),
+    fc.constant({ ok: false })
+  );
+
+  it('should always publish a body, ETag and timestamp that belong together', async function () {
+    this.timeout(60000);
+    sinon.stub(sails.log, 'error');
+    sinon.stub(sails.log, 'info');
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.array(stepArb, { minLength: 1, maxLength: 6 }),
+        async (steps) => {
+          CoordinatesSnapshotService.reset();
+          sails.config.custom.coordinatesSnapshotTTL = 999999;
+          // eslint-disable-next-line no-restricted-syntax
+          for (const step of steps) {
+            // Stub before reading: on an unloaded snapshot the accessor itself
+            // starts the load, which load() below then joins.
+            const stub = sinon.stub(
+              GeoLocService,
+              'getAllPublicEntranceCriteriaRows'
+            );
+            if (step.ok) stub.resolves(step.rows);
+            else stub.rejects(new Error('DB down'));
+            const before = CoordinatesSnapshotService.getWorldResponse();
+            const beforeRefreshedAt =
+              CoordinatesSnapshotService.getLastRefreshedAt();
+
+            // eslint-disable-next-line no-await-in-loop
+            await CoordinatesSnapshotService.load().catch(() => {});
+            stub.restore();
+
+            const after = CoordinatesSnapshotService.getWorldResponse();
+            if (!step.ok) {
+              should(after?.body).equal(before?.body);
+              should(after?.etag).equal(before?.etag);
+              should(CoordinatesSnapshotService.getLastRefreshedAt()).equal(
+                beforeRefreshedAt
+              );
+            } else {
+              should(JSON.parse(after.body.toString('utf8'))).have.length(
+                step.rows.length
+              );
+            }
+            if (after !== null) {
+              should(after.etag).equal(etag(after.body, { weak: true }));
+              should(after.body.toString('utf8')).equal(
+                JSON.stringify(
+                  CoordinatesSnapshotService.getCoordinates(-90, -180, 90, 180)
+                )
+              );
+            }
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+/**
+ * Property: Retry gating
+ *
+ * For any combination of loaded or not, refresh age, failure age and running
+ * load, a read accessor starts a load if and only if the snapshot is due (not
+ * loaded, or older than the TTL), no load is running, and the last failure,
+ * if any, is at least the retry delay old.
+ * Encodes: the TTL is strict (>) and the retry delay inclusive (>=), and a
+ * running load or a recent failure always suppresses an automatic attempt.
+ * Covers: every partition of the four conditions, with ages pinned on and
+ * around both boundaries.
+ *
+ * Validates: Requirements 6.4, 6.5, 6.6
+ */
+describe('CoordinatesSnapshotService - Property: Retry gating', () => {
+  const TTL_S = 100;
+  const RETRY_S = 50;
+  const T0 = 1_800_000_000_000;
+  let originalTTL;
+  let originalRetryDelay;
+
+  beforeEach(() => {
+    originalTTL = sails.config.custom.coordinatesSnapshotTTL;
+    originalRetryDelay = sails.config.custom.coordinatesSnapshotRetryDelay;
+  });
+
+  afterEach(() => {
+    sails.config.custom.coordinatesSnapshotTTL = originalTTL;
+    sails.config.custom.coordinatesSnapshotRetryDelay = originalRetryDelay;
+    sinon.restore();
+    CoordinatesSnapshotService.reset();
+  });
+
+  // Milliseconds after the failure (or after the load, when nothing failed)
+  const elapsedArb = fc.oneof(
+    fc.integer({ min: 0, max: 300000 }),
+    fc.constantFrom(
+      RETRY_S * 1000 - 1,
+      RETRY_S * 1000,
+      TTL_S * 1000 - 2,
+      TTL_S * 1000 - 1,
+      TTL_S * 1000
+    )
+  );
+
+  it('should start a load exactly when due, idle and past the retry delay', async function () {
+    this.timeout(60000);
+    sinon.stub(sails.log, 'error');
+    sinon.stub(sails.log, 'info');
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.boolean(),
+        fc.boolean(),
+        fc.boolean(),
+        elapsedArb,
+        fc.boolean(),
+        async (loaded, failed, running, elapsed, viaWorld) => {
+          CoordinatesSnapshotService.reset();
+          sails.config.custom.coordinatesSnapshotTTL = TTL_S;
+          sails.config.custom.coordinatesSnapshotRetryDelay = RETRY_S;
+          let now = T0;
+          const clock = sinon.stub(Date, 'now').callsFake(() => now);
+          const stub = sinon.stub(
+            GeoLocService,
+            'getAllPublicEntranceCriteriaRows'
+          );
+          try {
+            if (loaded) {
+              stub.resolves([{ longitude: 1, latitude: 2 }]);
+              await CoordinatesSnapshotService.load();
+            }
+            // The failure happens 1 ms after the load
+            now = T0 + 1;
+            if (failed) {
+              stub.rejects(new Error('DB down'));
+              await CoordinatesSnapshotService.load().catch(() => {});
+            }
+            if (running) {
+              stub.returns(new Promise(() => {}));
+              CoordinatesSnapshotService.load();
+            }
+            stub.reset();
+            stub.returns(new Promise(() => {}));
+
+            now = T0 + 1 + elapsed;
+            if (viaWorld) CoordinatesSnapshotService.getWorldResponse();
+            else CoordinatesSnapshotService.getCoordinates(-10, -10, 10, 10);
+
+            const sinceLoad = now - T0;
+            const sinceFailure = now - (T0 + 1);
+            const isDue = !loaded || sinceLoad > TTL_S * 1000;
+            const mayRetry = !failed || sinceFailure >= RETRY_S * 1000;
+            const shouldStart = isDue && mayRetry && !running;
+
+            should(stub.callCount).equal(shouldStart ? 1 : 0);
+          } finally {
+            clock.restore();
+            stub.restore();
+          }
+        }
+      ),
+      // No I/O, so cheap; 300 runs make the boundary partitions near-certain
+      { numRuns: 300 }
+    );
+  });
+});
+
+/**
+ * Property: Invalidations during a load coalesce into one follow-up
+ *
+ * For any number k of invalidate() calls made while a load is running, and
+ * either outcome of that load, exactly one further query runs when k >= 1,
+ * and none when k = 0. The further query starts only after the running load
+ * has settled, and every invalidate() returns the same promise, which
+ * resolves with the follow-up's rows published.
+ * Encodes: a load that may predate the caller's commit is never handed back
+ * as the caller's refresh, and a burst of invalidations costs one extra load.
+ * Covers: k from 0 to 5, running load succeeding or failing.
+ *
+ * Validates: Requirements 6.6, 6.8, 8.3
+ */
+describe('CoordinatesSnapshotService - Property: Invalidations during a load coalesce into one follow-up', () => {
+  afterEach(() => {
+    sinon.restore();
+    CoordinatesSnapshotService.reset();
+  });
+
+  it('should run exactly one follow-up load after the running one settles', async function () {
+    this.timeout(60000);
+    sinon.stub(sails.log, 'error');
+    sinon.stub(sails.log, 'info');
+    const newerRows = [
+      { longitude: 1, latitude: 2 },
+      { longitude: 3, latitude: 4 },
+    ];
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.integer({ min: 0, max: 5 }),
+        fc.boolean(),
+        async (k, runningSucceeds) => {
+          CoordinatesSnapshotService.reset();
+          let release;
+          const first = new Promise((resolve, reject) => {
+            release = () =>
+              runningSucceeds
+                ? resolve([{ longitude: 5, latitude: 6 }])
+                : reject(new Error('DB down'));
+          });
+          let runningSettled = false;
+          let followUpStartedAfterSettle = null;
+          const stub = sinon.stub(
+            GeoLocService,
+            'getAllPublicEntranceCriteriaRows'
+          );
+          stub.onFirstCall().returns(first);
+          stub.onSecondCall().callsFake(() => {
+            followUpStartedAfterSettle = runningSettled;
+            return Promise.resolve(newerRows);
+          });
+
+          try {
+            const running = CoordinatesSnapshotService.load();
+            running.then(
+              () => {
+                runningSettled = true;
+              },
+              () => {
+                runningSettled = true;
+              }
+            );
+            const promises = Array.from({ length: k }, () =>
+              CoordinatesSnapshotService.invalidate()
+            );
+            promises.forEach((p) => should(p).equal(promises[0]));
+            should(stub.callCount).equal(1);
+
+            release();
+            await running.catch(() => {});
+            await Promise.all(promises);
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+
+            if (k === 0) {
+              should(stub.callCount).equal(1);
+            } else {
+              should(stub.callCount).equal(2);
+              should(followUpStartedAfterSettle).be.true();
+              should(
+                CoordinatesSnapshotService.getCoordinates(-90, -180, 90, 180)
+              ).have.length(newerRows.length);
+            }
+          } finally {
+            stub.restore();
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
   });
 });

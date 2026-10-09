@@ -99,6 +99,14 @@ module.exports.custom = {
 
   /** *************************************************************************
    *                                                                          *
+   * Minimum delay (in seconds) between a failed coordinates snapshot load    *
+   * and the next automatic attempt. invalidate() ignores it.                 *
+   *                                                                          *
+   ************************************************************************** */
+  coordinatesSnapshotRetryDelay: 300, // 5 minutes
+
+  /** *************************************************************************
+   *                                                                          *
    * Authentication settings.                                                 *
    *                                                                          *
    ************************************************************************** */
