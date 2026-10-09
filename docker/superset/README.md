@@ -59,6 +59,14 @@ On push to `develop` with changes in `docker/superset/**`, the GitHub Actions wo
 2. Pushes to `ghcr.io/grottocenter/superset:latest` and `:$SHA`
 3. Calls the Azure webhook to trigger a container pull + restart
 
+## Base Image Upgrade
+
+1. Read the [Superset changelog](https://github.com/apache/superset/blob/master/CHANGELOG.md) for breaking changes
+2. Update `FROM apache/superset:<version>` in `Dockerfile`
+3. Check that `psycopg2-binary` and `flask-cors` are still compatible
+4. Build and run locally (`npm run superset:up`, or `docker build -t superset-test docker/superset/`)
+5. Check that `superset_config.py` still holds: feature flags, theme tokens and CSP change between versions
+
 ## Manual Deployment
 
 When you need to deploy outside of CI (e.g., hotfix, config change):
@@ -107,9 +115,13 @@ az webapp config container show --name grottocenter-superset --resource-group gr
 |----------|---------|
 | `SQLALCHEMY_DATABASE_URI` | Superset metadata DB (PostgreSQL on Azure) |
 | `SUPERSET_SECRET_KEY` | Flask session encryption |
+| `SUPERSET_SSO_SECRET` | SSO signing secret; must match `SSO_SALT_SUPERSET` on the API |
 | `SUPERSET_ADMIN_USERNAME` | Admin account username |
 | `SUPERSET_ADMIN_PASSWORD` | Admin account password |
+| `SUPERSET_ADMIN_EMAIL` | Admin account email |
 | `SESSION_COOKIE_SECURE` | Set to `true` in production (HTTPS); defaults to `false` |
+| `REDIS_URL` | Redis connection; empty means in-memory `SimpleCache` |
+| `WEBSITES_PORT` | `8088` |
 | `DOCKER_REGISTRY_SERVER_*` | GHCR pull credentials |
 
 ## Notes
