@@ -30,12 +30,14 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
     let result;
     let createdEntranceId;
     let createdCaveId;
+    let logErrorSpy;
 
     before(async () => {
       invalidateSpy = sinon.spy(
         sails.services.coordinatessnapshotservice,
         'invalidate'
       );
+      logErrorSpy = sinon.spy(sails.log, 'error');
       const job = makeJob([
         {
           id: '77770',
@@ -58,6 +60,7 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
 
     after(async () => {
       invalidateSpy.restore();
+      logErrorSpy.restore();
       // Clean up created records
       if (createdEntranceId) {
         await TName.destroy({ entrance: createdEntranceId });
@@ -95,6 +98,17 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
 
     it('should call CoordinatesSnapshotService.invalidate()', () => {
       should(invalidateSpy.calledOnce).be.true();
+    });
+
+    it('should get a promise back from invalidate(), so its .catch is live', () => {
+      should(invalidateSpy.firstCall.returnValue).be.a.Promise();
+    });
+
+    it('should not log an unexpected chunk error', () => {
+      const unexpected = logErrorSpy
+        .getCalls()
+        .filter((call) => String(call.args[0]).includes('unexpected error'));
+      should(unexpected).have.length(0);
     });
 
     it('should enqueue a completion check job', () => {
@@ -351,6 +365,82 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
 
     it('should call CoordinatesSnapshotService.invalidate() because there was a success', () => {
       should(invalidateSpy.calledOnce).be.true();
+    });
+  });
+
+  describe('snapshot invalidation failure', () => {
+    let result;
+    let createdEntranceId;
+    let createdCaveId;
+    let invalidateStub;
+    let logErrorStub;
+    const invalidationError = new Error('snapshot reload failed');
+
+    before(async () => {
+      invalidateStub = sinon
+        .stub(sails.services.coordinatessnapshotservice, 'invalidate')
+        .rejects(invalidationError);
+      logErrorStub = sinon.stub(sails.log, 'error');
+      const job = makeJob([
+        {
+          id: '77790',
+          'rdf:type': 'Entrance',
+          'dct:rights/cc:attributionName': 'Invalidation Fail Author',
+          'dct:rights/karstlink:licenseType': 'CC-BY-SA',
+          'gn:countryCode': 'FR',
+          'w3geo:latitude': '46.6',
+          'w3geo:longitude': '3.3',
+          'rdfs:label/dc:language': 'eng',
+          'rdfs:label': 'Invalidation Fail Entrance',
+        },
+      ]);
+      result = await CSVImportQueueService.processOneChunk(job);
+      if (result.successes.length > 0) {
+        createdEntranceId = result.successes[0].entranceId;
+        createdCaveId = result.successes[0].caveId;
+      }
+      // The rejection is handled asynchronously, after processOneChunk returns
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    });
+
+    after(async () => {
+      invalidateStub.restore();
+      logErrorStub.restore();
+      if (createdEntranceId) {
+        await TName.destroy({ entrance: createdEntranceId });
+        await TEntrance.destroy({ id: createdEntranceId });
+      }
+      if (createdCaveId) {
+        await TName.destroy({ cave: createdCaveId });
+        await TCave.destroy({ id: createdCaveId });
+      }
+    });
+
+    it('should still report the row as a success', () => {
+      should(invalidateStub.calledOnce).be.true();
+      should(result.successes).have.length(1);
+      should(result.failures).have.length(0);
+    });
+
+    it("should log the rejection through the caller's .catch", () => {
+      const logged = logErrorStub
+        .getCalls()
+        .filter((call) =>
+          String(call.args[0]).includes(
+            'coordinates snapshot invalidation failed'
+          )
+        );
+      should(logged).have.length(1);
+      should(logged[0].args[1]).equal(invalidationError);
+    });
+
+    it('should not log an unexpected chunk error', () => {
+      const unexpected = logErrorStub
+        .getCalls()
+        .filter((call) => String(call.args[0]).includes('unexpected error'));
+      should(unexpected).have.length(0);
     });
   });
 });
