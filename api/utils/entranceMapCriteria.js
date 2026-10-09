@@ -5,7 +5,10 @@
  * coordinates (`GET /geoloc/entrancesCoordinates`) cannot disagree on which
  * entrances a filter hides. See #1863.
  */
-const { getQualityData } = require('./computeEntranceDataQuality');
+const {
+  getDateCutoffs,
+  getQualityData,
+} = require('./computeEntranceDataQuality');
 
 // Encoded as integers so the coordinate tuples stay compact.
 const SIZE = { SMALL: 1, MEDIUM: 2, LARGE: 3 };
@@ -56,11 +59,12 @@ const roundAestheticism = (average) =>
 /**
  * @param {Object} row columns of v_data_quality_compute_entrance, all NULL
  *   when the entrance has no row in the view
+ * @param {Object} [cutoffs] getDateCutoffs(), computed once for a batch of rows
  * @returns {number} the 0–100 score, or 0 when the row is missing or has no
  *   general update date
  */
-const getEntranceDataQuality = (row) =>
-  row.general_latest_date_of_update != null ? getQualityData(row) : 0;
+const getEntranceDataQuality = (row, cutoffs) =>
+  row.general_latest_date_of_update != null ? getQualityData(row, cutoffs) : 0;
 
 module.exports = {
   SIZE,
@@ -68,4 +72,5 @@ module.exports = {
   getCaveSize,
   roundAestheticism,
   getEntranceDataQuality,
+  getDateCutoffs,
 };

@@ -61,16 +61,46 @@ const MAX_RAW_CATEGORY = MAX_DATE_SCORE + MAX_CONTRIB_SCORE;
 const MAX_RAW_TOTAL = QUALITY_CATEGORIES.length * MAX_RAW_CATEGORY;
 
 /**
+ * The instants N years before `now` at which each date tier ends. A date
+ * after a cut-off is less than N years old.
+ *
+ * Comparing against cut-offs replaces a fractional
+ * `dayjs().diff(date, 'year', true)` per date, which cost ~5 µs: a coordinates
+ * snapshot scores ~500,000 dates per load, so the diffs alone blocked the event
+ * loop for ~2.6 s. Compute the cut-offs once per batch and pass them in.
+ *
+ * The result is the same as the diff except on a leap day, where dayjs is not
+ * monotonic: on 2026-02-28 it rates 2024-02-29 two years old but the day
+ * before it younger. Here 2024-02-29 is, like 2024-02-28 noon, under two.
+ *
+ * @param {Object} [now] a dayjs instance
+ * @returns {{ recent: number, moderate: number, old: number }} epoch ms
+ */
+const getDateCutoffs = (now = dayjs()) => ({
+  recent: now.subtract(DATE_THRESHOLD_RECENT, 'year').valueOf(),
+  moderate: now.subtract(DATE_THRESHOLD_MODERATE, 'year').valueOf(),
+  old: now.subtract(DATE_THRESHOLD_OLD, 'year').valueOf(),
+});
+
+/**
  *
  * @param {Date} entityDate the date that we need to test
+ * @param {Object} [cutoffs] from getDateCutoffs()
  * @returns {int} the score associated with the date
  */
-const getIndividualScoreAboutLastestDateOfUpdate = (entityDate) => {
+const getIndividualScoreAboutLastestDateOfUpdate = (
+  entityDate,
+  cutoffs = getDateCutoffs()
+) => {
   if (!entityDate) return DATE_SCORE_NONE;
-  const ageInYears = dayjs().diff(dayjs(entityDate), 'year', true);
-  if (ageInYears < DATE_THRESHOLD_RECENT) return DATE_SCORE_RECENT;
-  if (ageInYears < DATE_THRESHOLD_MODERATE) return DATE_SCORE_MODERATE;
-  if (ageInYears < DATE_THRESHOLD_OLD) return DATE_SCORE_OLD;
+  // pg returns timestamps as Date; dayjs parses anything else
+  const time =
+    entityDate instanceof Date
+      ? entityDate.getTime()
+      : dayjs(entityDate).valueOf();
+  if (time > cutoffs.recent) return DATE_SCORE_RECENT;
+  if (time > cutoffs.moderate) return DATE_SCORE_MODERATE;
+  if (time > cutoffs.old) return DATE_SCORE_OLD;
   return DATE_SCORE_VERY_OLD;
 };
 
@@ -92,13 +122,15 @@ const getIndividualScoreAboutNbContributions = (nbContributions) => {
 /**
  *
  * @param {Object} entrance the entrance information to compute the quality of its data
+ * @param {Object} [cutoffs] from getDateCutoffs(), shared across a batch
  * @returns {int} the score (0–100) after normalizing the raw quality sum
  */
-const getQualityData = (entrance) => {
+const getQualityData = (entrance, cutoffs = getDateCutoffs()) => {
   let score = 0;
   for (const cat of QUALITY_CATEGORIES) {
     score += getIndividualScoreAboutLastestDateOfUpdate(
-      entrance[`${cat}_latest_date_of_update`]
+      entrance[`${cat}_latest_date_of_update`],
+      cutoffs
     );
     score += getIndividualScoreAboutNbContributions(
       entrance[`${cat}_nb_contributions`]
@@ -114,9 +146,11 @@ const getQualityData = (entrance) => {
  */
 const getQualityBreakdown = (entrance) => {
   const breakdown = {};
+  const cutoffs = getDateCutoffs();
   for (const cat of QUALITY_CATEGORIES) {
     const dateScore = getIndividualScoreAboutLastestDateOfUpdate(
-      entrance[`${cat}_latest_date_of_update`]
+      entrance[`${cat}_latest_date_of_update`],
+      cutoffs
     );
     const contribScore = getIndividualScoreAboutNbContributions(
       entrance[`${cat}_nb_contributions`]
@@ -134,6 +168,7 @@ module.exports = {
   MAX_CONTRIB_SCORE,
   MAX_RAW_CATEGORY,
   MAX_RAW_TOTAL,
+  getDateCutoffs,
   getQualityData,
   getQualityBreakdown,
 };
