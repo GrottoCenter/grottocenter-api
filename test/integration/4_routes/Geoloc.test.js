@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const CommonService = require('../../../api/services/CommonService');
 
 describe('Geoloc features', () => {
@@ -772,151 +773,274 @@ describe('Geoloc features', () => {
     });
   });
 
-  // Sails shallow-copies service exports when registering them, so a plain
-  // require() returns a different object than the one the controller uses.
-  // We access the Sails-registered instance via sails.services to share state.
   describe('entrancesCoordinates snapshot integration', () => {
+    const WORLD = { sw_lat: -90, sw_lng: -180, ne_lat: 90, ne_lng: 180 };
+    const MAX_AGE = /^public, max-age=(\d+)$/;
+
     let CoordinatesSnapshotService;
+    // The copy the controller calls, and the one CoordinatesSnapshotService
+    // loads its rows through: two objects, see the before hook.
+    let GeoLocService;
+    let SnapshotGeoLocService;
+    let getCaveSize;
     let originalTTL;
 
-    beforeEach(async () => {
-      CoordinatesSnapshotService = sails.services.coordinatessnapshotservice;
+    const requestCoordinates = (query) =>
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrancesCoordinates')
+        .set('Accept', 'application/json')
+        .query(query);
+
+    const maxAgeOf = (res) => {
+      const match = res.headers['cache-control'].match(MAX_AGE);
+      should(match).not.be.null();
+      return parseInt(match[1], 10);
+    };
+
+    const byCoordinates = (a, b) => a[0] - b[0] || a[1] - b[1];
+
+    const wait = (ms) =>
+      new Promise((resolve) => {
+        setTimeout(resolve, ms);
+      });
+
+    // Resolved after the lift: Sails re-requires api/ when it lifts, so a stub
+    // on a top-level require would never reach the controller.
+    //
+    // Sails' loader also flushes each service from the require cache before
+    // loading it. CoordinatesSnapshotService loads first and requires its own
+    // GeoLocService, which the loader then flushes and loads again: the
+    // snapshot keeps the first copy, the controller gets the second. Both are
+    // stateless, but a stub must target the copy that is called.
+    before(() => {
+      /* eslint-disable global-require */
+      const snapshotPath =
+        require.resolve('../../../api/services/CoordinatesSnapshotService');
+      const geoLocPath = require.resolve('../../../api/services/GeoLocService');
+      CoordinatesSnapshotService = require('../../../api/services/CoordinatesSnapshotService');
+      GeoLocService = require('../../../api/services/GeoLocService');
+      SnapshotGeoLocService = require.cache[snapshotPath].children.find(
+        (m) => m.id === geoLocPath
+      ).exports;
+      ({ getCaveSize } = require('../../../api/utils/entranceMapCriteria'));
+      /* eslint-enable global-require */
+    });
+
+    beforeEach(() => {
       CoordinatesSnapshotService.reset();
       originalTTL = sails.config.custom.coordinatesSnapshotTTL;
     });
 
     afterEach(() => {
+      sinon.restore();
       sails.config.custom.coordinatesSnapshotTTL = originalTTL;
       CoordinatesSnapshotService.reset();
     });
 
-    it('should use snapshot for non-massif request when loaded', async () => {
-      // Load snapshot from real DB
-      await CoordinatesSnapshotService.load();
+    describe('worldwide request', () => {
+      it('should send the cached body as JSON with its ETag', async () => {
+        await CoordinatesSnapshotService.load();
+        const world = CoordinatesSnapshotService.getWorldResponse();
 
-      // Get what the snapshot holds right now
-      const expected = CoordinatesSnapshotService.getCoordinates(
-        -90,
-        -180,
-        90,
-        180
-      );
+        const res = await requestCoordinates(WORLD).expect(200);
 
-      // Request full-range bbox — snapshot serves all coordinates
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: -90,
-          sw_lng: -180,
-          ne_lat: 90,
-          ne_lng: 180,
-        })
-        .expect(200);
+        should(res.headers['content-type']).equal(
+          'application/json; charset=utf-8'
+        );
+        should(res.headers.etag).equal(world.etag);
+        should(res.text).equal(world.body.toString('utf8'));
+        should(res.body).deepEqual(
+          CoordinatesSnapshotService.getCoordinates(-90, -180, 90, 180)
+        );
+        should(res.body.length).be.above(0);
+        res.body.forEach((tuple) => should(tuple).have.length(5));
+      });
 
-      res.body.should.be.Array();
-      // Response must match snapshot contents exactly
-      should(res.body).deepEqual(expected);
+      it('should answer 304 without a body to a matching If-None-Match, keeping Cache-Control', async () => {
+        sails.config.custom.coordinatesSnapshotTTL = 1000;
+        await CoordinatesSnapshotService.load();
+        const first = await requestCoordinates(WORLD).expect(200);
+
+        const res = await requestCoordinates(WORLD)
+          .set('If-None-Match', first.headers.etag)
+          .expect(304);
+
+        should(res.text).be.empty();
+        should(Math.abs(maxAgeOf(res) - maxAgeOf(first))).be.belowOrEqual(1);
+      });
+
+      it('should start one background load when it answers 304 from an expired snapshot', async () => {
+        await CoordinatesSnapshotService.load();
+        const { etag } = CoordinatesSnapshotService.getWorldResponse();
+        sails.config.custom.coordinatesSnapshotTTL = 0.001;
+        await wait(10);
+        const spy = sinon.spy(
+          SnapshotGeoLocService,
+          'getAllPublicEntranceCriteriaRows'
+        );
+
+        const res = await requestCoordinates(WORLD)
+          .set('If-None-Match', etag)
+          .expect(304);
+
+        should(spy.callCount).equal(1);
+        should(res.text).be.empty();
+        await CoordinatesSnapshotService.load(); // the running load
+      });
+
+      it('should give each entrance the size, data quality and interest of /geoloc/entrances', async () => {
+        await CoordinatesSnapshotService.load();
+        const tuples = CoordinatesSnapshotService.getCoordinates(
+          -90,
+          -180,
+          90,
+          180
+        );
+        should(tuples.length).be.above(0);
+
+        // /geoloc/entrances caps the box area, so each entrance is looked up
+        // in a small box around it and matched by coordinates.
+        const responses = await Promise.all(
+          tuples.map(([lng, lat]) =>
+            supertest(sails.hooks.http.app)
+              .get('/api/v1/geoloc/entrances')
+              .set('Accept', 'application/json')
+              .query({
+                sw_lat: lat - 0.01,
+                sw_lng: lng - 0.01,
+                ne_lat: lat + 0.01,
+                ne_lng: lng + 0.01,
+              })
+              .expect(200)
+          )
+        );
+
+        tuples.forEach(([lng, lat, size, dataQuality, aestheticism], i) => {
+          const criteria = responses[i].body
+            .filter((e) => e.longitude === lng && e.latitude === lat)
+            .map((e) => [
+              getCaveSize(e.depth, e.length),
+              e.dataQuality,
+              e.aestheticism,
+            ]);
+          should(criteria).containEql([size, dataQuality, aestheticism]);
+        });
+        // The fixtures carry ratings and quality rows, so the comparison
+        // covers more than the defaults.
+        should(tuples.some((t) => t[4] !== null)).be.true();
+        should(tuples.some((t) => t[3] > 0)).be.true();
+      });
     });
 
-    it('should fall back to DB when snapshot is not loaded', async () => {
-      // Snapshot is reset in afterEach — not loaded here
-      should(CoordinatesSnapshotService.isLoaded()).be.false();
+    describe('bounding-box request', () => {
+      it('should return only the enriched tuples strictly inside the box', async () => {
+        await CoordinatesSnapshotService.load();
+        const box = { sw_lat: 60, sw_lng: 70, ne_lat: 63, ne_lng: 79 };
 
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: 0,
-          sw_lng: 0,
-          ne_lat: 50,
-          ne_lng: 50,
-        })
-        .expect(200);
+        const res = await requestCoordinates(box).expect(200);
 
-      // Snapshot is null → controller falls back to DB.
-      // Fixtures have entrances at [3,3] and [30,30] in this bbox.
-      res.body.should.be.Array();
+        should(res.body.length).be.above(0);
+        should(res.body).deepEqual(
+          CoordinatesSnapshotService.getCoordinates(60, 70, 63, 79)
+        );
+        res.body.forEach(([lng, lat, ...criteria]) => {
+          should(criteria).have.length(3);
+          should(lng).be.above(box.sw_lng).and.below(box.ne_lng);
+          should(lat).be.above(box.sw_lat).and.below(box.ne_lat);
+        });
+        should(res.headers['cache-control']).match(MAX_AGE);
+      });
+    });
+
+    describe('cold start', () => {
+      it('should fall back to the enriched DB query with max-age=0 when the load fails', async () => {
+        await CoordinatesSnapshotService.load();
+        const expected = CoordinatesSnapshotService.getCoordinates(
+          -90,
+          -180,
+          90,
+          180
+        );
+        CoordinatesSnapshotService.reset();
+        sinon.stub(sails.log, 'error');
+        const stub = sinon
+          .stub(SnapshotGeoLocService, 'getAllPublicEntranceCriteriaRows')
+          .rejects(new Error('DB down'));
+
+        const res = await requestCoordinates(WORLD).expect(200);
+
+        should(stub.calledOnce).be.true();
+        should(res.headers['cache-control']).equal('public, max-age=0');
+        // The fallback's row order is unspecified
+        should([...res.body].sort(byCoordinates)).deepEqual(
+          [...expected].sort(byCoordinates)
+        );
+      });
+
+      it('should not query the snapshot again within the retry delay', async () => {
+        sinon.stub(sails.log, 'error');
+        const stub = sinon
+          .stub(SnapshotGeoLocService, 'getAllPublicEntranceCriteriaRows')
+          .rejects(new Error('DB down'));
+
+        await requestCoordinates(WORLD).expect(200);
+        await requestCoordinates(WORLD).expect(200);
+
+        should(stub.calledOnce).be.true();
+      });
+
+      it('should serve from the snapshot once the awaited load succeeds', async () => {
+        should(CoordinatesSnapshotService.isLoaded()).be.false();
+
+        const res = await requestCoordinates(WORLD).expect(200);
+
+        should(CoordinatesSnapshotService.isLoaded()).be.true();
+        should(res.headers.etag).equal(
+          CoordinatesSnapshotService.getWorldResponse().etag
+        );
+        should(maxAgeOf(res)).be.above(0);
+      });
+
+      it('should not include Cache-Control when the fallback query fails', async () => {
+        sinon.stub(sails.log, 'error');
+        sinon
+          .stub(SnapshotGeoLocService, 'getAllPublicEntranceCriteriaRows')
+          .rejects(new Error('DB down'));
+        sinon
+          .stub(GeoLocService, 'getEnrichedEntrancesCoordinates')
+          .rejects(new Error('fallback down'));
+
+        const res = await requestCoordinates(WORLD).expect(500);
+
+        should(res.headers['cache-control']).be.undefined();
+      });
+    });
+
+    it('should return [longitude, latitude] pairs from the DB for a massif request', async () => {
+      await CoordinatesSnapshotService.load();
+      const spy = sinon.spy(GeoLocService, 'getEntrancesCoordinates');
+
+      const res = await requestCoordinates({
+        sw_lat: 53,
+        sw_lng: 52,
+        ne_lat: 74,
+        ne_lng: 108,
+        massif: 1,
+      }).expect(200);
+
+      should(spy.calledOnce).be.true();
       should(res.body.length).be.above(0);
-    });
-
-    it('should always use DB path for massif requests', async () => {
-      // Load snapshot from real DB
-      await CoordinatesSnapshotService.load();
-
-      // Massif 1 request — controller must bypass snapshot and use DB
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: 50,
-          sw_lng: 50,
-          ne_lat: 75,
-          ne_lng: 110,
-          massif: 1,
-        })
-        .expect(200);
-
-      res.body.should.be.Array();
-      // The snapshot bbox filter for [50-75, 50-110] would return 0
-      // coordinates (all fixtures are outside this range).
-      // The DB massif query returns entrances within the massif polygon.
-      // Any result (even empty) is fine — the key test is that it
-      // doesn't crash and returns 200 with an array.
-    });
-
-    it('should include Cache-Control header on success', async () => {
-      await CoordinatesSnapshotService.load();
-
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: -90,
-          sw_lng: -180,
-          ne_lat: 90,
-          ne_lng: 180,
-        })
-        .expect(200);
-
-      should(res.headers['cache-control']).match(/^public, max-age=\d+$/);
-    });
-
-    it('should include Cache-Control header on DB fallback', async () => {
-      // Snapshot not loaded — controller falls back to DB
-      should(CoordinatesSnapshotService.isLoaded()).be.false();
-
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: -90,
-          sw_lng: -180,
-          ne_lat: 90,
-          ne_lng: 180,
-        })
-        .expect(200);
-
-      should(res.headers['cache-control']).match(/^public, max-age=\d+$/);
+      res.body.forEach((pair) => should(pair).have.length(2));
+      should(res.headers['cache-control']).match(MAX_AGE);
     });
 
     it('should not include Cache-Control header on error', async () => {
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: 0,
-          sw_lng: 0,
-          ne_lng: 5,
-          // ne_lat missing — triggers 400
-        })
-        .expect(400);
+      const res = await requestCoordinates({
+        sw_lat: 0,
+        sw_lng: 0,
+        ne_lng: 5,
+        // ne_lat missing — triggers 400
+      }).expect(400);
 
       should(res.headers['cache-control']).be.undefined();
     });
@@ -925,26 +1049,11 @@ describe('Geoloc features', () => {
       sails.config.custom.coordinatesSnapshotTTL = 1000;
       await CoordinatesSnapshotService.load();
 
-      const res = await supertest(sails.hooks.http.app)
-        .get('/api/v1/geoloc/entrancesCoordinates')
-        .set('Content-type', 'application/json')
-        .set('Accept', 'application/json')
-        .query({
-          sw_lat: -90,
-          sw_lng: -180,
-          ne_lat: 90,
-          ne_lng: 180,
-        })
-        .expect(200);
+      const res = await requestCoordinates(WORLD).expect(200);
 
-      const match = res.headers['cache-control'].match(
-        /^public, max-age=(\d+)$/
-      );
-      should(match).not.be.null();
-      const maxAge = parseInt(match[1], 10);
       // Just loaded, so max-age should be close to the full TTL (within 5s)
-      should(maxAge).be.aboveOrEqual(995);
-      should(maxAge).be.belowOrEqual(1000);
+      should(maxAgeOf(res)).be.aboveOrEqual(995);
+      should(maxAgeOf(res)).be.belowOrEqual(1000);
     });
   });
 

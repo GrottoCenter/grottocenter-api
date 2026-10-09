@@ -5758,7 +5758,25 @@ paths:
     get:
       tags:
         - geoloc
-      description: Get entrance coordinates inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas.
+      description: >-
+        Get the coordinates of the public entrances inside the given bounding
+        box, for map clustering.
+
+
+        Without `massif`, each entrance is an enriched tuple
+        `[longitude, latitude, size, dataQuality, aestheticism]` carrying the
+        criteria the map filters on, computed as in `/geoloc/entrances`. These
+        responses are served from an in-memory snapshot refreshed in the
+        background. A worldwide box (`sw_lat <= -90`, `ne_lat >= 90`,
+        `sw_lng <= -180`, `ne_lng >= 180`) returns a prebuilt body with an
+        `ETag`; send it back in `If-None-Match` to get a `304` without a body.
+        While the snapshot cannot load, the database answers instead, with
+        `Cache-Control: public, max-age=0`.
+
+
+        With `massif`, the response is the entrances in the intersection of the
+        box and the massif polygon, as `[longitude, latitude]` pairs read from
+        the database.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
@@ -5770,20 +5788,73 @@ paths:
           description: Massif id to filter entrances by massif polygon
           schema:
             type: integer
+        - name: If-None-Match
+          in: header
+          required: false
+          description: The `ETag` of a previous response; a `304` is returned while it still matches
+          schema:
+            type: string
       responses:
         '200':
-          description: List of coordinates [long,lat]
+          description: >-
+            Enriched tuples without `massif`, pairs with it. Row order is
+            unspecified.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: >-
+                `public, max-age=N`, N being the seconds left before the snapshot
+                is due for a refresh; `max-age=0` when no snapshot is loaded
+            ETag:
+              schema:
+                type: string
+              description: Weak entity tag of the body, e.g. `W/"5f-..."`
           content:
             application/json:
-              example: [[4.55, 0.17], [45.89, -10.56]]
+              example: [[4.55, 0.17, 3, 42, 7.7], [45.89, -10.56, 1, 0, null]]
               schema:
                 type: array
                 items:
-                  type: array
-                  items:
-                    type: number
+                  oneOf:
+                    - type: array
+                      title: Enriched entrance (without massif)
+                      description: >-
+                        `[longitude, latitude, size, dataQuality, aestheticism]`.
+                        `size` is 1 (small), 2 (medium: depth >= 30 m or length
+                        >= 200 m) or 3 (large: depth >= 100 m or length >= 1000 m),
+                        a missing dimension counting as 0. `dataQuality` is the
+                        0-100 score of `/geoloc/entrances`. `aestheticism` is the
+                        average interest rating (0-10, one decimal), or null when
+                        the entrance is unrated.
+                      items:
+                        type: number
+                        nullable: true
+                      minItems: 5
+                      maxItems: 5
+                    - type: array
+                      title: Entrance in a massif
+                      description: '`[longitude, latitude]`'
+                      items:
+                        type: number
+                      minItems: 2
+                      maxItems: 2
+        '304':
+          description: Not modified; the `If-None-Match` ETag still matches. No body.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: Same as for `200`
+            ETag:
+              schema:
+                type: string
+        '400':
+          description: Missing or invalid bounding box parameter
         '404':
           description: Massif not found (when massif parameter is provided)
+        '500':
+          description: Server error. No `Cache-Control` header.
 
   '/geoloc/networks':
     get:

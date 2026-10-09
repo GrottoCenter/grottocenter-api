@@ -118,6 +118,25 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS = `
   LIMIT $5;
 `;
 
+// The bounding-box fallback of GET /geoloc/entrancesCoordinates, used only
+// while the coordinates snapshot cannot load. It reuses the high-zoom
+// fragments verbatim rather than the grouped subqueries of
+// ALL_PUBLIC_ENTRANCE_CRITERIA, so the two outputs share one implementation of
+// each criterion. No LIMIT: a truncated fallback would hide entrances the
+// snapshot shows. See #1863.
+const PUBLIC_ENTRANCES_CRITERIA_IN_BOUNDS = `
+  SELECT e.longitude AS longitude, e.latitude AS latitude,
+  c.depth AS depth, c.length AS length, ca.aestheticism AS aestheticism,
+  ${QUALITY_SELECT}
+  FROM t_entrance AS e
+  LEFT JOIN t_cave AS c ON c.id = e.id_cave
+  ${QUALITY_LATERAL_JOIN}
+  ${AESTHETICISM_LATERAL_JOIN}
+  WHERE ST_Within(e.point_geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
+  AND e.is_sensitive = false
+  AND e.is_deleted = false;
+`;
+
 const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
   SELECT e.longitude AS longitude, e.latitude AS latitude
   FROM t_entrance AS e
@@ -143,6 +162,10 @@ const PUBLIC_ENTRANCES_COORDINATES_IN_BOUNDS_AND_MASSIF = `
 // than one row in v_data_quality_compute_entrance (at most 3), none of them two
 // with a NULL massif, so the choice is deterministic. Both subqueries are keyed
 // on id_entrance, so neither multiplies the result: one row per entrance.
+//
+// On a local copy seeded to production's shape (135,874 public entrances) it
+// takes about 550 ms, against about 110 ms for the coordinate pairs it
+// replaces.
 const ALL_PUBLIC_ENTRANCE_CRITERIA = `
   SELECT e.longitude AS longitude, e.latitude AS latitude,
   c.depth AS depth, c.length AS length, ca.aestheticism AS aestheticism,
@@ -274,8 +297,10 @@ const MASSIFS_IN_BOUNDS = `
 const CommonService = require('./CommonService');
 const NameService = require('./NameService');
 const {
+  getCaveSize,
   roundAestheticism,
   getEntranceDataQuality,
+  getDateCutoffs,
 } = require('../utils/entranceMapCriteria');
 const computeBoundingBoxAreaKm2 = require('../utils/computeBoundingBoxAreaKm2');
 
@@ -325,8 +350,9 @@ const formatNetworks = (rows) => {
  * Quality entrance stand for an entrance that won't be clustered
  * @param entrances
  */
-const formatEntrances = (entrances) =>
-  entrances.map((entrance) => ({
+const formatEntrances = (entrances) => {
+  const cutoffs = getDateCutoffs();
+  return entrances.map((entrance) => ({
     id: entrance.id,
     name: entrance.name,
     city: entrance.city,
@@ -339,8 +365,9 @@ const formatEntrances = (entrances) =>
     latitude: parseFloat(entrance.latitude),
     quality: entrance.size_coef,
     aestheticism: roundAestheticism(entrance.aestheticism),
-    dataQuality: getEntranceDataQuality(entrance),
+    dataQuality: getEntranceDataQuality(entrance, cutoffs),
   }));
+};
 
 /**
  * Return a lighter version of the grottos
@@ -542,6 +569,31 @@ module.exports = {
     return coordinates.map((coord) => [
       Number(coord.longitude),
       Number(coord.latitude),
+    ]);
+  },
+
+  /**
+   * @returns {Promise<Array<Array<number|null>>>} the public entrances inside
+   *   the box as [longitude, latitude, size, dataQuality, aestheticism], the
+   *   tuples CoordinatesSnapshotService serves
+   */
+  getEnrichedEntrancesCoordinates: async (southWestBound, northEastBound) => {
+    const results = await CommonService.query(
+      PUBLIC_ENTRANCES_CRITERIA_IN_BOUNDS,
+      [
+        southWestBound.lng,
+        southWestBound.lat,
+        northEastBound.lng,
+        northEastBound.lat,
+      ]
+    );
+    const cutoffs = getDateCutoffs();
+    return results.rows.map((row) => [
+      Number(row.longitude),
+      Number(row.latitude),
+      getCaveSize(row.depth, row.length),
+      getEntranceDataQuality(row, cutoffs),
+      roundAestheticism(row.aestheticism),
     ]);
   },
 

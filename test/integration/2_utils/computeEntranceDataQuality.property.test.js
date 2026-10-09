@@ -5,12 +5,23 @@ const dayjs = require('../../../api/utils/dayjs');
 const {
   QUALITY_CATEGORIES,
   MAX_RAW_TOTAL,
+  getDateCutoffs,
   getQualityData,
   getQualityBreakdown,
 } = require('../../../api/utils/computeEntranceDataQuality');
 const {
   toQualityDataEntrance,
 } = require('../../../api/services/mapping/converters');
+
+// Valid dates, years 1000 to 3000. For an invalid date, or one near the edge
+// of the Date range (year -271821), dayjs's year diff returns 0, so Property
+// 3's diff oracle would rate it recent; getDateCutoffs() rates it very old.
+// PostgreSQL timestamps produce neither.
+const dateArb = fc.date({
+  min: new Date('1000-01-01'),
+  max: new Date('3000-01-01'),
+  noInvalidDate: true,
+});
 
 /**
  * Arbitrary: generates a random materialized view row
@@ -19,7 +30,7 @@ const {
  */
 const qualityRowArb = fc.record({
   ...QUALITY_CATEGORIES.reduce((acc, cat) => {
-    acc[`${cat}_latest_date_of_update`] = fc.option(fc.date());
+    acc[`${cat}_latest_date_of_update`] = fc.option(dateArb);
     acc[`${cat}_nb_contributions`] = fc.option(fc.nat());
     return acc;
   }, {}),
@@ -103,6 +114,8 @@ describe('computeEntranceDataQuality - Property Tests', () => {
           for (const cat of QUALITY_CATEGORIES) {
             const entityDate = row[`${cat}_latest_date_of_update`];
             let dateScore = 0;
+            // getDateCutoffs() departs from this diff on leap days only, see
+            // Property 5
             if (entityDate) {
               const ageInYears = dayjs().diff(dayjs(entityDate), 'year', true);
               if (ageInYears < 2) dateScore = 7;
@@ -150,6 +163,81 @@ describe('computeEntranceDataQuality - Property Tests', () => {
           should(detailScore).equal(listScore);
         }),
         { numRuns: 100 }
+      );
+    });
+  });
+
+  /**
+   * Property 5: Cut-off scoring matches the fractional year diff
+   *
+   * For any `now` and any entity date, scoring against getDateCutoffs(now)
+   * gives the tier `now.diff(date, 'year', true)` gives, except for a date on
+   * 29 February, where dayjs's diff is not monotonic. Dates are drawn both
+   * anywhere in the last 16 years and within a day of a tier boundary, where
+   * an off-by-one comparison (>= for >) would show.
+   *
+   * Encodes the switch from a diff per date to cut-offs computed once per
+   * batch, which a coordinates snapshot load relies on.
+   */
+  describe('Property 5: Cut-off scoring matches the fractional year diff', () => {
+    const DAY = 864e5;
+    const tierOf = (ageInYears) => {
+      if (ageInYears < 2) return 7;
+      if (ageInYears < 5) return 5;
+      if (ageInYears < 10) return 3;
+      return 1;
+    };
+    const scoreOfTier = (tier) => Math.round((tier / MAX_RAW_TOTAL) * 100);
+
+    const nowArb = fc
+      .date({
+        min: new Date('2000-01-01'),
+        max: new Date('2100-01-01'),
+        noInvalidDate: true,
+      })
+      .map((d) => dayjs(d));
+    const anyAgeArb = (now) =>
+      fc
+        .double({ min: -1, max: 16, noNaN: true })
+        .map((years) => new Date(now.valueOf() - years * 365.25 * DAY));
+    const nearBoundaryArb = (now) =>
+      fc
+        .tuple(
+          fc.constantFrom(2, 5, 10),
+          fc.oneof(
+            fc.constantFrom(-1, 0, 1),
+            fc.integer({ min: -DAY, max: DAY })
+          )
+        )
+        .map(
+          ([years, offset]) =>
+            new Date(now.subtract(years, 'year').valueOf() + offset)
+        );
+
+    it('should give the diff tier for every date but 29 February', function () {
+      this.timeout(10000);
+      fc.assert(
+        fc.property(
+          nowArb.chain((now) =>
+            fc.tuple(
+              fc.constant(now),
+              fc.oneof(anyAgeArb(now), nearBoundaryArb(now))
+            )
+          ),
+          ([now, date]) => {
+            fc.pre(!(date.getMonth() === 1 && date.getDate() === 29));
+            const expected = scoreOfTier(
+              tierOf(now.diff(dayjs(date), 'year', true))
+            );
+            should(
+              getQualityData(
+                { general_latest_date_of_update: date },
+                getDateCutoffs(now)
+              )
+            ).equal(expected);
+          }
+        ),
+        { numRuns: 1000 }
       );
     });
   });
