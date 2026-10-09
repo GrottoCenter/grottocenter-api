@@ -20,6 +20,7 @@ const UPDATABLE_PROPERTIES = [
 module.exports = async (req, res) => {
   const updates = {};
   let verificationEmail = null;
+  let cancelsPendingEmail = false;
   let caver = null;
 
   // Reject unknown properties
@@ -29,6 +30,14 @@ module.exports = async (req, res) => {
         `Could not update property ${prop}, it is not updatable via this endpoint.`
       );
     }
+  }
+
+  const {
+    value: sendNotificationByEmail,
+    error: sendNotificationByEmailError,
+  } = readBoolParam(req, 'sendNotificationByEmail');
+  if (sendNotificationByEmailError) {
+    return res.badRequest(sendNotificationByEmailError);
   }
 
   // Validate and collect each field
@@ -46,43 +55,42 @@ module.exports = async (req, res) => {
     caver = await TCaver.findOne({ id: req.token.id });
 
     if (caver.mail === normalizedEmail) {
-      // If user submits their current email while a change is pending, cancel it
-      if (caver.pendingMail) {
-        await TCaver.updateOne({ id: req.token.id }).set({
-          pendingMail: null,
-          activationCode: null,
-          mailIsValid: true,
-        });
-        return res.ok({ message: 'Pending email change cancelled.' });
+      // Submitting the current email while a change is pending cancels it.
+      // The other fields are still validated and saved in the same write.
+      if (!caver.pendingMail) {
+        return res.badRequest(
+          'The new email must be different from the current one.'
+        );
       }
-      return res.badRequest(
-        'The new email must be different from the current one.'
-      );
+      cancelsPendingEmail = true;
+      updates.pendingMail = null;
+      updates.activationCode = null;
+      updates.mailIsValid = true;
+    } else {
+      // Check uniqueness against both mail and pendingMail (exclude self)
+      const alreadyInUse = await TCaver.findOne({
+        id: { '!=': req.token.id },
+        or: [{ mail: normalizedEmail }, { pendingMail: normalizedEmail }],
+      });
+      if (alreadyInUse) {
+        return res.conflict('This email is already in use.');
+      }
+
+      // Generate activation code and store as pending (don't update mail directly)
+      const activationCode = AuthService.generateActivationCode();
+      updates.pendingMail = normalizedEmail;
+      updates.activationCode = activationCode;
+      updates.mailIsValid = false;
+
+      // Send verification email (fire-and-forget, after the update is persisted)
+      // We store a reference to send it after the DB update below
+      verificationEmail = {
+        nickname: caver.nickname,
+        mail: normalizedEmail,
+        activationCode,
+        locale: req.getLocale ? req.getLocale() : undefined,
+      };
     }
-
-    // Check uniqueness against both mail and pendingMail (exclude self)
-    const alreadyInUse = await TCaver.findOne({
-      id: { '!=': req.token.id },
-      or: [{ mail: normalizedEmail }, { pendingMail: normalizedEmail }],
-    });
-    if (alreadyInUse) {
-      return res.conflict('This email is already in use.');
-    }
-
-    // Generate activation code and store as pending (don't update mail directly)
-    const activationCode = AuthService.generateActivationCode();
-    updates.pendingMail = normalizedEmail;
-    updates.activationCode = activationCode;
-    updates.mailIsValid = false;
-
-    // Send verification email (fire-and-forget, after the update is persisted)
-    // We store a reference to send it after the DB update below
-    verificationEmail = {
-      nickname: caver.nickname,
-      mail: normalizedEmail,
-      activationCode,
-      locale: req.getLocale ? req.getLocale() : undefined,
-    };
   }
 
   // Fetch current caver before any updates — needed for password verification
@@ -137,13 +145,6 @@ module.exports = async (req, res) => {
     updates.surname = req.body.surname === '' ? null : req.body.surname;
   }
 
-  const {
-    value: sendNotificationByEmail,
-    error: sendNotificationByEmailError,
-  } = readBoolParam(req, 'sendNotificationByEmail');
-  if (sendNotificationByEmailError) {
-    return res.badRequest(sendNotificationByEmailError);
-  }
   if (sendNotificationByEmail !== undefined) {
     updates.sendNotificationByEmail = sendNotificationByEmail;
   }
@@ -223,5 +224,8 @@ module.exports = async (req, res) => {
     return res.serverError();
   }
 
+  if (cancelsPendingEmail) {
+    return res.ok({ message: 'Pending email change cancelled.' });
+  }
   return res.ok();
 };

@@ -346,7 +346,10 @@ describe('Boolean request parameters', () => {
 
       after(async () => {
         await TCaver.updateOne({ mail: 'all1@all1.com' }).set({
+          activationCode: original.activationCode,
+          mailIsValid: original.mailIsValid,
           name: original.name,
+          pendingMail: original.pendingMail,
           sendNotificationByEmail: original.sendNotificationByEmail,
         });
       });
@@ -369,6 +372,29 @@ describe('Boolean request parameters', () => {
         }).expect(204);
 
         should(await storedFlag()).be.true();
+      });
+
+      it('should reject an invalid flag sent along with a pending email cancellation', async () => {
+        const pending = {
+          activationCode: 'boolean-params-code',
+          mailIsValid: false,
+          pendingMail: 'boolean-params-pending@example.com',
+        };
+        // Waterline renames the keys of the object passed to set().
+        await TCaver.updateOne({ mail: 'all1@all1.com' }).set({ ...pending });
+
+        const res = await patchAccount({
+          email: 'all1@all1.com',
+          sendNotificationByEmail: 'yes',
+        }).expect(400);
+
+        should(res.body.code).equal('E_BAD_REQUEST');
+        should(res.body.metadata).containDeep({
+          field: 'sendNotificationByEmail',
+          value: 'yes',
+        });
+        const caver = await TCaver.findOne({ mail: 'all1@all1.com' });
+        should(caver).containDeep(pending);
       });
 
       it('should not apply the other fields when the flag is invalid', async () => {

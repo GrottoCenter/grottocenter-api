@@ -191,6 +191,59 @@ describe('Account change-email', () => {
       should(updatedUser.activationCode).be.null();
       updatedUser.mailIsValid.should.be.true();
     });
+
+    describe('cancelling along with other fields', () => {
+      const pending = {
+        activationCode: 'change-email-cancel-code',
+        mailIsValid: false,
+        pendingMail: 'change-email-cancel@example.com',
+      };
+      let original;
+
+      before(async () => {
+        original = await TCaver.findOne({ id: userId });
+      });
+
+      beforeEach(async () => {
+        // Waterline renames the keys of the object passed to set().
+        await TCaver.updateOne({ id: userId }).set({ ...pending });
+      });
+
+      after(async () => {
+        await TCaver.updateOne({ id: userId }).set({
+          activationCode: original.activationCode,
+          mailIsValid: original.mailIsValid,
+          name: original.name,
+          pendingMail: original.pendingMail,
+        });
+      });
+
+      it('should reject an invalid field and keep the pending change', async () => {
+        await supertest(sails.hooks.http.app)
+          .patch('/api/v1/account')
+          .send({ email: userMail, language: 'zzz' })
+          .set('Authorization', userToken)
+          .expect(400);
+
+        const user = await TCaver.findOne({ id: userId });
+        should(user).containDeep(pending);
+      });
+
+      it('should save the other fields in the same request', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .patch('/api/v1/account')
+          .send({ email: userMail, name: 'Cancelled Along' })
+          .set('Authorization', userToken)
+          .expect(200);
+
+        res.body.message.should.equal('Pending email change cancelled.');
+        const user = await TCaver.findOne({ id: userId });
+        should(user.name).equal('Cancelled Along');
+        should(user.pendingMail).be.null();
+        should(user.activationCode).be.null();
+        should(user.mailIsValid).be.true();
+      });
+    });
   });
 
   describe('GET /api/v1/verify-email', () => {
