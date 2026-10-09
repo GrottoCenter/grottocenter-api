@@ -138,11 +138,9 @@ build-info.json
 # Test database snapshot stamp
 test/.snapshot-stamp
 
-# Error triage agent timestamp
+# AI (shared guidance is tracked: AGENTS.md, CLAUDE.md, .agents/, .claude/skills)
 .last-error-triage
-
-# AI
-CLAUDE.md
+CLAUDE.local.md
 .amazonq
-.kiro
-.claude
+.claude/*
+!.claude/skills

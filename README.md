@@ -108,6 +108,8 @@ Yon can also join us on Slack: [https://grottocenter.slack.com](https://grottoce
 
 > For more details, read [the development guide](https://github.com/GrottoCenter/Grottocenter3/wiki/Development-guide)
 
+Code conventions, SQL migration rules and the testing workflow are in [`AGENTS.md`](AGENTS.md). It is written for AI coding agents and is read automatically by Claude Code, Codex, Cursor and GitHub Copilot, but it is just as useful to human contributors.
+
 ### Query the database on your local environment
 
 Example:
