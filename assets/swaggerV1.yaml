@@ -532,7 +532,10 @@ paths:
                     preference unchanged.
       responses:
         '200':
-          description: Pending email change cancelled.
+          description: >
+            Pending email change cancelled: `email` was the current address
+            while a change was pending. The other fields sent along are
+            validated and saved in the same write.
           content:
             application/json:
               schema:
