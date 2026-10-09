@@ -238,7 +238,10 @@ const MASSIFS_IN_BOUNDS = `
 
 const CommonService = require('./CommonService');
 const NameService = require('./NameService');
-const { getQualityData } = require('../utils/computeEntranceDataQuality');
+const {
+  roundAestheticism,
+  getEntranceDataQuality,
+} = require('../utils/entranceMapCriteria');
 const computeBoundingBoxAreaKm2 = require('../utils/computeBoundingBoxAreaKm2');
 
 // Largest bounding box accepted by GET /api/v1/geoloc/entrances. That endpoint
@@ -300,19 +303,8 @@ const formatEntrances = (entrances) =>
     longitude: parseFloat(entrance.longitude),
     latitude: parseFloat(entrance.latitude),
     quality: entrance.size_coef,
-    // Rounded here rather than in SQL: round(...::numeric, 1) would come back
-    // from pg as a string, while avg(float8) arrives as a number. One decimal
-    // keeps a response that may carry thousands of entrances small, and is all
-    // the precision the popup can show — it renders half stars out of 5 from a
-    // 0-10 rating, so anything finer than 0.1 is invisible. See #1825.
-    aestheticism:
-      entrance.aestheticism == null
-        ? null
-        : Math.round(Number(entrance.aestheticism) * 10) / 10,
-    dataQuality:
-      entrance.general_latest_date_of_update != null
-        ? getQualityData(entrance)
-        : 0,
+    aestheticism: roundAestheticism(entrance.aestheticism),
+    dataQuality: getEntranceDataQuality(entrance),
   }));
 
 /**
