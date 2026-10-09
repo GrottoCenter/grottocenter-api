@@ -192,6 +192,34 @@ describe('CoordinatesSnapshotService', () => {
       );
     });
 
+    it('should serialize an interest that overflows to Infinity as null', async () => {
+      // One rating of 1e308 averages to 1e308; rounding it to one decimal
+      // multiplies by 10 and overflows.
+      stubRows([
+        { longitude: 2, latitude: 45, aestheticism: 1e308 },
+        { longitude: 3, latitude: 46, aestheticism: -1e308 },
+      ]);
+      await CoordinatesSnapshotService.load();
+
+      const { body } = CoordinatesSnapshotService.getWorldResponse();
+
+      should(body.toString('utf8')).equal('[[2,45,1,0,null],[3,46,1,0,null]]');
+      should(world()).eql([
+        [2, 45, 1, 0, null],
+        [3, 46, 1, 0, null],
+      ]);
+    });
+
+    it('should serialize an unparseable coordinate as null', async () => {
+      stubRows([{ longitude: 'not a number', latitude: 45 }]);
+      await CoordinatesSnapshotService.load();
+
+      const { body } = CoordinatesSnapshotService.getWorldResponse();
+
+      should(JSON.parse(body.toString('utf8'))).eql([[null, 45, 1, 0, null]]);
+      should(world()).eql([[null, 45, 1, 0, null]]);
+    });
+
     it('should serialize an empty dataset as an empty array', async () => {
       stubRows([]);
       await CoordinatesSnapshotService.load();

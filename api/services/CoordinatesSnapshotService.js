@@ -61,7 +61,8 @@ const isWorldwide = (swLat, swLng, neLat, neLng) =>
 // Columns rather than one small array per entrance: typed arrays take about
 // 3.5 MB for 136k entrances, and the old and new snapshots coexist during a
 // refresh. A Float64Array holds the same double as Number(row.longitude), so
-// precision is unchanged. NaN stands for a null interest.
+// precision is unchanged. NaN stands for a null interest; any non-finite value
+// reads back as null.
 const buildColumns = (rows) => {
   const { length } = rows;
   const cols = {
@@ -84,22 +85,26 @@ const buildColumns = (rows) => {
   return cols;
 };
 
+// JSON has no NaN or Infinity, and JSON.stringify writes null for both. A
+// finite input can still overflow: one rating of 1e308 averages to 1e308,
+// which roundAestheticism() multiplies by 10 into Infinity.
+const finiteOrNull = (value) => (Number.isFinite(value) ? value : null);
+
 const toTuple = (cols, i) => [
-  cols.lng[i],
-  cols.lat[i],
-  cols.size[i],
-  cols.quality[i],
-  Number.isNaN(cols.interest[i]) ? null : cols.interest[i],
+  finiteOrNull(cols.lng[i]),
+  finiteOrNull(cols.lat[i]),
+  finiteOrNull(cols.size[i]),
+  finiteOrNull(cols.quality[i]),
+  finiteOrNull(cols.interest[i]),
 ];
 
 // The same text JSON.stringify gives for the tuples: a finite double converts
-// to the same string through a template literal as through JSON.stringify.
-const serializeTuple = (cols, i) => {
-  const interest = cols.interest[i];
-  return `[${cols.lng[i]},${cols.lat[i]},${cols.size[i]},${cols.quality[i]},${
-    Number.isNaN(interest) ? 'null' : interest
-  }]`;
-};
+// to the same string through a template literal as through JSON.stringify,
+// and a template literal writes null for null.
+const serializeTuple = (cols, i) =>
+  `[${finiteOrNull(cols.lng[i])},${finiteOrNull(cols.lat[i])},${finiteOrNull(
+    cols.size[i]
+  )},${finiteOrNull(cols.quality[i])},${finiteOrNull(cols.interest[i])}]`;
 
 /**
  * @param {Object} cols the snapshot columns

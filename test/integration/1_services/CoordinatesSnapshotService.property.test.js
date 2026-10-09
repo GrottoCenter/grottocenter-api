@@ -781,17 +781,24 @@ describe('CoordinatesSnapshotService - Property 2: Preservation', () => {
 const finiteDouble = (min, max) =>
   fc.double({ min, max, noNaN: true, noDefaultInfinity: true });
 
-// One enriched tuple as the snapshot serves it. Coordinates span the full
-// range, including -0 and the extremes; interest is null or one decimal.
+// NaN, Infinity and -Infinity, which JSON.stringify writes as null. The
+// columns can hold them: an interest overflows to Infinity from one rating of
+// 1e308, and Number() gives NaN for an unparseable coordinate.
+const nonFinite = fc.constantFrom(NaN, Infinity, -Infinity);
+const doubleColumn = (arb) =>
+  fc.oneof({ weight: 9, arbitrary: arb }, { weight: 1, arbitrary: nonFinite });
+
+// One enriched tuple as the snapshot holds it. Coordinates span the full
+// range, including -0 and the extremes; interest is null or one decimal. Any
+// double column is now and then non-finite.
 const tupleArb = fc.tuple(
-  finiteDouble(-180, 180),
-  finiteDouble(-90, 90),
+  doubleColumn(finiteDouble(-180, 180)),
+  doubleColumn(finiteDouble(-90, 90)),
   fc.integer({ min: 1, max: 3 }),
   fc.integer({ min: 0, max: 100 }),
-  fc.option(
-    fc.integer({ min: 1, max: 100 }).map((n) => n / 10),
-    { nil: null }
-  )
+  fc.option(doubleColumn(fc.integer({ min: 1, max: 100 }).map((n) => n / 10)), {
+    nil: null,
+  })
 );
 
 const toColumns = (tuples) => ({
@@ -809,8 +816,10 @@ const toColumns = (tuples) => ({
  * For any tuples and any subset of their indices, serialize() produces the
  * same bytes JSON.stringify gives for that subset, so JSON.parse rebuilds it.
  * Encodes: the hand-built JSON is interchangeable with res.json(), including
- * for -0, exponents and null interest.
- * Covers: full-range doubles, every size and quality, rated and unrated.
+ * for -0, exponents, null interest and non-finite values, which must come out
+ * as null rather than as text JSON.parse rejects.
+ * Covers: full-range doubles, NaN and ±Infinity in every double column, every
+ * size and quality, rated and unrated.
  *
  * Validates: Requirements 4.4, 5.1
  */
