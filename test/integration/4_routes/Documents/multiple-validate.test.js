@@ -34,14 +34,16 @@ describe('Document multiple-validate', () => {
         .expect(400, done);
     });
 
-    it('should validate empty list of documents', (done) => {
-      supertest(sails.hooks.http.app)
+    it('should validate empty list of documents', async () => {
+      const res = await supertest(sails.hooks.http.app)
         .put('/api/v1/documents/validate')
         .send({ documents: [] })
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204, done);
+        .expect(200);
+
+      should(res.body).deepEqual([]);
     });
 
     it('should validate a single document', async () => {
@@ -52,7 +54,7 @@ describe('Document multiple-validate', () => {
         isValidated: false,
       }).fetch();
 
-      await supertest(sails.hooks.http.app)
+      const res = await supertest(sails.hooks.http.app)
         .put('/api/v1/documents/validate')
         .send({
           documents: [{ id: doc.id, isValidated: 'true' }],
@@ -60,10 +62,70 @@ describe('Document multiple-validate', () => {
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204);
+        .expect(200);
 
+      should(res.body).deepEqual([
+        { id: doc.id, status: 'validated', reason: null },
+      ]);
       const updated = await TDocument.findOne(doc.id);
       should(updated.isValidated).be.true();
+    });
+
+    it('should report an id that matches no document as not_found', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      const missingId = 2147483647;
+
+      const res = await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [
+            { id: missingId, isValidated: 'true' },
+            { id: doc.id, isValidated: 'true' },
+          ],
+        })
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      // Request order, and the unknown id does not stop the batch.
+      should(res.body).deepEqual([
+        { id: missingId, status: 'not_found', reason: null },
+        { id: doc.id, status: 'validated', reason: null },
+      ]);
+    });
+
+    it('should process a repeated id once, using its first entry', async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+
+      const res = await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [
+            { id: doc.id, isValidated: 'true' },
+            { id: doc.id, isValidated: 'false', validationComment: 'Nope' },
+          ],
+        })
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(res.body).deepEqual([
+        { id: doc.id, status: 'validated', reason: null },
+      ]);
+      const updated = await TDocument.findOne(doc.id);
+      should(updated.validationComment ?? null).not.equal('Nope');
     });
 
     it('should validate multiple documents', async () => {
@@ -91,7 +153,7 @@ describe('Document multiple-validate', () => {
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204);
+        .expect(200);
 
       const updated1 = await TDocument.findOne(doc1.id);
       const updated2 = await TDocument.findOne(doc2.id);
@@ -107,7 +169,7 @@ describe('Document multiple-validate', () => {
         isValidated: false,
       }).fetch();
 
-      await supertest(sails.hooks.http.app)
+      const res = await supertest(sails.hooks.http.app)
         .put('/api/v1/documents/validate')
         .send({
           documents: [
@@ -121,8 +183,11 @@ describe('Document multiple-validate', () => {
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204);
+        .expect(200);
 
+      should(res.body).deepEqual([
+        { id: doc.id, status: 'rejected', reason: null },
+      ]);
       const updated = await TDocument.findOne(doc.id);
       should(updated.isValidated).be.true();
       should(updated.validationComment).equal('Rejected for testing');
@@ -156,7 +221,7 @@ describe('Document multiple-validate', () => {
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204);
+        .expect(200);
 
       const updated = await TDocument.findOne(doc.id);
       should(updated.isValidated).be.true();
@@ -196,7 +261,7 @@ describe('Document multiple-validate', () => {
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(204);
+        .expect(200);
 
       const updated = await TDocument.findOne(doc.id).populate('massifs');
       should(updated.isValidated).be.true();
@@ -258,7 +323,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id).populate('authors');
         // Only caver 6 should be listed; caver 1 must have been removed
@@ -304,7 +369,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id)
           .populate('authors')
@@ -348,7 +413,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id).populate('authors');
         // authors was not touched — caver 1 must still be there
@@ -403,7 +468,7 @@ describe('Document multiple-validate', () => {
           (n) => n.id
         );
 
-        await supertest(sails.hooks.http.app)
+        const res = await supertest(sails.hooks.http.app)
           .put('/api/v1/documents/validate')
           .send({
             documents: [{ id: docA.id, isValidated: 'true' }],
@@ -411,9 +476,17 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(docA.id);
+        // The response reports the auto-rejection and the comment it stored.
+        should(res.body).deepEqual([
+          {
+            id: docA.id,
+            status: 'auto_rejected',
+            reason: updated.validationComment,
+          },
+        ]);
         // modifiedDocJson must be cleared (auto-rejected)
         should(updated.modifiedDocJson).be.null();
         // The cyclic parent must NOT have been written
@@ -513,7 +586,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id).populate('authors');
         should(updated.modifiedDocJson).be.null();
@@ -620,7 +693,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id).populate('authors');
         should(updated.modifiedDocJson).be.null();
@@ -669,7 +742,7 @@ describe('Document multiple-validate', () => {
             .set('Authorization', moderatorToken)
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json')
-            .expect(204);
+            .expect(200);
 
           const updated = await TDocument.findOne(doc.id).populate('authors');
           should(updated.modifiedDocJson).be.null();
@@ -715,7 +788,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updated = await TDocument.findOne(doc.id).populate('subjects');
         should(updated.modifiedDocJson).be.null();
@@ -778,7 +851,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
 
         const updatedStale = await TDocument.findOne(staleDoc.id).populate(
           'authors'
@@ -871,7 +944,7 @@ describe('Document multiple-validate', () => {
             .set('Authorization', moderatorToken)
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json')
-            .expect(204);
+            .expect(200);
 
           should(calls).equal(2);
 
@@ -900,7 +973,7 @@ describe('Document multiple-validate', () => {
             .set('Authorization', moderatorToken)
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json')
-            .expect(204);
+            .expect(200);
 
           // Bounded: it must give up rather than retry forever.
           should(stub.callCount).equal(2);
@@ -927,13 +1000,21 @@ describe('Document multiple-validate', () => {
             })
           );
 
-          await supertest(sails.hooks.http.app)
+          const res = await supertest(sails.hooks.http.app)
             .put('/api/v1/documents/validate')
             .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
             .set('Authorization', moderatorToken)
             .set('Content-type', 'application/json')
             .set('Accept', 'application/json')
-            .expect(500);
+            .expect(207);
+
+          should(res.body).deepEqual([
+            {
+              id: doc.id,
+              status: 'error',
+              reason: 'Unexpected error while processing this document.',
+            },
+          ]);
 
           // No retry either — it is not a race.
           should(stub.callCount).equal(1);
@@ -942,6 +1023,63 @@ describe('Document multiple-validate', () => {
           const updated = await TDocument.findOne(doc.id);
           should(updated.modifiedDocJson).not.be.null();
           should(updated.isValidated).be.false();
+        });
+
+        // #1817: one document throwing used to 500 the whole request after the
+        // documents before it had already committed, with nothing saying which.
+        it('should report each outcome and keep going when one document of the batch throws', async () => {
+          const first = await seedPendingDoc();
+          const failing = await seedPendingDoc();
+          const last = await seedPendingDoc();
+
+          const original = Service.replaceM2MCollections;
+          const stub = sinon
+            .stub(Service, 'replaceM2MCollections')
+            .callsFake((documentId, ...rest) => {
+              if (documentId === failing.id) {
+                return Promise.reject(
+                  Object.assign(new Error('connection terminated'), {
+                    raw: { code: '08006' },
+                  })
+                );
+              }
+              return original.call(Service, documentId, ...rest);
+            });
+
+          const res = await supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({
+              documents: [
+                { id: first.id, isValidated: 'true' },
+                { id: failing.id, isValidated: 'true' },
+                { id: last.id, isValidated: 'true' },
+              ],
+            })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(207);
+
+          should(stub.callCount).equal(3);
+          should(res.body).deepEqual([
+            { id: first.id, status: 'validated', reason: null },
+            {
+              id: failing.id,
+              status: 'error',
+              reason: 'Unexpected error while processing this document.',
+            },
+            { id: last.id, status: 'validated', reason: null },
+          ]);
+
+          const [updatedFirst, updatedFailing, updatedLast] = await Promise.all(
+            [first, failing, last].map((d) => TDocument.findOne(d.id))
+          );
+          should(updatedFirst.isValidated).be.true();
+          should(updatedFirst.modifiedDocJson).be.null();
+          should(updatedFailing.isValidated).be.false();
+          should(updatedFailing.modifiedDocJson).not.be.null();
+          should(updatedLast.isValidated).be.true();
+          should(updatedLast.modifiedDocJson).be.null();
         });
 
         // The drop is recorded nowhere but the log, so the log must not claim a
@@ -1012,7 +1150,7 @@ describe('Document multiple-validate', () => {
               .set('Authorization', moderatorToken)
               .set('Content-type', 'application/json')
               .set('Accept', 'application/json')
-              .expect(204);
+              .expect(200);
 
             should(calls).equal(2);
             // Not twice: the rolled-back attempt dropped the same member, but it
@@ -1039,7 +1177,7 @@ describe('Document multiple-validate', () => {
               .set('Authorization', moderatorToken)
               .set('Content-type', 'application/json')
               .set('Accept', 'application/json')
-              .expect(500);
+              .expect(207);
 
             should(dropWarnings(warn)).be.empty();
 
@@ -1101,7 +1239,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
       });
 
       const authorNotification = await TNotification.findOne({
@@ -1138,7 +1276,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
       });
 
       const authorNotification = await TNotification.findOne({
@@ -1169,7 +1307,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
       });
 
       const selfNotification = newIds.length
@@ -1215,7 +1353,7 @@ describe('Document multiple-validate', () => {
           .set('Authorization', moderatorToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(204);
+          .expect(200);
       });
 
       const validateNotification = await TNotification.findOne({
@@ -1280,7 +1418,7 @@ describe('Document multiple-validate', () => {
 
         await sendDocuments([
           { id: doc.id, isValidated: value, validationComment: 'No' },
-        ]).expect(204);
+        ]).expect(200);
 
         const updated = await TDocument.findOne(doc.id);
         should(updated.type).equal(1);
@@ -1298,7 +1436,7 @@ describe('Document multiple-validate', () => {
       it(`should apply the modification when isValidated is ${label}`, async () => {
         const doc = await createModifiedDocument();
 
-        await sendDocuments([{ id: doc.id, isValidated: value }]).expect(204);
+        await sendDocuments([{ id: doc.id, isValidated: value }]).expect(200);
 
         const updated = await TDocument.findOne(doc.id);
         should(updated.type).equal(17);
