@@ -411,6 +411,7 @@ describe('searchDocuments', () => {
     it('embeds the cave the entrance cave was merged into', async () => {
       const [doc] = await buildDocuments('entrances', [liveEntrance.id]);
       should(doc.cave.name).equal('Live cave');
+      should(doc.cave.id).equal(rows.cave.live);
     });
 
     describe('cave deleted for good', () => {
@@ -433,6 +434,75 @@ describe('searchDocuments', () => {
         const [doc] = await buildDocuments('entrances', [liveEntrance.id]);
         should(doc.cave).be.null();
       });
+    });
+  });
+
+  // Merges are not flattened on soft delete: A -> B -> C embeds C
+  describe('merged twice', () => {
+    let first;
+    let second;
+    let live;
+    let entrance;
+
+    before(async () => {
+      live = await TCave.create({ author: 1 }).fetch();
+      await TName.create({
+        author: 1,
+        cave: live.id,
+        name: 'Final cave',
+        language: 'fra',
+        isMain: true,
+      });
+      second = await TCave.create({
+        author: 1,
+        isDeleted: true,
+        redirectTo: live.id,
+      }).fetch();
+      first = await TCave.create({
+        author: 1,
+        isDeleted: true,
+        redirectTo: second.id,
+      }).fetch();
+      entrance = await TEntrance.create({
+        author: 1,
+        cave: first.id,
+        latitude: 45.4,
+        longitude: 6.4,
+      }).fetch();
+      await CommonService.query(
+        'UPDATE t_document SET id_cave = $1 WHERE id = 5',
+        [first.id]
+      );
+    });
+
+    after(async () => {
+      await CommonService.query(
+        'UPDATE t_document SET id_cave = NULL WHERE id = 5'
+      );
+      await TEntrance.destroyOne({ id: entrance.id });
+      await TName.destroy({ cave: live.id });
+      await TCave.destroy({ id: [first.id, second.id, live.id] });
+    });
+
+    it('embeds the cave at the end of the chain in an entrance', async () => {
+      const [doc] = await buildDocuments('entrances', [entrance.id]);
+      should(doc.cave.id).equal(live.id);
+      should(doc.cave.name).equal('Final cave');
+    });
+
+    it('embeds the cave at the end of the chain in a document', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.cave).eql({ name: 'Final cave', language: 'fra' });
+    });
+
+    it('leaves out a cave whose merges loop', async () => {
+      await TCave.updateOne(second.id).set({ redirectTo: first.id });
+      try {
+        const [doc] = await buildDocuments('entrances', [entrance.id]);
+        should(doc.cave).be.null();
+      } finally {
+        await TCave.updateOne(second.id).set({ redirectTo: live.id });
+      }
     });
   });
 
