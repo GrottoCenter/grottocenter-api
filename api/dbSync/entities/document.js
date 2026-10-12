@@ -1,4 +1,5 @@
 const exportUtils = require('../utils');
+const FileService = require('../../services/FileService');
 const {
   computeDocumentAuthorsSort,
 } = require('../../utils/computeDocumentAuthorsSort');
@@ -40,7 +41,7 @@ const query = `
     LEFT JOIN t_caver a ON a.id = d.id_author
     LEFT JOIN t_caver r ON r.id = d.id_reviewer
     LEFT JOIN t_caver v ON v.id = d.id_validator
-    WHERE d.is_deleted = false AND d.is_validated = true
+    WHERE d.is_deleted = false AND d.is_validated = true AND d.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY d.id, t.name, n.title, n.body, r.nickname, a.nickname, v.nickname, l.name
     ORDER BY d.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
@@ -219,6 +220,22 @@ function importFormater(d) {
 module.exports = {
   name: 'documents',
   shouldExportToFile: true,
+  export: {
+    joins: (rows) => [
+      {
+        table: 't_file f',
+        foreignField: 'f.id_document',
+        rows,
+        localField: 'files',
+        fields: ['f.filename', 'f.path'],
+        where: ['f.is_validated = true'],
+        transform: (e) => ({
+          filename: e.filename,
+          url: FileService.document.getUrl(e.path),
+        }),
+      },
+    ],
+  },
   query,
   processRows,
   search: {

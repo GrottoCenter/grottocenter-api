@@ -150,15 +150,42 @@ describe('FileService', () => {
   });
 
   describe('dbExport.upload()', () => {
-    it('should return a writable stream for local storage', () => {
-      const uploadStream = FileService.dbExport.upload(
-        'test.zip',
+    const exportsDir = path.resolve(
+      __dirname,
+      '../../../.local-uploads/db-exports'
+    );
+    const filename = `upload-test-${process.pid}.zip`;
+    const localPath = path.join(exportsDir, filename);
+
+    afterEach(() => {
+      fs.rmSync(localPath, { force: true });
+      fs.rmSync(`${localPath}.tmp`, { force: true });
+    });
+
+    it('writes the streamed content to the local file once done', async () => {
+      const { stream, done } = FileService.dbExport.upload(
+        filename,
         'application/zip'
       );
-      should(uploadStream).not.be.null();
-      should(uploadStream.writable).be.true();
-      // Clean up: end the stream without writing anything
-      uploadStream.end();
+      stream.end('archive content');
+      await done;
+
+      should(fs.readFileSync(localPath, 'utf8')).equal('archive content');
+      should(fs.existsSync(`${localPath}.tmp`)).be.false();
+    });
+
+    it('rejects and keeps the previous file when the stream is destroyed', async () => {
+      fs.writeFileSync(localPath, 'previous export');
+      const { stream, done } = FileService.dbExport.upload(
+        filename,
+        'application/zip'
+      );
+      stream.write('partial');
+      stream.destroy(new Error('export failed'));
+
+      await should(done).be.rejectedWith('export failed');
+      should(fs.readFileSync(localPath, 'utf8')).equal('previous export');
+      should(fs.existsSync(`${localPath}.tmp`)).be.false();
     });
   });
 

@@ -11,7 +11,7 @@ const query = `
       c.nickname AS "authorNickname"
     FROM t_device AS d
     LEFT JOIN t_caver AS c ON c.id = d.id_author
-    WHERE d.is_deleted = false
+    WHERE d.is_deleted = false AND d.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     ORDER BY d.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;

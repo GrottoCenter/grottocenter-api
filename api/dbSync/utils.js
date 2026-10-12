@@ -1,5 +1,9 @@
 const CommonService = require('../services/CommonService');
 
+const PAGGING_SIZE = 1000;
+const PAGGING_PLACEHOLDER = '#PAGGING#';
+const ID_FILTER_PLACEHOLDER = '#ID_FILTER#';
+
 // For a group of rows make a query to a foreign table
 // And merge the result back into each row
 async function joinMany({
@@ -61,10 +65,55 @@ function dateAndAuthorJoins(tableAlias) {
   ];
 }
 
+// Keyset pagination: each page starts after the last id of the previous one,
+// so the cost of a page does not grow with its position like OFFSET does.
+// Every entity query orders by its id and holds both placeholders.
+async function* paggingQuery(name, query, ref = {}, pageSize = PAGGING_SIZE) {
+  const queryRaw = query
+    .replace(ID_FILTER_PLACEHOLDER, '> $1')
+    .replace(PAGGING_PLACEHOLDER, `LIMIT ${pageSize}`);
+  let lastId = 0;
+  let fetched = 0;
+  let nbRows = 0;
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    const rep = await CommonService.query(queryRaw, [lastId]).catch((e) => {
+      sails.log.error(`[dbSync] Error paggingQuery ${name}`, query, e);
+      throw e;
+    });
+    nbRows = rep.rowCount;
+    fetched += nbRows;
+    ref.fetched = fetched; // eslint-disable-line no-param-reassign
+    if (nbRows > 0) lastId = rep.rows[nbRows - 1].id;
+    yield rep.rows;
+  } while (nbRows === pageSize);
+
+  if (fetched === 0) {
+    sails.log.warn(`[dbSync] WARNING: ${name} returned 0 rows`);
+  }
+}
+
+async function* JSONArrayStringify(aStream) {
+  let isFirst = true;
+  yield '[\n';
+  for await (const obj of aStream) {
+    if (isFirst) {
+      isFirst = false;
+      yield `${JSON.stringify(obj)}`;
+    } else {
+      yield `,\n${JSON.stringify(obj)}`;
+    }
+  }
+  yield '\n]';
+}
+
 module.exports = {
   EXPORT_FILE_NAME: 'grottocenterDbExport.zip',
-  PAGGING_SIZE: 1000,
-  PAGGING_PLACEHOLDER: '#PAGGING#',
+  PAGGING_SIZE,
+  PAGGING_PLACEHOLDER,
+  ID_FILTER_PLACEHOLDER,
+  paggingQuery,
+  JSONArrayStringify,
   joinMany,
   dateAndAuthorFields,
   dateAndAuthorJoins,

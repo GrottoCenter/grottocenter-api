@@ -18,7 +18,7 @@ const query = `
     LEFT JOIN t_caver a ON a.id = m.id_author
     LEFT JOIN t_caver r ON r.id = m.id_reviewer
     LEFT JOIN t_entrance e ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom) AND e.is_deleted = false
-    WHERE m.is_deleted = false
+    WHERE m.is_deleted = false AND m.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY m.id, m.geog_polygon, n.name, n.id_language, r.nickname, a.nickname
     ORDER BY m.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
@@ -43,6 +43,34 @@ function importFormater(d) {
 module.exports = {
   name: 'massifs',
   shouldExportToFile: true,
+  export: {
+    joins: (rows) => [
+      {
+        table: 't_description d',
+        foreignField: 'd.id_massif',
+        rows,
+        localField: 'descriptions',
+        fields: [
+          'd.title',
+          'd.body',
+          'd.id_language AS language',
+          ...exportUtils.dateAndAuthorFields('d'),
+        ],
+        join: exportUtils.dateAndAuthorJoins('d'),
+        where: ['d.is_deleted = false'],
+      },
+      {
+        table: 'j_document_massif j',
+        foreignField: 'j.id_massif',
+        rows,
+        localField: 'documents',
+        fields: ['j.id_document AS id'],
+        join: ['INNER JOIN t_document doc ON doc.id = j.id_document'],
+        where: ['doc.is_deleted = false', 'doc.is_validated = true'],
+        transform: (e) => e.id,
+      },
+    ],
+  },
   query,
   processRows,
   search: {

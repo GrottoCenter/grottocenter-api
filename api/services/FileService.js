@@ -365,36 +365,52 @@ module.exports = {
       return null;
     },
 
+    /**
+     * Open an upload of a DB export file.
+     * Destroying the stream with an error aborts the upload: the previous
+     * file is left in place.
+     * @returns {{ stream: stream.PassThrough, done: Promise<void> }} `done`
+     * settles when the file is fully written, or rejects if the upload fails.
+     */
     upload(filename, mimeType) {
+      const aStream = new stream.PassThrough();
+
       if (!credentials) {
-        // Dev mode: write to local filesystem via a PassThrough stream
+        // Dev mode: write to a temporary local file, renamed once complete
         const localPath = path.join(LOCAL_DB_EXPORTS_DIR, filename);
-        const aStream = new stream.PassThrough();
-        const writeStream = fs.createWriteStream(localPath);
-        aStream.pipe(writeStream);
-        writeStream.on('finish', () => {
-          sails.log.info(
-            `[Local Storage] DB export saved: ${localPath} (${mimeType})`
-          );
-        });
-        return aStream;
+        const tmpPath = `${localPath}.tmp`;
+        const done = stream.promises
+          .pipeline(aStream, fs.createWriteStream(tmpPath))
+          .then(() => {
+            fs.renameSync(tmpPath, localPath);
+            sails.log.info(
+              `[Local Storage] DB export saved: ${localPath} (${mimeType})`
+            );
+          })
+          .catch((err) => {
+            fs.rmSync(tmpPath, { force: true });
+            throw err;
+          });
+        return { stream: aStream, done };
       }
 
       const ONE_MEGABYTE = 1024 * 1024;
       const BUFFER_SIZE = 2 * ONE_MEGABYTE;
       const MAX_BUFFERS = 3;
 
-      try {
-        const aStream = stream.PassThrough();
-        const blockBlobClient =
-          credentials.dbExportBlobClient.getBlockBlobClient(filename);
-        blockBlobClient.uploadStream(aStream, BUFFER_SIZE, MAX_BUFFERS, {
+      const blockBlobClient =
+        credentials.dbExportBlobClient.getBlockBlobClient(filename);
+      // The block list is only committed once the stream ends successfully
+      const done = blockBlobClient
+        .uploadStream(aStream, BUFFER_SIZE, MAX_BUFFERS, {
           blobHTTPHeaders: { blobContentType: mimeType },
+        })
+        .then(() => undefined)
+        .catch((err) => {
+          sails.log.error('[FileService] DB export upload failed', err);
+          throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, filename);
         });
-        return aStream;
-      } catch (err) {
-        throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, filename);
-      }
+      return { stream: aStream, done };
     },
   },
 };
