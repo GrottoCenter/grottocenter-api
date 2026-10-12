@@ -12,8 +12,9 @@ const QUEUE_NAME = 'db-export';
 const CRON = '0 3 * * 0';
 const QUEUE_OPTIONS = {
   policy: 'exclusive',
-  // A full export takes minutes; leave a wide margin before pg-boss expires it
-  expireInSeconds: 3 * 60 * 60,
+  // A full export takes minutes. Keep the expiry short: an export killed by a
+  // restart stays active until it expires, and blocks the exclusive queue
+  expireInSeconds: 60 * 60,
   retryLimit: 1,
   retryDelay: 15 * 60,
 };
