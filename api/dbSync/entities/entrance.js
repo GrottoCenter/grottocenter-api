@@ -44,7 +44,7 @@ const query = `
     LEFT JOIN t_country c ON c.iso = e.id_country
     LEFT JOIN t_caver a ON a.id = e.id_author
     LEFT JOIN t_caver r ON r.id = e.id_reviewer
-    WHERE e.is_deleted = false
+    WHERE e.is_deleted = false AND e.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY e.id, n.name, n.id_language, c.native_name, r.nickname, a.nickname
     ORDER BY e.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
@@ -161,11 +161,71 @@ function importFormater(d) {
 }
 /* eslint-enable no-param-reassign */
 
+// Sub-entities only the file export carries; the search index stays slim.
+function exportJoins(rows) {
+  const subEntity = (table, alias, localField, fields) => ({
+    table: `${table} ${alias}`,
+    foreignField: `${alias}.id_entrance`,
+    rows,
+    localField,
+    fields: [
+      ...fields,
+      `${alias}.id_language AS language`,
+      ...exportUtils.dateAndAuthorFields(alias),
+    ],
+    join: exportUtils.dateAndAuthorJoins(alias),
+    where: [`${alias}.is_deleted = false`],
+  });
+  return [
+    subEntity('t_location', 'l', 'locations', ['l.title', 'l.body']),
+    subEntity('t_description', 'd', 'descriptions', ['d.title', 'd.body']),
+    subEntity('t_rigging', 'rg', 'riggings', [
+      'rg.title',
+      'rg.obstacles',
+      'rg.ropes',
+      'rg.anchors',
+      'rg.observations',
+    ]),
+    subEntity('t_history', 'h', 'histories', ['h.body']),
+    // The search join already fills `comments` with the ratings only
+    subEntity('t_comment', 'cm', 'exportComments', [
+      'cm.title',
+      'cm.body',
+      'cm.aestheticism',
+      'cm.caving',
+      'cm.approach',
+      'cm.e_t_trail',
+      'cm.e_t_underground',
+    ]),
+    {
+      table: 'j_document_entrance j',
+      foreignField: 'j.id_entrance',
+      rows,
+      localField: 'documents',
+      fields: ['j.id_document AS id'],
+      join: ['INNER JOIN t_document doc ON doc.id = j.id_document'],
+      where: ['doc.is_deleted = false', 'doc.is_validated = true'],
+      transform: (e) => e.id,
+    },
+  ];
+}
+
+function exportTransform(row) {
+  const { exportComments, ...rest } = row;
+  return {
+    ...rest,
+    comments: exportComments,
+    // A location reveals where a sensitive entrance is
+    locations: row.isSensitive ? [] : row.locations,
+  };
+}
+
 module.exports = {
   name: 'entrances',
   shouldExportToFile: true,
   query,
   processRows,
+  export: { joins: exportJoins, transform: exportTransform },
   search: {
     importFormater,
     schema: {

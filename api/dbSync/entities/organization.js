@@ -32,7 +32,7 @@ const query = `
     LEFT JOIN t_caver a ON a.id = g.id_author
     LEFT JOIN t_caver r ON r.id = g.id_reviewer
     LEFT JOIN j_grotto_caver m ON m.id_grotto = g.id
-    WHERE g.is_deleted = false
+    WHERE g.is_deleted = false AND g.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY g.id, n.name, n.id_language, c.iso3, c.native_name, c.en_name, c.es_name, c.fr_name, c.de_name, c.bg_name, c.it_name, c.ca_name, c.nl_name, c.rs_name, r.nickname, a.nickname
     ORDER BY g.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}

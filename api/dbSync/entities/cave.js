@@ -21,7 +21,7 @@ const query = `
     LEFT JOIN t_caver a ON a.id = c.id_author
     LEFT JOIN t_caver r ON r.id = c.id_reviewer
     LEFT JOIN t_entrance e ON e.id_cave = c.id AND e.is_deleted = false
-    WHERE c.is_deleted = false
+    WHERE c.is_deleted = false AND c.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY c.id, n.name, n.id_language, r.nickname, a.nickname
     ORDER BY c.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
@@ -46,6 +46,42 @@ function importFormater(d) {
 module.exports = {
   name: 'caves',
   shouldExportToFile: true,
+  export: {
+    joins: (rows) => [
+      {
+        table: 't_description d',
+        foreignField: 'd.id_cave',
+        rows,
+        localField: 'descriptions',
+        fields: [
+          'd.title',
+          'd.body',
+          'd.id_language AS language',
+          ...exportUtils.dateAndAuthorFields('d'),
+        ],
+        join: exportUtils.dateAndAuthorJoins('d'),
+        where: ['d.is_deleted = false'],
+      },
+      {
+        table: 't_document doc',
+        foreignField: 'doc.id_cave',
+        rows,
+        localField: 'documents',
+        fields: ['doc.id'],
+        where: ['doc.is_deleted = false', 'doc.is_validated = true'],
+        transform: (e) => e.id,
+      },
+      {
+        table: 't_entrance e',
+        foreignField: 'e.id_cave',
+        rows,
+        localField: 'entrances',
+        fields: ['e.id'],
+        where: ['e.is_deleted = false'],
+        transform: (e) => e.id,
+      },
+    ],
+  },
   query,
   processRows,
   search: {

@@ -1,45 +1,26 @@
 const should = require('should');
 const sinon = require('sinon');
-const stream = require('stream');
-const CommonService = require('../../../api/services/CommonService');
+// Required at load time, together: dbSync is not a Sails service, and the
+// copies Sails re-requires when it lifts are not the ones it holds
 const FileService = require('../../../api/services/FileService');
 const typesense = require('../../../config/typesense');
 const { makeDbSync } = require('../../../api/dbSync/dbSync');
 
 describe('DbSync', () => {
-  describe('makeDbSync with file export enabled', () => {
-    let queryStub;
+  describe('makeDbSync()', () => {
     let uploadStub;
     let setMetadataStub;
     let createCollectionStub;
     let switchAliasStub;
     let importDocumentsStub;
-    let isCredentialsOriginal;
-
-    before(() => {
-      isCredentialsOriginal = FileService.isCredentials;
-    });
 
     beforeEach(() => {
-      // Stub CommonService.query to return empty results (no rows to process)
-      queryStub = sinon.stub(CommonService, 'query').resolves({
-        rowCount: 0,
-        rows: [],
-      });
+      uploadStub = sinon.stub(FileService.dbExport, 'upload');
+      setMetadataStub = sinon.stub(FileService.dbExport, 'setMetadata');
 
-      // Stub FileService credentials and upload
-      FileService.isCredentials = true;
-      uploadStub = sinon
-        .stub(FileService.dbExport, 'upload')
-        .returns(new stream.PassThrough());
-      setMetadataStub = sinon
-        .stub(FileService.dbExport, 'setMetadata')
-        .resolves();
-
-      // Stub typesense operations
       createCollectionStub = sinon
         .stub(typesense, 'createTimestampedCollection')
-        .resolves('test-collection');
+        .callsFake(async (schema) => `${schema.name}_test`);
       importDocumentsStub = sinon.stub(typesense, 'importDocuments').resolves();
       switchAliasStub = sinon
         .stub(typesense, 'switchCollectionAlias')
@@ -48,91 +29,58 @@ describe('DbSync', () => {
 
     afterEach(() => {
       sinon.restore();
-      FileService.isCredentials = isCredentialsOriginal;
     });
 
-    it('should create a zip archive and upload it', async () => {
-      await makeDbSync(true);
+    it('rebuilds and switches the search collection of every entity', async () => {
+      await makeDbSync();
 
-      should(uploadStub.calledOnce).be.true();
-      should(uploadStub.firstCall.args[0]).equal('grottocenterDbExport.zip');
-      should(uploadStub.firstCall.args[1]).equal('application/zip');
-      should(setMetadataStub.calledOnce).be.true();
-
-      // setMetadata receives archive size (a number)
-      const archiveSize = setMetadataStub.firstCall.args[0];
-      should(archiveSize).be.a.Number();
+      const names = [
+        'massifs',
+        'entrances',
+        'caves',
+        'documents',
+        'organizations',
+        'persons',
+        'devices',
+      ];
+      should(createCollectionStub.getCalls().map((c) => c.args[0].name)).eql(
+        names
+      );
+      should(switchAliasStub.getCalls().map((c) => c.args[0])).eql(names);
     });
 
-    it('should process all entity collections', async () => {
-      await makeDbSync(true);
+    it('imports the fixture rows into the timestamped collections', async () => {
+      await makeDbSync();
 
-      // 7 collections (massif, entrance, cave, document, organization, person, device)
-      // Each gets at least one query call
-      should(queryStub.callCount).be.aboveOrEqual(7);
+      const imported = {};
+      for (const call of importDocumentsStub.getCalls()) {
+        const [collectionName, documents] = call.args;
+        imported[collectionName] = (imported[collectionName] ?? []).concat(
+          documents.map((d) => d.id)
+        );
+      }
+      should(imported.entrances_test.sort((a, b) => a - b)).eql([
+        1, 2, 3, 4, 5, 6, 7, 8, 999,
+      ]);
     });
 
-    it('should create typesense collections for entities with search config', async () => {
-      await makeDbSync(true);
-
-      // All 7 entities have search config
-      should(createCollectionStub.callCount).equal(7);
-      should(switchAliasStub.callCount).equal(7);
-      // importDocuments is not called when query returns 0 rows
-      should(importDocumentsStub.called).be.false();
-    });
-  });
-
-  describe('makeDbSync with file export disabled', () => {
-    let queryStub;
-    let uploadStub;
-    let setMetadataStub;
-    let isCredentialsOriginal;
-
-    before(() => {
-      isCredentialsOriginal = FileService.isCredentials;
-    });
-
-    beforeEach(() => {
-      queryStub = sinon.stub(CommonService, 'query').resolves({
-        rowCount: 0,
-        rows: [],
-      });
-
-      FileService.isCredentials = true;
-      uploadStub = sinon
-        .stub(FileService.dbExport, 'upload')
-        .returns(new stream.PassThrough());
-      setMetadataStub = sinon
-        .stub(FileService.dbExport, 'setMetadata')
-        .resolves();
-
-      sinon
-        .stub(typesense, 'createTimestampedCollection')
-        .resolves('test-collection');
-      sinon.stub(typesense, 'importDocuments').resolves();
-      sinon.stub(typesense, 'switchCollectionAlias').resolves();
-    });
-
-    afterEach(() => {
-      sinon.restore();
-      FileService.isCredentials = isCredentialsOriginal;
-    });
-
-    it('should skip file export when isFileExportEnabled is false', async () => {
-      await makeDbSync(false);
+    it('no longer writes the file export', async () => {
+      await makeDbSync();
 
       should(uploadStub.called).be.false();
       should(setMetadataStub.called).be.false();
     });
 
-    it('should abort when no Azure credentials are available', async () => {
-      FileService.isCredentials = false;
+    it('keeps syncing the other collections when an import fails', async () => {
+      importDocumentsStub.rejects(
+        Object.assign(new Error('import failed'), { importResults: [] })
+      );
 
-      await makeDbSync(true);
+      await makeDbSync();
 
-      should(uploadStub.called).be.false();
-      should(queryStub.called).be.false();
+      // Every collection with rows fails, none hangs, none is switched
+      should(createCollectionStub.callCount).equal(7);
+      should(switchAliasStub.called).be.false();
     });
   });
 });

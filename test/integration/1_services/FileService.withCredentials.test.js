@@ -121,10 +121,12 @@ describe('FileService with Azure credentials', () => {
     FileService.dbExport.upload = function (filename, mimeType) {
       const aStream = new stream.PassThrough();
       const blockBlobClient = mockContainerClient.getBlockBlobClient(filename);
-      blockBlobClient.uploadStream(aStream, 2 * 1024 * 1024, 3, {
-        blobHTTPHeaders: { blobContentType: mimeType },
-      });
-      return aStream;
+      const done = blockBlobClient
+        .uploadStream(aStream, 2 * 1024 * 1024, 3, {
+          blobHTTPHeaders: { blobContentType: mimeType },
+        })
+        .then(() => undefined);
+      return { stream: aStream, done };
     };
 
     FileService.isCredentials = true;
@@ -236,14 +238,15 @@ describe('FileService with Azure credentials', () => {
   });
 
   describe('dbExport.upload() with credentials', () => {
-    it('should return PassThrough stream for upload', () => {
-      const uploadStream = FileService.dbExport.upload(
+    it('should return a PassThrough stream and the upload promise', async () => {
+      const { stream: uploadStream, done } = FileService.dbExport.upload(
         'backup.zip',
         'application/zip'
       );
-      should(uploadStream).be.ok();
       should(uploadStream).be.instanceOf(stream.PassThrough);
       should(mockUploadStream.calledOnce).be.true();
+      should(mockUploadStream.firstCall.args[0]).equal(uploadStream);
+      await should(done).be.fulfilled();
     });
   });
 });

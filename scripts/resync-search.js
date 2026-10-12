@@ -2,7 +2,7 @@
 /**
  * Manual Typesense search index resync script.
  *
- * Lifts the Sails app, runs makeDbSync, then exits.
+ * Lifts the Sails app, runs makeDbSync (and makeDbExport with --export), then exits.
  * Designed to be run via SSH on the Azure Web App where env vars are already set.
  *
  * Usage:
@@ -12,6 +12,7 @@
 
 const sailsApp = require('sails');
 const { makeDbSync } = require('../api/dbSync/dbSync');
+const { makeDbExport } = require('../api/dbSync/dbExport');
 
 const withExport = process.argv.includes('--export');
 
@@ -55,7 +56,8 @@ sailsApp.load(loadConfig, async (err) => {
     sails.log.info(
       `[resync] Starting manual resync (file export: ${withExport})`
     );
-    await makeDbSync(withExport);
+    await makeDbSync();
+    if (withExport) await makeDbExport();
   } catch (e) {
     sails.log.error('[resync] Failed:', e);
     exitCode = 1;
