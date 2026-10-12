@@ -37,7 +37,8 @@ describe('DbExportQueueService', () => {
         policy: 'exclusive',
         retryLimit: 1,
       });
-      should(queueOptions.expireInSeconds).be.aboveOrEqual(3600);
+      // Long enough for an export, short enough not to block the queue for hours
+      should(queueOptions.expireInSeconds).be.within(30 * 60, 60 * 60);
 
       should(boss.schedule.calledOnce).be.true();
       should(boss.schedule.firstCall.args).eql([

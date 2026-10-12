@@ -17,15 +17,15 @@ const query = `
       g.year_birth AS "yearBirth",
       g.mail,
       g.iso_3166_2 AS iso3166,
-      g.latitude,
-      g.longitude,
+      g.latitude::float8 AS latitude,
+      g.longitude::float8 AS longitude,
       g.address,
       g.city,
       g.county,
       g.region,
       CONCAT (g.id_country, ' - ', c.native_name) AS country,
       g.postal_code AS "postalCode",
-      COUNT(m.id_caver) AS "nbCavers"
+      COUNT(m.id_caver)::int AS "nbCavers"
     FROM t_grotto AS g
     LEFT JOIN t_name n ON n.id_grotto = g.id AND n.is_main = true
     LEFT JOIN t_country c ON c.iso = g.id_country

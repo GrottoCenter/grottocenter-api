@@ -15,7 +15,7 @@ const query = `
       c.length,
       c.temperature,
       c.is_diving AS "isDiving",
-      COUNT(e.id) AS "nbEntrances"
+      COUNT(e.id)::int AS "nbEntrances"
     FROM t_cave AS c
     LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
     LEFT JOIN t_caver a ON a.id = c.id_author

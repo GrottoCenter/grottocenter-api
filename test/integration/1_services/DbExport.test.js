@@ -17,6 +17,7 @@ describe('DbExport', () => {
   let cave;
   let massif;
   let document;
+  let organization;
 
   before(() => {
     // Required here, not at the top: Sails re-requires api/ when it lifts
@@ -31,6 +32,7 @@ describe('DbExport', () => {
     cave = require('../../../api/dbSync/entities/cave');
     massif = require('../../../api/dbSync/entities/massif');
     document = require('../../../api/dbSync/entities/document');
+    organization = require('../../../api/dbSync/entities/organization');
     /* eslint-enable global-require */
   });
 
@@ -184,6 +186,15 @@ describe('DbExport', () => {
           should(row).not.have.property('numericId');
         }
       });
+
+      it('writes the coordinates as numbers, not numeric strings', () => {
+        const located = rows.filter((e) => !e.isSensitive);
+        should(located).not.be.empty();
+        for (const row of located) {
+          should(row.latitude).be.a.Number();
+          should(row.longitude).be.a.Number();
+        }
+      });
     });
 
     it('exports caves with their descriptions, documents and entrances', async () => {
@@ -193,6 +204,7 @@ describe('DbExport', () => {
       );
       should(cave1.documents).eql([6]);
       should(cave1.entrances.sort((a, b) => a - b)).eql([1, 2]);
+      should(cave1.nbEntrances).equal(2);
     });
 
     it('exports massifs with their descriptions and documents', async () => {
@@ -201,6 +213,18 @@ describe('DbExport', () => {
         'Massif 1 export description'
       );
       should(massif1.documents).eql([1]);
+      should(massif1.nbEntrances).be.a.Number();
+    });
+
+    it('exports organization coordinates and caver counts as numbers', async () => {
+      const rows = await exportRows(organization);
+      should(rows).not.be.empty();
+      for (const row of rows) {
+        should(row.nbCavers).be.a.Number();
+        if (row.latitude !== null) should(row.latitude).be.a.Number();
+        if (row.longitude !== null) should(row.longitude).be.a.Number();
+      }
+      should(rows.some((e) => typeof e.latitude === 'number')).be.true();
     });
 
     it('exports documents with their validated files', async () => {

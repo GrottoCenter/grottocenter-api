@@ -11,7 +11,7 @@ const query = `
       r.nickname AS reviewer,
       n.name AS name,
       n.id_language AS language,
-      COUNT(e.id) AS "nbEntrances",
+      COUNT(e.id)::int AS "nbEntrances",
       ST_AsGeoJSON(m.geog_polygon) AS geojson
     FROM t_massif AS m
     LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true
