@@ -27,6 +27,13 @@
 --   - 'update' otherwise (validation of a contribution, whose author
 --     multiple-validate.js writes to id_reviewer), credited to the reviewer.
 -- INSERT of an already validated document, delete and restore are unchanged.
+--
+-- Rejecting a pending change (manually, or automatically in
+-- multiple-validate.js) also sets is_validated back to true, with the same
+-- write as accepting a new submission, so the trigger cannot tell the two
+-- apart. The rejection writes run in a transaction that sets
+-- app.document_skip_log, and the function returns early on it, like the
+-- app.relevance_swap_skip_log guard of the sub-entity triggers (#1772).
 -- =============================================================================
 
 CREATE OR REPLACE FUNCTION change_document() RETURNS trigger AS $$
@@ -34,6 +41,7 @@ DECLARE type_change varchar(20);
 DECLARE id_author int4;
 DECLARE entity_name text;
 BEGIN
+IF current_setting('app.document_skip_log', true) = 'true' THEN RETURN NEW; END IF;
 type_change := '';
 if TG_OP = 'INSERT' then
     type_change := 'create';

@@ -95,6 +95,8 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         .set('Authorization', userToken)
         .expect(204);
 
+      const entrance = await TEntrance.findOne(1).populate('documents');
+      should(entrance.documents.map((d) => d.id)).containEql(document.id);
       should(await documentChanges(document.id)).have.length(before.length);
     });
 
@@ -147,6 +149,95 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       const changes = await documentChanges(document.id);
       should(changes).have.length(1);
       should(changes[0]).match({ type_change: 'create', id_author: userId });
+    });
+
+    it('should not log the rejection of a contribution', async () => {
+      const document = await createValidatedDocument();
+      await DocumentService.updateDocument({
+        documentId: document.id,
+        reviewerId: userId,
+        documentData: {},
+        descriptionData: { title: 'Rejected #1781' },
+      });
+      const before = await documentChanges(document.id);
+
+      await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [
+            {
+              id: document.id,
+              isValidated: 'false',
+              validationComment: 'Rejected',
+            },
+          ],
+        })
+        .set('Authorization', moderatorToken)
+        .expect(204);
+
+      const rejected = await TDocument.findOne(document.id);
+      should(rejected.isValidated).be.true();
+      should(rejected.modifiedDocJson).be.null();
+      should(await documentChanges(document.id)).have.length(before.length);
+    });
+
+    it('should not log the rejection of a new document', async () => {
+      const document = await TDocument.create({
+        author: userId,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [
+            {
+              id: document.id,
+              isValidated: 'false',
+              validationComment: 'Rejected',
+            },
+          ],
+        })
+        .set('Authorization', moderatorToken)
+        .expect(204);
+
+      should((await TDocument.findOne(document.id)).isValidated).be.true();
+      should(await documentChanges(document.id)).have.length(0);
+    });
+
+    it('should not log an auto-rejected contribution', async () => {
+      // A pending parent that is a child of the document is a cycle, which
+      // multiple-validate.js refuses when the moderator accepts it
+      const document = await TDocument.create({
+        author: userId,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      const child = await createValidatedDocument({
+        type: 17,
+        parent: document.id,
+      });
+      await TDocument.updateOne(document.id).set({
+        modifiedDocJson: {
+          reviewerId: userId,
+          documentData: { type: 17, parent: child.id },
+          descriptionData: {},
+        },
+      });
+
+      await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({ documents: [{ id: document.id, isValidated: 'true' }] })
+        .set('Authorization', moderatorToken)
+        .expect(204);
+
+      const rejected = await TDocument.findOne(document.id);
+      should(rejected.validationComment).match(/^Auto-rejected/);
+      should(rejected.isValidated).be.true();
+      should(await documentChanges(document.id)).have.length(0);
     });
 
     it('should not show the side effects in the recent changes', async () => {

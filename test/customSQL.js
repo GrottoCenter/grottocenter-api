@@ -865,6 +865,7 @@ DECLARE type_change varchar(20);
 DECLARE id_author int4;
 DECLARE entity_name text;
 BEGIN
+IF current_setting('app.document_skip_log', true) = 'true' THEN RETURN NEW; END IF;
 type_change := '';
 if TG_OP = 'INSERT' then
     type_change := 'create';
