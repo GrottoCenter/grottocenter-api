@@ -82,7 +82,7 @@ describe('TCaverModel', () => {
     it('should drop private attributes from a found caver', async () => {
       const caver = await TCaver.findOne({ login: 'admin1' });
       const json = JSON.parse(JSON.stringify(caver));
-      json.should.not.have.properties(PRIVATE_KEYS);
+      PRIVATE_KEYS.forEach((key) => json.should.not.have.property(key));
       json.should.have.properties({ id: 1, nickname: 'Admin1' });
     });
 
@@ -92,8 +92,10 @@ describe('TCaverModel', () => {
         .populate('author')
         .populate('reviewer');
       const json = JSON.parse(JSON.stringify(description));
-      json.author.should.not.have.properties(PRIVATE_KEYS);
-      json.reviewer.should.not.have.properties(PRIVATE_KEYS);
+      PRIVATE_KEYS.forEach((key) => json.author.should.not.have.property(key));
+      PRIVATE_KEYS.forEach((key) =>
+        json.reviewer.should.not.have.property(key)
+      );
       json.author.nickname.should.equal('Admin1');
       json.reviewer.nickname.should.equal('Moderator1');
     });
