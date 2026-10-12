@@ -74,8 +74,8 @@ module.exports = async (req, res) => {
       await TDevice.destroyOne({ id: deviceId });
     }
 
-    // Update search index to reflect deleted state
-    await DeviceService.updateInSearch({ ...device, isDeleted: true });
+    // A soft-deleted device is no longer indexed: this removes it from search
+    await DeviceService.updateInSearch(device);
   }
 
   device.isDeleted = true;

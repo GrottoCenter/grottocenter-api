@@ -100,22 +100,11 @@ module.exports = {
   },
 
   /**
-   * Update or insert a device document in the Typesense search index.
-   *
-   * @param {Object} populatedDevice - the populated device object
+   * Re-index a device from the database, as the full rebuild does.
+   * @param {Object|number} device the device or its id
    */
-  async updateInSearch(populatedDevice) {
-    const author = populatedDevice.author || {};
-    const device = {
-      id: populatedDevice.id,
-      name: populatedDevice.name,
-      brandName: populatedDevice.brandName,
-      serialNumber: populatedDevice.serialNumber,
-      isDeleted: populatedDevice.isDeleted,
-      authorId: `${author.id || populatedDevice.author}`,
-      authorNickname: author.nickname || '',
-    };
-    await SearchService.updateDocument('devices', device);
+  async updateInSearch(device) {
+    await SearchService.syncDocuments('devices', [device?.id ?? device]);
   },
 
   async deleteInSearch(deviceId) {

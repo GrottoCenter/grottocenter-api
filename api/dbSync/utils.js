@@ -93,6 +93,24 @@ async function* paggingQuery(name, query, ref = {}, pageSize = PAGGING_SIZE) {
   }
 }
 
+// Same pages as paggingQuery, restricted to the given ids: every entity query
+// then serves both the full rebuild and the update of a few documents.
+async function* idsQuery(name, query, ids, pageSize = PAGGING_SIZE) {
+  const queryRaw = query
+    .replace(ID_FILTER_PLACEHOLDER, '= ANY($1::int[])')
+    .replace(PAGGING_PLACEHOLDER, '');
+  for (let i = 0; i < ids.length; i += pageSize) {
+    // eslint-disable-next-line no-await-in-loop
+    const rep = await CommonService.query(queryRaw, [
+      ids.slice(i, i + pageSize),
+    ]).catch((e) => {
+      sails.log.error(`[dbSync] Error idsQuery ${name}`, query, e);
+      throw e;
+    });
+    if (rep.rowCount > 0) yield rep.rows;
+  }
+}
+
 async function* JSONArrayStringify(aStream) {
   let isFirst = true;
   yield '[\n';
@@ -113,6 +131,7 @@ module.exports = {
   PAGGING_PLACEHOLDER,
   ID_FILTER_PLACEHOLDER,
   paggingQuery,
+  idsQuery,
   JSONArrayStringify,
   joinMany,
   dateAndAuthorFields,

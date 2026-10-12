@@ -1,6 +1,6 @@
 /**
  * Boolean characteristic fields on entrances that are NOT indexed in Typesense.
- * Used to strip them from search documents in both updateInSearch and dbSync importFormater.
+ * Stripped from search documents by the entrances importFormater (api/dbSync/entities/entrance.js).
  */
 const NON_INDEXED_BOOLEAN_FIELDS = [
   'hasBat',

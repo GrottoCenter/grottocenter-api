@@ -5,17 +5,6 @@ const INTEREST_ENTRANCES_QUERY =
 // query to get a random entrance of interest
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
-// query to get the massifs containing a single entrance.
-// The `&&` bounding-box pre-filter is what lets PostGIS use the GiST index on
-// t_massif(geog_polygon); without it every massif polygon is tested exactly.
-const MASSIFS_CONTAINING_ENTRANCE_QUERY = `
-  SELECT m.id, n.name, n.id_language AS language
-  FROM t_massif m
-  JOIN t_entrance e ON e.point_geom && m.geog_polygon AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
-  LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true AND n.is_deleted = false
-  WHERE e.id = $1 AND e.is_deleted = false AND m.is_deleted = false
-`;
-
 const CommonService = require('./CommonService');
 const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
@@ -26,10 +15,6 @@ const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
 const MassifService = require('./MassifService');
-const {
-  NON_INDEXED_BOOLEAN_FIELDS,
-  computeDateLastModif,
-} = require('../../config/constants/entrance');
 const NameService = require('./NameService');
 const TemporalNameResolver = require('./TemporalNameResolver');
 const RiggingService = require('./RiggingService');
@@ -39,8 +24,6 @@ const LocationService = require('./LocationService');
 const RightService = require('./RightService');
 const coerceToInt = require('../utils/coerceToInt');
 const parseBool = require('../utils/parseBool');
-const { getQualityData } = require('../utils/computeEntranceDataQuality');
-const { computeCommentsRating } = require('../utils/commentsRating');
 
 /**
  * Map a raw h_name SQL row to a camelCase object.
@@ -437,109 +420,19 @@ module.exports = {
   },
 
   /**
-   * @param {*} populatedEntrance
-   * @param {object} [options]
-   * @param {Array} [options.massifs] Containing massifs, already resolved by the
-   *   caller. Supply this from bulk paths that hold a list of entrance ids (see
-   *   MassifService.findMassifsByEntranceIds) to skip the per-entrance spatial
-   *   lookup; pass an empty array for an entrance in no massif.
+   * Re-index an entrance from the database, as the full rebuild does.
+   * @param {Object|number} entrance the entrance or its id
    */
-  async updateInSearch(populatedEntrance, { massifs } = {}) {
-    // Warning: All linked entities may contain sensitive information (same as in document).
-    // For example, the complete caver object for the 'author' and 'reviewer' fields.
-    // Although we could leave them intact, since search results also pass through the converter,
-    // We prefer to clean them to ensure only clean data remains in the search database.
-    const rawEntrance = populatedEntrance.toJSON
-      ? populatedEntrance.toJSON()
-      : populatedEntrance;
-    const {
-      names,
-      country,
-      cave,
-      locations,
-      descriptions,
-      riggings,
-      histories,
-      documents,
-      comments,
-      ...e
-    } = rawEntrance;
-    // Strip non-indexed boolean characteristics from search document
-    NON_INDEXED_BOOLEAN_FIELDS.forEach((f) => delete e[f]);
-    const entrance = {
-      ...e,
-      numericId: e.id,
-      dateInscription: e.dateInscription,
-      dateReviewed: e.dateReviewed,
-      dateLastModif: computeDateLastModif(
-        new Date(e.dateInscription).getTime(),
-        e.dateReviewed ? new Date(e.dateReviewed).getTime() : null
-      ),
-      authorId: e.author?.id,
-      author: e.author?.nickname,
-      reviewerId: e.reviewer?.id,
-      reviewer: e.reviewer?.nickname,
-      name: names?.[0]?.name,
-      language: names?.[0]?.language,
-      iso3166: e.iso_3166_2,
-      country: [country?.id, country?.nativeName].filter((c) => c).join(' - '),
-      geology: e.geology?.trim(),
-      cave: cave && {
-        name: cave.name,
-        depth: cave.depth,
-        length: cave.caveLength,
-        temperature: cave.temperature,
-        isDiving: cave.isDiving,
-      },
-      // Soft-deleted comments must not move the rating. The full-resync path
-      // (api/dbSync/utils.js) has always filtered them out, so leaving them in
-      // here made a single-entrance update disagree with a resync of the same
-      // entrance. Filtered at the call site to keep computeCommentsRating pure
-      // and to leave the indexed `comments` array untouched. See #1823.
-      commentsRating: computeCommentsRating(
-        (comments ?? []).filter((c) => !c.isDeleted)
-      ),
-    };
+  async updateInSearch(entrance) {
+    await SearchService.syncDocuments('entrances', [entrance?.id ?? entrance]);
+  },
 
-    if (entrance.isSensitive) {
-      entrance.latitude = null;
-      entrance.longitude = null;
-    }
-
-    // Compute data quality score and fetch massifs in parallel (independent queries).
-    // The spatial lookup is skipped when the caller already resolved the massifs.
-    const [qualityRows, massifRows] = await Promise.all([
-      CommonService.query(
-        `SELECT general_latest_date_of_update, general_nb_contributions,
-                location_latest_date_of_update, location_nb_contributions,
-                description_latest_date_of_update, description_nb_contributions,
-                document_latest_date_of_update, document_nb_contributions,
-                rigging_latest_date_of_update, rigging_nb_contributions,
-                history_latest_date_of_update, history_nb_contributions,
-                comment_latest_date_of_update, comment_nb_contributions
-         FROM v_data_quality_compute_entrance WHERE id_entrance = $1 ORDER BY id_massif ASC LIMIT 1`,
-        [rawEntrance.id]
-      ),
-      massifs
-        ? null
-        : CommonService.query(MASSIFS_CONTAINING_ENTRANCE_QUERY, [
-            rawEntrance.id,
-          ]),
-    ]);
-    entrance.dataQuality = qualityRows?.rows?.[0]
-      ? getQualityData(qualityRows.rows[0])
-      : 0;
-    entrance.massifs =
-      massifs ??
-      massifRows?.rows?.map((r) => ({
-        id: r.id,
-        name: r.name,
-        language: r.language,
-        isDeleted: false,
-      })) ??
-      [];
-
-    await SearchService.updateDocument('entrances', entrance);
+  /**
+   * Re-index many entrances at once, e.g. the entrances of a massif.
+   * @param {number[]} entranceIds
+   */
+  async updateManyInSearch(entranceIds) {
+    await SearchService.syncDocuments('entrances', entranceIds);
   },
 
   /**

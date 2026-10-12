@@ -1,4 +1,5 @@
 const typesense = require('../../config/typesense');
+const searchDocuments = require('../dbSync/searchDocuments');
 
 const organization = require('../dbSync/entities/organization');
 const person = require('../dbSync/entities/person');
@@ -86,22 +87,44 @@ async function deleteDocument(entityName, documentId) {
   await typesense.deleteDocument(entityName, documentId);
 }
 
-async function updateDocument(entityName, doc) {
+/**
+ * Bring the search documents of the given ids up to date from the database:
+ * upsert those the full rebuild would index, remove the others.
+ * Errors are logged, not thrown: the database write that triggered the update
+ * has already been committed.
+ *
+ * @param {string} collectionName search collection (entrances, caves…)
+ * @param {Array<number|string>} ids
+ */
+async function syncDocuments(collectionName, ids) {
   if (process.env.NODE_ENV === 'test') {
-    sails.log.info('SearchDb upadet is disabled in during test');
+    sails.log.info('SearchDb sync is disabled during test');
     return;
   }
-  if (!allEntitiesKeys.includes(entityName)) return;
-  await typesense
-    .importDocuments(entityName, [doc], allEntities[entityName].importFormater)
-    .catch((err) => {
-      sails.log.error(
-        'Error in SearchService updateDocument',
-        entityName,
-        doc,
-        err
+  if (!allEntitiesKeys.includes(collectionName)) return;
+  try {
+    const { documents, removedIds } = await searchDocuments.planSync(
+      collectionName,
+      ids
+    );
+    if (documents.length > 0) {
+      await typesense.importDocuments(
+        collectionName,
+        documents,
+        allEntities[collectionName].importFormater
       );
-    });
+    }
+    await Promise.all(
+      removedIds.map((id) => typesense.deleteDocument(collectionName, id))
+    );
+  } catch (err) {
+    sails.log.error(
+      'Error in SearchService syncDocuments',
+      collectionName,
+      ids,
+      err
+    );
+  }
 }
 
 async function multiCollectionsSearch({
@@ -253,7 +276,7 @@ module.exports = {
 
   isAlive,
 
-  updateDocument,
+  syncDocuments,
   deleteDocument,
 
   multiCollectionsSearch,

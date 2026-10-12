@@ -226,25 +226,12 @@ module.exports = {
     await SearchService.deleteDocument('caves', caveId);
   },
 
-  async updateInSearch(populatedCave) {
-    const { names, ...c } = populatedCave;
-    const cave = {
-      id: c.id,
-      dateInscription: c.dateInscription,
-      dateReviewed: c.dateReviewed,
-      authorId: c.author.id,
-      author: c.author.nickname,
-      reviewerId: c.reviewer?.id,
-      reviewer: c.reviewer?.nickname,
-      name: names[0].name,
-      language: names[0].language,
-      depth: c.depth,
-      length: c.caveLength,
-      temperature: c.temperature,
-      isDiving: c.isDiving,
-      nbEntrances: (c.entrances ?? []).filter((e) => !e.isDeleted).length,
-    };
-    await SearchService.updateDocument('caves', cave);
+  /**
+   * Re-index a cave from the database, as the full rebuild does.
+   * @param {Object|number} cave the cave or its id
+   */
+  async updateInSearch(cave) {
+    await SearchService.syncDocuments('caves', [cave?.id ?? cave]);
   },
 
   async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {
