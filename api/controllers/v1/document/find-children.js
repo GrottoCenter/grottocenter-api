@@ -1,6 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
-const { toSimpleDocument } = require('../../../services/mapping/converters');
+const { toDocumentChild } = require('../../../services/mapping/converters');
 const { toListFromController } = require('../../../services/mapping/utils');
 
 module.exports = async (req, res) => {
@@ -23,6 +23,6 @@ module.exports = async (req, res) => {
     children,
     params,
     res,
-    (data) => toListFromController('documents', data, toSimpleDocument)
+    (data) => toListFromController('documents', data, toDocumentChild)
   );
 };

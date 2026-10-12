@@ -241,6 +241,15 @@ const c = {
     isDeleted: source.isDeleted,
   }),
 
+  // A child listed on its parent's page: a simple document where the file
+  // list is replaced by a flag, as a listing only needs to tell which children
+  // can be read online. Only for sources coming from
+  // DocumentService.getDocumentChildren(), whose files are populated.
+  toDocumentChild: (source) => {
+    const { files, ...simpleDocument } = c.toSimpleDocument(source);
+    return { ...simpleDocument, hasFiles: (source.files?.length ?? 0) > 0 };
+  },
+
   // An ancestor in a citation's parent chain, kept far lighter than a document:
   // a reference only needs what identifies the parent publication.
   //

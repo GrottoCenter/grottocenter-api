@@ -1948,7 +1948,9 @@ paths:
     get:
       tags:
         - documents
-      description: Get a document children.
+      description: >
+        Get the documents whose parent is the given document (for instance the
+        issues of a collection, or the articles of an issue).
       parameters:
         - name: id
           in: path
@@ -1962,9 +1964,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'
-        '400':
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentChild'
+        '404':
           description: Document not found.
+        '500':
+          description: Internal server error.
 
   '/documents/{id}/validate':
     put:
@@ -9029,6 +9038,37 @@ components:
         parent:
           $ref: '#/components/schemas/Document-type'
 
+    DocumentChild:
+      type: object
+      description: >
+        A document as listed among the children of its parent. Its files are
+        not listed: `hasFiles` only tells whether it can be read online.
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          description: Name of the document type (e.g. Issue, Article).
+        title:
+          type: string
+        description:
+          type: string
+        hasFiles:
+          type: boolean
+          description: Whether the document has at least one validated file.
+        dateInscription:
+          type: string
+          nullable: true
+        dateReviewed:
+          type: string
+          nullable: true
+        datePublication:
+          type: string
+          nullable: true
+        isValidated:
+          type: boolean
+        isDeleted:
+          type: boolean
     CitationDocument:
       type: object
       description: >
