@@ -292,8 +292,10 @@ describe('searchOutbox', () => {
       });
     });
 
+    // Merges are not flattened on soft delete: mergedTwice -> merged -> 1
     describe('merged cave', () => {
       let merged;
+      let mergedTwice;
 
       before(async () => {
         merged = await TCave.create({
@@ -301,22 +303,32 @@ describe('searchOutbox', () => {
           isDeleted: true,
           redirectTo: 1,
         }).fetch();
+        mergedTwice = await TCave.create({
+          author: 1,
+          isDeleted: true,
+          redirectTo: merged.id,
+        }).fetch();
+        await CommonService.query(
+          'UPDATE t_document SET id_cave = $1 WHERE id = 4',
+          [merged.id]
+        );
         await CommonService.query(
           'UPDATE t_document SET id_cave = $1 WHERE id = 5',
-          [merged.id]
+          [mergedTwice.id]
         );
       });
 
       after(async () => {
         await CommonService.query(
-          'UPDATE t_document SET id_cave = NULL WHERE id = 5'
+          'UPDATE t_document SET id_cave = NULL WHERE id = ANY($1::int[])',
+          [[4, 5]]
         );
-        await TCave.destroyOne({ id: merged.id });
+        await TCave.destroy({ id: [merged.id, mergedTwice.id] });
       });
 
-      it('re-indexes the documents of the caves merged into a renamed one', async () => {
+      it('re-indexes the documents of the caves merged into a renamed one, however indirectly', async () => {
         const targets = await expand([row('cave_name', 1)]);
-        should(lists(targets).documents).eql([5, 6]);
+        should(lists(targets).documents).eql([4, 5, 6]);
       });
     });
 

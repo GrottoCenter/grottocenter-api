@@ -7,6 +7,7 @@
 
 const CommonService = require('../services/CommonService');
 const SearchService = require('../services/SearchService');
+const syncUtils = require('./utils');
 
 const BATCH_SIZE = 1000;
 const SYNC_CHUNK_SIZE = 1000;
@@ -38,11 +39,20 @@ const touched = (row, ...columns) =>
   row.operation !== 'U' ||
   columns.some((c) => Object.hasOwn(row.oldValues ?? {}, c));
 
+// The entities and every soft-deleted one whose chain of merges leads to
+// them (A -> B -> C embeds C), as liveRowJoin follows it (api/dbSync/utils.js)
 const withMerged = async (table, entityIds) => {
   if (entityIds.size === 0) return [];
   const merged = await queryIds(
-    `SELECT id FROM ${table} WHERE redirect_to = ANY($1::int[])`,
-    [ids(entityIds)]
+    `WITH RECURSIVE chain(id, hops) AS (
+      SELECT id, 0 FROM unnest($1::int[]) AS id
+      UNION
+      SELECT r.id, chain.hops + 1 FROM chain
+      JOIN ${table} r ON r.redirect_to = chain.id AND r.is_deleted
+      WHERE chain.hops < $2
+    )
+    SELECT DISTINCT id FROM chain`,
+    [ids(entityIds), syncUtils.MAX_REDIRECT_HOPS]
   );
   return [...new Set([...entityIds, ...merged])];
 };

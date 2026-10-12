@@ -190,5 +190,6 @@ module.exports = {
   dateAndAuthorJoins,
   caveNameJoin,
   liveRowJoin,
+  MAX_REDIRECT_HOPS,
   uniqueBy,
 };
