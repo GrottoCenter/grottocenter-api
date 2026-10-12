@@ -265,13 +265,6 @@ module.exports = {
     },
   },
 
-  // Commented because it was taking some attributes away
-  // (ex: 'author' in the document model is deleted)
-  // + the MappingService already ignores the password attribute
-  // customToJSON: () => {
-  //   return _.omit(this, ['password']); // Remove password when sending JSON
-  // },
-
   beforeCreate: (values, next) => {
     // TODO commented to remove ESlint warning because hash is not defined.
     // values.password = hash;
