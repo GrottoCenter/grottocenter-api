@@ -93,15 +93,12 @@ module.exports = async (req, res) => {
     await TEntrance.destroyOne({ id: entranceId }); // Soft delete
     entrance.isDeleted = true;
 
-    await Promise.all([
-      EntranceService.deleteInSearch(entranceId),
-      RecentChangeService.setDeleteRestoreAuthor(
-        'delete',
-        'entrance',
-        entranceId,
-        req.token.id
-      ),
-    ]);
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'entrance',
+      entranceId,
+      req.token.id
+    );
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);

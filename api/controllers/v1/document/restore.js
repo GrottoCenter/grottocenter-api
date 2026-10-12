@@ -35,8 +35,6 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await DocumentService.updateInSearch(document);
-
   await NotificationService.notifySubscribers(
     document,
     req.token.id,

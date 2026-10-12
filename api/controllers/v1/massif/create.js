@@ -1,6 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
 const MassifService = require('../../../services/MassifService');
-const EntranceService = require('../../../services/EntranceService');
 const NotificationService = require('../../../services/NotificationService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toMassif } = require('../../../services/mapping/converters');
@@ -63,65 +62,55 @@ module.exports = async (req, res) => {
   }
 
   // Launch creation request using transaction: it performs a rollback if an error occurs
-  const { newMassif, updatedEntranceIds } = await sails
-    .getDatastore()
-    .transaction(async (db) => {
-      const cleanedData = {
-        author: req.token.id,
-        dateInscription: new Date(),
-        documents: rawData.documents ? rawData.documents : [],
-        geogPolygon: wkt,
-        isSensitive: rawData.isSensitive,
-      };
+  const newMassif = await sails.getDatastore().transaction(async (db) => {
+    const cleanedData = {
+      author: req.token.id,
+      dateInscription: new Date(),
+      documents: rawData.documents ? rawData.documents : [],
+      geogPolygon: wkt,
+      isSensitive: rawData.isSensitive,
+    };
 
-      const massif = await TMassif.create(cleanedData)
-        .fetch()
-        .usingConnection(db);
+    const massif = await TMassif.create(cleanedData)
+      .fetch()
+      .usingConnection(db);
 
-      // Name
-      await TName.create({
+    // Name
+    await TName.create({
+      author: req.token.id,
+      dateInscription: new Date(),
+      isMain: true,
+      language: req.body.descriptionAndNameLanguage.id,
+      massif: massif.id,
+      name: req.body.name,
+    }).usingConnection(db);
+
+    // Description
+    if (req.body?.description) {
+      await TDescription.create({
         author: req.token.id,
+        body: req.body.description,
         dateInscription: new Date(),
-        isMain: true,
-        language: req.body.descriptionAndNameLanguage.id,
         massif: massif.id,
-        name: req.body.name,
+        language: req.body.descriptionAndNameLanguage.id,
+        title: req.body.descriptionTitle,
       }).usingConnection(db);
+    }
 
-      // Description
-      if (req.body?.description) {
-        await TDescription.create({
-          author: req.token.id,
-          body: req.body.description,
-          dateInscription: new Date(),
-          massif: massif.id,
-          language: req.body.descriptionAndNameLanguage.id,
-          title: req.body.descriptionTitle,
-        }).usingConnection(db);
-      }
+    if (massif.isSensitive) {
+      await MassifService.propagateSensitivityToEntrances(
+        massif.id,
+        req.token.id,
+        db
+      );
+    }
 
-      let affectedEntranceIds = [];
-      if (massif.isSensitive) {
-        affectedEntranceIds =
-          await MassifService.propagateSensitivityToEntrances(
-            massif.id,
-            req.token.id,
-            db
-          );
-      }
-
-      return { newMassif: massif, updatedEntranceIds: affectedEntranceIds };
-    });
-
-  if (newMassif.isSensitive) {
-    await EntranceService.updateManyInSearch(updatedEntranceIds);
-  }
+    return massif;
+  });
 
   const newMassifPopulated = await MassifService.getPopulatedMassif(
     newMassif.id
   );
-
-  await MassifService.updateInSearch(newMassifPopulated);
 
   await RecentChangeService.setNameCreate(
     'massif',

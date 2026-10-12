@@ -1,5 +1,4 @@
 const DescriptionService = require('./DescriptionService');
-const SearchService = require('./SearchService');
 const FileService = require('./FileService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
@@ -122,18 +121,6 @@ const resolveCitationParentChain = async (documents) => {
 };
 
 module.exports = {
-  async deleteInSearch(documentId) {
-    await SearchService.deleteDocument('documents', documentId);
-  },
-
-  /**
-   * Re-index a document from the database, as the full rebuild does.
-   * @param {Object|number} document the document or its id
-   */
-  async updateInSearch(document) {
-    await SearchService.syncDocuments('documents', [document?.id ?? document]);
-  },
-
   getDescriptionDataFromClient: (body, authorId) => ({
     author: authorId,
     body: body.description,

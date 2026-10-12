@@ -48,7 +48,6 @@ module.exports = async (req, res) => {
     await MassifService.setSensitivity(massifId, false, req.token.id);
 
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
-    await MassifService.updateInSearch(updatedMassif);
 
     return ControllerService.treat(
       req,

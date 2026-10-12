@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const GrottoService = require('../../../api/services/GrottoService');
 const AuthTokenService = require('../AuthTokenService');
-const SearchService = require('../../../api/services/SearchService');
 const EnrichmentQueueService = require('../../../api/services/EnrichmentQueueService');
 
 describe('GrottoService', () => {
@@ -398,42 +397,6 @@ describe('GrottoService', () => {
       createdGrottoId = result.id;
       should(result).not.be.null();
       should(result.names[0].language).not.be.undefined();
-    });
-  });
-
-  describe('deleteInSearch()', () => {
-    it('should delete organization from search index', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const deleteStub = sinon.stub(SearchService, 'deleteDocument').resolves();
-
-      await GrottoService.deleteInSearch(123);
-
-      should(deleteStub.calledOnce).be.true();
-      should(deleteStub.calledWith('organizations', 123)).be.true();
-      process.env.NODE_ENV = originalEnv;
-    });
-  });
-
-  describe('updateInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index the organization from the database by id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await GrottoService.updateInSearch({ id: 1, names: [] });
-
-      should(syncStub.calledOnceWithExactly('organizations', [1])).be.true();
-    });
-
-    it('should accept a bare id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await GrottoService.updateInSearch(7);
-
-      should(syncStub.calledOnceWithExactly('organizations', [7])).be.true();
     });
   });
 });

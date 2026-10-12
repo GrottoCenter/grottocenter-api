@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const EntranceService = require('../../../api/services/EntranceService');
 const AuthTokenService = require('../AuthTokenService');
 const CommonService = require('../../../api/services/CommonService');
-const SearchService = require('../../../api/services/SearchService');
 const CountryResolverService = require('../../../api/services/CountryResolverService');
 const EnrichmentQueueService = require('../../../api/services/EnrichmentQueueService');
 
@@ -123,56 +122,6 @@ describe('EntranceService', () => {
       should(result.id).be.a.Number();
       should(result).have.property('stats');
       should(result).have.property('timeInfo');
-    });
-  });
-
-  describe('deleteInSearch()', () => {
-    it('should delete entrance from search index', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const deleteStub = sinon.stub(SearchService, 'deleteDocument').resolves();
-
-      await EntranceService.deleteInSearch(123);
-
-      should(deleteStub.calledOnce).be.true();
-      should(deleteStub.calledWith('entrances', 123)).be.true();
-      process.env.NODE_ENV = originalEnv;
-    });
-  });
-
-  describe('updateInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index the entrance from the database by id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await EntranceService.updateInSearch({ id: 1, names: [] });
-
-      should(syncStub.calledOnceWithExactly('entrances', [1])).be.true();
-    });
-
-    it('should accept a bare id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await EntranceService.updateInSearch(7);
-
-      should(syncStub.calledOnceWithExactly('entrances', [7])).be.true();
-    });
-  });
-
-  describe('updateManyInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index all the entrances in one sync', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await EntranceService.updateManyInSearch([3, 1, 2]);
-
-      should(syncStub.calledOnceWithExactly('entrances', [3, 1, 2])).be.true();
     });
   });
 

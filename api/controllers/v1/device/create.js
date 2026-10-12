@@ -76,16 +76,6 @@ module.exports = async (req, res) => {
     );
   }
 
-  // Index in Typesense (fire-and-forget: don't fail the request if search is unavailable)
-  try {
-    await DeviceService.updateInSearch(populatedDevice);
-  } catch (err) {
-    sails.log.error(
-      `DeviceCreate: failed to index device ${populatedDevice.id} in Typesense`,
-      err
-    );
-  }
-
   return ControllerService.treatAndConvert(
     req,
     null,

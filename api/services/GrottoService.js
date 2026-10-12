@@ -1,6 +1,5 @@
 const CaveService = require('./CaveService');
 const DocumentService = require('./DocumentService');
-const SearchService = require('./SearchService');
 const NameService = require('./NameService');
 const NotificationService = require('./NotificationService');
 const EnrichmentQueueService = require('./EnrichmentQueueService');
@@ -203,8 +202,6 @@ module.exports = {
       });
     }
 
-    await module.exports.updateInSearch(newOrganizationPopulated);
-
     await RecentChangeService.setNameCreate(
       'grotto',
       newOrganizationPopulated.id,
@@ -220,19 +217,5 @@ module.exports = {
     );
 
     return newOrganizationPopulated;
-  },
-
-  async deleteInSearch(organizationId) {
-    await SearchService.deleteDocument('organizations', organizationId);
-  },
-
-  /**
-   * Re-index an organization from the database, as the full rebuild does.
-   * @param {Object|number} organization the organization or its id
-   */
-  async updateInSearch(organization) {
-    await SearchService.syncDocuments('organizations', [
-      organization?.id ?? organization,
-    ]);
   },
 };

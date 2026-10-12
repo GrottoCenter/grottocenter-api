@@ -120,8 +120,6 @@ module.exports = async (req, res) => {
   const populatedEntrance =
     await EntranceService.getPopulatedEntrance(entranceId);
 
-  await EntranceService.updateInSearch(populatedEntrance);
-
   await NotificationService.notifySubscribers(
     populatedEntrance,
     req.token.id,

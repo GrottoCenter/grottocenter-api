@@ -42,15 +42,12 @@ module.exports = async (req, res) => {
     await TCave.destroyOne({ id: caveId }); // Soft delete
     cave.isDeleted = true;
 
-    await Promise.all([
-      CaveService.deleteInSearch(caveId),
-      RecentChangeService.setDeleteRestoreAuthor(
-        'delete',
-        'cave',
-        caveId,
-        req.token.id
-      ),
-    ]);
+    await RecentChangeService.setDeleteRestoreAuthor(
+      'delete',
+      'cave',
+      caveId,
+      req.token.id
+    );
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);

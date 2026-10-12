@@ -121,6 +121,14 @@ module.exports.bootstrap = async function (done) {
     sails.log.warn('The weekly DB export will not run');
   }
 
+  // Real-time search indexing from the outbox the database triggers fill
+  try {
+    await sails.services.searchoutboxqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start SearchOutboxQueueService:', err.message);
+    sails.log.warn('Search will only be updated by the weekly full sync');
+  }
+
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all
   // clears the require cache, so a direct require() returns a stale instance).

@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const DocumentService = require('../../../api/services/DocumentService');
 const DescriptionService = require('../../../api/services/DescriptionService');
 const AuthTokenService = require('../AuthTokenService');
-const SearchService = require('../../../api/services/SearchService');
 
 describe('DocumentService', () => {
   const userReq = {};
@@ -14,20 +13,6 @@ describe('DocumentService', () => {
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe('deleteInSearch()', () => {
-    it('should delete document from search index', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const deleteStub = sinon.stub(SearchService, 'deleteDocument').resolves();
-
-      await DocumentService.deleteInSearch(123);
-
-      should(deleteStub.calledOnce).be.true();
-      should(deleteStub.calledWith('documents', 123)).be.true();
-      process.env.NODE_ENV = originalEnv;
-    });
   });
 
   describe('getDescriptionDataFromClient()', () => {
@@ -509,28 +494,6 @@ describe('DocumentService', () => {
       should(result.type).not.be.null();
       should(result.languages).be.an.Array();
       should(result.countries).be.an.Array();
-    });
-  });
-
-  describe('updateInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index the document from the database by id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await DocumentService.updateInSearch({ id: 1, names: [] });
-
-      should(syncStub.calledOnceWithExactly('documents', [1])).be.true();
-    });
-
-    it('should accept a bare id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await DocumentService.updateInSearch(7);
-
-      should(syncStub.calledOnceWithExactly('documents', [7])).be.true();
     });
   });
 

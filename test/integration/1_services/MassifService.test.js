@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const MassifService = require('../../../api/services/MassifService');
 const CommonService = require('../../../api/services/CommonService');
-const SearchService = require('../../../api/services/SearchService');
 const massifPolygon = require('../4_routes/Massifs/FAKE_DATA');
 
 describe('MassifService', () => {
@@ -115,42 +114,6 @@ describe('MassifService', () => {
       );
       should(rows[0].accepted_holds).be.true();
       should(rows[0].rejected_holds).be.false();
-    });
-  });
-
-  describe('deleteInSearch', () => {
-    it('should delete massif from search index', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const deleteStub = sinon.stub(SearchService, 'deleteDocument').resolves();
-
-      await MassifService.deleteInSearch(123);
-
-      should(deleteStub.calledOnce).be.true();
-      should(deleteStub.calledWith('massifs', 123)).be.true();
-      process.env.NODE_ENV = originalEnv;
-    });
-  });
-
-  describe('updateInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index the massif from the database by id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await MassifService.updateInSearch({ id: 1 });
-
-      should(syncStub.calledOnceWithExactly('massifs', [1])).be.true();
-    });
-
-    it('should accept a bare id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await MassifService.updateInSearch(7);
-
-      should(syncStub.calledOnceWithExactly('massifs', [7])).be.true();
     });
   });
 

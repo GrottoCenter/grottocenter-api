@@ -206,10 +206,6 @@ module.exports = async (req, res) => {
     });
   }
 
-  if (!wasDeleted) {
-    await MassifService.deleteInSearch(massifId);
-  }
-
   await NotificationService.notifySubscribers(
     massif,
     req.token.id,

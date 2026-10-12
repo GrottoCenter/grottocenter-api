@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const UPDATE_SEQUENCES_QUERY = `
 -- See this page to know how to get all the sequences updated: https://wiki.postgresql.org/wiki/Fixing_Sequences
 
@@ -877,6 +880,19 @@ ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS last_failed_login_at TIMESTAMP DEFA
 ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS last_suspicious_email_at TIMESTAMP DEFAULT NULL;
 `;
 
+// Read from the migration itself rather than copied, so the triggers the tests
+// exercise are the ones production runs. The test DB has no gc_owner role and
+// no pg_cron: drop the \c and OWNER TO lines, and stop at the cron section.
+const SEARCH_OUTBOX_MIGRATION = fs
+  .readFileSync(
+    path.join(__dirname, '../sql/9_22_2026_10_12_search_outbox.sql'),
+    'utf8'
+  )
+  .split(/^\\c postgres;$/m)[0]
+  .split('\n')
+  .filter((line) => !/^\\c |OWNER TO gc_owner;$/.test(line))
+  .join('\n');
+
 module.exports = {
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
@@ -894,4 +910,5 @@ module.exports = {
   CREATE_COMMENT_TRIGGERS,
   CREATE_SUB_ENTITY_TRIGGERS,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
+  SEARCH_OUTBOX_MIGRATION,
 };

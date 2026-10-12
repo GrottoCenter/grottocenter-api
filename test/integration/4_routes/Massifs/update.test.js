@@ -1,10 +1,8 @@
 const supertest = require('supertest');
 const should = require('should');
-const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 const massifPolygon = require('./FAKE_DATA');
 const MassifService = require('../../../../api/services/MassifService');
-const EntranceService = require('../../../../api/services/EntranceService');
 
 describe('Massif features', () => {
   let userToken;
@@ -47,10 +45,6 @@ describe('Massif features', () => {
     testNameId = name.id;
   });
 
-  afterEach(() => {
-    sinon.restore();
-  });
-
   after(async () => {
     await TMassif.destroy({ id: testMassifId });
     await TDocument.destroy({ id: testDoc1Id });
@@ -79,7 +73,6 @@ describe('Massif features', () => {
         names: [testNameId],
         isSensitive: true,
       };
-      sinon.stub(EntranceService, 'updateInSearch').resolves();
 
       supertest(sails.hooks.http.app)
         .put(`/api/v1/massifs/${testMassifId}`)
@@ -128,7 +121,6 @@ describe('Massif features', () => {
       // The change_massif DB trigger uses id_reviewer IS NULL to decide 'create' vs
       // 'update' — so a populated reviewer is both necessary and sufficient for
       // subsequent edits to be classified as 'update' in the feed.
-      const stub = sinon.stub(EntranceService, 'updateInSearch').resolves();
       let nullReviewerMassifId;
       try {
         // Create a massif with no reviewer (as the create controller leaves it)
@@ -161,7 +153,6 @@ describe('Massif features', () => {
         const afterSecond = await TMassif.findOne(nullReviewerMassifId);
         should(afterSecond.reviewer).not.be.null();
       } finally {
-        stub.restore();
         if (nullReviewerMassifId) {
           await TMassif.destroy({ id: nullReviewerMassifId });
         }

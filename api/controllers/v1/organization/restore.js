@@ -36,8 +36,6 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
-  await GrottoService.updateInSearch(organization);
-
   await NotificationService.notifySubscribers(
     organization,
     req.token.id,

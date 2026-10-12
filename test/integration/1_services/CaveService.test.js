@@ -1,8 +1,6 @@
 const should = require('should');
-const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaveService = require('../../../api/services/CaveService');
-const SearchService = require('../../../api/services/SearchService');
 
 const findAndPopulateCave = async (caveId) =>
   TCave.findOne(caveId)
@@ -233,34 +231,6 @@ describe('CaveService', () => {
       should(cave.exploringOrganizations).be.an.Array();
 
       await TCave.destroyOne({ id: createdCave.id });
-    });
-  });
-
-  describe('deleteInSearch()', () => {
-    it('should call SearchService.deleteDocument', async () => {
-      await CaveService.deleteInSearch(1);
-    });
-  });
-
-  describe('updateInSearch()', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should re-index the cave from the database by id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await CaveService.updateInSearch({ id: 1, names: [] });
-
-      should(syncStub.calledOnceWithExactly('caves', [1])).be.true();
-    });
-
-    it('should accept a bare id', async () => {
-      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
-
-      await CaveService.updateInSearch(7);
-
-      should(syncStub.calledOnceWithExactly('caves', [7])).be.true();
     });
   });
 

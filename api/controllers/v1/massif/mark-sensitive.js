@@ -1,6 +1,5 @@
 const RightService = require('../../../services/RightService');
 const MassifService = require('../../../services/MassifService');
-const EntranceService = require('../../../services/EntranceService');
 const ControllerService = require('../../../services/ControllerService');
 const { toMassif } = require('../../../services/mapping/converters');
 
@@ -57,11 +56,7 @@ module.exports = async (req, res) => {
       req.token.id
     );
 
-    // Re-index the affected entrances in one batch
-    await EntranceService.updateManyInSearch(updatedEntranceIds);
-
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
-    await MassifService.updateInSearch(updatedMassif);
 
     return ControllerService.treat(
       req,

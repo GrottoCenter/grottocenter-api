@@ -1,6 +1,5 @@
 const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
-const CaverService = require('../../../services/CaverService');
 const readBoolParam = require('../../../utils/readBoolParam');
 
 // Fields that can be updated via this endpoint. `currentPassword` is handled
@@ -180,8 +179,6 @@ module.exports = async (req, res) => {
         message: `Caver with id ${req.token.id} not found.`,
       });
     }
-
-    await CaverService.updateInSearch(updatedCaver);
 
     // Send verification email for pending email change (fire-and-forget)
     if (verificationEmail) {

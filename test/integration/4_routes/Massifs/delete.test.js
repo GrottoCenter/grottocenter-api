@@ -124,14 +124,12 @@ describe('Massif features', () => {
       const DOCUMENT_ID = 1;
       const H_DOCUMENT_ID = 999001;
       let NameService;
-      let MassifService;
 
       before(async () => {
         // Resolved after the Sails lift so the stubs hit the instances the
         // controller uses.
         /* eslint-disable global-require */
         NameService = require('../../../../api/services/NameService');
-        MassifService = require('../../../../api/services/MassifService');
         /* eslint-enable global-require */
         // The test schema has no soft-delete trigger on t_massif, so a DELETE
         // always hard-deletes. Attach the production one (histo_delete() is
@@ -296,7 +294,6 @@ describe('Massif features', () => {
         sinon
           .stub(NameService, 'permanentDelete')
           .rejects(new Error('simulated failure'));
-        const deleteInSearch = sinon.spy(MassifService, 'deleteInSearch');
 
         await permanentDelete(massif.id, `&entityId=${target.id}`).expect(500);
 
@@ -311,7 +308,6 @@ describe('Massif features', () => {
           guidelines: [],
           organizations: [],
         });
-        should(deleteInSearch.called).be.false();
       });
 
       ['false', '0'].forEach((value) => {

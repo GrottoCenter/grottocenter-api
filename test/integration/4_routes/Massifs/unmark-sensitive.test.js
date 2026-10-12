@@ -1,8 +1,5 @@
 const supertest = require('supertest');
-const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
-const EntranceService = require('../../../../api/services/EntranceService');
-const MassifService = require('../../../../api/services/MassifService');
 
 describe('Massif unmark-sensitive route features', () => {
   let adminToken;
@@ -16,10 +13,6 @@ describe('Massif unmark-sensitive route features', () => {
   });
 
   describe('POST /api/v1/massifs/:id/unmark-sensitive', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
     it('should return 403 for user', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/massifs/1/unmark-sensitive')
@@ -42,9 +35,6 @@ describe('Massif unmark-sensitive route features', () => {
     });
 
     it('should return 200 and unmark massif as sensitive for admin', async () => {
-      sinon.stub(EntranceService, 'updateInSearch').resolves();
-      sinon.stub(MassifService, 'updateInSearch').resolves();
-
       const massif = await TMassif.create({
         isSensitive: true,
         author: 1,
@@ -70,8 +60,6 @@ describe('Massif unmark-sensitive route features', () => {
     });
 
     it('should be idempotent: return 200 and count: 0 when unmarking an already non-sensitive massif', async () => {
-      sinon.stub(MassifService, 'updateInSearch').resolves();
-
       const massif = await TMassif.create({
         isSensitive: false,
         author: 1,
