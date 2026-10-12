@@ -123,14 +123,77 @@ describe('searchDocuments', () => {
     });
   });
 
+  describe('built fields', () => {
+    it('names an entrance after its main name, not its first name', async () => {
+      // Entrance 2 also has a non-main French name that sorts first
+      const [doc] = await buildDocuments('entrances', [2]);
+      should(doc.name).equal('The entrance with name 12');
+      should(doc.language).equal('eng');
+    });
+
+    describe('document linked to an entrance', () => {
+      before(async () => {
+        await CommonService.query(
+          'INSERT INTO j_document_entrance (id_document, id_entrance) VALUES (4, 2)'
+        );
+        await CommonService.query(
+          "INSERT INTO j_document_language (id_document, id_language, is_main) VALUES (4, 'fra', true)"
+        );
+      });
+
+      after(async () => {
+        await CommonService.query(
+          'DELETE FROM j_document_entrance WHERE id_document = 4 AND id_entrance = 2'
+        );
+        await CommonService.query(
+          "DELETE FROM j_document_language WHERE id_document = 4 AND id_language = 'fra'"
+        );
+      });
+
+      it('embeds the entrance with its main name', async () => {
+        const [doc] = await buildDocuments('documents', [4]);
+        should(doc.entrances).eql([
+          { id: 2, name: 'The entrance with name 12', language: 'eng' },
+        ]);
+      });
+
+      it('keeps the publication date', async () => {
+        const [doc] = await buildDocuments('documents', [4]);
+        should(doc.datePublication).equal('2010-02');
+      });
+
+      it('indexes the document language', async () => {
+        const [doc] = await buildDocuments('documents', [4]);
+        const formatted = getEntity('documents').search.importFormater(doc);
+        should(formatted.language).equal('fra');
+      });
+    });
+  });
+
   // A cave created through its entrance has no name row of its own and goes by
   // the entrance's main name (NameService.setNames)
   describe('cave named after its entrance', () => {
     let cave;
+    let deletedEntrance;
     let entrance;
 
     before(async () => {
       cave = await TCave.create({ author: 1, depth: 100 }).fetch();
+      // Created first, so it has the lower id
+      deletedEntrance = await TEntrance.create({
+        author: 1,
+        cave: cave.id,
+        latitude: 45.1,
+        longitude: 6.1,
+        isDeleted: true,
+      }).fetch();
+      await TName.create({
+        author: 1,
+        entrance: deletedEntrance.id,
+        name: 'Filled-in Entrance',
+        language: 'fra',
+        isMain: true,
+      });
       entrance = await TEntrance.create({
         author: 1,
         cave: cave.id,
@@ -154,11 +217,12 @@ describe('searchDocuments', () => {
       await CommonService.query(
         'UPDATE t_document SET id_cave = NULL WHERE id = 4'
       );
-      await TName.destroy({ entrance: entrance.id });
-      await TEntrance.destroyOne({ id: entrance.id });
+      await TName.destroy({ entrance: [entrance.id, deletedEntrance.id] });
+      await TEntrance.destroy({ id: [entrance.id, deletedEntrance.id] });
       await TCave.destroyOne({ id: cave.id });
     });
 
+    // The live entrance is used over the soft-deleted one, whose id is lower
     it('indexes the cave under the entrance name', async () => {
       const [doc] = await buildDocuments('caves', [cave.id]);
       should(doc.name).equal('Unnamed Cave Entrance');
@@ -173,6 +237,17 @@ describe('searchDocuments', () => {
     it('embeds the entrance name as the cave of a document', async () => {
       const [doc] = await buildDocuments('documents', [4]);
       should(doc.cave).eql({ name: 'Unnamed Cave Entrance', language: 'eng' });
+    });
+
+    it('falls back on a soft-deleted entrance when no live one has a name', async () => {
+      await TName.update({ entrance: entrance.id }).set({ isDeleted: true });
+      try {
+        const [doc] = await buildDocuments('caves', [cave.id]);
+        should(doc.name).equal('Filled-in Entrance');
+        should(doc.language).equal('fra');
+      } finally {
+        await TName.update({ entrance: entrance.id }).set({ isDeleted: false });
+      }
     });
 
     it('prefers the cave main name once the cave has one', async () => {

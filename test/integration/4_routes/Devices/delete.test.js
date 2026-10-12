@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
@@ -131,13 +132,30 @@ describe('Device features', () => {
           }
         });
 
-        it('should return 409 on permanent delete when device has sensor configurations', (done) => {
-          supertest(sails.hooks.http.app)
-            .delete(`/api/v1/devices/${deviceWithConfigId}?isPermanent=true`)
-            .set('Authorization', adminToken)
-            .set('Content-type', 'application/json')
-            .set('Accept', 'application/json')
-            .expect(409, done);
+        describe('search index', () => {
+          afterEach(() => {
+            sinon.restore();
+          });
+
+          // The test DB has no histo_delete trigger: the first DELETE removes the
+          // row, so a single request covers both the 409 and the search update
+          it('should return 409 and take the soft-deleted device out of search when it has sensor configurations', async () => {
+            // The controller's own DeviceService: Sails binds service methods,
+            // so a stub on SearchService below it never sees the call
+            const updateStub = sinon
+              .stub(sails.services.deviceservice, 'updateInSearch')
+              .resolves();
+
+            await supertest(sails.hooks.http.app)
+              .delete(`/api/v1/devices/${deviceWithConfigId}?isPermanent=true`)
+              .set('Authorization', adminToken)
+              .set('Content-type', 'application/json')
+              .set('Accept', 'application/json')
+              .expect(409);
+
+            should(updateStub.callCount).equal(1);
+            should(updateStub.firstCall.args[0].id).equal(deviceWithConfigId);
+          });
         });
       });
 
