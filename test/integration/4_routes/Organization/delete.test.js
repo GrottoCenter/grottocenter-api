@@ -137,6 +137,38 @@ describe('Organization features', () => {
       should(junctionCaveExplorer).have.length(0);
     });
 
+    it('should drop authorship links when permanently deleting without a merge target', async () => {
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+
+      // Documents outside any Collection: the organization payload replaces its
+      // document list with Collection ancestors, so reading the authorship from
+      // it sees nothing and leaves rows that violate the FK on t_grotto.
+      const docs = await TDocument.createEach([
+        { author: 1, type: 1 },
+        { author: 1, type: 1 },
+      ]).fetch();
+      const docIds = docs.map((d) => d.id);
+      await JDocumentGrottoAuthor.createEach(
+        docIds.map((id) => ({ document: id, grotto: org.id }))
+      );
+
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+      should(await JDocumentGrottoAuthor.find({ grotto: org.id })).have.length(
+        0
+      );
+      // The documents themselves are only uncredited, not deleted.
+      should(await TDocument.find({ id: docIds })).have.length(2);
+
+      await TDocument.destroy({ id: docIds });
+    });
+
     it('should permanently delete and merge into another organization', async () => {
       const targetOrg = await TGrotto.create({
         author: 1,
