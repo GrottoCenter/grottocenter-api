@@ -1,6 +1,16 @@
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 
+// Keys of a t_caver row that no public response may contain.
+const CAVER_PRIVATE_KEYS = [
+  'login',
+  'password',
+  'mail',
+  'activationCode',
+  'totpSecret',
+  'lastUsedTotp',
+];
+
 describe('Entrance get-all-snapshots', () => {
   let moderatorToken;
   before(async () => {
@@ -78,6 +88,11 @@ describe('Entrance get-all-snapshots', () => {
         const { description } = res.body.documents[0];
         description.author.should.eql({ id: 1, nickname: 'Admin1' });
         description.reviewer.should.eql({ id: 2, nickname: 'Moderator1' });
+
+        const serialized = JSON.stringify(res.body);
+        CAVER_PRIVATE_KEYS.forEach((key) =>
+          serialized.should.not.containEql(`"${key}"`)
+        );
       });
     });
 
