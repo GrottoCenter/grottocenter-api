@@ -844,6 +844,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Count'
 
+  '/cavers/export/db':
+    get:
+      tags:
+        - cavers
+      description: >
+        Get a download link to the latest full export of the database, a zip
+        archive of one JSON file per collection (massifs, entrances, caves,
+        documents, organizations, devices) plus the license files. The export
+        is rebuilt weekly. Reserved to leaders.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Download URL of the archive, valid for 6 hours.
+                  lastUpdate:
+                    type: string
+                    format: date-time
+                    description: End of the last successful export. Absent if no export ran yet.
+                  size:
+                    type: integer
+                    description: Size of the archive in bytes. Absent if no export ran yet.
+        '401':
+          description: Missing or invalid authentication token.
+        '403':
+          description: The caver is not a leader.
+        '500':
+          description: Unexpected error while reading the export metadata.
+
   '/cavers/moderators':
     get:
       tags:
