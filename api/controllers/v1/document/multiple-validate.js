@@ -158,6 +158,7 @@ async function validateAndUpdateDocument(
   const applyModification = async () => {
     const { missing: missingMembers, resolved: resolvedCollectionData } =
       await DocumentService.resolveM2MMembers(collectionData);
+    const destroyedFiles = [];
 
     await sails.getDatastore().transaction(async (db) => {
       // Update associated data not handled by TDocument manually
@@ -188,29 +189,45 @@ async function validateAndUpdateDocument(
         db
       );
 
-      const filePromises = [];
+      // Every file row is written through the transaction, so a failure
+      // anywhere leaves the attachments as they were and the pending
+      // modification safe to submit again. Sequential: the writes share one
+      // connection, and a rollback must not race queries still in flight.
       // Files have already been created,
       // they just need to be linked to the document.
-      if (newFiles) {
-        filePromises.push(
-          ...newFiles.map((f) =>
-            TFile.updateOne(f.id).set({ isValidated: true })
-          )
-        );
+      for (const f of newFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        await TFile.updateOne(f.id)
+          .set({ isValidated: true })
+          .usingConnection(db);
       }
-      if (modifiedFiles) {
-        filePromises.push(
-          ...modifiedFiles.map((f) => FileService.document.update(f))
-        );
+      for (const f of modifiedFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        await FileService.document.update(f, db);
       }
-
-      if (deletedFiles) {
-        filePromises.push(
-          ...deletedFiles.map((f) => FileService.document.delete(f))
-        );
+      for (const f of deletedFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        const destroyed = await FileService.document.deleteRecord(f, db);
+        // Already gone: nothing left to delete, and no reason to fail the edit.
+        if (destroyed) destroyedFiles.push(destroyed);
       }
-      await Promise.all(filePromises);
     });
+
+    // Storage cannot be rolled back, so it is only touched once the rows are
+    // committed. A failure here leaves an orphaned object, logged for cleanup,
+    // but the document is validated and must be reported as such.
+    await Promise.all(
+      destroyedFiles.map((file) =>
+        FileService.document
+          .deleteStorage(file)
+          .catch((err) =>
+            sails.log.error(
+              `Document ${document.id} validated but the storage of file ${file.id} (${file.path}) could not be deleted`,
+              err
+            )
+          )
+      )
+    );
 
     // Logged after the commit, not before it: the line asserts the document was
     // validated, and an attempt that loses the race never validates anything. A
@@ -255,7 +272,7 @@ async function validateAndUpdateDocument(
   );
 }
 
-async function updateSearchAndNotify(req, documentId, userId) {
+async function updateSearchAndNotify(documentId, userId) {
   const document = await DocumentService.getPopulatedDocument(documentId);
   await DocumentService.updateInSearch(document);
 
@@ -267,6 +284,106 @@ async function updateSearchAndNotify(req, documentId, userId) {
   );
 
   return document;
+}
+
+// Outcome of one batch entry, as reported in the response (#1817).
+const OUTCOME = {
+  VALIDATED: 'validated',
+  REJECTED: 'rejected',
+  AUTO_REJECTED: 'auto_rejected',
+  NOT_FOUND: 'not_found',
+  ERROR: 'error',
+};
+
+// Deliberately generic: the response goes to the moderation UI, and the error
+// itself (SQL, constraint names, stack) goes to the log instead.
+const UNEXPECTED_ERROR_REASON =
+  'Unexpected error while processing this document.';
+
+async function notifyAuthorSafely(document, userId, type, comment) {
+  await NotificationService.notifyAuthor(document, userId, type, comment).catch(
+    (err) =>
+      sails.log.error(
+        'Document multiple-validate notifyAuthor error',
+        document,
+        err
+      )
+  );
+}
+
+async function notifyRejectionSafely(documentId, userId, comment) {
+  let rejectedDoc;
+  try {
+    rejectedDoc = await DocumentService.getPopulatedDocument(documentId);
+  } catch (err) {
+    sails.log.error(
+      `Document ${documentId} multiple-validate getPopulatedDocument error`,
+      err
+    );
+    return;
+  }
+  await notifyAuthorSafely(
+    rejectedDoc,
+    userId,
+    NotificationService.NOTIFICATION_TYPES.REJECT,
+    comment
+  );
+}
+
+// Applies one batch entry and returns its outcome. Everything that runs after
+// the document's own write has committed (search index, notifications) logs
+// and swallows its errors, so a failure there never reports a document as
+// failed when it was in fact validated.
+async function processDocument(document, change, userId) {
+  if (!change.isValidated) {
+    // Validate it but do not update its fields (reject change)
+    await markDocumentValidated(document.id, change.validationComment, userId);
+    await notifyRejectionSafely(document.id, userId, change.validationComment);
+    return { status: OUTCOME.REJECTED, reason: null };
+  }
+
+  if (document.modifiedDocJson) {
+    const result = await validateAndUpdateDocument(
+      document,
+      change.validationComment,
+      userId
+    );
+    if (result.rejected) {
+      // The pending modification was auto-rejected — it would have created a
+      // parent cycle, or it repeatedly lost the race against a concurrent
+      // delete. A member that no longer exists does not land here: it is
+      // dropped and the rest of the edit is applied.
+      // Send a REJECT author notification with the auto-rejection reason,
+      // matching the behaviour of the manual-rejection path above.
+      await notifyRejectionSafely(document.id, userId, result.reason);
+      return { status: OUTCOME.AUTO_REJECTED, reason: result.reason };
+    }
+  } else {
+    // Likely a document creation
+    await markDocumentValidated(document.id, change.validationComment, userId);
+  }
+
+  const populatedDoc = await updateSearchAndNotify(document.id, userId).catch(
+    (err) => {
+      sails.log.error(
+        'Document multiple validate updateSearchAndNotify error',
+        document,
+        err
+      );
+      return null;
+    }
+  );
+
+  if (populatedDoc) {
+    await notifyAuthorSafely(
+      populatedDoc,
+      userId,
+      NotificationService.NOTIFICATION_TYPES.VALIDATE,
+      change.validationComment
+    );
+  }
+
+  return { status: OUTCOME.VALIDATED, reason: null };
 }
 
 module.exports = async (req, res) => {
@@ -342,114 +459,44 @@ module.exports = async (req, res) => {
       validationComment: doc.validationComment,
     });
   }
-  const documentIds = documentChanges.map((e) => e.id);
-  const foundDocuments = await TDocument.find({ id: documentIds });
+  // A repeated id is processed once, with its first entry, as before.
+  const seenIds = new Set();
+  const uniqueChanges = documentChanges.filter(
+    (c) => !seenIds.has(c.id) && seenIds.add(c.id)
+  );
+  const foundDocuments = await TDocument.find({
+    id: uniqueChanges.map((c) => c.id),
+  });
+  const documentsById = new Map(foundDocuments.map((d) => [d.id, d]));
 
-  // Sequential to preserve partial-success semantics per document
-  for (const document of foundDocuments) {
-    const change = documentChanges.find((d) => d.id === document.id);
-    const isAModifiedDoc = !!document.modifiedDocJson;
-    if (!change.isValidated) {
-      // Validate it but do not update its fields (reject change)
-      // eslint-disable-next-line no-await-in-loop
-      await markDocumentValidated(
-        document.id,
-        change.validationComment,
-        req.token.id
-      );
-      // eslint-disable-next-line no-await-in-loop
-      const rejectedDoc = await DocumentService.getPopulatedDocument(
-        document.id
-      );
-      // eslint-disable-next-line no-await-in-loop
-      await NotificationService.notifyAuthor(
-        rejectedDoc,
-        req.token.id,
-        NotificationService.NOTIFICATION_TYPES.REJECT,
-        change.validationComment
-      ).catch((err) =>
-        sails.log.error(
-          'Document multiple-validate notifyAuthor error',
-          document,
-          err
-        )
-      );
-      continue; // eslint-disable-line no-continue
-    }
-
-    if (isAModifiedDoc) {
-      // eslint-disable-next-line no-await-in-loop
-      const result = await validateAndUpdateDocument(
-        document,
-        change.validationComment,
-        req.token.id
-      );
-      if (result.rejected) {
-        // The pending modification was auto-rejected — it would have created a
-        // parent cycle, or it repeatedly lost the race against a concurrent
-        // delete. A member that no longer exists does not land here: it is
-        // dropped and the rest of the edit is applied.
-        // Send a REJECT author notification with the auto-rejection reason,
-        // matching the behaviour of the manual-rejection path above.
-        // eslint-disable-next-line no-await-in-loop
-        const rejectedDoc = await DocumentService.getPopulatedDocument(
-          document.id
-        );
-        // eslint-disable-next-line no-await-in-loop
-        await NotificationService.notifyAuthor(
-          rejectedDoc,
-          req.token.id,
-          NotificationService.NOTIFICATION_TYPES.REJECT,
-          result.reason
-        ).catch((err) =>
-          sails.log.error(
-            'Document multiple-validate notifyAuthor error',
-            document,
-            err
-          )
-        );
-        continue; // eslint-disable-line no-continue
-      }
+  // Sequential, and each document in its own transaction: one failing
+  // document is reported and does not stop the others. Documents processed
+  // before it stay committed, which is why every entry gets an outcome (#1817).
+  const results = [];
+  for (const change of uniqueChanges) {
+    const document = documentsById.get(change.id);
+    let outcome;
+    if (!document) {
+      outcome = { status: OUTCOME.NOT_FOUND, reason: null };
     } else {
-      // Likely a document creation
-      // eslint-disable-next-line no-await-in-loop
-      await markDocumentValidated(
-        document.id,
-        change.validationComment,
-        req.token.id
-      );
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    const populatedDoc = await updateSearchAndNotify(
-      req,
-      document.id,
-      req.token.id
-    ).catch((err) => {
-      sails.log.error(
-        'Document multiple validate updateSearchAndNotify error',
-        document,
-        err
-      );
-      return null;
-    });
-
-    if (populatedDoc) {
-      // eslint-disable-next-line no-await-in-loop
-      await NotificationService.notifyAuthor(
-        populatedDoc,
-        req.token.id,
-        NotificationService.NOTIFICATION_TYPES.VALIDATE,
-        change.validationComment
-      ).catch((err) =>
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        outcome = await processDocument(document, change, req.token.id);
+      } catch (err) {
         sails.log.error(
-          'Document multiple-validate notifyAuthor error',
-          document,
+          `Document ${document.id} multiple-validate processing error`,
           err
-        )
-      );
+        );
+        outcome = { status: OUTCOME.ERROR, reason: UNEXPECTED_ERROR_REASON };
+      }
     }
+    results.push({ id: change.id, ...outcome });
   }
 
-  return res.ok();
+  // 207 tells a client that part of the batch was not applied without having
+  // to read the body; the body is the same either way.
+  if (results.some((r) => r.status === OUTCOME.ERROR)) {
+    return res.multiStatus(results);
+  }
+  return res.ok(results);
 };

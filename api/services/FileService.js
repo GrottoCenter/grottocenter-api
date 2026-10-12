@@ -252,34 +252,46 @@ module.exports = {
       await createQuery;
     },
 
-    async update(file) {
-      const res = await TFile.updateOne(file.id).set({
+    async update(file, connection = null) {
+      let query = TFile.updateOne(file.id).set({
         fileName: file.fileName,
       });
-      return res;
+      if (connection) {
+        query = query.usingConnection(connection);
+      }
+      return query;
     },
 
-    async delete(file) {
-      const destroyedRecord = await TFile.destroyOne(file.id);
+    // Deletes the TFile row only, so it can join the caller's transaction.
+    // Storage cannot be rolled back: remove it with deleteStorage() once that
+    // transaction has committed. Resolves to undefined if the row is gone.
+    async deleteRecord(file, connection = null) {
+      let query = TFile.destroyOne(file.id);
+      if (connection) {
+        query = query.usingConnection(connection);
+      }
+      return query;
+    },
+
+    // Removes the stored file and its thumbnails for a destroyed TFile row.
+    async deleteStorage(record) {
       if (!credentials) {
         // Dev mode: delete from local filesystem
-        const localPath = path.join(LOCAL_DOCUMENTS_DIR, destroyedRecord.path);
+        const localPath = path.join(LOCAL_DOCUMENTS_DIR, record.path);
         if (fs.existsSync(localPath)) {
           fs.unlinkSync(localPath);
           sails.log.info(`[Local Storage] Document deleted: ${localPath}`);
         }
       } else {
         const blockBlobClient =
-          credentials.documentsBlobClient.getBlockBlobClient(
-            destroyedRecord.path
-          );
+          credentials.documentsBlobClient.getBlockBlobClient(record.path);
         await blockBlobClient.delete({ deleteSnapshots: 'include' });
 
         // Best-effort cleanup of thumbnail blobs
         const thumbnailPaths = [
-          destroyedRecord.thumbnailSmall,
-          destroyedRecord.thumbnailMedium,
-          destroyedRecord.thumbnailLarge,
+          record.thumbnailSmall,
+          record.thumbnailMedium,
+          record.thumbnailLarge,
         ].filter(Boolean);
         await Promise.all(
           thumbnailPaths.map(async (thumbPath) => {
@@ -295,6 +307,13 @@ module.exports = {
             }
           })
         );
+      }
+    },
+
+    async delete(file) {
+      const destroyedRecord = await this.deleteRecord(file);
+      if (destroyedRecord) {
+        await this.deleteStorage(destroyedRecord);
       }
       return destroyedRecord;
     },

@@ -2086,8 +2086,22 @@ paths:
         the reason, and the author receives a REJECT notification.
 
 
-        Either way the batch still succeeds — other documents in the same
-        request are processed normally.
+        Either way the document is reported as `auto_rejected` and the other
+        documents in the same request are processed normally.
+
+
+        **Per-document outcome.** Each document is applied in its own
+        transaction, in request order, and the response reports the outcome
+        of every entry. A document that fails with an unexpected error is
+        reported as `error` and left untouched, attachments included, so its
+        pending modification can be submitted again; the batch carries on and
+        the documents before and after it are still applied. Stored files of
+        deleted attachments are removed only after the document's changes are
+        committed. The status is `200`
+        when no entry is `error` and `207` otherwise; the body is the same
+        either way. A repeated `id` is processed once, with its first entry.
+      security:
+        - bearerAuth: []
       parameters:
         - name: documents
           description: Document(s) to validate / refuse with their optionnal validation comment.
@@ -2111,8 +2125,26 @@ paths:
       responses:
         '200':
           description: >
-            Successful operation. Ids that match no document are skipped, so
-            the call still succeeds.
+            Every entry was processed: validated, rejected, auto-rejected or
+            not found. Ids that match no document are reported as `not_found`
+            and do not fail the call.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentValidationResult'
+        '207':
+          description: >
+            At least one entry is `error`: that document was not applied, while
+            the other entries were processed as reported. Re-submit only the
+            entries whose status is `error`.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentValidationResult'
         '400':
           description: >
             Bad request: `documents` is not an array, an entry is not an
@@ -2124,6 +2156,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StructuredError'
+        '401':
+          description: Missing or invalid authentication token.
+        '403':
+          description: The authenticated user is not a moderator.
+        '500':
+          description: >
+            Unexpected error before any document was processed (e.g. the
+            documents could not be loaded). Errors while processing a single
+            document are reported in a `207` instead.
 
   '/documents/identifierTypes':
     get:
@@ -8321,6 +8362,31 @@ components:
           nullable: true
         - type: string
           enum: ['true', 'false', '1', '0', '']
+    DocumentValidationResult:
+      type: object
+      description: Outcome of one entry of `PUT /documents/validate`.
+      required: [id, status, reason]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [validated, rejected, auto_rejected, not_found, error]
+          description: >
+            `validated`: accepted, including its pending modification if any.
+            `rejected`: refused by the moderator (`isValidated` false).
+            `auto_rejected`: the pending modification was refused by the API
+            (see the endpoint description). `not_found`: no document has this
+            id. `error`: an unexpected error occurred and the document was left
+            as it was.
+        reason:
+          type: string
+          nullable: true
+          description: >
+            For `auto_rejected`, the stored `validationComment` (prefixed
+            `Auto-rejected:`). For `error`, a generic message; details are in
+            the server log. `null` otherwise.
     ImportBatchAccepted:
       type: object
       properties:
