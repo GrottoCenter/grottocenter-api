@@ -5,6 +5,24 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
+// Credentials, contact details and login-security state. Converters must map a
+// caver through toSimpleCaver / toCaver; this is only the backstop for one that
+// forgets and serializes a raw record.
+const PRIVATE_ATTRIBUTES = new Set([
+  'login',
+  'password',
+  'activationCode',
+  'mail',
+  'pendingMail',
+  'totpSecret',
+  'lastUsedTotp',
+  'lastUsedTotpAt',
+  'totpFailedAttempts',
+  'loginFailedAttempts',
+  'lastFailedLoginAt',
+  'lastSuspiciousEmailAt',
+]);
+
 module.exports = {
   tableName: 't_caver',
 
@@ -263,6 +281,15 @@ module.exports = {
       columnType: 'timestamp',
       columnName: 'last_suspicious_email_at',
     },
+  },
+
+  // Applies to JSON.stringify only, so code reading caver.password still works.
+  // Waterline sets it as a non-enumerable toJSON: a spread copy ({ ...caver })
+  // loses it.
+  customToJSON() {
+    return Object.fromEntries(
+      Object.entries(this).filter(([key]) => !PRIVATE_ATTRIBUTES.has(key))
+    );
   },
 
   beforeCreate: (values, next) => {
