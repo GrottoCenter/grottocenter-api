@@ -1,6 +1,16 @@
 const supertest = require('supertest');
 const should = require('should');
 
+// Keys of a t_caver row that no public response may contain.
+const CAVER_PRIVATE_KEYS = [
+  'login',
+  'password',
+  'mail',
+  'activationCode',
+  'totpSecret',
+  'lastUsedTotp',
+];
+
 describe('Document get-snapshots', () => {
   describe('GET /api/v1/documents/:id/snapshots', () => {
     it('should return 404 for document with no snapshots', async () => {
@@ -46,6 +56,11 @@ describe('Document get-snapshots', () => {
         description.title.should.equal('An awesome collection');
         description.author.should.eql({ id: 1, nickname: 'Admin1' });
         description.reviewer.should.eql({ id: 2, nickname: 'Moderator1' });
+
+        const serialized = JSON.stringify(res.body);
+        CAVER_PRIVATE_KEYS.forEach((key) =>
+          serialized.should.not.containEql(`"${key}"`)
+        );
       });
     });
   });

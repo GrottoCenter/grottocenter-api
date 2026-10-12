@@ -8894,7 +8894,7 @@ components:
                   description: Review date of the description (ISO 8601).
                 t_id:
                   type: integer
-                  description: Id of the description, when it is the current one.
+                  description: Id of the description.
                 title:
                   type: string
                 body:
