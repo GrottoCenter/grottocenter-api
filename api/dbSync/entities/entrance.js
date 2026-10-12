@@ -65,12 +65,14 @@ async function* processRows(source) {
           'lc.length',
           'lc.temperature',
           'lc.is_diving AS "isDiving"',
+          'lc.id AS "liveId"',
         ],
         join: [
           exportUtils.liveRowJoin('t_cave', 'c', 'lc'),
           exportUtils.caveNameJoin('lc'),
         ],
-        transform: (e) => e, // Allow to also keep the id
+        // c.id matches the entrance; the embed is the live cave it stands for
+        transform: ({ id: _, liveId, ...e }) => ({ ...e, id: liveId }),
         where: [],
       },
       {

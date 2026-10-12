@@ -88,12 +88,25 @@ function caveNameJoin(caveAlias, nameAlias = 'n') {
   ) ${nameAlias} ON true`;
 }
 
+// Merges are not flattened on soft delete, so A -> B can become A -> B -> C
+const MAX_REDIRECT_HOPS = 10;
+
 // Join, as `${liveAlias}`, the live row `${alias}` stands for: itself, or the
-// row it was merged into (redirect_to) once soft-deleted. An inner join, so a
-// soft-deleted row that was never merged drops out.
+// first live row down its chain of merges (redirect_to) once soft-deleted. An
+// inner join, so a soft-deleted row whose chain ends on no live row (never
+// merged, a cycle, more than MAX_REDIRECT_HOPS hops) drops out.
 function liveRowJoin(table, alias, liveAlias) {
   return `JOIN ${table} ${liveAlias} ON ${liveAlias}.id =
-    CASE WHEN ${alias}.is_deleted THEN ${alias}.redirect_to ELSE ${alias}.id END
+    CASE WHEN ${alias}.is_deleted THEN (
+      WITH RECURSIVE chain(id, is_deleted, redirect_to, hops) AS (
+        SELECT ${alias}.id, true, ${alias}.redirect_to, 0
+        UNION ALL
+        SELECT r.id, r.is_deleted, r.redirect_to, chain.hops + 1
+        FROM chain JOIN ${table} r ON r.id = chain.redirect_to
+        WHERE chain.is_deleted AND chain.hops < ${MAX_REDIRECT_HOPS}
+      )
+      SELECT id FROM chain WHERE NOT is_deleted LIMIT 1
+    ) ELSE ${alias}.id END
     AND ${liveAlias}.is_deleted = false`;
 }
 
