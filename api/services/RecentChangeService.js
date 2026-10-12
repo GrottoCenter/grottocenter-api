@@ -44,6 +44,21 @@ async function setDeleteRestoreAuthor(
   );
 }
 
+// change_document() only logs a document when it becomes validated (#1781), so
+// an edit applied directly to an already validated document is logged here, by
+// the code path that knows who made it. Only validated documents are public.
+// Named after the document's first description, as the trigger does.
+async function logDocumentUpdate(documentId, authorId, db) {
+  const query = `
+  INSERT INTO t_last_change (type_entity, type_change, date_change, id_entity, id_author, name)
+  SELECT 'document', 'update', now(), d.id, $2,
+    (SELECT tdesc.title FROM t_description tdesc WHERE tdesc.id_document = d.id LIMIT 1)
+  FROM t_document d
+  WHERE d.id = $1 AND d.is_validated = true AND d.is_deleted = false;
+  `;
+  await CommonService.query(query, [documentId, authorId], db);
+}
+
 // To make the change list more relevant we groups change event when they are from the same author and about the same entity
 function groupChanges(changes) {
   const authorChanges = {};
@@ -185,4 +200,5 @@ module.exports = {
   getRecent,
   setNameCreate,
   setDeleteRestoreAuthor,
+  logDocumentUpdate,
 };

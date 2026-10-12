@@ -27,6 +27,9 @@
 --   - 'update' otherwise (validation of a contribution, whose author
 --     multiple-validate.js writes to id_reviewer), credited to the reviewer.
 -- INSERT of an already validated document, delete and restore are unchanged.
+-- An edit applied directly to a validated document (PUT
+-- /documents/:id/new-entities) leaves is_validated true, so the endpoint logs
+-- it itself, credited to the editor (RecentChangeService.logDocumentUpdate).
 --
 -- Rejecting a pending change (manually, or automatically in
 -- multiple-validate.js) also sets is_validated back to true, with the same

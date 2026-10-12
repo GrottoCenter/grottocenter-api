@@ -240,6 +240,47 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       should(await documentChanges(document.id)).have.length(0);
     });
 
+    it('should log a direct edit of a validated document as an update by its editor', async () => {
+      const document = await createValidatedDocument({ pages: '10' });
+      await TDescription.create({
+        author: ADMIN_ID,
+        document: document.id,
+        language: 'fra',
+        title: 'Edited #1781',
+      });
+      const before = await documentChanges(document.id);
+
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${document.id}/new-entities`)
+        .send({ document: { pages: '20' } })
+        .set('Authorization', userToken)
+        .expect(200);
+
+      should((await TDocument.findOne(document.id)).pages).equal('20');
+      const added = (await documentChanges(document.id)).slice(before.length);
+      should(added).eql([
+        { type_change: 'update', id_author: userId, name: 'Edited #1781' },
+      ]);
+    });
+
+    it('should not log a direct edit of a document that is not validated', async () => {
+      const document = await TDocument.create({
+        author: userId,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${document.id}/new-entities`)
+        .send({ document: { pages: '20' } })
+        .set('Authorization', userToken)
+        .expect(200);
+
+      should((await TDocument.findOne(document.id)).pages).equal('20');
+      should(await documentChanges(document.id)).have.length(0);
+    });
+
     it('should not show the side effects in the recent changes', async () => {
       const caveId = (await TCave.create({}).fetch()).id;
       const targetCaveId = (await TCave.create({}).fetch()).id;

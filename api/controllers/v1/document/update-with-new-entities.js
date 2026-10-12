@@ -1,5 +1,6 @@
 const DocumentService = require('../../../services/DocumentService');
 const NotificationService = require('../../../services/NotificationService');
+const RecentChangeService = require('../../../services/RecentChangeService');
 const {
   DOCUMENT_M2M_COLLECTIONS,
 } = require('../../../../config/constants/document');
@@ -137,6 +138,10 @@ module.exports = async (req, res) => {
     // client (including an empty array, which means "clear all").
     // Fields absent from the request (undefined) are left untouched.
     await DocumentService.replaceM2MCollections(documentId, collectionData, db);
+
+    // The edit is applied without going through validation, so the
+    // change_document() trigger does not log it: record it for the editor.
+    await RecentChangeService.logDocumentUpdate(documentId, req.token.id, db);
   };
 
   try {
