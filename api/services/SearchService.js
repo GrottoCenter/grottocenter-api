@@ -1,23 +1,9 @@
 const typesense = require('../../config/typesense');
 const searchDocuments = require('../dbSync/searchDocuments');
 
-const organization = require('../dbSync/entities/organization');
-const person = require('../dbSync/entities/person');
-const massif = require('../dbSync/entities/massif');
-const entrance = require('../dbSync/entities/entrance');
-const cave = require('../dbSync/entities/cave');
-const document = require('../dbSync/entities/document');
-const device = require('../dbSync/entities/device');
-
-const allEntities = {
-  [organization.search.schema.name]: organization.search,
-  [person.search.schema.name]: person.search,
-  [massif.search.schema.name]: massif.search,
-  [cave.search.schema.name]: cave.search,
-  [entrance.search.schema.name]: entrance.search,
-  [document.search.schema.name]: document.search,
-  [device.search.schema.name]: device.search,
-};
+const allEntities = Object.fromEntries(
+  Object.entries(searchDocuments.ENTITIES).map(([name, e]) => [name, e.search])
+);
 const allEntitiesKeys = Object.keys(allEntities);
 
 // Typesense caps how many distinct index words a prefix/typo query may expand

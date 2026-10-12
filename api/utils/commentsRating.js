@@ -17,8 +17,9 @@ const filterPositive = (e) => e && e > 0;
  * Soft-deleted comments must not reach this function: it does not read
  * `isDeleted` and will happily average a deleted rating in. Its caller, the
  * entrances importFormater, gets comments joined with the `is_deleted = false`
- * default of joinMany in api/dbSync/utils.js; another caller has to filter too. The filter is deliberately left outside so this stays a pure
- * numeric aggregate over whatever set the caller decided counts. See #1823.
+ * default of joinMany in api/dbSync/utils.js; another caller has to filter
+ * too. The filter is deliberately left outside so this stays a pure numeric
+ * aggregate over whatever set the caller decided counts. See #1823.
  *
  * @param {Array<Object>} nonDeletedComments - Comment objects, already filtered on !isDeleted
  * @returns {{ aestheticism: number|null, caving: number|null, approach: number|null }}

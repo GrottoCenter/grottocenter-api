@@ -67,21 +67,23 @@ function dateAndAuthorJoins(tableAlias) {
 
 // Join the cave's main name as `${nameAlias}` (name, id_language). A cave with
 // no name row of its own was created through one of its entrances and goes by
-// that entrance's main name, as NameService.setNames resolves it.
+// that entrance's main name, as NameService.setNames resolves it. Live rows rank
+// first: a soft-deleted entrance names the cave only when nothing else is left.
 function caveNameJoin(caveAlias, nameAlias = 'n') {
   return `LEFT JOIN LATERAL (
     SELECT candidates.name, candidates.id_language FROM (
-      SELECT cn.name, cn.id_language, 0 AS rank, 0 AS entrance_id, cn.id AS name_id
+      SELECT cn.name, cn.id_language, 0 AS rank, cn.is_deleted AS deleted,
+        0 AS entrance_id, cn.id AS name_id
       FROM t_name cn
       WHERE cn.id_cave = ${caveAlias}.id AND cn.is_main = true
       UNION ALL
-      SELECT en.name, en.id_language, 1, ce.id, en.id
+      SELECT en.name, en.id_language, 1, (ce.is_deleted OR en.is_deleted), ce.id, en.id
       FROM t_entrance ce
       JOIN t_name en ON en.id_entrance = ce.id AND en.is_main = true
       WHERE ce.id_cave = ${caveAlias}.id
       AND NOT EXISTS (SELECT 1 FROM t_name x WHERE x.id_cave = ${caveAlias}.id)
     ) candidates
-    ORDER BY candidates.rank, candidates.entrance_id, candidates.name_id
+    ORDER BY candidates.rank, candidates.deleted, candidates.entrance_id, candidates.name_id
     LIMIT 1
   ) ${nameAlias} ON true`;
 }

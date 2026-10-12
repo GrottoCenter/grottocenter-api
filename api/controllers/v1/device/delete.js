@@ -58,6 +58,8 @@ module.exports = async (req, res) => {
       device: deviceId,
     });
     if (sensorConfigCount > 0) {
+      // The device stays soft-deleted, which takes it out of search
+      await DeviceService.updateInSearch(device);
       return res.conflict(
         'This device cannot be permanently deleted because it has associated sensor configurations.'
       );

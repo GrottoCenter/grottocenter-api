@@ -9,8 +9,10 @@ const cave = require('./entities/cave');
 const document = require('./entities/document');
 const device = require('./entities/device');
 
+// The search collections, by name: SearchService builds its own list from it,
+// so a new collection is synced and searched alike
 const ENTITIES = Object.fromEntries(
-  [organization, person, massif, entrance, cave, document, device].map((e) => [
+  [organization, person, massif, cave, entrance, document, device].map((e) => [
     e.search.schema.name,
     e,
   ])
@@ -79,4 +81,10 @@ async function planSync(collectionName, ids) {
   return { documents, removedIds };
 }
 
-module.exports = { getEntity, normalizeIds, buildDocuments, planSync };
+module.exports = {
+  ENTITIES,
+  getEntity,
+  normalizeIds,
+  buildDocuments,
+  planSync,
+};
