@@ -95,6 +95,24 @@ describe('dbSync utils', () => {
     });
   });
 
+  describe('uniqueBy()', () => {
+    it('keeps the first item of each key, in order', () => {
+      const items = [
+        { id: 2, name: 'b' },
+        { id: 1, name: 'a' },
+        { id: 2, name: 'c' },
+      ];
+      should(syncUtils.uniqueBy(items, 'id')).eql([
+        { id: 2, name: 'b' },
+        { id: 1, name: 'a' },
+      ]);
+    });
+
+    it('leaves a missing list missing', () => {
+      should(syncUtils.uniqueBy(undefined, 'id')).be.undefined();
+    });
+  });
+
   describe('JSONArrayStringify()', () => {
     it('writes an empty JSON array when there are no rows', async () => {
       const chunks = await collect(syncUtils.JSONArrayStringify([]));

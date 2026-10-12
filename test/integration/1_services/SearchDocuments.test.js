@@ -268,6 +268,174 @@ describe('searchDocuments', () => {
     });
   });
 
+  // A soft-deleted entity is embedded as the live one it was merged into
+  // (redirect_to), and left out when it was never merged
+  describe('soft-deleted embeds', () => {
+    const named = async (model, owner, name, attributes = {}) => {
+      const row = await model.create({ author: 1, ...attributes }).fetch();
+      await TName.create({
+        author: 1,
+        [owner]: row.id,
+        name,
+        language: 'fra',
+        isMain: true,
+      });
+      return row;
+    };
+    // Each kind: a live target, a row merged into it, a row deleted for good
+    const kinds = {
+      organization: { model: () => TGrotto, owner: 'grotto' },
+      massif: { model: () => TMassif, owner: 'massif' },
+      cave: { model: () => TCave, owner: 'cave' },
+      entrance: {
+        model: () => TEntrance,
+        owner: 'entrance',
+        attributes: { cave: 1, latitude: 45.2, longitude: 6.2 },
+      },
+    };
+    const rows = {};
+    let liveEntrance;
+
+    before(async () => {
+      for (const [kind, { model, owner, attributes }] of Object.entries(
+        kinds
+      )) {
+        /* eslint-disable no-await-in-loop */
+        const live = await named(model(), owner, `Live ${kind}`, attributes);
+        const merged = await named(model(), owner, `Merged ${kind}`, {
+          ...attributes,
+          isDeleted: true,
+          redirectTo: live.id,
+        });
+        const gone = await named(model(), owner, `Gone ${kind}`, {
+          ...attributes,
+          isDeleted: true,
+        });
+        /* eslint-enable no-await-in-loop */
+        rows[kind] = { live: live.id, merged: merged.id, gone: gone.id };
+      }
+      const { organization, massif, cave, entrance } = rows;
+
+      // Document 5 is linked to the merged rows, to the target of one of them
+      // and to the rows deleted for good
+      await CommonService.query(
+        'UPDATE t_document SET id_editor = $1, id_library = $2, id_cave = $3 WHERE id = 5',
+        [organization.merged, organization.gone, cave.merged]
+      );
+      await CommonService.query(
+        `INSERT INTO j_document_grotto_author (id_document, id_grotto)
+         SELECT 5, unnest($1::int[])`,
+        [[organization.merged, organization.live, organization.gone]]
+      );
+      await CommonService.query(
+        `INSERT INTO j_document_entrance (id_document, id_entrance)
+         SELECT 5, unnest($1::int[])`,
+        [[entrance.merged, entrance.live, entrance.gone]]
+      );
+      await CommonService.query(
+        `INSERT INTO j_document_massif (id_document, id_massif)
+         SELECT 5, unnest($1::int[])`,
+        [[massif.merged, massif.gone]]
+      );
+
+      liveEntrance = await named(TEntrance, 'entrance', 'Entrance', {
+        cave: cave.merged,
+        latitude: 45.3,
+        longitude: 6.3,
+      });
+    });
+
+    after(async () => {
+      await CommonService.query(
+        'UPDATE t_document SET id_editor = NULL, id_library = NULL, id_cave = NULL WHERE id = 5'
+      );
+      for (const table of [
+        'j_document_grotto_author',
+        'j_document_entrance',
+        'j_document_massif',
+      ]) {
+        // eslint-disable-next-line no-await-in-loop
+        await CommonService.query(`DELETE FROM ${table} WHERE id_document = 5`);
+      }
+      const ids = (kind) => Object.values(rows[kind]);
+      await TName.destroy({ entrance: [...ids('entrance'), liveEntrance.id] });
+      await TName.destroy({ cave: ids('cave') });
+      await TName.destroy({ massif: ids('massif') });
+      await TName.destroy({ grotto: ids('organization') });
+      await TEntrance.destroy({ id: [...ids('entrance'), liveEntrance.id] });
+      await TCave.destroy({ id: ids('cave') });
+      await TMassif.destroy({ id: ids('massif') });
+      // t_grotto soft-deletes on a first DELETE
+      await CommonService.query('DELETE FROM t_grotto WHERE id = ANY($1)', [
+        ids('organization'),
+      ]);
+      await CommonService.query('DELETE FROM t_grotto WHERE id = ANY($1)', [
+        ids('organization'),
+      ]);
+    });
+
+    it('embeds the organization a merged editor went into', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.editor).eql({ name: 'Live organization', language: 'fra' });
+    });
+
+    it('leaves out a deleted library that was never merged', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.library).be.null();
+    });
+
+    it('embeds each live author organization once', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.authorsOrganization).eql([{ name: 'Live organization' }]);
+    });
+
+    it('embeds each live entrance once, by its own id', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.entrances).eql([
+        { id: rows.entrance.live, name: 'Live entrance', language: 'fra' },
+      ]);
+    });
+
+    it('embeds the massif a linked massif was merged into', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.massifs).eql([
+        { id: rows.massif.live, name: 'Live massif', language: 'fra' },
+      ]);
+    });
+
+    it('embeds the cave the document cave was merged into', async () => {
+      const [doc] = await buildDocuments('documents', [5]);
+      should(doc.cave).eql({ name: 'Live cave', language: 'fra' });
+    });
+
+    it('embeds the cave the entrance cave was merged into', async () => {
+      const [doc] = await buildDocuments('entrances', [liveEntrance.id]);
+      should(doc.cave.name).equal('Live cave');
+    });
+
+    describe('cave deleted for good', () => {
+      before(async () => {
+        await CommonService.query(
+          'UPDATE t_document SET id_cave = $1 WHERE id = 5',
+          [rows.cave.gone]
+        );
+        await TEntrance.updateOne(liveEntrance.id).set({
+          cave: rows.cave.gone,
+        });
+      });
+
+      it('leaves the cave out of the document', async () => {
+        const [doc] = await buildDocuments('documents', [5]);
+        should(doc.cave).be.null();
+      });
+
+      it('leaves the cave out of the entrance', async () => {
+        const [doc] = await buildDocuments('entrances', [liveEntrance.id]);
+        should(doc.cave).be.null();
+      });
+    });
+  });
+
   describe('planSync()', () => {
     afterEach(async () => {
       await CommonService.query(

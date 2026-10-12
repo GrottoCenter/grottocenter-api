@@ -76,7 +76,10 @@ async function* processRows(source) {
         rowsKey: 'editorId',
         localField: 'editor',
         fields: ['n.name', 'n.id_language AS language'],
-        join: [`LEFT JOIN t_name n ON n.id_grotto = e.id AND n.is_main = true`],
+        join: [
+          exportUtils.liveRowJoin('t_grotto', 'e', 'le'),
+          `LEFT JOIN t_name n ON n.id_grotto = le.id AND n.is_main = true`,
+        ],
         where: [],
       },
       {
@@ -86,7 +89,10 @@ async function* processRows(source) {
         rowsKey: 'libraryId',
         localField: 'library',
         fields: ['n.name', 'n.id_language AS language'],
-        join: [`LEFT JOIN t_name n ON n.id_grotto = l.id AND n.is_main = true`],
+        join: [
+          exportUtils.liveRowJoin('t_grotto', 'l', 'll'),
+          `LEFT JOIN t_name n ON n.id_grotto = ll.id AND n.is_main = true`,
+        ],
         where: [],
       },
       {
@@ -130,12 +136,14 @@ async function* processRows(source) {
         foreignField: 'j.id_document',
         rows,
         localField: 'authorsOrganization',
-        fields: ['n.name'],
+        fields: ['lg.id', 'n.name'],
         where: [],
         join: [
-          'LEFT JOIN t_grotto g ON g.id = j.id_grotto',
-          'LEFT JOIN t_name n ON n.id_grotto = g.id AND n.is_main = true',
+          'JOIN t_grotto g ON g.id = j.id_grotto',
+          exportUtils.liveRowJoin('t_grotto', 'g', 'lg'),
+          'LEFT JOIN t_name n ON n.id_grotto = lg.id AND n.is_main = true',
         ],
+        transform: (e) => e, // Keep the id, to drop the duplicates
       },
       {
         table: 'j_document_language',
@@ -151,10 +159,11 @@ async function* processRows(source) {
         foreignField: 'j.id_document',
         rows,
         localField: 'entrances',
-        fields: ['j.id_entrance AS id', 'n.name', 'n.id_language AS language'],
+        fields: ['le.id', 'n.name', 'n.id_language AS language'],
         join: [
-          'LEFT JOIN t_entrance e ON e.id = j.id_entrance',
-          'LEFT JOIN t_name n ON n.id_entrance = e.id AND n.is_main = true',
+          'JOIN t_entrance e ON e.id = j.id_entrance',
+          exportUtils.liveRowJoin('t_entrance', 'e', 'le'),
+          'LEFT JOIN t_name n ON n.id_entrance = le.id AND n.is_main = true',
         ],
         where: [],
       },
@@ -165,7 +174,10 @@ async function* processRows(source) {
         rowsKey: 'caveId',
         localField: 'cave',
         fields: ['n.name', 'n.id_language AS language'],
-        join: [exportUtils.caveNameJoin('c')],
+        join: [
+          exportUtils.liveRowJoin('t_cave', 'c', 'lc'),
+          exportUtils.caveNameJoin('lc'),
+        ],
         where: [],
       },
       {
@@ -173,10 +185,11 @@ async function* processRows(source) {
         foreignField: 'j.id_document',
         rows,
         localField: 'massifs',
-        fields: ['j.id_massif AS id', 'n.name', 'n.id_language AS language'],
+        fields: ['lm.id', 'n.name', 'n.id_language AS language'],
         join: [
-          'LEFT JOIN t_massif m ON m.id = id_massif',
-          'LEFT JOIN t_name n ON n.id_massif = m.id AND n.is_main = true',
+          'JOIN t_massif m ON m.id = j.id_massif',
+          exportUtils.liveRowJoin('t_massif', 'm', 'lm'),
+          'LEFT JOIN t_name n ON n.id_massif = lm.id AND n.is_main = true',
         ],
         where: [],
       },
@@ -195,6 +208,11 @@ async function* processRows(source) {
         ...(row.isoRegions?.map((e) => ({ iso: e.iso, name: e.name })) ?? []),
       ];
       row.cave = row.cave?.[0] ?? null;
+      row.entrances = exportUtils.uniqueBy(row.entrances, 'id');
+      row.massifs = exportUtils.uniqueBy(row.massifs, 'id');
+      row.authorsOrganization = exportUtils
+        .uniqueBy(row.authorsOrganization, 'id')
+        ?.map(({ name }) => ({ name }));
 
       row.authorsSort = computeDocumentAuthorsSort(
         row.authors?.map((e) => e.nickname),
