@@ -60,6 +60,41 @@ describe('dbSync utils', () => {
     });
   });
 
+  describe('idsQuery()', () => {
+    const query = `
+      SELECT e.id FROM t_entrance e
+      WHERE e.id ${'#ID_FILTER#'}
+      ORDER BY e.id ASC
+      ${'#PAGGING#'}
+    `;
+
+    it('returns only the requested rows, in id order', async () => {
+      const pages = await collect(
+        syncUtils.idsQuery('entrances', query, [7, 2, 999])
+      );
+      should(pages.flat().map((r) => r.id)).eql([2, 7, 999]);
+    });
+
+    it('queries the ids one page size at a time', async () => {
+      const pages = await collect(
+        syncUtils.idsQuery('entrances', query, [1, 2, 3, 4, 5], 2)
+      );
+      should(pages.map((p) => p.map((r) => r.id))).eql([[1, 2], [3, 4], [5]]);
+    });
+
+    it('skips the pages where no id matches', async () => {
+      const pages = await collect(
+        syncUtils.idsQuery('entrances', query, [424242, 424243, 3], 2)
+      );
+      should(pages.map((p) => p.map((r) => r.id))).eql([[3]]);
+    });
+
+    it('yields nothing without ids', async () => {
+      const pages = await collect(syncUtils.idsQuery('entrances', query, []));
+      should(pages).eql([]);
+    });
+  });
+
   describe('JSONArrayStringify()', () => {
     it('writes an empty JSON array when there are no rows', async () => {
       const chunks = await collect(syncUtils.JSONArrayStringify([]));

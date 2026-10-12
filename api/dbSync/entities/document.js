@@ -240,6 +240,12 @@ module.exports = {
   processRows,
   search: {
     importFormater,
+    // A validated document being modified waits for its re-validation with
+    // is_validated = false: the index keeps its last validated version.
+    retainedIdsQuery: `
+      SELECT id FROM t_document
+      WHERE id = ANY($1::int[]) AND is_deleted = false AND is_validated = false
+    `,
     schema: {
       name: 'documents',
       enable_nested_fields: true,

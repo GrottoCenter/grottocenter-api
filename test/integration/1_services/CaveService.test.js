@@ -1,6 +1,8 @@
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaveService = require('../../../api/services/CaveService');
+const SearchService = require('../../../api/services/SearchService');
 
 const findAndPopulateCave = async (caveId) =>
   TCave.findOne(caveId)
@@ -241,17 +243,24 @@ describe('CaveService', () => {
   });
 
   describe('updateInSearch()', () => {
-    it('should call SearchService.updateDocument', async () => {
-      const populatedCave = await CaveService.getPopulatedCave(1);
-      await CaveService.updateInSearch(populatedCave);
+    afterEach(() => {
+      sinon.restore();
     });
 
-    it('should exclude exploringOrganizations from search data', async () => {
-      const populatedCave = await CaveService.getPopulatedCave(1);
-      populatedCave.exploringOrganizations = [{ id: 1, name: 'Test Org' }];
+    it('should re-index the cave from the database by id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      // This should not throw an error and should exclude exploringOrganizations
-      await CaveService.updateInSearch(populatedCave);
+      await CaveService.updateInSearch({ id: 1, names: [] });
+
+      should(syncStub.calledOnceWithExactly('caves', [1])).be.true();
+    });
+
+    it('should accept a bare id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
+
+      await CaveService.updateInSearch(7);
+
+      should(syncStub.calledOnceWithExactly('caves', [7])).be.true();
     });
   });
 

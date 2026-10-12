@@ -416,90 +416,24 @@ describe('GrottoService', () => {
   });
 
   describe('updateInSearch()', () => {
-    it('should update organization in search index', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      const organization = {
-        id: 1,
-        author: { id: 1, nickname: 'Author' },
-        reviewer: { id: 2, nickname: 'Reviewer' },
-        names: [{ name: 'Test Org', language: 'eng' }],
-        iso_3166_2: 'FR-75',
-        country: { nativeName: 'France' },
-        cavers: [{ id: 1 }, { id: 2 }],
-        exploredNetworks: [],
-        exploredEntrances: [],
-        partnerNetworks: [],
-        partnerEntrances: [],
-      };
-
-      await GrottoService.updateInSearch(organization);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.name).equal('Test Org');
-      should(callArg.language).equal('eng');
-      should(callArg.author).equal('Author');
-      should(callArg.reviewer).equal('Reviewer');
-      should(callArg.country).equal('France');
-      should(callArg.nbCavers).equal(2);
-      process.env.NODE_ENV = originalEnv;
+    afterEach(() => {
+      sinon.restore();
     });
 
-    it('should not leak the document lists into the search payload', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+    it('should re-index the organization from the database by id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      // updateInSearch spreads the leftover fields into the Typesense payload,
-      // so a display-only field that isn't destructured out would be indexed
-      // against a schema that doesn't declare it.
-      await GrottoService.updateInSearch({
-        id: 1,
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test Org', language: 'eng' }],
-        exploredNetworks: [],
-        exploredEntrances: [],
-        partnerNetworks: [],
-        partnerEntrances: [],
-        authoredDocuments: [{ id: 1 }],
-        publishedDocuments: [{ id: 2 }],
-        authoredCount: 1,
-        publishedCount: 1,
-      });
+      await GrottoService.updateInSearch({ id: 1, names: [] });
 
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg).not.have.property('authoredDocuments');
-      should(callArg).not.have.property('publishedDocuments');
-      should(callArg).not.have.property('authoredCount');
-      should(callArg).not.have.property('publishedCount');
-      should(callArg).not.have.property('documents');
-      process.env.NODE_ENV = originalEnv;
+      should(syncStub.calledOnceWithExactly('organizations', [1])).be.true();
     });
 
-    it('should handle missing optional fields', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+    it('should accept a bare id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      const organization = {
-        id: 1,
-        author: { id: 1, nickname: 'Author' },
-        names: [],
-        exploredNetworks: [],
-        exploredEntrances: [],
-        partnerNetworks: [],
-        partnerEntrances: [],
-      };
+      await GrottoService.updateInSearch(7);
 
-      await GrottoService.updateInSearch(organization);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.nbCavers).equal(0);
-      process.env.NODE_ENV = originalEnv;
+      should(syncStub.calledOnceWithExactly('organizations', [7])).be.true();
     });
   });
 });

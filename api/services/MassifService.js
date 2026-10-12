@@ -119,15 +119,6 @@ const FIND_CAVES_IN_MASSIF = `
   AND e.is_deleted = false
 `;
 
-const COUNT_ENTRANCES_IN_MASSIF = `
-  SELECT COUNT(e.id)::integer AS count
-  FROM t_entrance AS e
-  JOIN t_massif AS m
-  ON e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom)
-  WHERE m.id = $1
-  AND e.is_deleted = false
-`;
-
 const COUNT_UNSENSITIVE_ENTRANCES_IN_MASSIF = `
   SELECT COUNT(e.id)::integer AS count
   FROM t_entrance AS e
@@ -332,25 +323,12 @@ module.exports = {
     await SearchService.deleteDocument('massifs', massifId);
   },
 
-  async updateInSearch(populatedMassif) {
-    const { documents, networks, names, ...m } = populatedMassif;
-    const nbEntrances = await module.exports.countEntrances(m.id);
-    const massif = {
-      id: m.id,
-      dateInscription: m.dateInscription,
-      dateReviewed: m.dateReviewed,
-      authorId: m.author.id,
-      author: m.author.nickname,
-      reviewerId: m.reviewer?.id,
-      reviewer: m.reviewer?.nickname,
-
-      // Will still have the previous name as the front make a second API call to update the name
-      // TODO Change, the API should update the name itself in single API call
-      name: names?.[0]?.name,
-      language: names?.[0]?.language,
-      nbEntrances,
-    };
-    await SearchService.updateDocument('massifs', massif);
+  /**
+   * Re-index a massif from the database, as the full rebuild does.
+   * @param {Object|number} massif the massif or its id
+   */
+  async updateInSearch(massif) {
+    await SearchService.syncDocuments('massifs', [massif?.id ?? massif]);
   },
 
   getCaves: async (massifId) =>
@@ -359,9 +337,8 @@ module.exports = {
   /**
    * Resolve the containing massifs for many entrances in a single query.
    *
-   * Callers that already hold a list of entrance ids should use this instead of
-   * letting EntranceService.updateInSearch run its per-entrance spatial lookup,
-   * which turns a bulk operation into N round trips.
+   * Used by the entrances search documents (api/dbSync/entities/entrance.js),
+   * once per page of entrances rather than once per entrance.
    *
    * @param {number[]} entranceIds
    * @returns {Promise<Object<number, Array>>} entrance id -> massifs (ids absent
@@ -387,17 +364,6 @@ module.exports = {
     return massifsByEntrance;
   },
 
-  countEntrances: async (massifId) => {
-    try {
-      const result = await CommonService.query(COUNT_ENTRANCES_IN_MASSIF, [
-        massifId,
-      ]);
-      return result.rows[0]?.count ?? 0;
-    } catch (e) {
-      sails.log.error(`Error counting entrances for massif ${massifId}:`, e);
-      throw e;
-    }
-  },
   countUnsensitiveEntrances: async (massifId) => {
     try {
       const result = await CommonService.query(

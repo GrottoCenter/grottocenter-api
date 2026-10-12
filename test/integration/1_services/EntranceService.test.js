@@ -141,331 +141,38 @@ describe('EntranceService', () => {
   });
 
   describe('updateInSearch()', () => {
-    it('should hide sensitive data for sensitive entrances', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      const entrance = {
-        id: 1,
-        isSensitive: true,
-        latitude: 45.5,
-        longitude: 6.5,
-        dateInscription: new Date(),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.latitude).be.null();
-      should(callArg.longitude).be.null();
-      process.env.NODE_ENV = originalEnv;
+    afterEach(() => {
+      sinon.restore();
     });
 
-    it('should keep coordinates for non-sensitive entrances', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+    it('should re-index the entrance from the database by id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      const entrance = {
-        id: 1,
-        isSensitive: false,
-        latitude: 45.5,
-        longitude: 6.5,
-        dateInscription: new Date(),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
+      await EntranceService.updateInSearch({ id: 1, names: [] });
 
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.latitude).equal(45.5);
-      should(callArg.longitude).equal(6.5);
-      process.env.NODE_ENV = originalEnv;
+      should(syncStub.calledOnceWithExactly('entrances', [1])).be.true();
     });
 
-    it('should map cave data correctly', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+    it('should accept a bare id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      const entrance = {
-        id: 1,
-        dateInscription: new Date(),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-        cave: {
-          name: 'Cave Name',
-          depth: 100,
-          caveLength: 500,
-          temperature: 10,
-          isDiving: true,
-        },
-      };
+      await EntranceService.updateInSearch(7);
 
-      await EntranceService.updateInSearch(entrance);
+      should(syncStub.calledOnceWithExactly('entrances', [7])).be.true();
+    });
+  });
 
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.cave).eql({
-        name: 'Cave Name',
-        depth: 100,
-        length: 500,
-        temperature: 10,
-        isDiving: true,
-      });
-      process.env.NODE_ENV = originalEnv;
+  describe('updateManyInSearch()', () => {
+    afterEach(() => {
+      sinon.restore();
     });
 
-    it('should trim geology field', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
+    it('should re-index all the entrances in one sync', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
 
-      const entrance = {
-        id: 1,
-        dateInscription: new Date(),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-        geology: '  Q35758  ',
-      };
+      await EntranceService.updateManyInSearch([3, 1, 2]);
 
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.geology).equal('Q35758');
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should include numericId matching e.id', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      const entrance = {
-        id: 42,
-        isSensitive: false,
-        dateInscription: new Date('2024-01-15'),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.numericId).equal(42);
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should include dataQuality field defaulting to 0 when no quality data exists', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-      const queryStub = sinon.stub(CommonService, 'query');
-      queryStub
-        .withArgs(
-          sinon.match(/v_data_quality_compute_entrance/),
-          sinon.match.any
-        )
-        .resolves({ rows: [] });
-      queryStub
-        .withArgs(sinon.match(/t_massif/), sinon.match.any)
-        .resolves({ rows: [] });
-
-      const entrance = {
-        id: 99999,
-        isSensitive: false,
-        dateInscription: new Date('2024-01-15'),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg).have.property('dataQuality');
-      should(callArg.dataQuality).equal(0);
-      should(callArg.massifs).eql([]);
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should compute dataQuality from materialized view data', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-      const queryStub = sinon.stub(CommonService, 'query');
-      queryStub
-        .withArgs(
-          sinon.match(/v_data_quality_compute_entrance/),
-          sinon.match.any
-        )
-        .resolves({
-          rows: [
-            {
-              id_entrance: 1,
-              id_massif: 1,
-              general_latest_date_of_update: new Date(),
-              general_nb_contributions: 3,
-              location_latest_date_of_update: new Date(),
-              location_nb_contributions: 2,
-              description_latest_date_of_update: new Date(),
-              description_nb_contributions: 1,
-              document_latest_date_of_update: new Date(),
-              document_nb_contributions: 2,
-              rigging_latest_date_of_update: new Date(),
-              rigging_nb_contributions: 1,
-              history_latest_date_of_update: new Date(),
-              history_nb_contributions: 2,
-              comment_latest_date_of_update: new Date(),
-              comment_nb_contributions: 3,
-            },
-          ],
-        });
-      queryStub
-        .withArgs(sinon.match(/t_massif/), sinon.match.any)
-        .resolves({ rows: [{ id: 1, name: 'Test Massif', language: 'fra' }] });
-
-      const entrance = {
-        id: 1,
-        isSensitive: false,
-        dateInscription: new Date('2024-01-15'),
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg).have.property('dataQuality');
-      should(callArg.dataQuality).be.a.Number();
-      should(callArg.dataQuality).be.greaterThan(0);
-      should(callArg.dataQuality).be.lessThanOrEqual(100);
-      should(callArg.massifs).eql([
-        { id: 1, name: 'Test Massif', language: 'fra', isDeleted: false },
-      ]);
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should include dateLastModif computed from dateInscription and dateReviewed', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      const dateInscription = new Date('2024-01-15');
-      const dateReviewed = new Date('2024-06-20');
-      const entrance = {
-        id: 7,
-        isSensitive: false,
-        dateInscription,
-        dateReviewed,
-        author: { id: 1, nickname: 'Author' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      const expected = Math.max(
-        dateInscription.getTime(),
-        dateReviewed.getTime()
-      );
-      should(callArg.dateLastModif).equal(expected);
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should map all optional fields correctly', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      const entrance = {
-        id: 1,
-        dateInscription: new Date(),
-        author: { id: 1, nickname: 'Author' },
-        reviewer: { id: 2, nickname: 'Reviewer' },
-        names: [{ name: 'Test', language: 'en' }],
-        iso_3166_2: 'FR-75',
-        country: { nativeName: 'France' },
-        descriptions: [{ title: 'Desc1', body: 'Body1' }],
-        locations: [{ title: 'Loc1', body: 'LocBody1' }],
-        riggings: [
-          { title: 'Rig1', obstacles: 'obs', ropes: 'rope', anchors: 'anc' },
-        ],
-        histories: [{ body: 'History1' }],
-        documents: [{ id: 1 }, { id: 2 }],
-        comments: [
-          {
-            title: 'Com1',
-            body: 'ComBody1',
-            aestheticism: 5,
-            caving: 4,
-            approach: 3,
-          },
-        ],
-      };
-
-      await EntranceService.updateInSearch(entrance);
-
-      should(updateStub.calledOnce).be.true();
-      const callArg = updateStub.getCall(0).args[1];
-      should(callArg.reviewer).equal('Reviewer');
-      should(callArg.country).equal('France');
-      // Arrays are no longer indexed — only commentsRating is computed
-      should(callArg.descriptions).be.undefined();
-      should(callArg.locations).be.undefined();
-      should(callArg.riggings).be.undefined();
-      should(callArg.histories).be.undefined();
-      should(callArg.documents).be.undefined();
-      should(callArg.comments).be.undefined();
-      should(callArg.commentsRating).have.property('aestheticism', 5);
-      should(callArg.commentsRating).have.property('caving', 4);
-      should(callArg.commentsRating).have.property('approach', 3);
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    /**
-     * The full-resync path (api/dbSync/utils.js) has always fetched comments with
-     * `is_deleted = false`, so leaving deleted comments in here made a
-     * single-entrance update disagree with a resync of the same entrance (#1823).
-     */
-    it('should exclude soft-deleted comments from commentsRating', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      const updateStub = sinon.stub(SearchService, 'updateDocument').resolves();
-
-      await EntranceService.updateInSearch({
-        id: 1,
-        dateInscription: new Date(),
-        comments: [
-          { aestheticism: 8, caving: 8, approach: 8 },
-          { aestheticism: 2, caving: 2, approach: 2, isDeleted: true },
-        ],
-      });
-
-      const callArg = updateStub.getCall(0).args[1];
-      // Counting the deleted comment would average both down to 5.
-      should(callArg.commentsRating).have.property('aestheticism', 8);
-      should(callArg.commentsRating).have.property('caving', 8);
-      should(callArg.commentsRating).have.property('approach', 8);
-      process.env.NODE_ENV = originalEnv;
+      should(syncStub.calledOnceWithExactly('entrances', [3, 1, 2])).be.true();
     });
   });
 

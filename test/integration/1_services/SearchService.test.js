@@ -69,55 +69,79 @@ describe('SearchService', () => {
     });
   });
 
-  describe('updateDocument()', () => {
-    it('should update document for valid entity', async () => {
-      const originalEnv = process.env.NODE_ENV;
+  describe('syncDocuments()', () => {
+    let originalEnv;
+
+    beforeEach(() => {
+      originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';
       typesenseStub.importDocuments = sinon
         .stub(typesense, 'importDocuments')
         .resolves();
+      typesenseStub.deleteDocument = sinon
+        .stub(typesense, 'deleteDocument')
+        .resolves();
+    });
 
-      const doc = { id: '123', name: 'Test' };
-      await SearchService.updateDocument('organizations', doc);
+    afterEach(() => {
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should upsert the built documents with the collection formater', async () => {
+      await SearchService.syncDocuments('organizations', [2, '1']);
 
       should(typesenseStub.importDocuments.calledOnce).be.true();
-      process.env.NODE_ENV = originalEnv;
+      const [collectionName, documents, formater] =
+        typesenseStub.importDocuments.getCall(0).args;
+      should(collectionName).equal('organizations');
+      should(documents.map((d) => d.id)).eql([1, 2]);
+      should(formater).equal(
+        SearchService.allEntities.organizations.importFormater
+      );
+      should(typesenseStub.deleteDocument.called).be.false();
     });
 
-    it('should not update document for invalid entity', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      typesenseStub.importDocuments = sinon
-        .stub(typesense, 'importDocuments')
-        .resolves();
-
-      await SearchService.updateDocument('invalid_entity', { id: '123' });
-
-      should(typesenseStub.importDocuments.called).be.false();
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should skip update in test environment', async () => {
-      typesenseStub.importDocuments = sinon
-        .stub(typesense, 'importDocuments')
-        .resolves();
-
-      await SearchService.updateDocument('organizations', { id: '123' });
-
-      should(typesenseStub.importDocuments.called).be.false();
-    });
-
-    it('should handle import errors gracefully', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      typesenseStub.importDocuments = sinon
-        .stub(typesense, 'importDocuments')
-        .rejects(new Error('Import failed'));
-
-      await SearchService.updateDocument('organizations', { id: '123' });
+    it('should delete the ids that are no longer indexed', async () => {
+      await SearchService.syncDocuments('organizations', [1, 424242]);
 
       should(typesenseStub.importDocuments.calledOnce).be.true();
-      process.env.NODE_ENV = originalEnv;
+      should(typesenseStub.deleteDocument.calledOnce).be.true();
+      should(
+        typesenseStub.deleteDocument.calledWith('organizations', 424242)
+      ).be.true();
+    });
+
+    it('should not import when no document is built', async () => {
+      // Device 2 is soft-deleted
+      await SearchService.syncDocuments('devices', [2]);
+
+      should(typesenseStub.importDocuments.called).be.false();
+      should(typesenseStub.deleteDocument.calledOnce).be.true();
+      should(typesenseStub.deleteDocument.calledWith('devices', 2)).be.true();
+    });
+
+    it('should not sync an invalid collection', async () => {
+      await SearchService.syncDocuments('invalid_entity', [1]);
+
+      should(typesenseStub.importDocuments.called).be.false();
+      should(typesenseStub.deleteDocument.called).be.false();
+    });
+
+    it('should skip the sync in test environment', async () => {
+      process.env.NODE_ENV = 'test';
+
+      await SearchService.syncDocuments('organizations', [1]);
+
+      should(typesenseStub.importDocuments.called).be.false();
+      should(typesenseStub.deleteDocument.called).be.false();
+    });
+
+    it('should not throw when the import fails', async () => {
+      typesenseStub.importDocuments.rejects(new Error('Import failed'));
+
+      await SearchService.syncDocuments('organizations', [1]);
+
+      should(typesenseStub.importDocuments.calledOnce).be.true();
     });
   });
 

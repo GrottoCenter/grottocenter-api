@@ -226,36 +226,13 @@ module.exports = {
     await SearchService.deleteDocument('organizations', organizationId);
   },
 
-  async updateInSearch(populatedOrganization) {
-    // The remaining fields are spread into the search payload, so anything the
-    // `organizations` collection schema doesn't declare must be destructured
-    // out here. The document lists and their counts are display-only.
-    const {
-      names,
-      cavers,
-      country,
-      exploredNetworks,
-      exploredEntrances,
-      partnerNetworks,
-      partnerEntrances,
-      authoredDocuments,
-      publishedDocuments,
-      authoredCount,
-      publishedCount,
-      ...o
-    } = populatedOrganization;
-    const organization = {
-      ...o,
-      authorId: o.author.id,
-      author: o.author.nickname,
-      reviewerId: o.reviewer?.id,
-      reviewer: o.reviewer?.nickname,
-      name: names?.[0]?.name,
-      language: names?.[0]?.language,
-      iso3166: o.iso_3166_2,
-      country: [country?.id, country?.nativeName].filter((e) => e).join(' - '),
-      nbCavers: cavers?.length ?? 0,
-    };
-    await SearchService.updateDocument('organizations', organization);
+  /**
+   * Re-index an organization from the database, as the full rebuild does.
+   * @param {Object|number} organization the organization or its id
+   */
+  async updateInSearch(organization) {
+    await SearchService.syncDocuments('organizations', [
+      organization?.id ?? organization,
+    ]);
   },
 };

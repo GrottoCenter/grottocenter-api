@@ -1,6 +1,8 @@
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaverService = require('../../../api/services/CaverService');
+const SearchService = require('../../../api/services/SearchService');
 
 describe('CaverService', () => {
   const userReq = {};
@@ -208,16 +210,24 @@ describe('CaverService', () => {
   });
 
   describe('updateInSearch()', () => {
-    it('should call SearchService.updateDocument', async () => {
-      const caver = {
-        id: 1,
-        dateInscription: new Date(),
-        mail: 'test@test.com',
-        name: 'Test',
-        surname: 'User',
-        nickname: 'TestUser',
-      };
-      await CaverService.updateInSearch(caver);
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should re-index the person from the database by id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
+
+      await CaverService.updateInSearch({ id: 1, names: [] });
+
+      should(syncStub.calledOnceWithExactly('persons', [1])).be.true();
+    });
+
+    it('should accept a bare id', async () => {
+      const syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
+
+      await CaverService.updateInSearch(7);
+
+      should(syncStub.calledOnceWithExactly('persons', [7])).be.true();
     });
   });
 });

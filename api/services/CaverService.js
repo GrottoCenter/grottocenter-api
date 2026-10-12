@@ -122,14 +122,11 @@ module.exports = {
     await SearchService.deleteDocument('persons', caverId);
   },
 
+  /**
+   * Re-index a caver from the database, as the full rebuild does.
+   * @param {Object|number} caver the caver or its id
+   */
   async updateInSearch(caver) {
-    await SearchService.updateDocument('persons', {
-      id: caver.id,
-      dateInscription: caver.dateInscription,
-      mail: caver.mail,
-      name: caver.name,
-      surname: caver.surname,
-      nickname: caver.nickname,
-    });
+    await SearchService.syncDocuments('persons', [caver?.id ?? caver]);
   },
 };

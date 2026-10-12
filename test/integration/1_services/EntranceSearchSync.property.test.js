@@ -43,22 +43,21 @@ const {
 } = require('../../../api/dbSync/entities/entrance');
 const { toEntrance } = require('../../../api/services/mapping/converters');
 
-// Property 2: Sync path consistency — numericId and dateLastModif
+// Property 2: importFormater derives numericId and dateLastModif
 // For any entrance with a numeric id, a dateInscription timestamp, and an
-// optional dateReviewed timestamp, the numericId and dateLastModif values
-// produced by importFormater SHALL equal those produced by the updateInSearch
-// document construction, given the same input data.
+// optional dateReviewed timestamp, importFormater SHALL set numericId to the
+// id and dateLastModif to the latest of the two dates. The full rebuild and
+// the single update both format entrances with it.
 
 /**
- * Property 2: Sync path consistency — numericId and dateLastModif
- * Encodes: both sync paths produce identical numericId and dateLastModif
- * for the same entrance data.
+ * Property 2: importFormater derives numericId and dateLastModif
+ * Encodes: numericId is the numeric id; dateLastModif is the latest date.
  * Covers: random positive int id, random dateInscription (Date), optional dateReviewed (Date).
  *
  * Validates: Requirements 1.2, 1.4, 4.1, 4.2
  */
-describe('EntranceSearchSync - Property 2: Sync path consistency for numericId and dateLastModif', () => {
-  it('should produce identical numericId and dateLastModif across both sync paths', function () {
+describe('EntranceSearchSync - Property 2: importFormater derives numericId and dateLastModif', () => {
+  it('should set numericId to the id and dateLastModif to the latest date', function () {
     this.timeout(10000);
 
     const entranceArb = fc.record({
@@ -72,31 +71,21 @@ describe('EntranceSearchSync - Property 2: Sync path consistency for numericId a
 
     fc.assert(
       fc.property(entranceArb, ({ id, dateInscription, dateReviewed }) => {
-        // --- importFormater path ---
-        const dbRow = {
+        const formatted = importFormater({
           id,
           dateInscription: new Date(dateInscription),
           dateReviewed: dateReviewed ? new Date(dateReviewed) : null,
           // Minimal fields to avoid errors in importFormater
           isSensitive: false,
           comments: [],
-        };
-        const formatted = importFormater(dbRow);
+        });
 
-        // --- simulated updateInSearch path ---
-        const uisNumericId = id;
-        const uisDateLastModif = computeDateLastModif(
-          dateInscription,
-          dateReviewed
-        );
-
-        should(formatted.numericId).equal(
-          uisNumericId,
-          `numericId mismatch: importFormater=${formatted.numericId}, updateInSearch=${uisNumericId}`
-        );
+        should(formatted.id).equal(`${id}`);
+        should(formatted.numericId).equal(id);
         should(formatted.dateLastModif).equal(
-          uisDateLastModif,
-          `dateLastModif mismatch: importFormater=${formatted.dateLastModif}, updateInSearch=${uisDateLastModif}`
+          dateReviewed !== null && dateReviewed > dateInscription
+            ? dateReviewed
+            : dateInscription
         );
       }),
       { numRuns: 100 }

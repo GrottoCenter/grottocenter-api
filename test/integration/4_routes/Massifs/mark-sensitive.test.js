@@ -43,7 +43,7 @@ describe('Massif mark-sensitive route features', () => {
     });
 
     it('should return 200 and mark massif as sensitive for admin', async () => {
-      sinon.stub(EntranceService, 'updateInSearch').resolves();
+      sinon.stub(EntranceService, 'updateManyInSearch').resolves();
       sinon.stub(MassifService, 'updateInSearch').resolves();
 
       const massif = await TMassif.create({
@@ -118,7 +118,7 @@ describe('Massif mark-sensitive route features', () => {
     });
 
     it('should skip locked entrances during the cascade and report skippedLockedCount', async () => {
-      sinon.stub(EntranceService, 'updateInSearch').resolves();
+      sinon.stub(EntranceService, 'updateManyInSearch').resolves();
       sinon.stub(MassifService, 'updateInSearch').resolves();
 
       const massif = await TMassif.create({

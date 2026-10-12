@@ -13,9 +13,6 @@ const {
   TYPES_ALLOWING_PARENT,
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
-const {
-  computeDocumentAuthorsSort,
-} = require('../utils/computeDocumentAuthorsSort');
 const isValidId = require('../utils/isValidId');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
@@ -62,11 +59,6 @@ const COUNT_DOCUMENTS_AUTHORED_BY_CAVER = `
   WHERE j.id_caver = $1
   AND d.is_deleted = false
 `;
-
-// Maps a populated authorsOrganization array to the Typesense-ready shape.
-// Exported so property tests can exercise the actual function rather than a copy.
-const mapAuthorsOrganizationForSearch = (orgs) =>
-  orgs?.map((e) => ({ name: e.names?.[0]?.name })) ?? [];
 
 // Extract the document's main language from the request body.
 // Prefers `documentMainLanguage.id` (current front-end field) with
@@ -134,77 +126,12 @@ module.exports = {
     await SearchService.deleteDocument('documents', documentId);
   },
 
-  async updateInSearch(populatedDocument) {
-    // Warning: All linked entities may contain sensitive information (same as in entrance).
-    // For example, the complete caver object for the 'author' and 'reviewer' fields.
-    // Although we could leave them intact, since search results also pass through the converter,
-    // We prefer to clean them to ensure only clean data remains in the search database.
-    const {
-      authors,
-      authorsOrganization,
-      descriptions,
-      subjects,
-      countries,
-      isoRegions,
-      editor,
-      library,
-      massifs,
-      entrance,
-      cave,
-      parent,
-      ...d
-    } = populatedDocument;
-    const document = {
-      id: d.id,
-      importId: d.idDbImport,
-      identifier: d.identifier,
-      identifierType: d.identifierType?.id?.trim(),
-      importSource: d.nameDbImport,
-      dateInscription: d.dateInscription,
-      dateReviewed: d.dateReviewed,
-      dateValidation: d.dateValidation,
-      creatorId: d.author.id,
-      creator: d.author.nickname,
-      creatorComment: d.creatorComment,
-      reviewerId: d.reviewer?.id,
-      reviewer: d.reviewer?.nickname,
-      validatorId: d.validator?.id,
-      validator: d.validator?.nickname,
-      type: d.type?.name,
-      title: descriptions?.[0]?.title,
-      description: descriptions?.[0]?.body,
-      issue: d.issue,
-      pages: d.pages,
-      license: d.license?.name,
-      parent: parent && {
-        type: parent.type?.name,
-        title: parent.descriptions?.[0]?.title,
-        description: parent.descriptions?.[0]?.body,
-      },
-      editor: editor && { name: editor.names?.[0]?.name },
-      library: library && { name: library.names?.[0]?.name },
-      authors: authors?.map((e) => ({ nickname: e.nickname })),
-      authorsOrganization: mapAuthorsOrganizationForSearch(authorsOrganization),
-      // Keep the denormalized author sort key in sync on single-doc upserts so
-      // edits match the full-reindex baseline (see computeDocumentAuthorsSort).
-      // Uses `e.name` — the main name NameService.setNames() resolves from the
-      // `isMain` row — because the full reindex selects `n.is_main = true`.
-      // `e.names[0]` carries no ordering guarantee and would drift from the
-      // reindexed key as soon as an organization's main name changes.
-      authorsSort: computeDocumentAuthorsSort(
-        authors?.map((e) => e.nickname),
-        authorsOrganization?.map((e) => e.name)
-      ),
-      subjects: subjects?.map((e) => ({ code: e.id })),
-      iso3166: [
-        ...(countries?.map((e) => ({ iso: e.id, name: e.nativeName })) ?? []),
-        ...(isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
-      ],
-      cave: cave && { name: cave.names?.[0]?.name },
-      entrance: entrance && { name: entrance.names?.[0]?.name },
-      massifs: massifs?.map((e) => ({ name: e.names?.[0]?.name })),
-    };
-    await SearchService.updateDocument('documents', document);
+  /**
+   * Re-index a document from the database, as the full rebuild does.
+   * @param {Object|number} document the document or its id
+   */
+  async updateInSearch(document) {
+    await SearchService.syncDocuments('documents', [document?.id ?? document]);
   },
 
   getDescriptionDataFromClient: (body, authorId) => ({
@@ -1022,5 +949,4 @@ module.exports = {
     String(err?.raw?.error?.code) === '23503',
 
   normalizeToId,
-  mapAuthorsOrganizationForSearch,
 };

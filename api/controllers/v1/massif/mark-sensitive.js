@@ -57,21 +57,8 @@ module.exports = async (req, res) => {
       req.token.id
     );
 
-    // Update search index for each affected entrance. The containing massifs are
-    // resolved in one batch so the fan-out does not run a spatial query per entrance.
-    const massifsByEntrance =
-      await MassifService.findMassifsByEntranceIds(updatedEntranceIds);
-    await Promise.all(
-      updatedEntranceIds.map(async (id) => {
-        const populatedEntrance =
-          await EntranceService.getPopulatedEntrance(id);
-        if (populatedEntrance) {
-          await EntranceService.updateInSearch(populatedEntrance, {
-            massifs: massifsByEntrance[id] ?? [],
-          });
-        }
-      })
-    );
+    // Re-index the affected entrances in one batch
+    await EntranceService.updateManyInSearch(updatedEntranceIds);
 
     const updatedMassif = await MassifService.getPopulatedMassif(massifId);
     await MassifService.updateInSearch(updatedMassif);
