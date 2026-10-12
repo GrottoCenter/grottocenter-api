@@ -17,7 +17,7 @@ const query = `
       c.is_diving AS "isDiving",
       COUNT(e.id)::int AS "nbEntrances"
     FROM t_cave AS c
-    LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true
+    ${exportUtils.caveNameJoin('c')}
     LEFT JOIN t_caver a ON a.id = c.id_author
     LEFT JOIN t_caver r ON r.id = c.id_reviewer
     LEFT JOIN t_entrance e ON e.id_cave = c.id AND e.is_deleted = false

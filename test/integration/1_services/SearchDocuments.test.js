@@ -123,6 +123,76 @@ describe('searchDocuments', () => {
     });
   });
 
+  // A cave created through its entrance has no name row of its own and goes by
+  // the entrance's main name (NameService.setNames)
+  describe('cave named after its entrance', () => {
+    let cave;
+    let entrance;
+
+    before(async () => {
+      cave = await TCave.create({ author: 1, depth: 100 }).fetch();
+      entrance = await TEntrance.create({
+        author: 1,
+        cave: cave.id,
+        latitude: 45.0,
+        longitude: 6.0,
+      }).fetch();
+      await TName.create({
+        author: 1,
+        entrance: entrance.id,
+        name: 'Unnamed Cave Entrance',
+        language: 'eng',
+        isMain: true,
+      });
+      await CommonService.query(
+        'UPDATE t_document SET id_cave = $1 WHERE id = 4',
+        [cave.id]
+      );
+    });
+
+    after(async () => {
+      await CommonService.query(
+        'UPDATE t_document SET id_cave = NULL WHERE id = 4'
+      );
+      await TName.destroy({ entrance: entrance.id });
+      await TEntrance.destroyOne({ id: entrance.id });
+      await TCave.destroyOne({ id: cave.id });
+    });
+
+    it('indexes the cave under the entrance name', async () => {
+      const [doc] = await buildDocuments('caves', [cave.id]);
+      should(doc.name).equal('Unnamed Cave Entrance');
+      should(doc.language).equal('eng');
+    });
+
+    it('embeds the entrance name as the cave of the entrance', async () => {
+      const [doc] = await buildDocuments('entrances', [entrance.id]);
+      should(doc.cave.name).equal('Unnamed Cave Entrance');
+    });
+
+    it('embeds the entrance name as the cave of a document', async () => {
+      const [doc] = await buildDocuments('documents', [4]);
+      should(doc.cave).eql({ name: 'Unnamed Cave Entrance', language: 'eng' });
+    });
+
+    it('prefers the cave main name once the cave has one', async () => {
+      const name = await TName.create({
+        author: 1,
+        cave: cave.id,
+        name: 'Own Cave Name',
+        language: 'fra',
+        isMain: true,
+      }).fetch();
+      try {
+        const [doc] = await buildDocuments('caves', [cave.id]);
+        should(doc.name).equal('Own Cave Name');
+        should(doc.language).equal('fra');
+      } finally {
+        await TName.destroyOne({ id: name.id });
+      }
+    });
+  });
+
   describe('planSync()', () => {
     afterEach(async () => {
       await CommonService.query(

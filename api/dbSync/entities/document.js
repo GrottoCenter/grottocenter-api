@@ -165,7 +165,7 @@ async function* processRows(source) {
         rowsKey: 'caveId',
         localField: 'cave',
         fields: ['n.name', 'n.id_language AS language'],
-        join: [`LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true`],
+        join: [exportUtils.caveNameJoin('c')],
         where: [],
       },
       {
