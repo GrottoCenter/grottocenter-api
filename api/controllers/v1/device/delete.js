@@ -58,8 +58,6 @@ module.exports = async (req, res) => {
       device: deviceId,
     });
     if (sensorConfigCount > 0) {
-      // The device stays soft-deleted, which takes it out of search
-      await DeviceService.updateInSearch(device);
       return res.conflict(
         'This device cannot be permanently deleted because it has associated sensor configurations.'
       );
@@ -67,17 +65,9 @@ module.exports = async (req, res) => {
 
     // Hard delete (phase 2 of histo_delete trigger — actual row removal)
     await TDevice.destroyOne({ id: deviceId });
-
-    // Remove from Typesense search index
-    await DeviceService.deleteInSearch(deviceId);
-  } else {
+  } else if (!device.isDeleted) {
     // Soft delete
-    if (!device.isDeleted) {
-      await TDevice.destroyOne({ id: deviceId });
-    }
-
-    // A soft-deleted device is no longer indexed: this removes it from search
-    await DeviceService.updateInSearch(device);
+    await TDevice.destroyOne({ id: deviceId });
   }
 
   device.isDeleted = true;

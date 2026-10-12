@@ -1,6 +1,5 @@
 const DocumentService = require('./DocumentService');
 const NameService = require('./NameService');
-const SearchService = require('./SearchService');
 const DescriptionService = require('./DescriptionService');
 const CommonService = require('./CommonService');
 const parseBool = require('../utils/parseBool');
@@ -319,18 +318,6 @@ module.exports = {
     return massif;
   },
 
-  async deleteInSearch(massifId) {
-    await SearchService.deleteDocument('massifs', massifId);
-  },
-
-  /**
-   * Re-index a massif from the database, as the full rebuild does.
-   * @param {Object|number} massif the massif or its id
-   */
-  async updateInSearch(massif) {
-    await SearchService.syncDocuments('massifs', [massif?.id ?? massif]);
-  },
-
   getCaves: async (massifId) =>
     querySpatialRows(FIND_CAVES_IN_MASSIF, massifId),
 
@@ -494,8 +481,7 @@ module.exports = {
 
   /**
    * Set the sensitivity status of a massif and propagate it to all entrances within it.
-   * Returns the IDs of entrances that were updated, so the caller can refresh
-   * the search index without introducing a circular dependency.
+   * Returns the IDs of entrances that were updated.
    *
    * @param {number} massifId - ID of the massif to update
    * @param {boolean} isSensitive - The new sensitivity status

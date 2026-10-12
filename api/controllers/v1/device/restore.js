@@ -24,8 +24,6 @@ module.exports = async (req, res) => {
   });
   device.isDeleted = false;
 
-  await DeviceService.updateInSearch(device);
-
   return ControllerService.treatAndConvert(
     req,
     null,

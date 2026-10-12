@@ -28,63 +28,14 @@ describe('SearchService', () => {
     });
   });
 
-  describe('deleteDocument()', () => {
-    it('should delete document for valid entity', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      typesenseStub.deleteDocument = sinon
-        .stub(typesense, 'deleteDocument')
-        .resolves();
-
-      await SearchService.deleteDocument('organizations', '123');
-
-      should(typesenseStub.deleteDocument.calledOnce).be.true();
-      should(
-        typesenseStub.deleteDocument.calledWith('organizations', '123')
-      ).be.true();
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should not delete document for invalid entity', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      typesenseStub.deleteDocument = sinon
-        .stub(typesense, 'deleteDocument')
-        .resolves();
-
-      await SearchService.deleteDocument('invalid_entity', '123');
-
-      should(typesenseStub.deleteDocument.called).be.false();
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should skip deletion in test environment', async () => {
-      typesenseStub.deleteDocument = sinon
-        .stub(typesense, 'deleteDocument')
-        .resolves();
-
-      await SearchService.deleteDocument('organizations', '123');
-
-      should(typesenseStub.deleteDocument.called).be.false();
-    });
-  });
-
   describe('syncDocuments()', () => {
-    let originalEnv;
-
     beforeEach(() => {
-      originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
       typesenseStub.importDocuments = sinon
         .stub(typesense, 'importDocuments')
         .resolves();
       typesenseStub.deleteDocument = sinon
         .stub(typesense, 'deleteDocument')
         .resolves();
-    });
-
-    afterEach(() => {
-      process.env.NODE_ENV = originalEnv;
     });
 
     it('should upsert the built documents with the collection formater', async () => {
@@ -127,21 +78,21 @@ describe('SearchService', () => {
       should(typesenseStub.deleteDocument.called).be.false();
     });
 
-    it('should skip the sync in test environment', async () => {
-      process.env.NODE_ENV = 'test';
-
-      await SearchService.syncDocuments('organizations', [1]);
-
-      should(typesenseStub.importDocuments.called).be.false();
-      should(typesenseStub.deleteDocument.called).be.false();
-    });
-
-    it('should not throw when the import fails', async () => {
+    it('should throw when the import fails, so the caller can retry', async () => {
       typesenseStub.importDocuments.rejects(new Error('Import failed'));
 
-      await SearchService.syncDocuments('organizations', [1]);
+      await SearchService.syncDocuments(
+        'organizations',
+        [1]
+      ).should.be.rejectedWith('Import failed');
+    });
 
-      should(typesenseStub.importDocuments.calledOnce).be.true();
+    it('should throw when a removal fails', async () => {
+      typesenseStub.deleteDocument.rejects(new Error('Delete failed'));
+
+      await SearchService.syncDocuments('devices', [2]).should.be.rejectedWith(
+        'Delete failed'
+      );
     });
   });
 

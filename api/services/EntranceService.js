@@ -6,7 +6,6 @@ const INTEREST_ENTRANCES_QUERY =
 const RANDOM_ENTRANCE_QUERY = `${INTEREST_ENTRANCES_QUERY} ORDER BY RANDOM() LIMIT 1`;
 
 const CommonService = require('./CommonService');
-const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
 const CountryResolverService = require('./CountryResolverService');
 const EnrichmentQueueService = require('./EnrichmentQueueService');
@@ -403,8 +402,6 @@ module.exports = {
     const newEntrancePopulated =
       await module.exports.getPopulatedEntrance(newEntranceId);
 
-    await module.exports.updateInSearch(newEntrancePopulated);
-
     await NotificationService.notifySubscribers(
       newEntrancePopulated,
       req.token.id,
@@ -413,26 +410,6 @@ module.exports = {
     );
 
     return newEntrancePopulated;
-  },
-
-  async deleteInSearch(entranceId) {
-    await SearchService.deleteDocument('entrances', entranceId);
-  },
-
-  /**
-   * Re-index an entrance from the database, as the full rebuild does.
-   * @param {Object|number} entrance the entrance or its id
-   */
-  async updateInSearch(entrance) {
-    await SearchService.syncDocuments('entrances', [entrance?.id ?? entrance]);
-  },
-
-  /**
-   * Re-index many entrances at once, e.g. the entrances of a massif.
-   * @param {number[]} entranceIds
-   */
-  async updateManyInSearch(entranceIds) {
-    await SearchService.syncDocuments('entrances', entranceIds);
   },
 
   /**

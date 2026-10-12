@@ -1,5 +1,3 @@
-const SearchService = require('./SearchService');
-
 module.exports = {
   /**
    * Validates that a device exists and is accessible.
@@ -97,17 +95,5 @@ module.exports = {
     }
 
     return device;
-  },
-
-  /**
-   * Re-index a device from the database, as the full rebuild does.
-   * @param {Object|number} device the device or its id
-   */
-  async updateInSearch(device) {
-    await SearchService.syncDocuments('devices', [device?.id ?? device]);
-  },
-
-  async deleteInSearch(deviceId) {
-    await SearchService.deleteDocument('devices', deviceId);
   },
 };

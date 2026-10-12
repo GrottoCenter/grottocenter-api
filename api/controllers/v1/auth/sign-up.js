@@ -102,8 +102,6 @@ module.exports = async (req, res) => {
       surname: req.param('surname') === '' ? null : req.param('surname'),
     }).fetch();
 
-    await CaverService.updateInSearch(newCaver);
-
     try {
       await AuthService.sendVerificationEmail(newCaver, activationCode, locale);
     } catch (_) {

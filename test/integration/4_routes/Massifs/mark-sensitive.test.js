@@ -1,8 +1,5 @@
 const supertest = require('supertest');
-const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
-const EntranceService = require('../../../../api/services/EntranceService');
-const MassifService = require('../../../../api/services/MassifService');
 const CommonService = require('../../../../api/services/CommonService');
 
 describe('Massif mark-sensitive route features', () => {
@@ -17,10 +14,6 @@ describe('Massif mark-sensitive route features', () => {
   });
 
   describe('POST /api/v1/massifs/:id/mark-sensitive', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
     it('should return 403 for user', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/massifs/1/mark-sensitive')
@@ -43,9 +36,6 @@ describe('Massif mark-sensitive route features', () => {
     });
 
     it('should return 200 and mark massif as sensitive for admin', async () => {
-      sinon.stub(EntranceService, 'updateManyInSearch').resolves();
-      sinon.stub(MassifService, 'updateInSearch').resolves();
-
       const massif = await TMassif.create({
         isSensitive: false,
         author: 1,
@@ -71,8 +61,6 @@ describe('Massif mark-sensitive route features', () => {
     });
 
     it('should be idempotent: return 200 and count: 0 when marking an already sensitive massif', async () => {
-      sinon.stub(MassifService, 'updateInSearch').resolves();
-
       const massif = await TMassif.create({
         isSensitive: true,
         author: 1,
@@ -118,9 +106,6 @@ describe('Massif mark-sensitive route features', () => {
     });
 
     it('should skip locked entrances during the cascade and report skippedLockedCount', async () => {
-      sinon.stub(EntranceService, 'updateManyInSearch').resolves();
-      sinon.stub(MassifService, 'updateInSearch').resolves();
-
       const massif = await TMassif.create({
         isSensitive: false,
         author: 1,

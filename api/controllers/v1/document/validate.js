@@ -38,8 +38,6 @@ module.exports = async (req, res) => {
   const populatedDoc = await DocumentService.getPopulatedDocument(id);
 
   if (isValidated) {
-    await DocumentService.updateInSearch(populatedDoc);
-
     await NotificationService.notifySubscribers(
       populatedDoc,
       req.token.id,

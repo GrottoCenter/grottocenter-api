@@ -12,6 +12,7 @@ SELECT cron.schedule_in_database(
     '20 4 * * *', -- every day at 4h20
     $$
         REFRESH MATERIALIZED VIEW CONCURRENTLY v_data_quality_compute_entrance;
+        SELECT search_outbox_enqueue_data_quality(); -- sql/9_22_2026_10_12_search_outbox.sql
     $$,
     'grottoce'
 );

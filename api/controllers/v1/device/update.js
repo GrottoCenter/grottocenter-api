@@ -100,9 +100,6 @@ module.exports = async (req, res) => {
   // Fetch populated device
   const populatedDevice = await DeviceService.getPopulatedDevice(id);
 
-  // Re-index in Typesense
-  await DeviceService.updateInSearch(populatedDevice);
-
   return ControllerService.treatAndConvert(
     req,
     null,

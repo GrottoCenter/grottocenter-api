@@ -46,7 +46,6 @@ module.exports = async (req, res) => {
     await TGrotto.destroyOne({ id: organizationId }); // Soft delete
     organization.isDeleted = true;
 
-    await GrottoService.deleteInSearch(organizationId);
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'grotto',

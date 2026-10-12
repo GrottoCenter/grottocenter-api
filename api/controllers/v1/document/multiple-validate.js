@@ -294,9 +294,8 @@ async function validateAndUpdateDocument(
   );
 }
 
-async function updateSearchAndNotify(documentId, userId) {
+async function populateAndNotify(documentId, userId) {
   const document = await DocumentService.getPopulatedDocument(documentId);
-  await DocumentService.updateInSearch(document);
 
   await NotificationService.notifySubscribers(
     document,
@@ -353,7 +352,7 @@ async function notifyRejectionSafely(documentId, userId, comment) {
 }
 
 // Applies one batch entry and returns its outcome. Everything that runs after
-// the document's own write has committed (search index, notifications) logs
+// the document's own write has committed (notifications) logs
 // and swallows its errors, so a failure there never reports a document as
 // failed when it was in fact validated.
 async function processDocument(document, change, userId) {
@@ -385,10 +384,10 @@ async function processDocument(document, change, userId) {
     await markDocumentValidated(document.id, change.validationComment, userId);
   }
 
-  const populatedDoc = await updateSearchAndNotify(document.id, userId).catch(
+  const populatedDoc = await populateAndNotify(document.id, userId).catch(
     (err) => {
       sails.log.error(
-        'Document multiple validate updateSearchAndNotify error',
+        'Document multiple validate populateAndNotify error',
         document,
         err
       );

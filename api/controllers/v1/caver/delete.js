@@ -187,8 +187,6 @@ module.exports = async (req, res) => {
     `Permanent ${action} caver ${caverId}: ${JSON.stringify(audit)}`
   );
 
-  await CaverService.deleteInSearch(caverId);
-
   return ControllerService.treatAndConvert(
     req,
     null,

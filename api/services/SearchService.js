@@ -64,53 +64,31 @@ async function isAlive() {
   return typesense.isAlive();
 }
 
-async function deleteDocument(entityName, documentId) {
-  if (process.env.NODE_ENV === 'test') {
-    sails.log.info('SearchDb delete is disabled in during test');
-    return;
-  }
-  if (!allEntitiesKeys.includes(entityName)) return;
-  await typesense.deleteDocument(entityName, documentId);
-}
-
 /**
  * Bring the search documents of the given ids up to date from the database:
  * upsert those the full rebuild would index, remove the others.
- * Errors are logged, not thrown: the database write that triggered the update
- * has already been committed.
+ * Throws when Typesense cannot be reached, so the caller can retry; a document
+ * Typesense rejects is only logged (typesense.importDocuments).
  *
  * @param {string} collectionName search collection (entrances, caves…)
  * @param {Array<number|string>} ids
  */
 async function syncDocuments(collectionName, ids) {
-  if (process.env.NODE_ENV === 'test') {
-    sails.log.info('SearchDb sync is disabled during test');
-    return;
-  }
   if (!allEntitiesKeys.includes(collectionName)) return;
-  try {
-    const { documents, removedIds } = await searchDocuments.planSync(
+  const { documents, removedIds } = await searchDocuments.planSync(
+    collectionName,
+    ids
+  );
+  if (documents.length > 0) {
+    await typesense.importDocuments(
       collectionName,
-      ids
-    );
-    if (documents.length > 0) {
-      await typesense.importDocuments(
-        collectionName,
-        documents,
-        allEntities[collectionName].importFormater
-      );
-    }
-    await Promise.all(
-      removedIds.map((id) => typesense.deleteDocument(collectionName, id))
-    );
-  } catch (err) {
-    sails.log.error(
-      'Error in SearchService syncDocuments',
-      collectionName,
-      ids,
-      err
+      documents,
+      allEntities[collectionName].importFormater
     );
   }
+  await Promise.all(
+    removedIds.map((id) => typesense.deleteDocument(collectionName, id))
+  );
 }
 
 async function multiCollectionsSearch({
@@ -263,7 +241,6 @@ module.exports = {
   isAlive,
 
   syncDocuments,
-  deleteDocument,
 
   multiCollectionsSearch,
   collectionSearch,

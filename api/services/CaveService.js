@@ -5,7 +5,6 @@ const parseBool = require('../utils/parseBool');
 const DocumentService = require('./DocumentService');
 const DescriptionService = require('./DescriptionService');
 const NameService = require('./NameService');
-const SearchService = require('./SearchService');
 const NotificationService = require('./NotificationService');
 const RecentChangeService = require('./RecentChangeService');
 
@@ -75,7 +74,6 @@ module.exports = {
     });
 
     const populatedCave = await module.exports.getPopulatedCave(res.id);
-    module.exports.updateInSearch(populatedCave);
 
     await RecentChangeService.setNameCreate(
       'cave',
@@ -220,18 +218,6 @@ module.exports = {
     // - partneringGrottos
 
     return cave;
-  },
-
-  async deleteInSearch(caveId) {
-    await SearchService.deleteDocument('caves', caveId);
-  },
-
-  /**
-   * Re-index a cave from the database, as the full rebuild does.
-   * @param {Object|number} cave the cave or its id
-   */
-  async updateInSearch(cave) {
-    await SearchService.syncDocuments('caves', [cave?.id ?? cave]);
   },
 
   async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {

@@ -1,5 +1,4 @@
 const CommonService = require('./CommonService');
-const SearchService = require('./SearchService');
 const NameService = require('./NameService');
 
 module.exports = {
@@ -47,8 +46,6 @@ module.exports = {
       surname,
       language: '000', // default null language id
     }).fetch();
-
-    await module.exports.updateInSearch(newCaver);
 
     return newCaver;
   },
@@ -116,17 +113,5 @@ module.exports = {
       subscribedToCountries: caver.subscribedToCountries,
       subscribedToRegions: caver.subscribedToRegions,
     };
-  },
-
-  async deleteInSearch(caverId) {
-    await SearchService.deleteDocument('persons', caverId);
-  },
-
-  /**
-   * Re-index a caver from the database, as the full rebuild does.
-   * @param {Object|number} caver the caver or its id
-   */
-  async updateInSearch(caver) {
-    await SearchService.syncDocuments('persons', [caver?.id ?? caver]);
   },
 };
