@@ -670,10 +670,19 @@ module.exports = {
     return result.rows[0]?.count ?? 0;
   },
 
+  /**
+   * Get the children of a document.
+   * Only the ids of the validated files are populated: the result is intended
+   * to be passed to the toDocumentChild converter, which only exposes whether
+   * a child has a file.
+   * @param {Number} documentId
+   * @returns
+   */
   getDocumentChildren: async (documentId) =>
     TDocument.find({ parent: documentId })
       .populate('descriptions')
-      .populate('type'),
+      .populate('type')
+      .populate('files', { where: { isValidated: true }, select: ['id'] }),
 
   getHDocumentById: async (documentId) =>
     HDocument.find({ t_id: documentId })
