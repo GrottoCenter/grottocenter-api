@@ -88,6 +88,22 @@ function caveNameJoin(caveAlias, nameAlias = 'n') {
   ) ${nameAlias} ON true`;
 }
 
+// Join, as `${liveAlias}`, the live row `${alias}` stands for: itself, or the
+// row it was merged into (redirect_to) once soft-deleted. An inner join, so a
+// soft-deleted row that was never merged drops out.
+function liveRowJoin(table, alias, liveAlias) {
+  return `JOIN ${table} ${liveAlias} ON ${liveAlias}.id =
+    CASE WHEN ${alias}.is_deleted THEN ${alias}.redirect_to ELSE ${alias}.id END
+    AND ${liveAlias}.is_deleted = false`;
+}
+
+// Keep the first item of each key: two links can lead to the same live row
+function uniqueBy(items, key) {
+  if (!items) return items;
+  const seen = new Set();
+  return items.filter((e) => !seen.has(e[key]) && seen.add(e[key]));
+}
+
 // Keyset pagination: each page starts after the last id of the previous one,
 // so the cost of a page does not grow with its position like OFFSET does.
 // Every entity query orders by its id and holds both placeholders.
@@ -160,4 +176,6 @@ module.exports = {
   dateAndAuthorFields,
   dateAndAuthorJoins,
   caveNameJoin,
+  liveRowJoin,
+  uniqueBy,
 };

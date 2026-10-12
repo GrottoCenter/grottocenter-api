@@ -61,12 +61,15 @@ async function* processRows(source) {
         localField: 'cave',
         fields: [
           'n.name',
-          'depth',
-          'length',
-          'temperature',
-          'is_diving AS "isDiving"',
+          'lc.depth',
+          'lc.length',
+          'lc.temperature',
+          'lc.is_diving AS "isDiving"',
         ],
-        join: [exportUtils.caveNameJoin('c')],
+        join: [
+          exportUtils.liveRowJoin('t_cave', 'c', 'lc'),
+          exportUtils.caveNameJoin('lc'),
+        ],
         transform: (e) => e, // Allow to also keep the id
         where: [],
       },
