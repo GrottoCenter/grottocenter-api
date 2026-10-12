@@ -66,7 +66,7 @@ async function* processRows(source) {
           'temperature',
           'is_diving AS "isDiving"',
         ],
-        join: [`LEFT JOIN t_name n ON n.id_cave = c.id AND n.is_main = true`],
+        join: [exportUtils.caveNameJoin('c')],
         transform: (e) => e, // Allow to also keep the id
         where: [],
       },
