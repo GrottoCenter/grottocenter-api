@@ -1,6 +1,28 @@
 const should = require('should');
 const converters = require('../../../api/services/mapping/converters');
 
+// A full t_caver row, as .populate('author') returns it.
+const fullCaver = (id, nickname) => ({
+  id,
+  nickname,
+  login: nickname.toLowerCase(),
+  password: 'hash',
+  mail: `${nickname}@mail.test`,
+  activationCode: 'code',
+  totpSecret: 'secret',
+  lastUsedTotp: '123456',
+});
+
+// A description as DocumentService.populateHDocumentsWithDescription attaches it.
+const snapshotDescription = {
+  id: '2030-01-01T00:00:00.000Z',
+  t_id: 1,
+  title: 'Title',
+  body: 'Body',
+  author: fullCaver(1, 'Author'),
+  reviewer: fullCaver(2, 'Reviewer'),
+};
+
 describe('Converters Service', () => {
   describe('toDocumentDescriptions()', () => {
     it('should return empty object when sources is null', () => {
@@ -332,6 +354,40 @@ describe('Converters Service', () => {
       };
       const result = converters.toDocument(source);
       should(result.t_id).equal(100);
+    });
+
+    it('should keep a description string from search unchanged', () => {
+      const result = converters.toDocument({ id: 1, description: 'Body' });
+      should(result.description).equal('Body');
+    });
+
+    it('should reduce the snapshot description author and reviewer to simple cavers', () => {
+      const result = converters.toDocument({
+        id: 1,
+        description: snapshotDescription,
+      });
+      should(result.description.title).equal('Title');
+      should(result.description.author).eql({ id: 1, nickname: 'Author' });
+      should(result.description.reviewer).eql({ id: 2, nickname: 'Reviewer' });
+    });
+  });
+
+  describe('toSimpleDocument()', () => {
+    it('should keep a description string from search unchanged', () => {
+      const result = converters.toSimpleDocument({
+        id: 1,
+        description: 'Body',
+      });
+      should(result.description).equal('Body');
+    });
+
+    it('should reduce the snapshot description author and reviewer to simple cavers', () => {
+      const result = converters.toSimpleDocument({
+        id: 1,
+        description: snapshotDescription,
+      });
+      should(result.description.author).eql({ id: 1, nickname: 'Author' });
+      should(result.description.reviewer).eql({ id: 2, nickname: 'Reviewer' });
     });
   });
 

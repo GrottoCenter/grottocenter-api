@@ -231,7 +231,7 @@ const c = {
     id: source.id,
     type: source.type?.name,
     title: source.title, // From search
-    description: source.description, // From search
+    description: convertIfObject(source.description, c.toDescription), // String from search, object from snapshots
     ...c.toDocumentDescriptions(source.descriptions), // From DB
     files: toList('files', source, c.toFile),
     dateInscription: source.dateInscription,
@@ -329,7 +329,9 @@ const c = {
       library: convertIfObject(source.library, c.toSimpleOrganization),
       type: source.type?.name ?? source.type,
       title: source.title, // From search
-      description: source.description, // From search
+      description: convertIfObject(source.description, c.toDescription, {
+        meta,
+      }), // String from search, object from snapshots
       ...c.toDocumentDescriptions(source.descriptions), // From DB
       subjects: source.subjects,
       issue: source.issue,

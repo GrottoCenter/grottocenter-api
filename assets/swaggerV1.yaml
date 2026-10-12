@@ -2170,7 +2170,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentSnapshot'
         '404':
           description: We don't find these document's snapshots.
 
@@ -8869,6 +8874,46 @@ components:
         title:
           type: string
 
+    DocumentSnapshot:
+      allOf:
+        - $ref: '#/components/schemas/Document'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Date of the snapshot (ISO 8601).
+            t_id:
+              type: integer
+              description: Id of the document.
+            description:
+              type: object
+              description: The document description in effect at the snapshot date.
+              properties:
+                id:
+                  type: string
+                  description: Review date of the description (ISO 8601).
+                t_id:
+                  type: integer
+                  description: Id of the description, when it is the current one.
+                title:
+                  type: string
+                body:
+                  type: string
+                language:
+                  $ref: '#/components/schemas/Language'
+                dateInscription:
+                  type: string
+                dateReviewed:
+                  type: string
+                relevance:
+                  type: integer
+                isDeleted:
+                  type: boolean
+                author:
+                  $ref: '#/components/schemas/SimpleCaver'
+                reviewer:
+                  $ref: '#/components/schemas/SimpleCaver'
+
     Document:
       type: object
       properties:
@@ -9393,7 +9438,9 @@ components:
         descriptions:
           $ref: '#/components/schemas/Description'
         documents:
-          $ref: '#/components/schemas/Document'
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentSnapshot'
         entrances:
           $ref: '#/components/schemas/Entrance'
         histories:
