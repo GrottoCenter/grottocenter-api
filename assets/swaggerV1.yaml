@@ -2057,8 +2057,11 @@ paths:
         **Per-document outcome.** Each document is applied in its own
         transaction, in request order, and the response reports the outcome
         of every entry. A document that fails with an unexpected error is
-        reported as `error` and left untouched, but the batch carries on: the
-        documents before and after it are still applied. The status is `200`
+        reported as `error` and left untouched, attachments included, so its
+        pending modification can be submitted again; the batch carries on and
+        the documents before and after it are still applied. Stored files of
+        deleted attachments are removed only after the document's changes are
+        committed. The status is `200`
         when no entry is `error` and `207` otherwise; the body is the same
         either way. A repeated `id` is processed once, with its first entry.
       security:

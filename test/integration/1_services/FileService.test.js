@@ -96,6 +96,43 @@ describe('FileService', () => {
       should(deleted).be.an.Object();
       should(deleted.id).equal(created.id);
     });
+
+    it('should resolve undefined when the row is already gone', async () => {
+      const file = {
+        originalname: 'twice.pdf',
+        buffer: Buffer.from('test'),
+        size: 100,
+      };
+      const created = await FileService.document.create(file, 1, true);
+      await FileService.document.delete(created);
+      should(await FileService.document.delete(created)).be.undefined();
+    });
+  });
+
+  describe('document.deleteRecord()', () => {
+    it('should roll the row back with the transaction it joined', async () => {
+      const file = {
+        originalname: 'rolledback.pdf',
+        buffer: Buffer.from('test'),
+        size: 100,
+      };
+      const created = await FileService.document.create(file, 1, true);
+
+      await sails
+        .getDatastore()
+        .transaction(async (db) => {
+          const destroyed = await FileService.document.deleteRecord(
+            created,
+            db
+          );
+          should(destroyed.id).equal(created.id);
+          throw new Error('rollback');
+        })
+        .catch((err) => should(err.message).match(/rollback/));
+
+      should(await TFile.findOne(created.id)).be.ok();
+      await FileService.document.delete(created);
+    });
   });
 
   describe('update()', () => {

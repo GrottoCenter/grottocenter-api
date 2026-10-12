@@ -158,6 +158,7 @@ async function validateAndUpdateDocument(
   const applyModification = async () => {
     const { missing: missingMembers, resolved: resolvedCollectionData } =
       await DocumentService.resolveM2MMembers(collectionData);
+    const destroyedFiles = [];
 
     await sails.getDatastore().transaction(async (db) => {
       // Update associated data not handled by TDocument manually
@@ -188,29 +189,45 @@ async function validateAndUpdateDocument(
         db
       );
 
-      const filePromises = [];
+      // Every file row is written through the transaction, so a failure
+      // anywhere leaves the attachments as they were and the pending
+      // modification safe to submit again. Sequential: the writes share one
+      // connection, and a rollback must not race queries still in flight.
       // Files have already been created,
       // they just need to be linked to the document.
-      if (newFiles) {
-        filePromises.push(
-          ...newFiles.map((f) =>
-            TFile.updateOne(f.id).set({ isValidated: true })
-          )
-        );
+      for (const f of newFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        await TFile.updateOne(f.id)
+          .set({ isValidated: true })
+          .usingConnection(db);
       }
-      if (modifiedFiles) {
-        filePromises.push(
-          ...modifiedFiles.map((f) => FileService.document.update(f))
-        );
+      for (const f of modifiedFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        await FileService.document.update(f, db);
       }
-
-      if (deletedFiles) {
-        filePromises.push(
-          ...deletedFiles.map((f) => FileService.document.delete(f))
-        );
+      for (const f of deletedFiles ?? []) {
+        // eslint-disable-next-line no-await-in-loop
+        const destroyed = await FileService.document.deleteRecord(f, db);
+        // Already gone: nothing left to delete, and no reason to fail the edit.
+        if (destroyed) destroyedFiles.push(destroyed);
       }
-      await Promise.all(filePromises);
     });
+
+    // Storage cannot be rolled back, so it is only touched once the rows are
+    // committed. A failure here leaves an orphaned object, logged for cleanup,
+    // but the document is validated and must be reported as such.
+    await Promise.all(
+      destroyedFiles.map((file) =>
+        FileService.document
+          .deleteStorage(file)
+          .catch((err) =>
+            sails.log.error(
+              `Document ${document.id} validated but the storage of file ${file.id} (${file.path}) could not be deleted`,
+              err
+            )
+          )
+      )
+    );
 
     // Logged after the commit, not before it: the line asserts the document was
     // validated, and an attempt that loses the race never validates anything. A

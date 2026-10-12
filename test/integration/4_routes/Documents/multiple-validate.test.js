@@ -1188,6 +1188,173 @@ describe('Document multiple-validate', () => {
           });
         });
       });
+
+      // Attachments live in t_file. Their rows must move with the document's
+      // transaction: an `error` outcome promises the pending modification is
+      // untouched and safe to submit again (#1817).
+      describe('Attachments', () => {
+        let FileSvc;
+        before(() => {
+          // Same reason as DocumentService above: resolve after the lift.
+          // eslint-disable-next-line global-require
+          FileSvc = require('../../../../api/services/FileService');
+        });
+
+        afterEach(() => {
+          sinon.restore();
+        });
+
+        const createFile = (documentId, fileName, isValidated = true) =>
+          TFile.create({
+            dateInscription: new Date(),
+            fileName,
+            document: documentId,
+            fileFormat: 1,
+            path: `${Date.now()}-${Math.random()}-${fileName}`,
+            isValidated,
+          }).fetch();
+
+        // A pending modification that touches every kind of attachment change.
+        const seedDocWithFileChanges = async () => {
+          const desc = await TDescription.create({
+            author: 1,
+            title: 'Files',
+            body: 'Body',
+          }).fetch();
+          createdDescIds.push(desc.id);
+          const doc = await TDocument.create({
+            author: 1,
+            type: 1,
+            license: 1,
+            isValidated: false,
+            descriptions: [desc.id],
+          }).fetch();
+          createdDocIds.push(doc.id);
+
+          const files = {
+            deletedA: await createFile(doc.id, 'deleted-a.pdf'),
+            deletedB: await createFile(doc.id, 'deleted-b.pdf'),
+            modified: await createFile(doc.id, 'before.pdf'),
+            added: await createFile(doc.id, 'added.pdf', false),
+          };
+          await TDocument.updateOne(doc.id).set({
+            modifiedDocJson: {
+              reviewerId: 2,
+              documentData: { type: 1 },
+              descriptionData: { title: 'Files applied', body: 'Body' },
+              deletedFiles: [
+                { id: files.deletedA.id },
+                { id: files.deletedB.id },
+              ],
+              modifiedFiles: [{ id: files.modified.id, fileName: 'after.pdf' }],
+              newFiles: [{ id: files.added.id }],
+            },
+          });
+          return { doc, files };
+        };
+
+        const validate = (doc) =>
+          supertest(sails.hooks.http.app)
+            .put('/api/v1/documents/validate')
+            .send({ documents: [{ id: doc.id, isValidated: 'true' }] })
+            .set('Authorization', moderatorToken)
+            .set('Content-type', 'application/json')
+            .set('Accept', 'application/json');
+
+        it('should leave every attachment untouched when a file write fails', async () => {
+          const { doc, files } = await seedDocWithFileChanges();
+
+          // The first deletion goes through, the second one fails: before
+          // #1817's fix the first stayed deleted after the rollback.
+          const original = FileSvc.document.deleteRecord;
+          let calls = 0;
+          sinon.stub(FileSvc.document, 'deleteRecord').callsFake((...args) => {
+            calls += 1;
+            if (calls === 2) {
+              return Promise.reject(
+                Object.assign(new Error('connection terminated'), {
+                  raw: { code: '08006' },
+                })
+              );
+            }
+            return original.apply(FileSvc.document, args);
+          });
+          const deleteStorage = sinon.spy(FileSvc.document, 'deleteStorage');
+
+          const res = await validate(doc).expect(207);
+
+          should(calls).equal(2);
+          should(res.body[0].status).equal('error');
+          should(deleteStorage.callCount).equal(0);
+
+          should(await TFile.findOne(files.deletedA.id)).be.ok();
+          should(await TFile.findOne(files.deletedB.id)).be.ok();
+          const modified = await TFile.findOne(files.modified.id);
+          should(modified.fileName).equal('before.pdf');
+          const added = await TFile.findOne(files.added.id);
+          should(added.isValidated).be.false();
+
+          const updated = await TDocument.findOne(doc.id);
+          should(updated.modifiedDocJson).not.be.null();
+          should(updated.isValidated).be.false();
+
+          await TFile.destroy({ document: doc.id });
+        });
+
+        it('should apply every attachment change and delete storage after the commit', async () => {
+          const { doc, files } = await seedDocWithFileChanges();
+
+          const rowsAtStorageDeletion = [];
+          sinon
+            .stub(FileSvc.document, 'deleteStorage')
+            .callsFake(async (record) => {
+              rowsAtStorageDeletion.push(await TFile.findOne(record.id));
+            });
+
+          const res = await validate(doc).expect(200);
+
+          should(res.body).deepEqual([
+            { id: doc.id, status: 'validated', reason: null },
+          ]);
+          // Called once per deleted file, with the rows already committed away.
+          should(rowsAtStorageDeletion).have.length(2);
+          rowsAtStorageDeletion.forEach((row) => should(row).be.undefined());
+
+          should(await TFile.findOne(files.deletedA.id)).be.undefined();
+          should(await TFile.findOne(files.deletedB.id)).be.undefined();
+          const modified = await TFile.findOne(files.modified.id);
+          should(modified.fileName).equal('after.pdf');
+          const added = await TFile.findOne(files.added.id);
+          should(added.isValidated).be.true();
+
+          await TFile.destroy({ document: doc.id });
+        });
+
+        it('should still report the document as validated when storage deletion fails', async () => {
+          const { doc, files } = await seedDocWithFileChanges();
+
+          sinon
+            .stub(FileSvc.document, 'deleteStorage')
+            .rejects(new Error('blob service unavailable'));
+          const logError = sinon.spy(sails.log, 'error');
+
+          const res = await validate(doc).expect(200);
+
+          should(res.body[0].status).equal('validated');
+          should(await TFile.findOne(files.deletedA.id)).be.undefined();
+          should(
+            logError.args.some((args) =>
+              String(args[0]).includes('could not be deleted')
+            )
+          ).be.true();
+
+          const updated = await TDocument.findOne(doc.id);
+          should(updated.isValidated).be.true();
+          should(updated.modifiedDocJson).be.null();
+
+          await TFile.destroy({ document: doc.id });
+        });
+      });
     });
   });
 
