@@ -49,6 +49,16 @@ describe('Changes - GET /api/v1/changes/recent', () => {
     let moderatorToken;
     let userId;
 
+    // PUT /documents/validate for one document, checking its outcome (#1817)
+    const validateDocument = async (entry, status) => {
+      const res = await supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({ documents: [entry] })
+        .set('Authorization', moderatorToken)
+        .expect(200);
+      should(res.body).match([{ id: entry.id, status }]);
+    };
+
     before(async () => {
       userToken = await AuthTokenService.getRawBearerUserToken();
       moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
@@ -116,11 +126,10 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       });
       const before = await documentChanges(document.id);
 
-      await supertest(sails.hooks.http.app)
-        .put('/api/v1/documents/validate')
-        .send({ documents: [{ id: document.id, isValidated: 'true' }] })
-        .set('Authorization', moderatorToken)
-        .expect(204);
+      await validateDocument(
+        { id: document.id, isValidated: 'true' },
+        'validated'
+      );
 
       const added = (await documentChanges(document.id)).slice(before.length);
       should(added).have.length(1);
@@ -140,11 +149,10 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       }).fetch();
       should(await documentChanges(document.id)).have.length(0);
 
-      await supertest(sails.hooks.http.app)
-        .put('/api/v1/documents/validate')
-        .send({ documents: [{ id: document.id, isValidated: 'true' }] })
-        .set('Authorization', moderatorToken)
-        .expect(204);
+      await validateDocument(
+        { id: document.id, isValidated: 'true' },
+        'validated'
+      );
 
       const changes = await documentChanges(document.id);
       should(changes).have.length(1);
@@ -161,19 +169,14 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       });
       const before = await documentChanges(document.id);
 
-      await supertest(sails.hooks.http.app)
-        .put('/api/v1/documents/validate')
-        .send({
-          documents: [
-            {
-              id: document.id,
-              isValidated: 'false',
-              validationComment: 'Rejected',
-            },
-          ],
-        })
-        .set('Authorization', moderatorToken)
-        .expect(204);
+      await validateDocument(
+        {
+          id: document.id,
+          isValidated: 'false',
+          validationComment: 'Rejected',
+        },
+        'rejected'
+      );
 
       const rejected = await TDocument.findOne(document.id);
       should(rejected.isValidated).be.true();
@@ -189,19 +192,14 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         isValidated: false,
       }).fetch();
 
-      await supertest(sails.hooks.http.app)
-        .put('/api/v1/documents/validate')
-        .send({
-          documents: [
-            {
-              id: document.id,
-              isValidated: 'false',
-              validationComment: 'Rejected',
-            },
-          ],
-        })
-        .set('Authorization', moderatorToken)
-        .expect(204);
+      await validateDocument(
+        {
+          id: document.id,
+          isValidated: 'false',
+          validationComment: 'Rejected',
+        },
+        'rejected'
+      );
 
       should((await TDocument.findOne(document.id)).isValidated).be.true();
       should(await documentChanges(document.id)).have.length(0);
@@ -228,11 +226,10 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         },
       });
 
-      await supertest(sails.hooks.http.app)
-        .put('/api/v1/documents/validate')
-        .send({ documents: [{ id: document.id, isValidated: 'true' }] })
-        .set('Authorization', moderatorToken)
-        .expect(204);
+      await validateDocument(
+        { id: document.id, isValidated: 'true' },
+        'auto_rejected'
+      );
 
       const rejected = await TDocument.findOne(document.id);
       should(rejected.validationComment).match(/^Auto-rejected/);
