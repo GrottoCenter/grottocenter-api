@@ -125,6 +125,22 @@ describe('SearchOutboxQueueService', () => {
       should(errorStub.firstCall.args[1]).equal(failure);
     });
 
+    it('reports a failure that carries no error', async () => {
+      // A bare Promise.reject()
+      sinon.stub(searchOutbox, 'drain').returns(Promise.reject());
+
+      let rejected = false;
+      await SearchOutboxQueueService.processJob([]).catch(() => {
+        rejected = true;
+      });
+
+      should(rejected).be.true();
+      should(infoStub.called).be.false();
+      should(errorStub.firstCall.args[0]).match(
+        /^SearchOutboxQueueService: run failed /
+      );
+    });
+
     it('still reports the drain failure when the outbox cannot be read', async () => {
       sinon.stub(searchOutbox, 'drain').rejects(new Error('drain failed'));
       backlogStub.rejects(new Error('database unreachable'));

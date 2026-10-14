@@ -61,10 +61,13 @@ module.exports = {
     const { drain, backlog } = require('../dbSync/searchOutbox');
     const start = Date.now();
     let changes;
+    // A flag rather than the error itself: a rejection may carry no value
+    let failed = false;
     let failure;
     try {
       changes = await drain({ signal: job?.signal });
     } catch (err) {
+      failed = true;
       failure = err;
     }
     // Measured after the drain: what the next run starts with
@@ -75,7 +78,7 @@ module.exports = {
     const metrics = `pending=${pending} oldestSeconds=${oldestSeconds} durationMs=${
       Date.now() - start
     }`;
-    if (failure) {
+    if (failed) {
       sails.log.error(
         `SearchOutboxQueueService: run failed ${metrics}`,
         failure

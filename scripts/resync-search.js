@@ -74,7 +74,18 @@ sailsApp.load(loadConfig, async (err) => {
   }
 
   // The App Service Application Insights agent sends console output in
-  // batches: exiting at once drops the last lines (the final collections and
-  // the summary), which the operations workbook reads
-  sailsApp.lower(() => setTimeout(() => process.exit(exitCode), 20 * 1000));
+  // batches, every 15 s by default: exiting at once drops the last lines (the
+  // final collections and the summary), which the operations workbook reads.
+  // Keep the wait above that interval. No agent, nothing to wait for
+  const flushWaitMs = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING
+    ? 20 * 1000
+    : 0;
+  sailsApp.lower(() => {
+    if (flushWaitMs > 0) {
+      sails.log.info(
+        `[resync] Waiting ${flushWaitMs / 1000} s for the log agent to flush`
+      );
+    }
+    setTimeout(() => process.exit(exitCode), flushWaitMs);
+  });
 });
