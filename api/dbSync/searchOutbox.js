@@ -11,8 +11,10 @@ const syncUtils = require('./utils');
 
 const BATCH_SIZE = 1000;
 const SYNC_CHUNK_SIZE = 1000;
-// Stay under the queue expiry (SearchOutboxQueueService)
-const TIME_BUDGET_MS = 10 * 60 * 1000;
+// No sync starts after the budget, and one can last 8 minutes (4 tries of 120
+// seconds, config/typesense.js): 5 + 8 stays under the 15-minute queue expiry
+// (SearchOutboxQueueService), so a drain never overlaps the next one
+const TIME_BUDGET_MS = 5 * 60 * 1000;
 
 const COLLECTIONS = [
   'organizations',
@@ -327,10 +329,13 @@ async function expand(rows) {
   return targets;
 }
 
-async function syncTargets(targets) {
+// Re-index the targets one chunk at a time. Returns false, without finishing,
+// when told to stop before a chunk.
+async function syncTargets(targets, shouldStop) {
   for (const [collectionName, targetIds] of Object.entries(targets)) {
     const all = [...targetIds].sort((a, b) => a - b);
     for (let i = 0; i < all.length; i += SYNC_CHUNK_SIZE) {
+      if (shouldStop()) return false;
       // eslint-disable-next-line no-await-in-loop
       await SearchService.syncDocuments(
         collectionName,
@@ -338,6 +343,7 @@ async function syncTargets(targets) {
       );
     }
   }
+  return true;
 }
 
 /**
@@ -345,13 +351,22 @@ async function syncTargets(targets) {
  * A sync that throws (Typesense unreachable…) leaves the batch in the outbox
  * for the next run; a document Typesense rejects is logged and dropped.
  *
+ * No sync starts once the time budget is spent or the signal is aborted (the
+ * job expired or pg-boss is stopping). The batch under way then stays in the
+ * outbox: the next run re-indexes it whole, which is harmless.
+ *
+ * @param {Object} [options]
+ * @param {AbortSignal} [options.signal] the signal of the pg-boss job
  * @returns {Promise<number>} the number of outbox rows processed
+ * @throws when the signal is aborted
  */
 async function drain({
   batchSize = BATCH_SIZE,
   timeBudgetMs = TIME_BUDGET_MS,
+  signal,
 } = {}) {
-  const start = Date.now();
+  const deadline = Date.now() + timeBudgetMs;
+  const outOfTime = () => signal?.aborted || Date.now() > deadline;
   let processed = 0;
   for (;;) {
     // eslint-disable-next-line no-await-in-loop
@@ -363,7 +378,14 @@ async function drain({
     if (rows.length === 0) break;
 
     // eslint-disable-next-line no-await-in-loop
-    await syncTargets(await expand(rows));
+    const synced = await syncTargets(await expand(rows), outOfTime);
+    signal?.throwIfAborted();
+    if (!synced) {
+      sails.log.warn(
+        `[searchOutbox] Time budget spent with a batch under way, left for the next run`
+      );
+      break;
+    }
     // eslint-disable-next-line no-await-in-loop
     await CommonService.query(
       'DELETE FROM t_search_outbox WHERE id = ANY($1::bigint[])',
@@ -371,8 +393,9 @@ async function drain({
     );
     processed += rows.length;
 
-    if (rows.length < batchSize || Date.now() - start > timeBudgetMs) break;
+    if (rows.length < batchSize || outOfTime()) break;
   }
+  signal?.throwIfAborted();
   return processed;
 }
 

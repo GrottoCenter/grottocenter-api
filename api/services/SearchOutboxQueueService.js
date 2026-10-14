@@ -12,7 +12,7 @@ const QUEUE_NAME = 'search-outbox';
 const CRON = '* * * * *';
 const QUEUE_OPTIONS = {
   policy: 'exclusive',
-  // A drain stops after 10 minutes (searchOutbox.drain), under the expiry
+  // Leaves room for the last sync a drain starts (searchOutbox.drain)
   expireInSeconds: 15 * 60,
   // The next run, a minute later, retries what is left in the outbox
   retryLimit: 0,
@@ -43,14 +43,17 @@ module.exports = {
 
   /**
    * Drain the outbox. Throwing lets pg-boss record the failure; the rows stay
-   * in the outbox for the next run.
+   * in the outbox for the next run. The job signal is aborted when the job
+   * expires: pg-boss does not stop the handler, so the drain watches it.
+   *
+   * @param {Array<{signal: AbortSignal}>} jobs a single job (batchSize 1)
    */
-  async processJob() {
+  async processJob([job] = []) {
     // Required here rather than at load time: a top-level require would pin
     // stale copies of the services it depends on (see DbExportQueueService)
     // eslint-disable-next-line global-require
     const { drain } = require('../dbSync/searchOutbox');
-    const processed = await drain();
+    const processed = await drain({ signal: job?.signal });
     if (processed > 0) {
       sails.log.info(`SearchOutboxQueueService: ${processed} changes indexed`);
     }

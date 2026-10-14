@@ -883,17 +883,24 @@ ALTER TABLE t_caver ADD COLUMN IF NOT EXISTS last_suspicious_email_at TIMESTAMP 
 // Read from the migration itself rather than copied, so the triggers the tests
 // exercise are the ones production runs. The test DB has no gc_owner role and
 // no pg_cron: drop the \c and OWNER TO lines, and stop at the cron section.
-const SEARCH_OUTBOX_MIGRATION = fs
-  .readFileSync(
+// Line endings are normalized first: a CRLF checkout would defeat the `$`.
+const forTestDatabase = (sql) =>
+  sql
+    .replace(/\r\n/g, '\n')
+    .split(/^\\c postgres;$/m)[0]
+    .split('\n')
+    .filter((line) => !/^\\c |OWNER TO gc_owner;$/.test(line))
+    .join('\n');
+
+const SEARCH_OUTBOX_MIGRATION = forTestDatabase(
+  fs.readFileSync(
     path.join(__dirname, '../sql/9_22_2026_10_12_search_outbox.sql'),
     'utf8'
   )
-  .split(/^\\c postgres;$/m)[0]
-  .split('\n')
-  .filter((line) => !/^\\c |OWNER TO gc_owner;$/.test(line))
-  .join('\n');
+);
 
 module.exports = {
+  forTestDatabase,
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
   ALTER_ENTRANCE_COLUMN_POINT_GEOM,

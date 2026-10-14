@@ -65,10 +65,12 @@ describe('SearchOutboxQueueService', () => {
   });
 
   describe('processJob()', () => {
-    it('drains the outbox', async () => {
+    it('drains the outbox, watching the job signal', async () => {
       const drainStub = sinon.stub(searchOutbox, 'drain').resolves(3);
-      await SearchOutboxQueueService.processJob([{ id: 'job' }]);
+      const { signal } = new AbortController();
+      await SearchOutboxQueueService.processJob([{ id: 'job', signal }]);
       should(drainStub.calledOnce).be.true();
+      should(drainStub.firstCall.args[0].signal).equal(signal);
     });
 
     it('rethrows a drain failure so pg-boss records it', async () => {
