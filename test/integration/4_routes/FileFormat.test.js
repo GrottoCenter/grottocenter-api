@@ -31,5 +31,17 @@ describe('FileFormat features', () => {
           return done();
         });
     });
+
+    it('should list the GLB and glTF 3D model formats', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/file-formats')
+        .set('Accept', 'application/json')
+        .expect(200);
+      const byExtension = Object.fromEntries(
+        res.body.fileFormats.map((f) => [f.extension.trim(), f.mimeType])
+      );
+      should(byExtension.glb).equal('model/gltf-binary');
+      should(byExtension.gltf).equal('model/gltf+json');
+    });
   });
 });
