@@ -8,7 +8,7 @@
  */
 
 const QUEUE_NAME = 'db-export';
-// Sunday 03:00 UTC, away from the Monday 02:00 search sync
+// Sunday 03:00 UTC, away from the monthly search reconciliation (1st, 02:00)
 const CRON = '0 3 * * 0';
 const QUEUE_OPTIONS = {
   policy: 'exclusive',

@@ -106,7 +106,8 @@ describe('DeviceService - Property 5: Response shape invariant (toDevice)', () =
 /**
  * toSimpleDevice output shape invariant.
  * toSimpleDevice always returns exactly the expected shape
- * (id, name, brandName, productUrl, manufacturerUrl, isDeleted).
+ * (id, name, brandName, productUrl, manufacturerUrl, serialNumber, author):
+ * a search hit only holds live devices, so it carries no isDeleted.
  *
  * Validates: Requirements 2.1
  */
@@ -122,7 +123,6 @@ describe('DeviceService - Property: toSimpleDevice output shape invariant', () =
         should(result).have.property('brandName');
         should(result).have.property('productUrl');
         should(result).have.property('manufacturerUrl');
-        should(result).have.property('isDeleted');
         should(result).have.property('author');
         should(result).have.property('serialNumber');
 
@@ -133,7 +133,6 @@ describe('DeviceService - Property: toSimpleDevice output shape invariant', () =
             'author',
             'brandName',
             'id',
-            'isDeleted',
             'manufacturerUrl',
             'name',
             'productUrl',

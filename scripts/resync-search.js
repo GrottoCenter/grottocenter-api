@@ -2,19 +2,28 @@
 /**
  * Manual Typesense search index resync script.
  *
- * Lifts the Sails app, runs makeDbSync (and makeDbExport with --export), then exits.
- * Designed to be run via SSH on the Azure Web App where env vars are already set.
+ * Lifts the Sails app, runs the search sync (and makeDbExport with --export),
+ * then exits. Designed to be run via SSH on the Azure Web App where env vars are
+ * already set.
+ *
+ * By default, rebuilds every collection into a new one and switches the alias
+ * (makeDbSync): needed after a schema change. It then reconciles in place,
+ * which catches the writes made during the rebuild. With --reconcile, only
+ * reconciles: the monthly job, run on demand.
  *
  * Usage:
- *   node scripts/resync-search.js            # Resync Typesense only
- *   node scripts/resync-search.js --export   # Resync + Azure Blob file export
+ *   node scripts/resync-search.js               # Rebuild + reconcile
+ *   node scripts/resync-search.js --reconcile   # Reconcile only
+ *   node scripts/resync-search.js --export      # Also write the file export
  */
 
 const sailsApp = require('sails');
 const { makeDbSync } = require('../api/dbSync/dbSync');
 const { makeDbExport } = require('../api/dbSync/dbExport');
+const { reconcile } = require('../api/dbSync/reconcile');
 
 const withExport = process.argv.includes('--export');
+const reconcileOnly = process.argv.includes('--reconcile');
 
 const loadConfig = { hooks: { views: false, sockets: false, http: false } };
 
@@ -54,9 +63,10 @@ sailsApp.load(loadConfig, async (err) => {
   let exitCode = 0;
   try {
     sails.log.info(
-      `[resync] Starting manual resync (file export: ${withExport})`
+      `[resync] Starting manual resync (reconcile only: ${reconcileOnly}, file export: ${withExport})`
     );
-    await makeDbSync();
+    if (!reconcileOnly) await makeDbSync();
+    await reconcile();
     if (withExport) await makeDbExport();
   } catch (e) {
     sails.log.error('[resync] Failed:', e);

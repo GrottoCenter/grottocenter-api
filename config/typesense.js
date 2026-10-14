@@ -44,11 +44,26 @@ async function createTimestampedCollection(schema) {
   return alteredSchema.name;
 }
 
-async function deleteDocument(collectionName, documentId) {
+// One request for the whole batch; an id that is not indexed is skipped.
+// A thousand ids fit in the request URL.
+async function deleteDocuments(collectionName, documentIds) {
+  if (documentIds.length === 0) return;
   await client
     .collections(collectionName)
-    .documents(documentId)
-    .delete({ ignore_not_found: true });
+    .documents()
+    .delete({ filter_by: `id:[${documentIds.join(',')}]` });
+}
+
+// The ids of every document in a collection
+async function exportIds(collectionName) {
+  const jsonl = await client
+    .collections(collectionName)
+    .documents()
+    .export({ include_fields: 'id' });
+  return jsonl
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => Number(JSON.parse(line).id));
 }
 
 async function importDocuments(
@@ -122,7 +137,8 @@ module.exports = {
   IMPORT_SIZE: 2000,
   isAlive,
   isPopulated,
-  deleteDocument,
+  deleteDocuments,
+  exportIds,
   createTimestampedCollection,
   importDocuments,
   switchCollectionAlias,

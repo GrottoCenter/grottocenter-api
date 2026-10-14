@@ -69,17 +69,13 @@ async function processCollection({ name, query, processRows, search } = {}) {
   }
 }
 
-function getMsUntilNextExec() {
-  // Next day of at 2 AM UTC
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() + 1);
-  d.setUTCHours(2, 0, 0, 0);
-  return d.getTime() - Date.now();
-}
-
 /**
- * For each main entity in the database, rebuild its search collection (typesense).
- * The file export is a separate job: see api/dbSync/dbExport.js
+ * For each main entity in the database, rebuild its search collection
+ * (typesense) into a new collection, then switch the alias to it. Only for an
+ * empty index or a schema change (scripts/resync-search.js): writes made while
+ * it runs go to the previous collection, so follow it with a reconciliation
+ * (api/dbSync/reconcile.js), which works in place. The file export is a
+ * separate job: see api/dbSync/dbExport.js
  */
 async function makeDbSync() {
   sails.log.info(`[dbSync] Start search DB sync`);
@@ -102,25 +98,6 @@ async function makeDbSync() {
   sails.log.info(`[dbSync] Done search DB sync in ${totalElapsed}ms`);
 }
 
-let dbSyncTim = null; // Ensures only one sync can be registered
-function registerMakeDbSync() {
-  // <!> Only works on mono instance, does not support scaling
-  clearTimeout(dbSyncTim);
-
-  dbSyncTim = setTimeout(() => {
-    registerMakeDbSync();
-
-    // Only fully run the first day of each week (Monday)
-    if (new Date().getUTCDay() !== 1) return;
-    // Cannot set the total time as a 32-bit signed integer is used by setTimeout()
-    // It will overflow and trigger a timeoutoverflowwarning
-
-    makeDbSync().catch((err) =>
-      sails.log.error('[dbSync] makeDbSync error', err)
-    );
-  }, getMsUntilNextExec());
-}
-
 async function ensureSearchDbIsPopulated() {
   if (await typesense.isPopulated()) return;
   sails.log.info(`[dbSync] Search DB is empty`);
@@ -132,5 +109,4 @@ async function ensureSearchDbIsPopulated() {
 module.exports = {
   ensureSearchDbIsPopulated,
   makeDbSync,
-  registerMakeDbSync,
 };

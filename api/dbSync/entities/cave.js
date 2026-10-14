@@ -45,6 +45,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'caves',
+  sourceTable: 't_cave',
   shouldExportToFile: true,
   export: {
     joins: (rows) => [

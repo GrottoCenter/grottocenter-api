@@ -6,6 +6,7 @@ const CommonService = require('../../../api/services/CommonService');
 const SearchService = require('../../../api/services/SearchService');
 const typesense = require('../../../config/typesense');
 const { expand, drain } = require('../../../api/dbSync/searchOutbox');
+const { withSearchWriteLock } = require('../../../api/dbSync/searchWriteLock');
 
 const clearOutbox = () => CommonService.query('DELETE FROM t_search_outbox');
 
@@ -521,7 +522,7 @@ describe('searchOutbox', () => {
       const importStub = sinon
         .stub(typesense, 'importDocuments')
         .callsFake(async () => controller.abort(new Error('expired')));
-      const deleteStub = sinon.stub(typesense, 'deleteDocument').resolves();
+      const deleteStub = sinon.stub(typesense, 'deleteDocuments').resolves();
       await enqueue('devices', 1);
       await enqueue('devices', 2);
 
@@ -539,7 +540,7 @@ describe('searchOutbox', () => {
       const controller = new AbortController();
       sinon.stub(typesense, 'importDocuments').resolves();
       let finishRemoval;
-      sinon.stub(typesense, 'deleteDocument').callsFake(
+      sinon.stub(typesense, 'deleteDocuments').callsFake(
         () =>
           new Promise((resolve) => {
             controller.abort(new Error('expired'));
@@ -561,6 +562,50 @@ describe('searchOutbox', () => {
       finishRemoval();
       await draining.should.be.rejectedWith('expired');
       should(await readOutbox()).have.length(2);
+    });
+
+    it('syncs each chunk holding the search write lock', async () => {
+      await enqueue('devices', 1);
+      // Held: another holder gives up at once
+      syncStub.callsFake(() =>
+        withSearchWriteLock(async () => {}, { timeoutMs: 1 }).then(
+          () => 'free',
+          (err) => err.code
+        )
+      );
+
+      await drain();
+
+      should(await syncStub.firstCall.returnValue).equal(
+        'E_SEARCH_LOCK_TIMEOUT'
+      );
+    });
+
+    // A reconciliation page holds the lock past the drain's deadline
+    it('keeps the batch when the lock is not free before the deadline', async () => {
+      await enqueue('devices', 1);
+      let release;
+      let acquired;
+      const isAcquired = new Promise((resolve) => {
+        acquired = resolve;
+      });
+      const holder = withSearchWriteLock(
+        () =>
+          new Promise((resolve) => {
+            release = resolve;
+            acquired();
+          })
+      );
+      await isAcquired;
+      try {
+        should(await drain({ timeBudgetMs: 100 })).equal(0);
+      } finally {
+        release();
+        await holder;
+      }
+
+      should(syncStub.called).be.false();
+      should(await readOutbox()).have.length(1);
     });
 
     it('does nothing on an empty outbox', async () => {

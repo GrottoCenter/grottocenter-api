@@ -149,9 +149,9 @@ These scripts refresh the following materialized views:
 
 ### Manual Typesense resync
 
-The search indexes (Typesense) are automatically synced every Monday at 2 AM UTC. On first startup, if Typesense is empty, a sync is triggered automatically.
+The search indexes (Typesense) follow the database in real time: database triggers record each change in `t_search_outbox`, and a job re-indexes what it affects every minute. A reconciliation runs on the 1st of each month at 2 AM UTC as a safety net, for what no trigger sees (reference tables such as countries or subjects). On first startup, if Typesense is empty, a full rebuild is triggered automatically.
 
-To manually trigger a resync (e.g. after fixing a data issue), connect to the production server via SSH and run the resync script.
+To trigger a resync by hand (e.g. after fixing reference data or changing a collection schema), connect to the production server via SSH and run the resync script.
 
 #### 1. Connect via SSH
 
@@ -166,14 +166,20 @@ From the SSH shell:
 ```shell
 cd /home/site/wwwroot
 
-# Resync all collections (Typesense only, no file export)
+# Reconcile all collections in place (what the monthly job does)
+node scripts/resync-search.js --reconcile
+
+# Rebuild all collections, then reconcile (after a schema change)
 node scripts/resync-search.js
 
-# Resync all collections + Azure Blob file export
+# Either of the above + Azure Blob file export
 node scripts/resync-search.js --export
 ```
 
-The script lifts Sails, runs the sync, and exits. It creates timestamped collections in Typesense and switches aliases atomically, so there is no search downtime during the resync. Environment variables (database, Typesense, Azure) are already configured on the Web App.
+The script lifts Sails, runs the sync, and exits. Environment variables (database, Typesense, Azure) are already configured on the Web App.
+
+- **Reconcile** re-indexes every row in the live collections and removes the documents whose row is gone. Use it when the index looks out of date.
+- **Rebuild** creates timestamped collections in Typesense and switches the aliases atomically, so there is no search downtime. It is only needed when a collection schema changes. Writes made during a rebuild go to the previous collections, so the script reconciles afterwards.
 
 ### Tests
 

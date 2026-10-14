@@ -237,6 +237,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'documents',
+  sourceTable: 't_document',
   shouldExportToFile: true,
   export: {
     joins: (rows) => [

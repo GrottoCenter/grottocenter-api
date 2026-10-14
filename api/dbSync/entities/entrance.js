@@ -227,6 +227,7 @@ function exportTransform(row) {
 
 module.exports = {
   name: 'entrances',
+  sourceTable: 't_entrance',
   shouldExportToFile: true,
   query,
   processRows,

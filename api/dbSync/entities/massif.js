@@ -42,6 +42,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'massifs',
+  sourceTable: 't_massif',
   shouldExportToFile: true,
   export: {
     joins: (rows) => [

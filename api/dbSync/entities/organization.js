@@ -58,6 +58,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'organizations',
+  sourceTable: 't_grotto',
   shouldExportToFile: true,
   query,
   processRows,

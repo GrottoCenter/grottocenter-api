@@ -32,6 +32,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'persons',
+  sourceTable: 't_caver',
   shouldExportToFile: false,
   query,
   processRows,
