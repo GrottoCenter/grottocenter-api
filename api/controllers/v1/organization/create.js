@@ -5,6 +5,12 @@ const { validateNameLength } = require('../../../utils/nameValidation');
 const {
   validatePostalCodeLength,
 } = require('../../../utils/postalCodeValidation');
+const {
+  validateOrganizationType,
+} = require('../../../utils/organizationTypeValidation');
+const {
+  DEFAULT_ORGANIZATION_TYPE,
+} = require('../../../../config/constants/organization');
 
 module.exports = async (req, res) => {
   // Check params
@@ -20,8 +26,15 @@ module.exports = async (req, res) => {
     return res.badRequest(nameError);
   }
 
+  // An organization created without a type gets the default one
+  const typeError = validateOrganizationType(req.body.type);
+  if (typeError) {
+    return res.badRequest(typeError);
+  }
+
   const cleanedData = {
     ...GrottoService.getConvertedDataFromClientRequest(req),
+    type: req.body.type ?? DEFAULT_ORGANIZATION_TYPE,
     author: req.token.id,
     dateInscription: new Date(),
   };

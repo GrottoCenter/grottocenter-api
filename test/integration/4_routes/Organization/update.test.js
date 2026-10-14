@@ -19,6 +19,49 @@ describe('Organization features', () => {
   });
 
   describe('Update', async () => {
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    describe('Type', () => {
+      // Organization 2 is an EDITION in the fixtures
+      after(async () => {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+      });
+
+      const putOrganization = (body) =>
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/organizations/2')
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send(body);
+
+      it('should change the type', async () => {
+        const res = await putOrganization({ type: 'RESEARCH' }).expect(200);
+        should(res.body.type).equal('RESEARCH');
+        const stored = await TGrotto.findOne({ id: 2 });
+        should(stored.type).equal('RESEARCH');
+      });
+
+      it('should leave the type as is when it is omitted', async () => {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+        const res = await putOrganization({ city: 'Lyon' }).expect(200);
+        should(res.body.type).equal('EDITION');
+      });
+
+      it('should return 400 for an unknown type', async () => {
+        const res = await putOrganization({ type: 'FAN_CLUB' }).expect(400);
+        should(res.body.message).containEql('Invalid organization type');
+        const stored = await TGrotto.findOne({ id: 2 });
+        should(stored.type).equal('EDITION');
+      });
+
+      it('should return 400 for a null type, which would clear it', async () => {
+        const res = await putOrganization({ type: null }).expect(400);
+        should(res.body.message).containEql('Invalid organization type');
+        const stored = await TGrotto.findOne({ id: 2 });
+        should(stored.type).equal('EDITION');
+      });
+    });
+
     describe('Successfull updates', () => {
       const organizationToUpdate = {
         address: '860 Rue Paul Rimbaud',

@@ -256,6 +256,7 @@ module.exports = {
         id: grotto.id,
         name: name ? name.name : null,
         language: name ? name.language : null,
+        type: grotto.type ?? null,
       };
     });
 

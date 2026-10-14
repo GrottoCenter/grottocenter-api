@@ -27,6 +27,7 @@ const ORGANIZATION_PROPERTIES = [
   'pictureFileName',
   'postalCode',
   'region',
+  'type',
   'url',
   'yearBirth',
   'managedCountries',
@@ -71,6 +72,23 @@ describe('Organization features', () => {
           should(organization.dateInscription).not.be.empty();
           return done();
         });
+    });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    it('should return the canonical type', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/1')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body.type).equal('SPELEOLOGY');
+    });
+
+    it('should return a null type for an organization whose type is not set', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/3')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body).have.property('type', null);
     });
 
     it('should expose authored and published documents as separate lists', (done) => {

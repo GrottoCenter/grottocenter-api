@@ -25,6 +25,9 @@ describe('Country features', () => {
           should(country.id).not.be.empty();
           should(country.nativeName).not.be.empty();
           should(country).have.property('organizations');
+          // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+          const organization = country.organizations.find((o) => o.id === 1);
+          should(organization).have.property('type', 'SPELEOLOGY');
           return done();
         });
     });

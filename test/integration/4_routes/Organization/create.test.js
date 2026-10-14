@@ -67,6 +67,53 @@ describe('Organization features', () => {
       }).timeout(4000);
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    describe('Type', () => {
+      const createdIds = [];
+
+      after(async () => {
+        await TName.destroy({ grotto: createdIds });
+        await TGrotto.destroy({ id: createdIds });
+      });
+
+      const postOrganization = (body) =>
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/organizations')
+          .send({
+            name: { text: 'Organisation typée', language: 'fr' },
+            ...body,
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json');
+
+      it('should default the type to SPELEOLOGY when it is absent', async () => {
+        const res = await postOrganization({}).expect(200);
+        createdIds.push(res.body.id);
+        should(res.body.type).equal('SPELEOLOGY');
+        const stored = await TGrotto.findOne({ id: res.body.id });
+        should(stored.type).equal('SPELEOLOGY');
+      });
+
+      it('should store the type given', async () => {
+        const res = await postOrganization({ type: 'LIBRARY' }).expect(200);
+        createdIds.push(res.body.id);
+        should(res.body.type).equal('LIBRARY');
+        const stored = await TGrotto.findOne({ id: res.body.id });
+        should(stored.type).equal('LIBRARY');
+      });
+
+      it('should return 400 for an unknown type', async () => {
+        const res = await postOrganization({ type: 'FAN_CLUB' }).expect(400);
+        should(res.body.message).containEql('Invalid organization type');
+      });
+
+      it('should return 400 for a null type', async () => {
+        const res = await postOrganization({ type: null }).expect(400);
+        should(res.body.message).containEql('Invalid organization type');
+      });
+    });
+
     // https://github.com/GrottoCenter/grottocenter-api/issues/1774
     describe('Invalid data', () => {
       it('should return 400 when postalCode is too long', (done) => {
