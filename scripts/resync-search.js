@@ -73,5 +73,8 @@ sailsApp.load(loadConfig, async (err) => {
     exitCode = 1;
   }
 
-  sailsApp.lower(() => process.exit(exitCode));
+  // The App Service Application Insights agent sends console output in
+  // batches: exiting at once drops the last lines (the final collections and
+  // the summary), which the operations workbook reads
+  sailsApp.lower(() => setTimeout(() => process.exit(exitCode), 20 * 1000));
 });

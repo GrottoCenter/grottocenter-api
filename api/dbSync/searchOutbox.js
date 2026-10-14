@@ -421,4 +421,19 @@ async function drain({
   return processed;
 }
 
-module.exports = { expand, drain };
+/**
+ * What is waiting in the outbox: its row count, and how long the oldest row
+ * has waited (0 when empty).
+ *
+ * @returns {Promise<{pending: number, oldestSeconds: number}>}
+ */
+async function backlog() {
+  const { rows } = await CommonService.query(
+    `SELECT count(*)::int AS pending,
+       COALESCE(EXTRACT(EPOCH FROM now() - min(date_inscription)), 0)::int AS "oldestSeconds"
+     FROM t_search_outbox`
+  );
+  return rows[0];
+}
+
+module.exports = { expand, drain, backlog };

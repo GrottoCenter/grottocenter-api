@@ -65,6 +65,18 @@ describe('SearchOutboxQueueService', () => {
   });
 
   describe('processJob()', () => {
+    let backlogStub;
+    let infoStub;
+    let errorStub;
+
+    beforeEach(() => {
+      backlogStub = sinon
+        .stub(searchOutbox, 'backlog')
+        .resolves({ pending: 2, oldestSeconds: 95 });
+      infoStub = sinon.stub(sails.log, 'info');
+      errorStub = sinon.stub(sails.log, 'error');
+    });
+
     it('drains the outbox, watching the job signal', async () => {
       const drainStub = sinon.stub(searchOutbox, 'drain').resolves(3);
       const { signal } = new AbortController();
@@ -73,10 +85,56 @@ describe('SearchOutboxQueueService', () => {
       should(drainStub.firstCall.args[0].signal).equal(signal);
     });
 
-    it('rethrows a drain failure so pg-boss records it', async () => {
-      sinon.stub(searchOutbox, 'drain').rejects(new Error('drain failed'));
+    // The operations workbook parses this line: keep its format
+    it('logs one line per run with the changes and what is left', async () => {
+      sinon.stub(searchOutbox, 'drain').resolves(3);
+
+      await SearchOutboxQueueService.processJob([]);
+
+      should(infoStub.callCount).equal(1);
+      should(infoStub.firstCall.args[0]).match(
+        /^SearchOutboxQueueService: run changes=3 pending=2 oldestSeconds=95 durationMs=\d+$/
+      );
+      should(backlogStub.calledAfter(searchOutbox.drain)).be.true();
+    });
+
+    it('logs a run that changed nothing, so a stopped worker shows as a gap', async () => {
+      sinon.stub(searchOutbox, 'drain').resolves(0);
+      backlogStub.resolves({ pending: 0, oldestSeconds: 0 });
+
+      await SearchOutboxQueueService.processJob([]);
+
+      should(infoStub.firstCall.args[0]).match(
+        /^SearchOutboxQueueService: run changes=0 pending=0 oldestSeconds=0 durationMs=\d+$/
+      );
+    });
+
+    it('logs a failed run, then rethrows it so pg-boss records it', async () => {
+      const failure = new Error('drain failed');
+      sinon.stub(searchOutbox, 'drain').rejects(failure);
+
       await should(SearchOutboxQueueService.processJob([])).be.rejectedWith(
         'drain failed'
+      );
+
+      should(infoStub.called).be.false();
+      should(errorStub.callCount).equal(1);
+      should(errorStub.firstCall.args[0]).match(
+        /^SearchOutboxQueueService: run failed pending=2 oldestSeconds=95 durationMs=\d+$/
+      );
+      should(errorStub.firstCall.args[1]).equal(failure);
+    });
+
+    it('still reports the drain failure when the outbox cannot be read', async () => {
+      sinon.stub(searchOutbox, 'drain').rejects(new Error('drain failed'));
+      backlogStub.rejects(new Error('database unreachable'));
+
+      await should(SearchOutboxQueueService.processJob([])).be.rejectedWith(
+        'drain failed'
+      );
+
+      should(errorStub.firstCall.args[0]).match(
+        /run failed pending=-1 oldestSeconds=-1 /
       );
     });
   });
