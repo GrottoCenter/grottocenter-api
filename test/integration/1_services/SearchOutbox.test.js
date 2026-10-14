@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const CommonService = require('../../../api/services/CommonService');
 const SearchService = require('../../../api/services/SearchService');
 const typesense = require('../../../config/typesense');
-const { expand, drain } = require('../../../api/dbSync/searchOutbox');
+const { expand, drain, backlog } = require('../../../api/dbSync/searchOutbox');
 const { withSearchWriteLock } = require('../../../api/dbSync/searchWriteLock');
 
 const clearOutbox = () => CommonService.query('DELETE FROM t_search_outbox');
@@ -409,6 +409,25 @@ describe('searchOutbox', () => {
 
     it('skips an unknown kind', async () => {
       should(lists(await expand([row('unknown', 1)]))).eql({});
+    });
+  });
+
+  describe('backlog()', () => {
+    it('reports an empty outbox', async () => {
+      should(await backlog()).eql({ pending: 0, oldestSeconds: 0 });
+    });
+
+    it('counts the rows and ages the oldest one', async () => {
+      await CommonService.query(
+        `INSERT INTO t_search_outbox (kind, id_entity, operation, date_inscription)
+         VALUES ('devices', 1, 'U', now() - interval '90 seconds'),
+                ('devices', 2, 'U', now() - interval '10 seconds')`
+      );
+
+      const { pending, oldestSeconds } = await backlog();
+
+      should(pending).equal(2);
+      should(oldestSeconds).be.within(90, 91);
     });
   });
 

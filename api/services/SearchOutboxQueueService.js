@@ -46,16 +46,44 @@ module.exports = {
    * in the outbox for the next run. The job signal is aborted when the job
    * expires: pg-boss does not stop the handler, so the drain watches it.
    *
+   * Every run logs one line, which the operations workbook charts
+   * (grottocenter3-private): a stopped worker shows as a gap.
+   *   SearchOutboxQueueService: run changes=4 pending=0 oldestSeconds=0 durationMs=213
+   *   SearchOutboxQueueService: run failed pending=12 oldestSeconds=95 durationMs=40 <error>
+   * pending and oldestSeconds are -1 when the outbox could not be read.
+   *
    * @param {Array<{signal: AbortSignal}>} jobs a single job (batchSize 1)
    */
   async processJob([job] = []) {
     // Required here rather than at load time: a top-level require would pin
     // stale copies of the services it depends on (see DbExportQueueService)
     // eslint-disable-next-line global-require
-    const { drain } = require('../dbSync/searchOutbox');
-    const processed = await drain({ signal: job?.signal });
-    if (processed > 0) {
-      sails.log.info(`SearchOutboxQueueService: ${processed} changes indexed`);
+    const { drain, backlog } = require('../dbSync/searchOutbox');
+    const start = Date.now();
+    let changes;
+    let failure;
+    try {
+      changes = await drain({ signal: job?.signal });
+    } catch (err) {
+      failure = err;
     }
+    // Measured after the drain: what the next run starts with
+    const { pending, oldestSeconds } = await backlog().catch(() => ({
+      pending: -1,
+      oldestSeconds: -1,
+    }));
+    const metrics = `pending=${pending} oldestSeconds=${oldestSeconds} durationMs=${
+      Date.now() - start
+    }`;
+    if (failure) {
+      sails.log.error(
+        `SearchOutboxQueueService: run failed ${metrics}`,
+        failure
+      );
+      throw failure;
+    }
+    sails.log.info(
+      `SearchOutboxQueueService: run changes=${changes} ${metrics}`
+    );
   },
 };
