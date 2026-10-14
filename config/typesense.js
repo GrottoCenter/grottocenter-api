@@ -44,14 +44,20 @@ async function createTimestampedCollection(schema) {
   return alteredSchema.name;
 }
 
-// One request for the whole batch; an id that is not indexed is skipped.
-// A thousand ids fit in the request URL.
+// Ids per removal request: the ids travel in the request URL, which a proxy
+// in front of Typesense may cap at 8 KB. 250 six-digit ids take about 2.5 KB
+const DELETE_BATCH_SIZE = 250;
+
+// A few requests for the whole batch; an id that is not indexed is skipped
 async function deleteDocuments(collectionName, documentIds) {
-  if (documentIds.length === 0) return;
-  await client
-    .collections(collectionName)
-    .documents()
-    .delete({ filter_by: `id:[${documentIds.join(',')}]` });
+  for (let i = 0; i < documentIds.length; i += DELETE_BATCH_SIZE) {
+    const batch = documentIds.slice(i, i + DELETE_BATCH_SIZE);
+    // eslint-disable-next-line no-await-in-loop
+    await client
+      .collections(collectionName)
+      .documents()
+      .delete({ filter_by: `id:[${batch.join(',')}]` });
+  }
 }
 
 // The ids of every document in a collection

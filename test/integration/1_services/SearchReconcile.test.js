@@ -93,6 +93,17 @@ describe('search reconciliation', () => {
 
   describe('reconcile()', () => {
     it('reconciles every search collection', async () => {
+      // The seven collections, whatever their order
+      should([...COLLECTIONS].sort()).eql([
+        'caves',
+        'devices',
+        'documents',
+        'entrances',
+        'massifs',
+        'organizations',
+        'persons',
+      ]);
+
       await reconcile();
 
       should([...new Set(syncStub.args.map(([name]) => name))]).eql(
