@@ -107,7 +107,7 @@ paths:
     get:
       tags:
         - file formats
-      description: 'Get all the file formats present in Grottocenter.'
+      description: 'Get all the file formats present in Grottocenter. A document file is accepted only when its extension is listed here (for example glb and gltf for 3D models).'
       responses:
         200:
           description: Successful operation
@@ -9572,9 +9572,13 @@ components:
           nullable: true
           description: >
             Resized WebP variants of the original image for responsive display.
-            Null entirely for non-image files or if thumbnail generation failed.
-            Individual variants may be null if the original image is smaller
-            than the target width (no upscaling).
+            For a GLB 3D model (model/gltf-binary), a static rendered preview
+            (fitted three-quarter view, transparent background) produced by a
+            background job after the upload: null until that job completes,
+            and null if the model cannot be rendered. glTF files have none.
+            Null entirely for other non-image files or if thumbnail generation
+            failed. Individual variants may be null if the original image is
+            smaller than the target width (no upscaling).
           properties:
             small:
               type: string
