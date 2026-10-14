@@ -1,0 +1,83 @@
+\c grottoce;
+
+-- =============================================================================
+-- #1806: a controlled type for every organization
+-- =============================================================================
+--
+-- Organizations that exist before this migration keep a NULL type ("not set"):
+-- nothing in the data tells a caving club from a publisher. The API gives
+-- SPELEOLOGY to an organization created without a type and never writes NULL
+-- itself. The values match config/constants/organization.js.
+-- =============================================================================
+
+ALTER TABLE t_grotto ADD COLUMN IF NOT EXISTS type varchar(32) NULL;
+ALTER TABLE h_grotto ADD COLUMN IF NOT EXISTS type varchar(32) NULL;
+
+ALTER TABLE t_grotto DROP CONSTRAINT IF EXISTS t_grotto_type_check;
+ALTER TABLE t_grotto ADD CONSTRAINT t_grotto_type_check CHECK (
+  type IS NULL OR type IN ('SPELEOLOGY', 'CAVE_RESCUE', 'EDITION', 'RESEARCH', 'ADMINISTRATION', 'NATURE_CONSERVATION', 'LIBRARY')
+);
+
+-- The history keeps the type an organization had before each change
+CREATE OR REPLACE FUNCTION histo_update_grotto() RETURNS trigger AS $$
+DECLARE date_r timestamp;
+BEGIN --prise en compte du cas de la première modif d'un enregistrement
+if new.date_reviewed is null then date_r := NEW.date_inscription;
+else date_r := NEW.date_reviewed;
+end if;
+--si is_deleted change d'état c'est qu'on est face à une suppression ou une réactivation de la ligne, donc on n'historise pas !
+if NEW.is_deleted = OLD.is_deleted then --copie dans la table d'historisation
+INSERT INTO h_grotto (
+        id,
+        id_author,
+        id_reviewer,
+        county,
+        region,
+        city,
+        iso_3166_2,
+        postal_code,
+        address,
+        mail,
+        year_birth,
+        date_inscription,
+        date_reviewed,
+        latitude,
+        longitude,
+        custom_message,
+        is_official_partner,
+        url,
+        id_country,
+        picture_file_name,
+        type
+    )
+VALUES (
+        OLD.id,
+        OLD.id_author,
+        OLD.id_reviewer,
+        OLD.county,
+        OLD.region,
+        OLD.city,
+        OLD.iso_3166_2,
+        OLD.postal_code,
+        OLD.address,
+        OLD.mail,
+        OLD.year_birth,
+        OLD.date_inscription,
+        date_r,
+        OLD.latitude,
+        OLD.longitude,
+        OLD.custom_message,
+        OLD.is_official_partner,
+        OLD.url,
+        OLD.id_country,
+        OLD.picture_file_name,
+        OLD.type
+    );
+end if;
+--on insert la valeur de la date de modification dans t_grotto
+NEW.date_reviewed := now();
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER FUNCTION histo_update_grotto() OWNER TO gc_owner;
