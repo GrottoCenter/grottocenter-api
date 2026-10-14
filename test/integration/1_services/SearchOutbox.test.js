@@ -412,9 +412,12 @@ describe('searchOutbox', () => {
 
   describe('drain()', () => {
     let syncStub;
+    let clock;
 
     beforeEach(() => {
       syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
+      // Only Date: the database driver still needs real timers
+      clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     });
 
     afterEach(() => {
@@ -457,11 +460,52 @@ describe('searchOutbox', () => {
       should(await readOutbox()).eql([]);
     });
 
-    it('stops after its time budget', async () => {
+    it('stops between batches once its time budget is spent', async () => {
       await enqueue('devices', 1);
       await enqueue('devices', 2);
+      // The first batch spends the budget
+      syncStub.callsFake(async () => clock.tick(2000));
 
-      should(await drain({ batchSize: 1, timeBudgetMs: -1 })).equal(1);
+      should(await drain({ batchSize: 1, timeBudgetMs: 1000 })).equal(1);
+
+      should(syncStub.callCount).equal(1);
+      should(await readOutbox()).have.length(1);
+    });
+
+    // One batch, two collections: two sync chunks
+    it('keeps a batch whose fan-out outlasts the time budget', async () => {
+      await enqueue('devices', 1);
+      await enqueue('entrances', 2);
+      syncStub.callsFake(async () => clock.tick(2000));
+
+      should(await drain({ timeBudgetMs: 1000 })).equal(0);
+
+      should(syncStub.args).eql([['entrances', [2]]]);
+      should(await readOutbox()).have.length(2);
+    });
+
+    it('stops and keeps the batch when the job is aborted mid-fan-out', async () => {
+      await enqueue('devices', 1);
+      await enqueue('entrances', 2);
+      const controller = new AbortController();
+      syncStub.callsFake(async () => controller.abort(new Error('expired')));
+
+      await drain({ signal: controller.signal }).should.be.rejectedWith(
+        'expired'
+      );
+
+      should(syncStub.callCount).equal(1);
+      should(await readOutbox()).have.length(2);
+    });
+
+    it('keeps the batch when the job is aborted during its last sync', async () => {
+      await enqueue('devices', 1);
+      const controller = new AbortController();
+      syncStub.callsFake(async () => controller.abort(new Error('expired')));
+
+      await drain({ signal: controller.signal }).should.be.rejectedWith(
+        'expired'
+      );
 
       should(await readOutbox()).have.length(1);
     });
