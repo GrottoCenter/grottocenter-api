@@ -62,16 +62,6 @@ module.exports = async (req, res) => {
     );
   }
 
-  // eslint-disable-next-line no-inner-declarations
-  async function reafectField(model, hModel, field, replacement = null) {
-    await model
-      .update({ [field]: organizationId })
-      .set({ [field]: replacement });
-    await hModel
-      .update({ [field]: organizationId })
-      .set({ [field]: replacement });
-  }
-
   const mergeIntoId = parseInt(req.param('entityId'), 10);
   let shouldMergeInto = !Number.isNaN(mergeIntoId);
   let mergeIntoEntity;
@@ -162,18 +152,30 @@ module.exports = async (req, res) => {
       await TGrotto.updateOne(organizationId).set({ documents: [] });
     }
 
-    await reafectField(
-      TDocument,
-      HDocument,
-      'editor',
-      shouldMergeInto ? mergeIntoId : null
-    );
-    await reafectField(
-      TDocument,
-      HDocument,
-      'library',
-      shouldMergeInto ? mergeIntoId : null
-    );
+    // Documents edited or held by the organization go to the merge target, or
+    // lose the link. The t_document update trigger copies each old row into
+    // h_document under (id, date_reviewed): an update leaving date_reviewed
+    // untouched reuses the current review date, which the history may already
+    // hold. One statement setting date_reviewed touches each document once,
+    // under a key no history row can have yet (#1757).
+    const documentReplacement = shouldMergeInto ? mergeIntoId : null;
+    await sails.getDatastore().transaction(async (db) => {
+      await CommonService.query(
+        `UPDATE t_document SET
+           id_editor = CASE WHEN id_editor = $1 THEN $2 ELSE id_editor END,
+           id_library = CASE WHEN id_library = $1 THEN $2 ELSE id_library END,
+           date_reviewed = now()
+         WHERE id_editor = $1 OR id_library = $1`,
+        [organizationId, documentReplacement],
+        db
+      );
+      await HDocument.update({ editor: organizationId })
+        .set({ editor: documentReplacement })
+        .usingConnection(db);
+      await HDocument.update({ library: organizationId })
+        .set({ library: documentReplacement })
+        .usingConnection(db);
+    });
 
     await TGrotto.update({ redirectTo: organizationId }).set({
       redirectTo: shouldMergeInto ? mergeIntoId : null,
