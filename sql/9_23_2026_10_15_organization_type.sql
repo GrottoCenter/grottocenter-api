@@ -8,6 +8,9 @@
 -- nothing in the data tells a caving club from a publisher. The API gives
 -- SPELEOLOGY to an organization created without a type and never writes NULL
 -- itself. The values match config/constants/organization.js.
+--
+-- Apply after sql/9_22_2026_10_12_search_outbox.sql: the end of this file
+-- replaces the t_grotto triggers it creates.
 -- =============================================================================
 
 ALTER TABLE t_grotto ADD COLUMN IF NOT EXISTS type varchar(32) NULL;
@@ -81,3 +84,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 ALTER FUNCTION histo_update_grotto() OWNER TO gc_owner;
+
+-- Documents embed the type of their editor, library and author organizations
+-- in the search index: record the previous type so that a change re-indexes
+-- them (api/dbSync/searchOutbox.js), as is_deleted and redirect_to already do.
+-- Mirrors sql/9_22_2026_10_12_search_outbox.sql, which this replaces for t_grotto.
+CREATE OR REPLACE TRIGGER search_outbox_insert_delete
+  AFTER INSERT OR DELETE ON t_grotto FOR EACH ROW
+  EXECUTE FUNCTION search_outbox_enqueue('organization', 'is_deleted', 'redirect_to', 'type');
+CREATE OR REPLACE TRIGGER search_outbox_update
+  AFTER UPDATE ON t_grotto FOR EACH ROW
+  WHEN (OLD.* IS DISTINCT FROM NEW.*)
+  EXECUTE FUNCTION search_outbox_enqueue('organization', 'is_deleted', 'redirect_to', 'type');

@@ -956,6 +956,14 @@ const SEARCH_OUTBOX_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after SEARCH_OUTBOX_MIGRATION, whose t_grotto triggers it replaces
+const ORGANIZATION_TYPE_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_23_2026_10_15_organization_type.sql'),
+    'utf8'
+  )
+);
+
 module.exports = {
   forTestDatabase,
   UPDATE_SEQUENCES_QUERY,
@@ -976,4 +984,5 @@ module.exports = {
   CREATE_DOCUMENT_CHANGE_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
+  ORGANIZATION_TYPE_MIGRATION,
 };
