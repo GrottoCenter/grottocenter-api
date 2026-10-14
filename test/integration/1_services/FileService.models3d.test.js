@@ -4,6 +4,7 @@ const FileService = require('../../../api/services/FileService');
 
 describe('FileService.document - 3D model formats', () => {
   let mockUploadData;
+  let enqueue;
   let originalCredentials;
   const createdIds = [];
 
@@ -23,9 +24,11 @@ describe('FileService.document - 3D model formats', () => {
 
   beforeEach(() => {
     mockUploadData.resetHistory();
+    enqueue = sinon.stub(global.GlbThumbnailQueueService, 'enqueue').resolves();
   });
 
   afterEach(async () => {
+    enqueue.restore();
     await Promise.all(createdIds.map((id) => TFile.destroyOne(id)));
     createdIds.length = 0;
   });
@@ -76,5 +79,49 @@ describe('FileService.document - 3D model formats', () => {
       should(err.fileName).equal('cave-scan.fbx');
     }
     should(mockUploadData.called).be.false();
+  });
+
+  describe('GLB preview thumbnails', () => {
+    it('enqueues the thumbnail generation of a GLB file', async () => {
+      const created = await upload('cave-scan.glb');
+      should(enqueue.calledOnce).be.true();
+      should(enqueue.firstCall.args).eql([created.id]);
+      // Rendering happens later: the upload returns without thumbnails
+      should(created.thumbnailSmall).be.null();
+    });
+
+    it('does not enqueue anything for a glTF file', async () => {
+      await upload('cave-scan.gltf');
+      should(enqueue.called).be.false();
+    });
+
+    it('does not enqueue anything for other files', async () => {
+      await upload('survey.pdf');
+      should(enqueue.called).be.false();
+    });
+
+    it('still creates the file when the job cannot be enqueued', async () => {
+      enqueue.rejects(new Error('queue down'));
+      const logError = sinon.stub(sails.log, 'error');
+      const created = await upload('cave-scan.glb');
+      logError.restore();
+      should(created.fileName).equal('cave-scan.glb');
+      should(await TFile.findOne(created.id)).be.ok();
+    });
+
+    it('does not enqueue a file created inside a transaction', async () => {
+      const buffer = Buffer.from('model content');
+      await sails.getDatastore().transaction(async (db) => {
+        const created = await FileService.document.create(
+          { originalname: 'cave-scan.glb', buffer, size: buffer.length },
+          1,
+          true,
+          true,
+          db
+        );
+        createdIds.push(created.id);
+      });
+      should(enqueue.called).be.false();
+    });
   });
 });

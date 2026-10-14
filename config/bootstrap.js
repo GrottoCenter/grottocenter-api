@@ -120,6 +120,14 @@ module.exports.bootstrap = async function (done) {
     sails.log.warn('The weekly DB export will not run');
   }
 
+  // Rendered previews of uploaded GLB models
+  try {
+    await sails.services.glbthumbnailqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start GlbThumbnailQueueService:', err.message);
+    sails.log.warn('GLB uploads will have no thumbnail');
+  }
+
   // Real-time search indexing from the outbox the database triggers fill
   try {
     await sails.services.searchoutboxqueueservice.start();
