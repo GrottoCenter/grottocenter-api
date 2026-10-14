@@ -1,3 +1,4 @@
+const CommonService = require('../../../services/CommonService');
 const DocumentService = require('../../../services/DocumentService');
 const FileService = require('../../../services/FileService');
 const RightService = require('../../../services/RightService');
@@ -9,17 +10,44 @@ const {
   DOCUMENT_M2M_COLLECTIONS,
 } = require('../../../../config/constants/document');
 
+const validatedFields = (validationComment, validationAuthor) => ({
+  isValidated: true,
+  modifiedDocJson: null,
+  dateValidation: new Date(),
+  validationComment,
+  validator: validationAuthor,
+});
+
 async function markDocumentValidated(
   documentId,
   validationComment,
   validationAuthor
 ) {
-  await TDocument.updateOne(documentId).set({
-    isValidated: true,
-    modifiedDocJson: null,
-    dateValidation: new Date(),
-    validationComment,
-    validator: validationAuthor,
+  await TDocument.updateOne(documentId).set(
+    validatedFields(validationComment, validationAuthor)
+  );
+}
+
+// Rejecting a pending change also sets isValidated back to true, the same write
+// as accepting a new submission, so the change_document() trigger cannot tell
+// the two apart and would log the rejection as a change (#1781): an 'update'
+// credited to the last reviewer, or a 'create' of a refused submission.
+// app.document_skip_log makes the trigger skip it. SET LOCAL scopes the flag to
+// this transaction, so it reverts when the transaction ends.
+async function markDocumentRejected(
+  documentId,
+  validationComment,
+  validationAuthor
+) {
+  await sails.getDatastore().transaction(async (db) => {
+    await CommonService.query(
+      `SET LOCAL app.document_skip_log TO 'true'`,
+      [],
+      db
+    );
+    await TDocument.updateOne(documentId)
+      .set(validatedFields(validationComment, validationAuthor))
+      .usingConnection(db);
   });
 }
 
@@ -44,8 +72,8 @@ const MAX_APPLY_ATTEMPTS = 2;
 // database state. The document returns to its last validated state and the
 // reason is recorded so the author and moderator can see why.
 //
-// isValidated must be restored to true, matching the manual-rejection path in
-// markDocumentValidated. Submitting a modification sets isValidated false and
+// isValidated must be restored to true, matching the manual-rejection path:
+// both go through markDocumentRejected. Submitting a modification sets isValidated false and
 // dateValidation null (DocumentService.updateDocument); rejecting it sets
 // dateValidation but leaves the flag false, and find-all.js then returns
 // neither — the default list requires isValidated true, and the moderation queue
@@ -57,13 +85,7 @@ async function autoRejectModification(documentId, reason, validationAuthor) {
     0,
     VALIDATION_COMMENT_MAX_LENGTH
   );
-  await TDocument.updateOne(documentId).set({
-    isValidated: true,
-    modifiedDocJson: null,
-    validationComment: comment,
-    validator: validationAuthor,
-    dateValidation: new Date(),
-  });
+  await markDocumentRejected(documentId, comment, validationAuthor);
   sails.log.warn(
     `Document ${documentId} modification auto-rejected: ${reason}`
   );
@@ -337,7 +359,7 @@ async function notifyRejectionSafely(documentId, userId, comment) {
 async function processDocument(document, change, userId) {
   if (!change.isValidated) {
     // Validate it but do not update its fields (reject change)
-    await markDocumentValidated(document.id, change.validationComment, userId);
+    await markDocumentRejected(document.id, change.validationComment, userId);
     await notifyRejectionSafely(document.id, userId, change.validationComment);
     return { status: OUTCOME.REJECTED, reason: null };
   }

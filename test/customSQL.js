@@ -856,6 +856,63 @@ DROP TRIGGER IF EXISTS last_change_rigging ON t_rigging;
 CREATE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();
 `;
 
+// Mirrors sql/9_22_2026_10_12_fix_change_document_trigger.sql (#1781). Only the
+// t_last_change trigger is installed: the document history triggers are not
+// needed by any test.
+const CREATE_DOCUMENT_CHANGE_TRIGGER = `
+CREATE OR REPLACE FUNCTION change_document() RETURNS trigger AS $$
+DECLARE type_change varchar(20);
+DECLARE id_author int4;
+DECLARE entity_name text;
+BEGIN
+IF current_setting('app.document_skip_log', true) = 'true' THEN RETURN NEW; END IF;
+type_change := '';
+if TG_OP = 'INSERT' then
+    type_change := 'create';
+    id_author := NEW.id_author;
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = true then
+    type_change := 'delete';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = false then
+    type_change := 'restore';
+    id_author := COALESCE(NEW.id_reviewer, NEW.id_author);
+elsif NEW.is_deleted = false AND OLD.is_validated IS DISTINCT FROM true AND NEW.is_validated = true then
+    if NEW.id_reviewer is null then
+        type_change := 'create';
+        id_author := NEW.id_author;
+    else
+        type_change := 'update';
+        id_author := NEW.id_reviewer;
+    end if;
+end if;
+-- Only validated documents are public
+if type_change != '' AND NEW.is_validated = true then
+SELECT tdesc.title INTO entity_name FROM t_description tdesc WHERE tdesc.id_document = NEW.id LIMIT 1;
+INSERT INTO t_last_change (
+        type_entity,
+        type_change,
+        date_change,
+        id_entity,
+        id_author,
+        name
+    )
+VALUES (
+        'document',
+        type_change,
+        now(),
+        NEW.id,
+        id_author,
+        entity_name
+    );
+end if;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS last_change_document ON t_document;
+CREATE TRIGGER last_change_document BEFORE INSERT OR UPDATE ON t_document FOR EACH ROW EXECUTE PROCEDURE change_document();
+`;
+
 // The histo_delete() function (defined in CREATE_GUIDELINE_TRIGGERS) converts
 // a DELETE on is_deleted=false rows into an UPDATE SET is_deleted=true,
 // matching the soft-delete semantics of the production schema. This trigger
@@ -893,5 +950,6 @@ module.exports = {
   CREATE_GUIDELINE_TRIGGERS,
   CREATE_COMMENT_TRIGGERS,
   CREATE_SUB_ENTITY_TRIGGERS,
+  CREATE_DOCUMENT_CHANGE_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
 };
