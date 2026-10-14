@@ -11,7 +11,8 @@ const syncUtils = require('./utils');
 
 const BATCH_SIZE = 1000;
 const SYNC_CHUNK_SIZE = 1000;
-// No sync starts after the budget, and one can last 8 minutes (4 tries of 120
+// No Typesense request starts after the budget (syncDocuments asks before its
+// import and before its removals), and one can last 8 minutes (4 tries of 120
 // seconds, config/typesense.js): 5 + 8 stays under the 15-minute queue expiry
 // (SearchOutboxQueueService), so a drain never overlaps the next one
 const TIME_BUDGET_MS = 5 * 60 * 1000;
@@ -330,17 +331,23 @@ async function expand(rows) {
 }
 
 // Re-index the targets one chunk at a time. Returns false, without finishing,
-// when told to stop before a chunk.
+// when told to stop before a chunk or before a step of one.
 async function syncTargets(targets, shouldStop) {
   for (const [collectionName, targetIds] of Object.entries(targets)) {
     const all = [...targetIds].sort((a, b) => a - b);
     for (let i = 0; i < all.length; i += SYNC_CHUNK_SIZE) {
       if (shouldStop()) return false;
-      // eslint-disable-next-line no-await-in-loop
-      await SearchService.syncDocuments(
-        collectionName,
-        all.slice(i, i + SYNC_CHUNK_SIZE)
-      );
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await SearchService.syncDocuments(
+          collectionName,
+          all.slice(i, i + SYNC_CHUNK_SIZE),
+          { shouldStop }
+        );
+      } catch (err) {
+        if (err.code === 'E_SEARCH_SYNC_STOPPED') return false;
+        throw err;
+      }
     }
   }
   return true;
