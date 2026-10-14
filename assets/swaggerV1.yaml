@@ -10682,8 +10682,6 @@ components:
         manufacturerUrl:
           type: string
           nullable: true
-        isDeleted:
-          type: boolean
 
     DeviceCreate:
       type: object

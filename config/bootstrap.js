@@ -72,7 +72,6 @@ module.exports.bootstrap = async function (done) {
     originalWarn.apply(console, args);
   };
 
-  dbSync.registerMakeDbSync();
   sesSuppressionPoller.registerPoller();
   await dbSync.ensureSearchDbIsPopulated();
 
@@ -126,7 +125,18 @@ module.exports.bootstrap = async function (done) {
     await sails.services.searchoutboxqueueservice.start();
   } catch (err) {
     sails.log.error('Failed to start SearchOutboxQueueService:', err.message);
-    sails.log.warn('Search will only be updated by the weekly full sync');
+    sails.log.warn('Search will only be updated by the monthly reconciliation');
+  }
+
+  // Monthly search reconciliation, the safety net behind the outbox
+  try {
+    await sails.services.searchreconcilequeueservice.start();
+  } catch (err) {
+    sails.log.error(
+      'Failed to start SearchReconcileQueueService:',
+      err.message
+    );
+    sails.log.warn('The monthly search reconciliation will not run');
   }
 
   // Fire-and-forget: load coordinates snapshot without blocking server startup

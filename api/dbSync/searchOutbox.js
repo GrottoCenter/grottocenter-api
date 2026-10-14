@@ -8,6 +8,7 @@
 const CommonService = require('../services/CommonService');
 const SearchService = require('../services/SearchService');
 const syncUtils = require('./utils');
+const { withSearchWriteLock } = require('./searchWriteLock');
 
 const BATCH_SIZE = 1000;
 const SYNC_CHUNK_SIZE = 1000;
@@ -330,22 +331,33 @@ async function expand(rows) {
   return targets;
 }
 
-// Re-index the targets one chunk at a time. Returns false, without finishing,
-// when told to stop before a chunk or before a step of one.
-async function syncTargets(targets, shouldStop) {
+// Re-index the targets one chunk at a time, each under the search write lock.
+// Returns false, without finishing, when out of time before a chunk or before a
+// step of one; the wait for the lock (a reconciliation page holds it) counts
+// against the deadline.
+async function syncTargets(targets, { outOfTime, deadline }) {
   for (const [collectionName, targetIds] of Object.entries(targets)) {
     const all = [...targetIds].sort((a, b) => a - b);
     for (let i = 0; i < all.length; i += SYNC_CHUNK_SIZE) {
-      if (shouldStop()) return false;
+      if (outOfTime()) return false;
       try {
         // eslint-disable-next-line no-await-in-loop
-        await SearchService.syncDocuments(
-          collectionName,
-          all.slice(i, i + SYNC_CHUNK_SIZE),
-          { shouldStop }
+        await withSearchWriteLock(
+          () =>
+            SearchService.syncDocuments(
+              collectionName,
+              all.slice(i, i + SYNC_CHUNK_SIZE),
+              { shouldStop: outOfTime }
+            ),
+          { timeoutMs: deadline - Date.now() }
         );
       } catch (err) {
-        if (err.code === 'E_SEARCH_SYNC_STOPPED') return false;
+        if (
+          err.code === 'E_SEARCH_LOCK_TIMEOUT' ||
+          err.code === 'E_SEARCH_SYNC_STOPPED'
+        ) {
+          return false;
+        }
         throw err;
       }
     }
@@ -385,7 +397,10 @@ async function drain({
     if (rows.length === 0) break;
 
     // eslint-disable-next-line no-await-in-loop
-    const synced = await syncTargets(await expand(rows), outOfTime);
+    const synced = await syncTargets(await expand(rows), {
+      outOfTime,
+      deadline,
+    });
     signal?.throwIfAborted();
     if (!synced) {
       sails.log.warn(

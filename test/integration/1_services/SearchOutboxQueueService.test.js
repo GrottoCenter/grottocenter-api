@@ -38,8 +38,8 @@ describe('SearchOutboxQueueService', () => {
         policy: 'exclusive',
         retryLimit: 0,
       });
-      // Longer than the 10-minute drain budget
-      should(queueOptions.expireInSeconds).be.above(10 * 60);
+      // The 5-minute drain budget, plus one 8-minute sync started just before
+      should(queueOptions.expireInSeconds).be.above(13 * 60);
 
       should(boss.schedule.calledOnce).be.true();
       should(boss.schedule.firstCall.args).eql([

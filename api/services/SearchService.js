@@ -105,13 +105,9 @@ async function syncDocuments(
   }
   if (removedIds.length > 0) {
     stopIfAsked();
-    // Every removal settles before a failure is reported: a caller that
-    // retries must not race a removal still in flight
-    const results = await Promise.allSettled(
-      removedIds.map((id) => typesense.deleteDocument(collectionName, id))
-    );
-    const failure = results.find((r) => r.status === 'rejected');
-    if (failure) throw failure.reason;
+    // Batches go one after another (typesense.deleteDocuments): none is still
+    // in flight when this returns or throws, so a retry cannot race one
+    await typesense.deleteDocuments(collectionName, removedIds);
   }
 }
 

@@ -957,7 +957,6 @@ const c = {
     serialNumber: source.serialNumber,
     productUrl: source.productUrl,
     manufacturerUrl: source.manufacturerUrl,
-    isDeleted: source.isDeleted,
     author: source.authorId
       ? { id: source.authorId, nickname: source.authorNickname }
       : convertIfObject(source.author, c.toSimpleCaver),

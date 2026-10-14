@@ -131,14 +131,14 @@ describe('Device features', () => {
         });
 
         await supertest(sails.hooks.http.app)
-          .get('/api/v1/devices/search?filter[isDeleted]=false')
+          .get('/api/v1/devices/search?filter[authorId]=1')
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200);
 
         should(stub.calledOnce).be.true();
         should(stub.firstCall.args[0].filter).deepEqual({
-          isDeleted: 'false',
+          authorId: '1',
         });
       });
     });

@@ -33,8 +33,8 @@ describe('SearchService', () => {
       typesenseStub.importDocuments = sinon
         .stub(typesense, 'importDocuments')
         .resolves();
-      typesenseStub.deleteDocument = sinon
-        .stub(typesense, 'deleteDocument')
+      typesenseStub.deleteDocuments = sinon
+        .stub(typesense, 'deleteDocuments')
         .resolves();
     });
 
@@ -49,17 +49,16 @@ describe('SearchService', () => {
       should(formater).equal(
         SearchService.allEntities.organizations.importFormater
       );
-      should(typesenseStub.deleteDocument.called).be.false();
+      should(typesenseStub.deleteDocuments.called).be.false();
     });
 
-    it('should delete the ids that are no longer indexed', async () => {
-      await SearchService.syncDocuments('organizations', [1, 424242]);
+    it('should delete the ids that are no longer indexed, in one batch', async () => {
+      await SearchService.syncDocuments('organizations', [1, 424242, 424243]);
 
       should(typesenseStub.importDocuments.calledOnce).be.true();
-      should(typesenseStub.deleteDocument.calledOnce).be.true();
-      should(
-        typesenseStub.deleteDocument.calledWith('organizations', 424242)
-      ).be.true();
+      should(typesenseStub.deleteDocuments.args).eql([
+        ['organizations', [424242, 424243]],
+      ]);
     });
 
     it('should not import when no document is built', async () => {
@@ -67,15 +66,14 @@ describe('SearchService', () => {
       await SearchService.syncDocuments('devices', [2]);
 
       should(typesenseStub.importDocuments.called).be.false();
-      should(typesenseStub.deleteDocument.calledOnce).be.true();
-      should(typesenseStub.deleteDocument.calledWith('devices', 2)).be.true();
+      should(typesenseStub.deleteDocuments.args).eql([['devices', [2]]]);
     });
 
     it('should not sync an invalid collection', async () => {
       await SearchService.syncDocuments('invalid_entity', [1]);
 
       should(typesenseStub.importDocuments.called).be.false();
-      should(typesenseStub.deleteDocument.called).be.false();
+      should(typesenseStub.deleteDocuments.called).be.false();
     });
 
     it('should throw when the import fails, so the caller can retry', async () => {
@@ -88,40 +86,11 @@ describe('SearchService', () => {
     });
 
     it('should throw when a removal fails', async () => {
-      typesenseStub.deleteDocument.rejects(new Error('Delete failed'));
+      typesenseStub.deleteDocuments.rejects(new Error('Delete failed'));
 
       await SearchService.syncDocuments('devices', [2]).should.be.rejectedWith(
         'Delete failed'
       );
-    });
-
-    it('should report a failed removal only once every removal has settled', async () => {
-      let finishSecond;
-      typesenseStub.deleteDocument
-        .onFirstCall()
-        .rejects(new Error('Delete failed'))
-        .onSecondCall()
-        .callsFake(
-          () =>
-            new Promise((resolve) => {
-              finishSecond = resolve;
-            })
-        );
-
-      let settled = false;
-      const syncing = SearchService.syncDocuments(
-        'organizations',
-        [424242, 424243]
-      ).finally(() => {
-        settled = true;
-      });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 50);
-      });
-      should(settled).be.false();
-
-      finishSecond();
-      await syncing.should.be.rejectedWith('Delete failed');
     });
 
     // Organization 1 is indexed, 424242 is not: an import, then a removal
@@ -134,7 +103,7 @@ describe('SearchService', () => {
         }).should.be.rejectedWith(stopped);
 
         should(typesenseStub.importDocuments.called).be.false();
-        should(typesenseStub.deleteDocument.called).be.false();
+        should(typesenseStub.deleteDocuments.called).be.false();
       });
 
       it('should not start the removals once stopped during the import', async () => {
@@ -148,7 +117,7 @@ describe('SearchService', () => {
         }).should.be.rejectedWith(stopped);
 
         should(typesenseStub.importDocuments.calledOnce).be.true();
-        should(typesenseStub.deleteDocument.called).be.false();
+        should(typesenseStub.deleteDocuments.called).be.false();
       });
     });
   });

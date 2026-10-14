@@ -6,7 +6,6 @@ const query = `
       d.name,
       d.brand_name AS "brandName",
       d.serial_number AS "serialNumber",
-      d.is_deleted AS "isDeleted",
       d.id_author AS "authorId",
       c.nickname AS "authorNickname"
     FROM t_device AS d
@@ -32,6 +31,7 @@ function importFormater(d) {
 
 module.exports = {
   name: 'devices',
+  sourceTable: 't_device',
   shouldExportToFile: true,
   query,
   processRows,
@@ -44,7 +44,6 @@ module.exports = {
         { name: 'name', type: 'string', sort: true },
         { name: 'brandName', type: 'string', optional: true, sort: true },
         { name: 'serialNumber', type: 'string', optional: true },
-        { name: 'isDeleted', type: 'bool' },
         { name: 'authorId', type: 'string' },
         { name: 'authorNickname', type: 'string', optional: true },
       ],
