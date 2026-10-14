@@ -10,21 +10,14 @@
 const CommonService = require('../services/CommonService');
 const SearchService = require('../services/SearchService');
 const typesense = require('../../config/typesense');
-const { getEntity } = require('./searchDocuments');
+const { ENTITIES, getEntity } = require('./searchDocuments');
 const { withSearchWriteLock } = require('./searchWriteLock');
 
 const PAGE_SIZE = 1000;
 
-// Same order as the rebuild
-const COLLECTIONS = [
-  'massifs',
-  'entrances',
-  'caves',
-  'documents',
-  'organizations',
-  'persons',
-  'devices',
-];
+// Every search collection: a new one is reconciled as soon as it is indexed.
+// The order does not matter in place
+const COLLECTIONS = Object.keys(ENTITIES);
 
 const syncUnderLock = (collectionName, ids) =>
   withSearchWriteLock(() => SearchService.syncDocuments(collectionName, ids));

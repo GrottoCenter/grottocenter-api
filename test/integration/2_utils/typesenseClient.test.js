@@ -19,6 +19,22 @@ describe('config/typesense', () => {
       should(deleteStub.args).eql([[{ filter_by: 'id:[3,424242]' }]]);
     });
 
+    it('splits a long batch so the ids fit in the request URL', async () => {
+      const deleteStub = sinon
+        .stub(Documents.prototype, 'delete')
+        .resolves({ num_deleted: 0 });
+      const ids = Array.from({ length: 600 }, (_, i) => 100001 + i);
+
+      await typesense.deleteDocuments('persons', ids);
+
+      // 250 ids per request
+      should(deleteStub.args.map(([{ filter_by: f }]) => f)).eql([
+        `id:[${ids.slice(0, 250).join(',')}]`,
+        `id:[${ids.slice(250, 500).join(',')}]`,
+        `id:[${ids.slice(500).join(',')}]`,
+      ]);
+    });
+
     // A caller that retries must not race a removal still in flight
     it('sends each batch once the previous one is done, and stops at a failure', async () => {
       const ids = Array.from({ length: 600 }, (_, i) => 100001 + i);
