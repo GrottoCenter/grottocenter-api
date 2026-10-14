@@ -141,7 +141,11 @@ module.exports = async (req, res) => {
 
     // The edit is applied without going through validation, so the
     // change_document() trigger does not log it: record it for the editor.
-    await RecentChangeService.logDocumentUpdate(documentId, req.token.id, db);
+    // A pending document validated by this edit is already logged by the
+    // trigger as its creation, so only edits of validated documents count.
+    if (currentDocument.isValidated) {
+      await RecentChangeService.logDocumentUpdate(documentId, req.token.id, db);
+    }
   };
 
   try {

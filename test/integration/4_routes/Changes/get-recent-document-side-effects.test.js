@@ -278,6 +278,27 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       should(await documentChanges(document.id)).have.length(0);
     });
 
+    it('should log a direct edit that validates a document only as its creation', async () => {
+      const document = await TDocument.create({
+        author: ADMIN_ID,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${document.id}/new-entities`)
+        .send({ document: { isValidated: true, pages: '20' } })
+        .set('Authorization', userToken)
+        .expect(200);
+
+      const updated = await TDocument.findOne(document.id);
+      should(updated).match({ isValidated: true, pages: '20' });
+      const changes = await documentChanges(document.id);
+      should(changes).have.length(1);
+      should(changes[0]).match({ type_change: 'create', id_author: ADMIN_ID });
+    });
+
     it('should not show the side effects in the recent changes', async () => {
       const caveId = (await TCave.create({}).fetch()).id;
       const targetCaveId = (await TCave.create({}).fetch()).id;
