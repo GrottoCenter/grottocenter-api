@@ -4,6 +4,7 @@ const sinon = require('sinon');
 // Sails re-requires when it lifts are different objects
 const CommonService = require('../../../api/services/CommonService');
 const SearchService = require('../../../api/services/SearchService');
+const typesense = require('../../../config/typesense');
 const { expand, drain } = require('../../../api/dbSync/searchOutbox');
 
 const clearOutbox = () => CommonService.query('DELETE FROM t_search_outbox');
@@ -414,6 +415,9 @@ describe('searchOutbox', () => {
     let syncStub;
     let clock;
 
+    // The collection and ids of each sync, without its options
+    const syncedChunks = () => syncStub.args.map((args) => args.slice(0, 2));
+
     beforeEach(() => {
       syncStub = sinon.stub(SearchService, 'syncDocuments').resolves();
       // Only Date: the database driver still needs real timers
@@ -430,7 +434,7 @@ describe('searchOutbox', () => {
 
       should(await drain()).equal(2);
 
-      should(syncStub.args).eql([
+      should(syncedChunks()).eql([
         ['documents', [3, 4]],
         ['devices', [1]],
       ]);
@@ -453,7 +457,7 @@ describe('searchOutbox', () => {
 
       should(await drain({ batchSize: 2 })).equal(3);
 
-      should(syncStub.args).eql([
+      should(syncedChunks()).eql([
         ['devices', [1, 2]],
         ['devices', [3]],
       ]);
@@ -480,7 +484,7 @@ describe('searchOutbox', () => {
 
       should(await drain({ timeBudgetMs: 1000 })).equal(0);
 
-      should(syncStub.args).eql([['entrances', [2]]]);
+      should(syncedChunks()).eql([['entrances', [2]]]);
       should(await readOutbox()).have.length(2);
     });
 
@@ -508,6 +512,55 @@ describe('searchOutbox', () => {
       );
 
       should(await readOutbox()).have.length(1);
+    });
+
+    // Device 1 is live, device 2 soft-deleted: one chunk imports, then removes
+    it('keeps the batch and starts no removal when aborted during the import', async () => {
+      syncStub.restore();
+      const controller = new AbortController();
+      const importStub = sinon
+        .stub(typesense, 'importDocuments')
+        .callsFake(async () => controller.abort(new Error('expired')));
+      const deleteStub = sinon.stub(typesense, 'deleteDocument').resolves();
+      await enqueue('devices', 1);
+      await enqueue('devices', 2);
+
+      await drain({ signal: controller.signal }).should.be.rejectedWith(
+        'expired'
+      );
+
+      should(importStub.callCount).equal(1);
+      should(deleteStub.called).be.false();
+      should(await readOutbox()).have.length(2);
+    });
+
+    it('waits for the removals under way when aborted during them', async () => {
+      syncStub.restore();
+      const controller = new AbortController();
+      sinon.stub(typesense, 'importDocuments').resolves();
+      let finishRemoval;
+      sinon.stub(typesense, 'deleteDocument').callsFake(
+        () =>
+          new Promise((resolve) => {
+            controller.abort(new Error('expired'));
+            finishRemoval = resolve;
+          })
+      );
+      await enqueue('devices', 1);
+      await enqueue('devices', 2);
+
+      let settled = false;
+      const draining = drain({ signal: controller.signal }).finally(() => {
+        settled = true;
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+      should(settled).be.false();
+
+      finishRemoval();
+      await draining.should.be.rejectedWith('expired');
+      should(await readOutbox()).have.length(2);
     });
 
     it('does nothing on an empty outbox', async () => {

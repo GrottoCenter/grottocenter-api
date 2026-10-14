@@ -94,6 +94,63 @@ describe('SearchService', () => {
         'Delete failed'
       );
     });
+
+    it('should report a failed removal only once every removal has settled', async () => {
+      let finishSecond;
+      typesenseStub.deleteDocument
+        .onFirstCall()
+        .rejects(new Error('Delete failed'))
+        .onSecondCall()
+        .callsFake(
+          () =>
+            new Promise((resolve) => {
+              finishSecond = resolve;
+            })
+        );
+
+      let settled = false;
+      const syncing = SearchService.syncDocuments(
+        'organizations',
+        [424242, 424243]
+      ).finally(() => {
+        settled = true;
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 50);
+      });
+      should(settled).be.false();
+
+      finishSecond();
+      await syncing.should.be.rejectedWith('Delete failed');
+    });
+
+    // Organization 1 is indexed, 424242 is not: an import, then a removal
+    describe('when told to stop', () => {
+      const stopped = { code: 'E_SEARCH_SYNC_STOPPED' };
+
+      it('should neither import nor remove when stopped from the start', async () => {
+        await SearchService.syncDocuments('organizations', [1, 424242], {
+          shouldStop: () => true,
+        }).should.be.rejectedWith(stopped);
+
+        should(typesenseStub.importDocuments.called).be.false();
+        should(typesenseStub.deleteDocument.called).be.false();
+      });
+
+      it('should not start the removals once stopped during the import', async () => {
+        let stop = false;
+        typesenseStub.importDocuments.callsFake(async () => {
+          stop = true;
+        });
+
+        await SearchService.syncDocuments('organizations', [1, 424242], {
+          shouldStop: () => stop,
+        }).should.be.rejectedWith(stopped);
+
+        should(typesenseStub.importDocuments.calledOnce).be.true();
+        should(typesenseStub.deleteDocument.called).be.false();
+      });
+    });
   });
 
   describe('multiCollectionsSearch()', () => {

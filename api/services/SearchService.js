@@ -68,27 +68,51 @@ async function isAlive() {
  * Bring the search documents of the given ids up to date from the database:
  * upsert those the full rebuild would index, remove the others.
  * Throws when Typesense cannot be reached, so the caller can retry; a document
- * Typesense rejects is only logged (typesense.importDocuments).
+ * Typesense rejects is only logged (typesense.importDocuments). It only
+ * returns or throws once no request it sent is still running.
  *
  * @param {string} collectionName search collection (entrances, caves…)
  * @param {Array<number|string>} ids
+ * @param {Object} [options]
+ * @param {Function} [options.shouldStop] asked before each step that calls
+ *   Typesense (the import, the removals): when it returns true, the sync
+ *   throws an error with `code: 'E_SEARCH_SYNC_STOPPED'` instead
  */
-async function syncDocuments(collectionName, ids) {
+async function syncDocuments(
+  collectionName,
+  ids,
+  { shouldStop = () => false } = {}
+) {
   if (!allEntitiesKeys.includes(collectionName)) return;
+  const stopIfAsked = () => {
+    if (shouldStop()) {
+      throw Object.assign(new Error('Search sync stopped'), {
+        code: 'E_SEARCH_SYNC_STOPPED',
+      });
+    }
+  };
   const { documents, removedIds } = await searchDocuments.planSync(
     collectionName,
     ids
   );
   if (documents.length > 0) {
+    stopIfAsked();
     await typesense.importDocuments(
       collectionName,
       documents,
       allEntities[collectionName].importFormater
     );
   }
-  await Promise.all(
-    removedIds.map((id) => typesense.deleteDocument(collectionName, id))
-  );
+  if (removedIds.length > 0) {
+    stopIfAsked();
+    // Every removal settles before a failure is reported: a caller that
+    // retries must not race a removal still in flight
+    const results = await Promise.allSettled(
+      removedIds.map((id) => typesense.deleteDocument(collectionName, id))
+    );
+    const failure = results.find((r) => r.status === 'rejected');
+    if (failure) throw failure.reason;
+  }
 }
 
 async function multiCollectionsSearch({
