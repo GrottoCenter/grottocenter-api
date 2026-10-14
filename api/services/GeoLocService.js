@@ -1,3 +1,7 @@
+const {
+  MAP_ORGANIZATION_TYPES,
+} = require('../../config/constants/organization');
+
 const QUALITY_COLUMNS = [
   'general_latest_date_of_update',
   'general_nb_contributions',
@@ -377,6 +381,7 @@ const formatGrottos = (grottos) =>
   grottos.map((grotto) => ({
     id: grotto.id,
     name: grotto.name,
+    type: grotto.type ?? null,
     address: grotto.address,
     longitude: parseFloat(grotto.longitude),
     latitude: parseFloat(grotto.latitude),
@@ -674,6 +679,9 @@ module.exports = {
         '>': southWestBound.lng,
         '<': northEastBound.lng,
       },
+      // Publishers, libraries and the like have no place on a caving map.
+      // Organizations whose type is not set yet stay on it until classified.
+      or: [{ type: { in: [...MAP_ORGANIZATION_TYPES] } }, { type: null }],
     };
     const grottos = await TGrotto.find(parameters);
     await NameService.setNames(grottos, 'grotto');

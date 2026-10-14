@@ -509,6 +509,21 @@ describe('Geoloc features', () => {
         })
         .expect(200, done);
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    it('should return the type of each organization and leave publishers out', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/organizations')
+        .set('Accept', 'application/json')
+        .query({ sw_lat: 48, sw_lng: 2, ne_lat: 57, ne_lng: 3 })
+        .expect(200);
+      should(res.body.map((o) => o.id).sort()).eql([1, 3]);
+      should(res.body.find((o) => o.id === 1)).have.property(
+        'type',
+        'SPELEOLOGY'
+      );
+      should(res.body.find((o) => o.id === 3)).have.property('type', null);
+    });
   });
 
   describe('count entrances', () => {

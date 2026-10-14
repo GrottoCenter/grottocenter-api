@@ -248,6 +248,36 @@ describe('GeoLocService', () => {
       );
       should(grottos).be.an.Array();
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    it('should keep caving and untyped organizations and leave the others out', async () => {
+      // Fixtures: 1 is SPELEOLOGY and 2 an EDITION, both near Paris; 3 has no
+      // type, in Belgium's latitude band
+      const grottos = await GeoLocService.getGrottosMap(
+        { lat: 48, lng: 2 },
+        { lat: 57, lng: 3 }
+      );
+      const byId = Object.fromEntries(grottos.map((g) => [g.id, g]));
+      should(byId[1]).have.property('type', 'SPELEOLOGY');
+      should(byId[3]).have.property('type', null);
+      should(byId).not.have.property('2');
+    });
+
+    it('should show a cave rescue organization', async () => {
+      await TGrotto.updateOne({ id: 2 }).set({ type: 'CAVE_RESCUE' });
+      try {
+        const grottos = await GeoLocService.getGrottosMap(
+          { lat: 48, lng: 2 },
+          { lat: 49, lng: 3 }
+        );
+        should(grottos.find((g) => g.id === 2)).have.property(
+          'type',
+          'CAVE_RESCUE'
+        );
+      } finally {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+      }
+    });
   });
 
   describe('getNetworksMap()', () => {
