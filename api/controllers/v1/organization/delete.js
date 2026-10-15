@@ -8,6 +8,14 @@ const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
 const readBoolParam = require('../../../utils/readBoolParam');
 
+// Geo junction tables referencing t_grotto, with their geo column. Constants
+// only: they are interpolated into SQL.
+const GEO_JUNCTIONS = [
+  ['j_organization_country', 'id_country'],
+  ['j_organization_region', 'id_region'],
+  ['j_organization_massif', 'id_massif'],
+];
+
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
     req.token.groups,
@@ -89,8 +97,29 @@ module.exports = async (req, res) => {
     // then re-point the remainder. Both statements run in a transaction: a
     // failure between them would delete the shared caves without ever handing
     // the rest over to the survivor. Without a merge target, drop them all.
+    // Country, region and massif associations follow the same rule, deduped
+    // against their (id_grotto, id_<geo>) unique constraint (#1783).
     if (shouldMergeInto) {
       await sails.getDatastore().transaction(async (db) => {
+        for (const [table, geoColumn] of GEO_JUNCTIONS) {
+          // eslint-disable-next-line no-await-in-loop
+          await CommonService.query(
+            `DELETE FROM ${table} d
+               WHERE d.id_grotto = $1
+                 AND EXISTS (
+                   SELECT 1 FROM ${table} k
+                   WHERE k.id_grotto = $2 AND k.${geoColumn} = d.${geoColumn}
+                 )`,
+            [organizationId, mergeIntoId],
+            db
+          );
+          // eslint-disable-next-line no-await-in-loop
+          await CommonService.query(
+            `UPDATE ${table} SET id_grotto = $2 WHERE id_grotto = $1`,
+            [organizationId, mergeIntoId],
+            db
+          );
+        }
         await CommonService.query(
           `DELETE FROM j_grotto_cave_explorer d
              WHERE d.id_grotto = $1
@@ -111,6 +140,9 @@ module.exports = async (req, res) => {
       });
     } else {
       await JGrottoCaveExplorer.destroy({ grotto: organizationId });
+      await JOrganizationCountry.destroy({ grotto: organizationId });
+      await JOrganizationRegion.destroy({ grotto: organizationId });
+      await JOrganizationMassif.destroy({ grotto: organizationId });
     }
 
     // Authorship links must be read uncapped and straight from the association:
