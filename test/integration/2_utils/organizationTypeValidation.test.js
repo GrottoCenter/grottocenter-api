@@ -14,12 +14,25 @@ describe('organizationTypeValidation', () => {
       }
     });
 
-    it('should accept an omitted type', () => {
+    it('should accept an omitted type when it is not required', () => {
       should(validateOrganizationType(undefined)).be.null();
+    });
+
+    it('should reject an omitted type when it is required', () => {
+      const result = validateOrganizationType(undefined, { required: true });
+      should(result).containEql('You must provide the organization type');
+      should(result).containEql(ORGANIZATION_TYPE_VALUES.join(', '));
+    });
+
+    it('should accept a type of the list when it is required', () => {
+      should(validateOrganizationType('LIBRARY', { required: true })).be.null();
     });
 
     it('should reject null, since a type cannot be cleared', () => {
       should(validateOrganizationType(null)).containEql('null');
+      should(validateOrganizationType(null, { required: true })).containEql(
+        'Invalid organization type'
+      );
     });
 
     it('should reject an unknown type and list the allowed ones', () => {

@@ -5,9 +5,9 @@
 -- =============================================================================
 --
 -- Organizations that exist before this migration keep a NULL type ("not set"):
--- nothing in the data tells a caving club from a publisher. The API gives
--- SPELEOLOGY to an organization created without a type and never writes NULL
--- itself. The values match config/constants/organization.js.
+-- nothing in the data tells a caving club from a publisher. The API requires a
+-- type to create an organization and never writes NULL itself. The values
+-- match config/constants/organization.js.
 --
 -- Apply after sql/9_22_2026_10_12_search_outbox.sql: the end of this file
 -- replaces the t_grotto triggers it creates.
