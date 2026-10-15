@@ -73,6 +73,31 @@ describe('glbRenderer', () => {
       should(g).equal(0);
     });
 
+    it('multiplies the alpha mask by the vertex alpha', async () => {
+      // Hidden by its vertex alpha: nothing is drawn
+      await should(
+        renderGlb(
+          await cubeGlb({ vertexColor: [1, 1, 1, 0], alphaMode: 'MASK' })
+        )
+      ).be.rejectedWith(GlbRenderError, { message: /covers no pixel/ });
+
+      const pixels = await readPixels(
+        await renderGlb(
+          await cubeGlb({ vertexColor: [1, 0, 0, 1], alphaMode: 'MASK' })
+        )
+      );
+      should(center(pixels).a).equal(255);
+      should(center(pixels).r).be.above(100);
+    });
+
+    it('ignores the vertex alpha of an opaque material', async () => {
+      const pixels = await readPixels(
+        await renderGlb(await cubeGlb({ vertexColor: [0, 1, 0, 0] }))
+      );
+      should(center(pixels).a).equal(255);
+      should(center(pixels).g).be.above(100);
+    });
+
     it('decodes a Draco compressed mesh', async () => {
       const glb = await cubeGlb({ draco: true, baseColor: [1, 0, 0, 1] });
       should(Buffer.from(glb).includes('KHR_draco_mesh_compression')).be.true();

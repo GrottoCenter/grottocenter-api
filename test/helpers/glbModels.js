@@ -65,7 +65,9 @@ const getIO = async () => {
  * Build a cube GLB.
  * @param {object} [opts]
  * @param {number[]} [opts.baseColor] - Material base color factor (RGBA, linear)
- * @param {number[]} [opts.vertexColor] - COLOR_0 for every vertex (RGB, linear)
+ * @param {number[]} [opts.vertexColor] - COLOR_0 for every vertex (RGB or
+ *   RGBA, linear)
+ * @param {string} [opts.alphaMode] - Material alpha mode (OPAQUE, MASK, BLEND)
  * @param {Buffer} [opts.texturePng] - Embedded base color texture
  * @param {object} [opts.node] - translation / rotation / scale of the node
  * @param {boolean} [opts.draco] - Compress the mesh with Draco
@@ -75,6 +77,7 @@ const getIO = async () => {
 const cubeGlb = async ({
   baseColor = [1, 1, 1, 1],
   vertexColor = null,
+  alphaMode = 'OPAQUE',
   texturePng = null,
   node = {},
   draco = false,
@@ -118,13 +121,16 @@ const cubeGlb = async ({
       'COLOR_0',
       doc
         .createAccessor()
-        .setType('VEC3')
+        .setType(vertexColor.length === 4 ? 'VEC4' : 'VEC3')
         .setArray(new Float32Array(colors))
         .setBuffer(buffer)
     );
   }
 
-  const material = doc.createMaterial().setBaseColorFactor(baseColor);
+  const material = doc
+    .createMaterial()
+    .setBaseColorFactor(baseColor)
+    .setAlphaMode(alphaMode);
   if (texturePng) {
     primitive.setAttribute(
       'TEXCOORD_0',

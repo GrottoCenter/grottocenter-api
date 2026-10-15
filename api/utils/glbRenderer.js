@@ -118,16 +118,18 @@ const worldPositions = (accessor, m) => {
 };
 
 /**
- * Read the first `size` components of every element of an accessor.
+ * Read the first `size` components of every element of an accessor; missing
+ * components (the alpha of an RGB color) default to 1.
  * @returns {Float32Array}
  */
 const readComponents = (accessor, size) => {
   const count = accessor.getCount();
-  const out = new Float32Array(count * size);
+  const available = Math.min(size, accessor.getElementSize());
+  const out = new Float32Array(count * size).fill(1);
   const element = [];
   for (let i = 0; i < count; i += 1) {
     accessor.getElement(i, element);
-    for (let k = 0; k < size; k += 1) out[i * size + k] = element[k];
+    for (let k = 0; k < available; k += 1) out[i * size + k] = element[k];
   }
   return out;
 };
@@ -209,7 +211,7 @@ const collectPrimitives = async (document) => {
           );
           const color = primitive.getAttribute('COLOR_0');
 
-          const colors = color ? readComponents(color, 3) : null;
+          const colors = color ? readComponents(color, 4) : null;
           const uvs = texture && texCoord ? readComponents(texCoord, 2) : null;
 
           primitives.push({
@@ -413,15 +415,19 @@ const rasterize = (primitives, camera) => {
           let bl = factor[2];
           let alphaValue = factor[3];
           if (colors) {
-            r *= pa * colors[a * 3] + pb * colors[b * 3] + pc * colors[c * 3];
+            r *= pa * colors[a * 4] + pb * colors[b * 4] + pc * colors[c * 4];
             g *=
-              pa * colors[a * 3 + 1] +
-              pb * colors[b * 3 + 1] +
-              pc * colors[c * 3 + 1];
+              pa * colors[a * 4 + 1] +
+              pb * colors[b * 4 + 1] +
+              pc * colors[c * 4 + 1];
             bl *=
-              pa * colors[a * 3 + 2] +
-              pb * colors[b * 3 + 2] +
-              pc * colors[c * 3 + 2];
+              pa * colors[a * 4 + 2] +
+              pb * colors[b * 4 + 2] +
+              pc * colors[c * 4 + 2];
+            alphaValue *=
+              pa * colors[a * 4 + 3] +
+              pb * colors[b * 4 + 3] +
+              pc * colors[c * 4 + 3];
           }
           if (texture) {
             const u = pa * uvs[a * 2] + pb * uvs[b * 2] + pc * uvs[c * 2];
