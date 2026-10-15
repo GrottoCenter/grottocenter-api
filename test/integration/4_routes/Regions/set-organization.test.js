@@ -1,4 +1,3 @@
-/* global JOrganizationRegion */
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');

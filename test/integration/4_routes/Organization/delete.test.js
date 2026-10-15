@@ -268,6 +268,112 @@ describe('Organization features', () => {
       await TDocument.destroy({ id: docIds });
       await TGrotto.destroy({ id: targetOrg.id });
     });
+
+    // Each geo junction table references t_grotto: a row left behind makes the
+    // hard delete fail with an FK violation in production (#1783). The test
+    // database has no foreign keys, so the orphan rows are what we check.
+    const GEO_JUNCTIONS = [
+      { model: () => JOrganizationMassif, field: 'massif' },
+      { model: () => JOrganizationCountry, field: 'country' },
+      { model: () => JOrganizationRegion, field: 'region' },
+    ];
+
+    it('should drop geo associations when permanently deleting without a merge target', async () => {
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+      await JOrganizationMassif.create({
+        grotto: org.id,
+        massif: 1,
+        author: 1,
+      });
+      await JOrganizationCountry.create({
+        grotto: org.id,
+        country: 'FR',
+        author: 1,
+      });
+      await JOrganizationRegion.create({
+        grotto: org.id,
+        region: 'FR-01',
+        author: 1,
+      });
+
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+      await Promise.all(
+        GEO_JUNCTIONS.map(async ({ model }) =>
+          should(await model().find({ grotto: org.id })).have.length(0)
+        )
+      );
+    });
+
+    it('should hand geo associations over to the merge target', async () => {
+      const targetOrg = await TGrotto.create({ author: 1 }).fetch();
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+
+      // Massif 1 and France are shared with the survivor, to exercise the
+      // dedup against the (id_grotto, id_<geo>) unique constraints; massif 2,
+      // Spain and FR-01 belong to the deleted org only.
+      await JOrganizationMassif.createEach([
+        { grotto: org.id, massif: 1, author: 1 },
+        { grotto: org.id, massif: 2, author: 1 },
+        { grotto: targetOrg.id, massif: 1, author: 1 },
+      ]);
+      await JOrganizationCountry.createEach([
+        { grotto: org.id, country: 'FR', author: 1 },
+        { grotto: org.id, country: 'ES', author: 3 },
+        { grotto: targetOrg.id, country: 'FR', author: 1 },
+      ]);
+      await JOrganizationRegion.create({
+        grotto: org.id,
+        region: 'FR-01',
+        author: 3,
+      });
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
+        )
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+
+      const expected = {
+        massif: [1, 2],
+        country: ['ES', 'FR'],
+        region: ['FR-01'],
+      };
+      await Promise.all(
+        GEO_JUNCTIONS.map(async ({ model, field }) => {
+          should(await model().find({ grotto: org.id })).have.length(0);
+          const survivorRows = await model().find({ grotto: targetOrg.id });
+          should(survivorRows.map((r) => r[field]).sort()).deepEqual(
+            expected[field]
+          );
+        })
+      );
+
+      // Handed-over rows keep their original author.
+      const spain = await JOrganizationCountry.findOne({
+        grotto: targetOrg.id,
+        country: 'ES',
+      });
+      should(spain.author).equal(3);
+
+      await Promise.all(
+        GEO_JUNCTIONS.map(({ model }) =>
+          model().destroy({ grotto: targetOrg.id })
+        )
+      );
+      await TGrotto.destroy({ id: targetOrg.id });
+    });
   });
 
   deleteIsPermanentCases({
