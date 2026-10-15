@@ -211,4 +211,49 @@ const solidPng = (background) =>
     .png()
     .toBuffer();
 
-module.exports = { cubeGlb, emptySceneGlb, readPixels, solidPng };
+/**
+ * A GLB made of a JSON chunk only: accessors without buffer views are
+ * zero-filled, so a few hundred bytes can declare any amount of data.
+ * @param {object} json - The glTF JSON, without asset
+ * @returns {Buffer}
+ */
+const declaredOnlyGlb = (json) => {
+  let chunk = Buffer.from(
+    JSON.stringify({ asset: { version: '2.0' }, ...json })
+  );
+  chunk = Buffer.concat([
+    chunk,
+    Buffer.alloc((4 - (chunk.length % 4)) % 4, 0x20),
+  ]);
+  const header = Buffer.alloc(20);
+  header.writeUInt32LE(0x46546c67, 0); // 'glTF'
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(20 + chunk.length, 8);
+  header.writeUInt32LE(chunk.length, 12);
+  header.writeUInt32LE(0x4e4f534a, 16); // 'JSON'
+  return Buffer.concat([header, chunk]);
+};
+
+/**
+ * A GLB whose single mesh has a POSITION accessor declaring `count` vertices
+ * and no data.
+ * @param {object} accessor - Overrides of the POSITION accessor
+ * @returns {Buffer}
+ */
+const oversizedGlb = (accessor) =>
+  declaredOnlyGlb({
+    scene: 0,
+    scenes: [{ nodes: [0] }],
+    nodes: [{ mesh: 0 }],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+    accessors: [{ componentType: 5126, type: 'VEC3', ...accessor }],
+  });
+
+module.exports = {
+  cubeGlb,
+  declaredOnlyGlb,
+  emptySceneGlb,
+  oversizedGlb,
+  readPixels,
+  solidPng,
+};

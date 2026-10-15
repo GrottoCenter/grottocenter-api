@@ -2,13 +2,16 @@ const should = require('should');
 const {
   WIDTH,
   HEIGHT,
+  MAX_DECODED_BYTES,
   GlbRenderError,
   renderGlb,
   renderGlbInWorker,
 } = require('../../../api/utils/glbRenderer');
 const {
   cubeGlb,
+  declaredOnlyGlb,
   emptySceneGlb,
+  oversizedGlb,
   readPixels,
   solidPng,
 } = require('../../helpers/glbModels');
@@ -141,6 +144,45 @@ describe('glbRenderer', () => {
       await should(
         renderGlb(await cubeGlb({ node: { scale: [1, 0, 0] } }))
       ).be.rejectedWith(GlbRenderError, { message: /covers no pixel/ });
+    });
+
+    it('rejects oversized declared geometry before allocating it', async () => {
+      // 300 bytes declaring 15 million vertices
+      const glb = oversizedGlb({ count: 15000000 });
+      should(glb.length).be.below(400);
+      const before = process.memoryUsage().arrayBuffers;
+      await should(renderGlb(glb)).be.rejectedWith(GlbRenderError, {
+        message: /geometry needs/,
+      });
+      should(process.memoryUsage().arrayBuffers - before).be.below(
+        50 * 1024 * 1024
+      );
+    });
+
+    it('rejects oversized declared accessors, even outside any mesh', async () => {
+      const glb = declaredOnlyGlb({
+        accessors: [
+          {
+            componentType: 5126,
+            type: 'MAT4',
+            count: Math.ceil(MAX_DECODED_BYTES / 64) + 1,
+          },
+        ],
+      });
+      await should(renderGlb(glb)).be.rejectedWith(GlbRenderError, {
+        message: /declares/,
+      });
+    });
+
+    it('rejects an accessor with an invalid count', async () => {
+      await should(renderGlb(oversizedGlb({ count: -1 }))).be.rejectedWith(
+        GlbRenderError,
+        { message: /invalid accessor/ }
+      );
+      await should(renderGlb(oversizedGlb({ count: 1.5 }))).be.rejectedWith(
+        GlbRenderError,
+        { message: /invalid accessor/ }
+      );
     });
 
     it('rejects a file that is not a GLB', async () => {

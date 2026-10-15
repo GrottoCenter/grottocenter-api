@@ -25,8 +25,27 @@ const HEIGHT = 1536;
 // Rendering time grows with the triangle count: refuse what a thumbnail job
 // could not render in reasonable time (the upload limit is 100 MB).
 const MAX_TRIANGLES = 20000000;
+// Memory budgets, checked against the sizes the GLB declares before anything
+// is decoded: a tiny file can declare huge accessors, and neither ArrayBuffers
+// nor WASM memory count towards the worker heap limit. Together with the frame
+// buffers (~60 MB) they bound the rendering to well under 1 GB.
+const MiB = 1024 * 1024;
+// Typed arrays @gltf-transform allocates for the accessors and the decoded
+// meshopt buffers
+const MAX_DECODED_BYTES = 192 * MiB;
+// World and projected positions (2 × 3 doubles), vertex colors (4 floats),
+// UVs (2 floats) and triangle indices (uint32) of every mesh instance
+const MAX_GEOMETRY_BYTES = 320 * MiB;
+const GEOMETRY_BYTES_PER_VERTEX = 48;
+const COLOR_BYTES_PER_VERTEX = 16;
+const UV_BYTES_PER_VERTEX = 8;
+const BYTES_PER_INDEX = 4;
+// Decoded RGBA textures, shared out between the textures of the model
+const MAX_TEXTURE_BYTES = 96 * MiB;
 // Embedded textures are downsized before sampling to bound memory use
 const MAX_TEXTURE_SIZE = 2048;
+// Larger embedded images are not decoded (base color factor only)
+const MAX_TEXTURE_INPUT_PIXELS = 8192 * 8192;
 // Fraction of the frame left empty around the model
 const MARGIN = 0.05;
 const FOV_Y = (40 * Math.PI) / 180;
@@ -42,8 +61,157 @@ const WORKER_MAX_HEAP_MB = 512;
 const MODE_TRIANGLES = 4;
 const MODE_TRIANGLE_STRIP = 5;
 const MODE_TRIANGLE_FAN = 6;
+const TRIANGLE_MODES = [MODE_TRIANGLES, MODE_TRIANGLE_STRIP, MODE_TRIANGLE_FAN];
+
+const GLB_MAGIC = 0x46546c67; // 'glTF'
+const GLB_JSON_CHUNK = 0x4e4f534a; // 'JSON'
+const COMPONENT_BYTES = {
+  5120: 1,
+  5121: 1,
+  5122: 2,
+  5123: 2,
+  5125: 4,
+  5126: 4,
+};
+const TYPE_COMPONENTS = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4,
+  MAT2: 4,
+  MAT3: 9,
+  MAT4: 16,
+};
 
 class GlbRenderError extends Error {}
+
+/**
+ * Read the JSON chunk of a GLB without decoding anything else.
+ * @returns {object|null} null when the buffer is not a GLB (left to the parser)
+ */
+const readGlbJson = (glbBuffer) => {
+  const buffer = Buffer.from(
+    glbBuffer.buffer,
+    glbBuffer.byteOffset,
+    glbBuffer.byteLength
+  );
+  if (buffer.length < 20 || buffer.readUInt32LE(0) !== GLB_MAGIC) return null;
+  const jsonLength = buffer.readUInt32LE(12);
+  if (
+    buffer.readUInt32LE(16) !== GLB_JSON_CHUNK ||
+    20 + jsonLength > buffer.length
+  ) {
+    return null;
+  }
+  try {
+    return JSON.parse(buffer.toString('utf8', 20, 20 + jsonLength));
+  } catch (err) {
+    return null;
+  }
+};
+
+const accessorCount = (accessor) => {
+  const count = accessor && accessor.count;
+  if (!Number.isSafeInteger(count) || count < 0) {
+    throw new GlbRenderError('Model has an invalid accessor');
+  }
+  return count;
+};
+
+/**
+ * Refuse a model whose declared sizes exceed the memory budgets, before
+ * @gltf-transform expands its accessors.
+ * @param {object} json - The glTF JSON of the GLB
+ * @throws {GlbRenderError}
+ */
+const checkDeclaredSizes = (json) => {
+  const accessors = json.accessors || [];
+
+  let decodedBytes = 0;
+  accessors.forEach((accessor) => {
+    const components = TYPE_COMPONENTS[accessor.type] || 16;
+    const bytes = COMPONENT_BYTES[accessor.componentType] || 4;
+    decodedBytes += accessorCount(accessor) * components * bytes;
+  });
+  (json.bufferViews || []).forEach((view) => {
+    const meshopt = view.extensions && view.extensions.EXT_meshopt_compression;
+    if (meshopt) decodedBytes += Number(meshopt.byteLength) || 0;
+  });
+  if (decodedBytes > MAX_DECODED_BYTES) {
+    throw new GlbRenderError(
+      `Model declares ${Math.round(decodedBytes / MiB)} MiB of data, more than ${MAX_DECODED_BYTES / MiB} MiB`
+    );
+  }
+
+  // Every node of the scene with a mesh is one instance of its geometry
+  const nodes = json.nodes || [];
+  const scenes = json.scenes || [];
+  const scene = scenes[Number.isInteger(json.scene) ? json.scene : 0];
+  const pending = [...((scene && scene.nodes) || [])];
+  const visited = new Set();
+  const instances = [];
+  while (pending.length > 0) {
+    const index = pending.pop();
+    const node = nodes[index];
+    if (node && !visited.has(index)) {
+      visited.add(index);
+      pending.push(...(node.children || []));
+      const mesh =
+        Number.isInteger(node.mesh) && (json.meshes || [])[node.mesh];
+      if (mesh) instances.push(...(mesh.primitives || []));
+    }
+  }
+
+  let geometryBytes = 0;
+  let triangles = 0;
+  instances.forEach((primitive) => {
+    const mode = primitive.mode === undefined ? MODE_TRIANGLES : primitive.mode;
+    const attributes = primitive.attributes || {};
+    if (TRIANGLE_MODES.includes(mode) && attributes.POSITION !== undefined) {
+      const vertices = accessorCount(accessors[attributes.POSITION]);
+      const indices =
+        primitive.indices === undefined
+          ? vertices
+          : accessorCount(accessors[primitive.indices]);
+      const primitiveTriangles =
+        mode === MODE_TRIANGLES
+          ? Math.floor(indices / 3)
+          : Math.max(0, indices - 2);
+      triangles += primitiveTriangles;
+      geometryBytes +=
+        vertices *
+          (GEOMETRY_BYTES_PER_VERTEX +
+            COLOR_BYTES_PER_VERTEX +
+            UV_BYTES_PER_VERTEX) +
+        primitiveTriangles * 3 * BYTES_PER_INDEX;
+    }
+  });
+  if (triangles > MAX_TRIANGLES) {
+    throw new GlbRenderError(`Model has more than ${MAX_TRIANGLES} triangles`);
+  }
+  if (geometryBytes > MAX_GEOMETRY_BYTES) {
+    throw new GlbRenderError(
+      `Model geometry needs ${Math.round(geometryBytes / MiB)} MiB, more than ${MAX_GEOMETRY_BYTES / MiB} MiB`
+    );
+  }
+};
+
+/**
+ * Check what @gltf-transform actually decoded: Draco streams carry their own
+ * vertex counts, which the declared accessors may understate.
+ * @throws {GlbRenderError}
+ */
+const checkDecodedSizes = (document) => {
+  const decodedBytes = document
+    .getRoot()
+    .listAccessors()
+    .reduce((sum, accessor) => sum + accessor.getByteLength(), 0);
+  if (decodedBytes > MAX_DECODED_BYTES) {
+    throw new GlbRenderError(
+      `Model decodes to ${Math.round(decodedBytes / MiB)} MiB of data, more than ${MAX_DECODED_BYTES / MiB} MiB`
+    );
+  }
+};
 
 let ioPromise = null;
 const getIO = () => {
@@ -134,15 +302,17 @@ const readComponents = (accessor, size) => {
   return out;
 };
 
-const decodeTexture = async (texture, cache) => {
+const decodeTexture = async (texture, cache, maxSize) => {
   if (!texture) return null;
   if (cache.has(texture)) return cache.get(texture);
   let decoded = null;
   try {
-    const { data, info } = await sharp(Buffer.from(texture.getImage()))
+    const { data, info } = await sharp(Buffer.from(texture.getImage()), {
+      limitInputPixels: MAX_TEXTURE_INPUT_PIXELS,
+    })
       .resize({
-        width: MAX_TEXTURE_SIZE,
-        height: MAX_TEXTURE_SIZE,
+        width: maxSize,
+        height: maxSize,
         fit: 'inside',
         withoutEnlargement: true,
       })
@@ -171,6 +341,23 @@ const collectPrimitives = async (document) => {
   scene.traverse((node) => {
     if (node.getMesh()) meshNodes.push(node);
   });
+
+  // Share the texture budget out between the base color textures in use
+  const textures = new Set();
+  meshNodes.forEach((node) =>
+    node
+      .getMesh()
+      .listPrimitives()
+      .forEach((primitive) => {
+        const material = primitive.getMaterial();
+        const texture = material && material.getBaseColorTexture();
+        if (texture) textures.add(texture);
+      })
+  );
+  const textureSize = Math.min(
+    MAX_TEXTURE_SIZE,
+    Math.floor(Math.sqrt(MAX_TEXTURE_BYTES / 4 / Math.max(1, textures.size)))
+  );
 
   const textureCache = new Map();
   const primitives = [];
@@ -204,7 +391,8 @@ const collectPrimitives = async (document) => {
           // eslint-disable-next-line no-await-in-loop
           const texture = await decodeTexture(
             material && material.getBaseColorTexture(),
-            textureCache
+            textureCache,
+            textureSize
           );
           const texCoord = primitive.getAttribute(
             `TEXCOORD_${textureInfo ? textureInfo.getTexCoord() : 0}`
@@ -482,12 +670,17 @@ const rasterize = (primitives, camera) => {
  * Render a GLB model to a PNG preview.
  * @param {Buffer|Uint8Array} glbBuffer - The GLB file content
  * @returns {Promise<Buffer>} A WIDTH × HEIGHT PNG with a transparent background
- * @throws {GlbRenderError} When the model has nothing to render or is too large
+ * @throws {GlbRenderError} When the model has nothing to render or exceeds
+ *   the triangle or memory budgets
  * @throws {Error} When the file is not a readable GLB
  */
 const renderGlb = async (glbBuffer) => {
+  const bytes = new Uint8Array(glbBuffer);
+  const json = readGlbJson(bytes);
+  if (json) checkDeclaredSizes(json);
   const io = await getIO();
-  const document = await io.readBinary(new Uint8Array(glbBuffer));
+  const document = await io.readBinary(bytes);
+  checkDecodedSizes(document);
   const primitives = await collectPrimitives(document);
   if (primitives.length === 0) {
     throw new GlbRenderError('Model has no triangle to render');
@@ -558,6 +751,8 @@ module.exports = {
   WIDTH,
   HEIGHT,
   MAX_TRIANGLES,
+  MAX_DECODED_BYTES,
+  MAX_GEOMETRY_BYTES,
   GlbRenderError,
   renderGlb,
   renderGlbInWorker,
