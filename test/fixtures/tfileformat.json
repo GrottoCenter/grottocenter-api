@@ -93,5 +93,15 @@
     "id": 103,
     "extension": "svg",
     "mimeType": "image/svg+xml"
+  },
+  {
+    "id": 104,
+    "extension": "glb",
+    "mimeType": "model/gltf-binary"
+  },
+  {
+    "id": 105,
+    "extension": "gltf",
+    "mimeType": "model/gltf+json"
   }
 ]

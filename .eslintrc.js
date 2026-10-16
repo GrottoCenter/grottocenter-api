@@ -78,6 +78,7 @@ module.exports = {
     SubstanceService: 'readonly',
     PubChemService: 'readonly',
     ThumbnailService: 'readonly',
+    GlbThumbnailQueueService: 'readonly',
     TType: 'readonly',
     TTokenBlacklist: 'readonly',
     TConversation: 'readonly',
