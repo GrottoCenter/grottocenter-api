@@ -120,6 +120,21 @@ const nonNegativeInteger = (value, what) => {
 const accessorCount = (accessor) =>
   nonNegativeInteger(accessor && accessor.count, 'accessor');
 
+// Bytes the renderer allocates for one mesh instance of a primitive
+const primitiveGeometryBytes = (vertices, triangles) =>
+  vertices *
+    (GEOMETRY_BYTES_PER_VERTEX + COLOR_BYTES_PER_VERTEX + UV_BYTES_PER_VERTEX) +
+  triangles * 3 * BYTES_PER_INDEX;
+
+// glTF requires every attribute of a primitive to have the same count; the
+// renderer reads each one to its own count, so a mismatch would escape the
+// geometry budget
+const checkAttributeCounts = (counts, vertices) => {
+  if (counts.some((count) => count !== vertices)) {
+    throw new GlbRenderError('Model has attributes of different counts');
+  }
+};
+
 /**
  * Refuse a model whose declared sizes exceed the memory budgets, before
  * @gltf-transform expands its accessors.
@@ -177,6 +192,12 @@ const checkDeclaredSizes = (json) => {
     const attributes = primitive.attributes || {};
     if (TRIANGLE_MODES.includes(mode) && attributes.POSITION !== undefined) {
       const vertices = accessorCount(accessors[attributes.POSITION]);
+      checkAttributeCounts(
+        Object.values(attributes).map((index) =>
+          accessorCount(accessors[index])
+        ),
+        vertices
+      );
       const indices =
         primitive.indices === undefined
           ? vertices
@@ -186,12 +207,7 @@ const checkDeclaredSizes = (json) => {
           ? Math.floor(indices / 3)
           : Math.max(0, indices - 2);
       triangles += primitiveTriangles;
-      geometryBytes +=
-        vertices *
-          (GEOMETRY_BYTES_PER_VERTEX +
-            COLOR_BYTES_PER_VERTEX +
-            UV_BYTES_PER_VERTEX) +
-        primitiveTriangles * 3 * BYTES_PER_INDEX;
+      geometryBytes += primitiveGeometryBytes(vertices, primitiveTriangles);
     }
   });
   if (triangles > MAX_TRIANGLES) {
@@ -370,12 +386,18 @@ const collectPrimitives = async (document) => {
   const textureCache = new Map();
   const primitives = [];
   let triangleCount = 0;
+  let geometryBytes = 0;
 
   for (const node of meshNodes) {
     const world = node.getWorldMatrix();
     for (const primitive of node.getMesh().listPrimitives()) {
       const position = primitive.getAttribute('POSITION');
       if (position) {
+        // Draco streams carry their own counts: check the decoded ones too
+        checkAttributeCounts(
+          primitive.listAttributes().map((attribute) => attribute.getCount()),
+          position.getCount()
+        );
         const indices = primitive.getIndices();
         const tris = triangleIndices(
           primitive.getMode(),
@@ -387,6 +409,15 @@ const collectPrimitives = async (document) => {
           if (triangleCount > MAX_TRIANGLES) {
             throw new GlbRenderError(
               `Model has more than ${MAX_TRIANGLES} triangles`
+            );
+          }
+          geometryBytes += primitiveGeometryBytes(
+            position.getCount(),
+            tris.length / 3
+          );
+          if (geometryBytes > MAX_GEOMETRY_BYTES) {
+            throw new GlbRenderError(
+              `Model geometry needs more than ${MAX_GEOMETRY_BYTES / MiB} MiB`
             );
           }
           const positions = worldPositions(position, world);

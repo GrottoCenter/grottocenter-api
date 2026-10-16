@@ -204,6 +204,39 @@ describe('glbRenderer', () => {
       ).be.rejectedWith(GlbRenderError, { message: /invalid buffer view/ });
     });
 
+    it('rejects color or UV accessors larger than POSITION before allocating them', async () => {
+      // A few hundred bytes: 3 vertices, but 22 million zero-filled colors or
+      // UVs (63 MiB decoded) expanded once per mesh instance
+      const mismatchedGlb = (attribute, type) =>
+        declaredOnlyGlb({
+          scene: 0,
+          scenes: [{ nodes: [0, 1, 2, 3] }],
+          nodes: [{ mesh: 0 }, { mesh: 0 }, { mesh: 0 }, { mesh: 0 }],
+          meshes: [
+            { primitives: [{ attributes: { POSITION: 0, [attribute]: 1 } }] },
+          ],
+          accessors: [
+            { componentType: 5126, type: 'VEC3', count: 3 },
+            { componentType: 5121, normalized: true, type, count: 22000000 },
+          ],
+        });
+      for (const [attribute, type] of [
+        ['COLOR_0', 'VEC3'],
+        ['TEXCOORD_0', 'VEC2'],
+      ]) {
+        const glb = mismatchedGlb(attribute, type);
+        should(glb.length).be.below(500);
+        const before = process.memoryUsage().arrayBuffers;
+        // eslint-disable-next-line no-await-in-loop
+        await should(renderGlb(glb)).be.rejectedWith(GlbRenderError, {
+          message: /attributes of different counts/,
+        });
+        should(process.memoryUsage().arrayBuffers - before).be.below(
+          50 * 1024 * 1024
+        );
+      }
+    });
+
     it('rejects an accessor with an invalid count', async () => {
       await should(renderGlb(oversizedGlb({ count: -1 }))).be.rejectedWith(
         GlbRenderError,
