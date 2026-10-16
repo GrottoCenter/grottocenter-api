@@ -68,10 +68,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 - **Description**: Content reviewers and validators
 - **Permissions**: All User permissions plus:
   - **Content Moderation**:
-    - Delete/restore any caves, entrances, documents, comments, descriptions, locations, riggings, histories, organisations, massifs
-    - **Permanently** delete those same entities — the permanent path reuses the Moderator check with no additional
-      Administrator gate (see "Known Permission Inconsistencies")
-    - Delete/restore legislation guidelines (permanent deletion of these requires Administrator)
+    - Soft-delete/restore any caves, entrances, documents, comments, descriptions, locations, riggings, histories,
+      organisations, massifs (permanent deletion of these requires Administrator)
+    - Soft-delete/restore legislation guidelines (permanent deletion of these requires Administrator)
     - View a soft-deleted legislation guideline by id, with the full detail representation
     - Delete/restore devices and sensor configurations (permanent deletion of these requires Administrator)
     - Update any device or sensor configuration (regardless of ownership)
@@ -107,22 +106,23 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
   - **System Operations**:
     - Import data from CSV files (documents and entrances)
     - System configuration and maintenance
-  - **Content Moderation** (guideline deletion only; other content moderation is Moderator-only):
-    - Delete/restore legislation guidelines — the only guideline operation an Administrator gates, since updating and
-      rolling back them is open to any authenticated user
+  - **Content Moderation** (deletion and restore only; validation, duplicates and the rest are Moderator-only):
+    - Soft-delete/restore caves, entrances, documents, comments, descriptions, locations, riggings, histories,
+      organisations, massifs, devices and sensor configurations
+    - Soft-delete/restore legislation guidelines — the only guideline operation an Administrator gates, since updating
+      and rolling back them is open to any authenticated user
     - View a soft-deleted legislation guideline by id — the only soft-deleted content an Administrator can read without
-      also holding the Moderator role (see "Known Permission Inconsistencies" #3)
+      also holding the Moderator role (see "Known Permission Inconsistencies" #2)
   - **Sensitive Data Management**:
     - View coordinates of sensitive entrances
     - Remove sensitive flag from entrances
     - Modify coordinates of sensitive entrances
     - Mark/unmark massifs as sensitive (cascades to contained entrances)
     - Preview massif sensitivity impact
-  - **Permanent Deletion**:
+  - **Permanent Deletion** (`?isPermanent=1`, Administrator only — a Moderator gets a 403 before anything is written):
+    - Permanently delete caves, entrances, documents, comments, descriptions, locations, riggings, histories,
+      organisations, and massifs
     - Permanently delete devices, sensor configurations, and legislation guidelines
-    - **Not** core content: permanently deleting caves, entrances, documents, comments, descriptions, locations,
-      riggings, histories, organisations, or massifs requires the Moderator role, not Administrator (see "Known
-      Permission Inconsistencies")
   - **Advanced Organization Management**:
     - Add/remove explored caves for any organization
     - Manage organization memberships for any user
@@ -153,12 +153,12 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Move entrance to another cave                                 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Reorder descriptions/locations/riggings/histories/comments    | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Soft-deleted Content Management**                           |
-| Soft delete core content (caves/entrances/documents/etc.)     | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Soft delete core content (caves/entrances/documents/etc.)     | ❌ | ❌ | ❌ | ✅ | ✅ |
 | View soft-deleted core content                                | ❌ | ❌ | ❌ | ✅ | ❌ |
 | View a soft-deleted guideline by id                           | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Restore core content (caves/entrances/documents/etc.)         | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Restore core content (caves/entrances/documents/etc.)         | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Soft delete/restore guidelines                                | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Permanently delete core content (caves/entrances/docs/etc.)   | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Permanently delete core content (caves/entrances/docs/etc.)   | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Permanently delete guidelines                                 | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Document Management**                                       |
 | Validate documents                                            | ❌ | ❌ | ❌ | ✅ | ❌ |
@@ -173,7 +173,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Update own devices/sensor configurations                      | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Update any device/sensor configuration                        | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Soft delete devices/sensor configurations                     | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Restore devices/sensor configurations                         | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Restore devices/sensor configurations                         | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Permanently delete devices/sensor configurations              | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Import observation data                                       | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Organization Management**                                   |
@@ -311,7 +311,7 @@ cannot detach it either.
 - **Sensitive History**: Historical data for sensitive entrances requires Administrator privileges
 
 ### Scientific Domain Access
-- **Devices**: Any authenticated user can create devices; update requires ownership or Moderator role; soft delete requires Moderator or Administrator; restore requires Moderator; permanent delete requires Administrator
+- **Devices**: Any authenticated user can create devices; update requires ownership or Moderator role; soft delete and restore require Moderator or Administrator; permanent delete requires Administrator
 - **Sensor Configurations**: Same permission model as devices — scoped under a device (nested resource)
 - **Observation Import**: Any authenticated user can import observation data via CSV/TSV. `v1/observation/import` is
   gated by `tokenAuth` alone — neither the controller nor `ObservationImportService` performs a role check, so a plain
@@ -370,21 +370,14 @@ cannot detach it either.
 
 ### Soft Deletes
 - Content is soft-deleted (marked as deleted, not removed)
-- **Who may delete/restore depends on the entity** — there is no single rule, because roles are not hierarchical:
-  - **Core content** (caves, entrances, documents, comments, descriptions, locations, riggings, histories,
-    organisations, massifs): the controllers check `MODERATOR` only, so an Administrator who does not also hold the
-    Moderator role cannot soft-delete or restore them
-  - **Devices, sensor configurations, guidelines**: **soft deletion** accepts either Moderator or Administrator
-  - **Restore** is Moderator-only for every entity except guidelines, which again accepts either role — so devices and
-    sensor configurations accept both roles to delete but only Moderator to restore
-  - **Cavers are not part of this flow at all** — deleting a caver is always permanent and there is no restore
-    endpoint. See "Caver Deletion" below
-- **Permanent deletion is not uniformly Administrator-only**:
-  - For core content, the permanent path (`?isPermanent=…`) is guarded by the *same* Moderator check as the soft
-    delete, with no additional Administrator check — so a Moderator can permanently delete a cave, and an
-    Administrator alone cannot
-  - Only devices, sensor configurations, and guidelines re-check for the Administrator role before hard-deleting
-  - See "Known Permission Inconsistencies" below
+- **One rule for every soft-deletable entity** (caves, entrances, documents, comments, descriptions, locations,
+  riggings, histories, organisations, massifs, guidelines, devices, sensor configurations) — roles are not
+  hierarchical, so each controller checks both groups explicitly:
+  - **Soft delete and restore**: Moderator **or** Administrator
+  - **Permanent delete** (`?isPermanent=1`): Administrator. The check runs right after the parameter is read, before
+    any write, so a Moderator asking for it gets a 403 and the entity is left untouched (not even soft-deleted)
+- **Cavers are not part of this flow at all** — deleting a caver is always permanent and there is no restore
+  endpoint. See "Caver Deletion" below
 - Permanent deletion of devices is blocked if they have associated sensor configurations
 - Permanent deletion of sensor configurations is blocked if they have associated time series
 
@@ -435,38 +428,27 @@ The role rules above still describe who is *authorized* to attempt the deletion.
 ## Known Permission Inconsistencies
 
 These record **current observed behaviour**. They follow from the fact that roles are not hierarchical (see "User Roles")
-combined with per-controller role checks that were not applied uniformly — so a capability that reads as
-"administrative" may in fact be gated on the Moderator group alone.
+combined with per-controller role checks — so a capability that reads as "administrative" may in fact be gated on the
+Moderator group alone.
 
-Items 1, 4 and 5 are tracked in
-[#1796](https://github.com/GrottoCenter/grottocenter-api/issues/1796). Items 2 and 3 are **accepted behaviour**: in
-practice Administrators are granted every group, so they cumulate Moderator powers and are not blocked. Item 6 is
-**intended behaviour** introduced deliberately, recorded here because it reads as an inconsistency.
+Items 1 and 2 are **accepted behaviour**: in practice Administrators are granted every group, so they cumulate
+Moderator powers and are not blocked. Item 3 is **intended behaviour** introduced deliberately, recorded here because
+it reads as an inconsistency. The delete/restore gating discrepancies formerly listed here were resolved in
+[#1796](https://github.com/GrottoCenter/grottocenter-api/issues/1796) (see "Soft Deletes").
 
-1. **Moderators can permanently delete core content.** For caves, entrances, documents, comments, descriptions,
-   locations, riggings, histories, organisations, and massifs, the `isPermanent` branch of the delete controller is
-   reached after only a `MODERATOR` check — for example `api/controllers/v1/cave/delete.js` checks `MODERATOR` at the
-   top and then acts on `req.param('isPermanent')` with no further gate. Devices, sensor configurations, and guidelines
-   do re-check for `ADMINISTRATOR`. This is the widest gap in the model — a Moderator can irreversibly destroy core
-   content while a non-Moderator Administrator cannot delete it at all. Tracked in #1796.
-2. **Administrators cannot moderate core content** — *accepted, not a defect.* An Administrator who does not also hold
-   the Moderator role receives a 403 when soft-deleting or restoring core content, validating a document, or managing
-   duplicates. Administrators are normally granted all groups, so they cumulate Moderator powers in practice. The matrix
-   marks these ❌ for Administrator because it records what each role grants **on its own**.
-3. **Administrators cannot see soft-deleted content** — *accepted, same reasoning as #2.* The `find` controllers for
+1. **Administrators cannot moderate core content** — *accepted, not a defect.* An Administrator who does not also hold
+   the Moderator role receives a 403 when validating a document or managing duplicates (soft-deleting and restoring
+   accept either role since #1796). Administrators are normally granted all groups, so they cumulate Moderator powers
+   in practice. The matrix marks these ❌ for Administrator because it records what each role grants **on its own**.
+2. **Administrators cannot see soft-deleted content** — *accepted, same reasoning as #1.* The `find` controllers for
    caves, entrances, documents, massifs, and organisations check `MODERATOR` only before revealing deleted records; a
    non-Moderator Administrator gets the redacted `toDeletedEntity` shape, and `cave/find.js` additionally forces
    `isDeleted = false` on list queries. Guidelines are the exception since #1804: `guideline/find.js` checks Moderator
    **or** Administrator and returns the full representation, aligning the read gate with that entity's delete and restore
-   gates. If the core-content `find` controllers are ever widened the same way, update this item and the matrix rows
-   together.
-4. **Restore is Moderator-only almost everywhere.** 12 of 13 restore controllers check `MODERATOR` alone; guideline is
-   the outlier, accepting either role. Tracked in #1796.
-5. **Delete and restore disagree within the same entity.** `device`, `sensor-configuration` and `guideline` all accept
-   either role to *delete*, but only `guideline` accepts either role to *restore*. Since #1804 `guideline` is also the
-   only entity whose `find` accepts either role, so its read, delete and restore gates all agree with each other while
-   diverging from every other entity. Tracked in #1796.
-6. **Guidelines are writable by anyone but deletable only by Moderators or Administrators.** `guideline/update` and
+   gates. Since #1796 the core-content delete and restore gates accept either role too, so a non-Moderator
+   Administrator can restore a cave they cannot see as deleted. If the core-content `find` controllers are ever widened
+   the same way, update this item and the matrix rows together.
+3. **Guidelines are writable by anyone but deletable only by Moderators or Administrators.** `guideline/update` and
    `guideline/rollback` perform no ownership or role check, so any authenticated user can rewrite or roll back any
    guideline, while `guideline/delete` requires Moderator or Administrator. Rollback is the sharper edge: it replaces
    the live title, description, and language from an arbitrary snapshot, giving any user a one-request way to revert
