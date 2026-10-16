@@ -10,6 +10,7 @@ const {
 const {
   cubeGlb,
   declaredOnlyGlb,
+  meshoptViewJson,
   emptySceneGlb,
   oversizedGlb,
   readPixels,
@@ -109,6 +110,14 @@ describe('glbRenderer', () => {
       should(center(pixels).r).be.above(100);
     });
 
+    it('decodes a meshopt compressed mesh', async () => {
+      const glb = await cubeGlb({ meshopt: true, baseColor: [1, 0, 0, 1] });
+      should(Buffer.from(glb).includes('EXT_meshopt_compression')).be.true();
+      const pixels = await readPixels(await renderGlb(glb));
+      should(center(pixels).a).equal(255);
+      should(center(pixels).r).be.above(100);
+    });
+
     it('rejects a scene without any mesh', async () => {
       await should(renderGlb(await emptySceneGlb())).be.rejectedWith(
         GlbRenderError
@@ -172,6 +181,27 @@ describe('glbRenderer', () => {
       await should(renderGlb(glb)).be.rejectedWith(GlbRenderError, {
         message: /declares/,
       });
+    });
+
+    it('rejects oversized meshopt buffer views, even without accessors', async () => {
+      // 4 compressed bytes declaring a 256 MiB decoded view
+      const glb = declaredOnlyGlb(meshoptViewJson({ count: 16777216 }), 4);
+      const before = process.memoryUsage().arrayBuffers;
+      await should(renderGlb(glb)).be.rejectedWith(GlbRenderError, {
+        message: /declares/,
+      });
+      should(process.memoryUsage().arrayBuffers - before).be.below(
+        50 * 1024 * 1024
+      );
+    });
+
+    it('rejects a meshopt buffer view with an invalid count or stride', async () => {
+      await should(
+        renderGlb(declaredOnlyGlb(meshoptViewJson({ count: -1 }), 4))
+      ).be.rejectedWith(GlbRenderError, { message: /invalid buffer view/ });
+      await should(
+        renderGlb(declaredOnlyGlb(meshoptViewJson({ byteStride: 2.5 }), 4))
+      ).be.rejectedWith(GlbRenderError, { message: /invalid buffer view/ });
     });
 
     it('rejects an accessor with an invalid count', async () => {

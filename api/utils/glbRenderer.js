@@ -31,7 +31,7 @@ const MAX_TRIANGLES = 20000000;
 // buffers (~60 MB) they bound the rendering to well under 1 GB.
 const MiB = 1024 * 1024;
 // Typed arrays @gltf-transform allocates for the accessors and the decoded
-// meshopt buffers
+// meshopt buffer views
 const MAX_DECODED_BYTES = 192 * MiB;
 // World and projected positions (2 × 3 doubles), vertex colors (4 floats),
 // UVs (2 floats) and triangle indices (uint32) of every mesh instance
@@ -110,13 +110,15 @@ const readGlbJson = (glbBuffer) => {
   }
 };
 
-const accessorCount = (accessor) => {
-  const count = accessor && accessor.count;
-  if (!Number.isSafeInteger(count) || count < 0) {
-    throw new GlbRenderError('Model has an invalid accessor');
+const nonNegativeInteger = (value, what) => {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new GlbRenderError(`Model has an invalid ${what}`);
   }
-  return count;
+  return value;
 };
+
+const accessorCount = (accessor) =>
+  nonNegativeInteger(accessor && accessor.count, 'accessor');
 
 /**
  * Refuse a model whose declared sizes exceed the memory budgets, before
@@ -133,9 +135,15 @@ const checkDeclaredSizes = (json) => {
     const bytes = COMPONENT_BYTES[accessor.componentType] || 4;
     decodedBytes += accessorCount(accessor) * components * bytes;
   });
+  // Every meshopt view is decoded into count × byteStride bytes, whether an
+  // accessor uses it or not
   (json.bufferViews || []).forEach((view) => {
     const meshopt = view.extensions && view.extensions.EXT_meshopt_compression;
-    if (meshopt) decodedBytes += Number(meshopt.byteLength) || 0;
+    if (meshopt) {
+      decodedBytes +=
+        nonNegativeInteger(meshopt.count, 'buffer view') *
+        nonNegativeInteger(meshopt.byteStride, 'buffer view');
+    }
   });
   if (decodedBytes > MAX_DECODED_BYTES) {
     throw new GlbRenderError(

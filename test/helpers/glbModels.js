@@ -4,8 +4,12 @@
  */
 
 const { Document, NodeIO } = require('@gltf-transform/core');
-const { KHRDracoMeshCompression } = require('@gltf-transform/extensions');
+const {
+  EXTMeshoptCompression,
+  KHRDracoMeshCompression,
+} = require('@gltf-transform/extensions');
 const draco3d = require('draco3dgltf');
+const { MeshoptDecoder, MeshoptEncoder } = require('meshoptimizer');
 const sharp = require('sharp');
 
 // A unit cube centered on the origin, one quad per face (no shared vertices)
@@ -51,11 +55,14 @@ const CUBE_FACES = [
 let encoderIO = null;
 const getIO = async () => {
   if (!encoderIO) {
+    await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready]);
     encoderIO = new NodeIO()
-      .registerExtensions([KHRDracoMeshCompression])
+      .registerExtensions([EXTMeshoptCompression, KHRDracoMeshCompression])
       .registerDependencies({
         'draco3d.encoder': await draco3d.createEncoderModule(),
         'draco3d.decoder': await draco3d.createDecoderModule(),
+        'meshopt.encoder': MeshoptEncoder,
+        'meshopt.decoder': MeshoptDecoder,
       });
   }
   return encoderIO;
@@ -71,6 +78,7 @@ const getIO = async () => {
  * @param {Buffer} [opts.texturePng] - Embedded base color texture
  * @param {object} [opts.node] - translation / rotation / scale of the node
  * @param {boolean} [opts.draco] - Compress the mesh with Draco
+ * @param {boolean} [opts.meshopt] - Compress the buffers with meshopt
  * @param {boolean} [opts.collapsed] - Put every vertex at the origin
  * @returns {Promise<Uint8Array>}
  */
@@ -81,6 +89,7 @@ const cubeGlb = async ({
   texturePng = null,
   node = {},
   draco = false,
+  meshopt = false,
   collapsed = false,
 } = {}) => {
   const doc = new Document();
@@ -157,6 +166,9 @@ const cubeGlb = async ({
   if (draco) {
     doc.createExtension(KHRDracoMeshCompression).setRequired(true);
   }
+  if (meshopt) {
+    doc.createExtension(EXTMeshoptCompression).setRequired(true);
+  }
   return (await getIO()).writeBinary(doc);
 };
 
@@ -212,12 +224,14 @@ const solidPng = (background) =>
     .toBuffer();
 
 /**
- * A GLB made of a JSON chunk only: accessors without buffer views are
- * zero-filled, so a few hundred bytes can declare any amount of data.
+ * A GLB made of a JSON chunk and an optional zero-filled binary chunk:
+ * accessors without buffer views are zero-filled, so a few hundred bytes can
+ * declare any amount of data.
  * @param {object} json - The glTF JSON, without asset
+ * @param {number} [binLength] - Size of the binary chunk (none when 0)
  * @returns {Buffer}
  */
-const declaredOnlyGlb = (json) => {
+const declaredOnlyGlb = (json, binLength = 0) => {
   let chunk = Buffer.from(
     JSON.stringify({ asset: { version: '2.0' }, ...json })
   );
@@ -228,11 +242,46 @@ const declaredOnlyGlb = (json) => {
   const header = Buffer.alloc(20);
   header.writeUInt32LE(0x46546c67, 0); // 'glTF'
   header.writeUInt32LE(2, 4);
-  header.writeUInt32LE(20 + chunk.length, 8);
   header.writeUInt32LE(chunk.length, 12);
   header.writeUInt32LE(0x4e4f534a, 16); // 'JSON'
-  return Buffer.concat([header, chunk]);
+  const parts = [header, chunk];
+  if (binLength > 0) {
+    const binHeader = Buffer.alloc(8);
+    binHeader.writeUInt32LE(binLength, 0);
+    binHeader.writeUInt32LE(0x004e4942, 4); // 'BIN'
+    parts.push(binHeader, Buffer.alloc(binLength));
+  }
+  const glb = Buffer.concat(parts);
+  glb.writeUInt32LE(glb.length, 8);
+  return glb;
 };
+
+/**
+ * The glTF JSON of a single EXT_meshopt_compression buffer view, referenced
+ * by no accessor, over a 4-byte binary chunk.
+ * @param {object} overrides - Overrides of the view's extension
+ * @returns {object}
+ */
+const meshoptViewJson = (overrides) => ({
+  extensionsUsed: ['EXT_meshopt_compression'],
+  buffers: [{ byteLength: 4 }],
+  bufferViews: [
+    {
+      buffer: 0,
+      byteLength: 4,
+      extensions: {
+        EXT_meshopt_compression: {
+          buffer: 0,
+          byteLength: 4,
+          byteStride: 16,
+          count: 1,
+          mode: 'ATTRIBUTES',
+          ...overrides,
+        },
+      },
+    },
+  ],
+});
 
 /**
  * A GLB whose single mesh has a POSITION accessor declaring `count` vertices
@@ -253,6 +302,7 @@ module.exports = {
   cubeGlb,
   declaredOnlyGlb,
   emptySceneGlb,
+  meshoptViewJson,
   oversizedGlb,
   readPixels,
   solidPng,
