@@ -39,6 +39,7 @@ describe('Organization features', () => {
           name: { text: 'Organisation Montpellier', language: 'fr' },
           postalCode: '84000',
           region: 'Occitanie',
+          type: 'SPELEOLOGY',
           url: 'https://fr.wikipedia.org/wiki/Montpellier',
           yearBirth: 2022,
         };
@@ -67,6 +68,73 @@ describe('Organization features', () => {
       }).timeout(4000);
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    describe('Type', () => {
+      const createdIds = [];
+
+      after(async () => {
+        await TName.destroy({ grotto: createdIds });
+        await TGrotto.destroy({ id: createdIds });
+      });
+
+      const postOrganization = (body, query = {}) =>
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/organizations')
+          .query(query)
+          .send({
+            name: { text: 'Organisation typée', language: 'fr' },
+            ...body,
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json');
+
+      // Rejected before any write: no organization may be created untyped
+      const shouldBeRejected = async (body, query, message) => {
+        const countBefore = await TGrotto.count();
+        const res = await postOrganization(body, query).expect(400);
+        should(res.body.message).containEql(message);
+        should(await TGrotto.count()).equal(countBefore);
+      };
+
+      it('should return 400 when the type is absent', async () => {
+        await shouldBeRejected(
+          {},
+          {},
+          'You must provide the organization type'
+        );
+      });
+
+      it('should read the type from the request body only', async () => {
+        // A type in the query string is not the documented contract
+        await shouldBeRejected(
+          {},
+          { type: 'LIBRARY' },
+          'You must provide the organization type'
+        );
+      });
+
+      it('should store the type given', async () => {
+        const res = await postOrganization({ type: 'LIBRARY' }).expect(200);
+        createdIds.push(res.body.id);
+        should(res.body.type).equal('LIBRARY');
+        const stored = await TGrotto.findOne({ id: res.body.id });
+        should(stored.type).equal('LIBRARY');
+      });
+
+      it('should return 400 for an unknown type', async () => {
+        await shouldBeRejected(
+          { type: 'FAN_CLUB' },
+          {},
+          'Invalid organization type'
+        );
+      });
+
+      it('should return 400 for a null type', async () => {
+        await shouldBeRejected({ type: null }, {}, 'Invalid organization type');
+      });
+    });
+
     // https://github.com/GrottoCenter/grottocenter-api/issues/1774
     describe('Invalid data', () => {
       it('should return 400 when postalCode is too long', (done) => {
@@ -75,6 +143,7 @@ describe('Organization features', () => {
           .send({
             name: { text: 'Organisation Flémalle', language: 'fr' },
             postalCode: '4400 Flémalle',
+            type: 'SPELEOLOGY',
           })
           .set('Authorization', userToken)
           .set('Content-type', 'application/json')

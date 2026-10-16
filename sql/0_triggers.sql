@@ -82,7 +82,8 @@ INSERT INTO h_grotto (
         is_official_partner,
         url,
         id_country,
-        picture_file_name
+        picture_file_name,
+        type
     )
 VALUES (
         OLD.id,
@@ -104,7 +105,8 @@ VALUES (
         OLD.is_official_partner,
         OLD.url,
         OLD.id_country,
-        OLD.picture_file_name
+        OLD.picture_file_name,
+        OLD.type
     );
 end if;
 --on insert la valeur de la date de modification dans t_grotto

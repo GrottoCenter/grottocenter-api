@@ -211,6 +211,37 @@ describe('searchOutbox', () => {
       });
       should(deleted.operation).equal('D');
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    it('records the previous type of an organization', async () => {
+      const organization = await TGrotto.create({
+        author: 1,
+        type: 'EDITION',
+      }).fetch();
+      await clearOutbox();
+      try {
+        await TGrotto.updateOne({ id: organization.id }).set({
+          type: 'LIBRARY',
+        });
+
+        const rows = await readOutbox();
+        should(rows).eql([
+          {
+            kind: 'organization',
+            entityId: organization.id,
+            operation: 'U',
+            oldValues: { type: 'EDITION' },
+          },
+        ]);
+      } finally {
+        await CommonService.query('DELETE FROM t_grotto WHERE id = $1', [
+          organization.id,
+        ]);
+        await CommonService.query('DELETE FROM t_grotto WHERE id = $1', [
+          organization.id,
+        ]);
+      }
+    });
   });
 
   describe('expand()', () => {
@@ -367,6 +398,14 @@ describe('searchOutbox', () => {
       should(lists(await expand([row('organization', 1)]))).eql({
         organizations: [1],
       });
+    });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    it('re-indexes the documents of an organization whose type changed', async () => {
+      // Document 1 has organization 1 as author
+      should(
+        lists(await expand([row('organization', 1, { type: 'EDITION' })]))
+      ).eql({ organizations: [1], documents: [1] });
     });
 
     it('re-indexes what a caver authored when their nickname changes', async () => {

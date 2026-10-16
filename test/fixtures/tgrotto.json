@@ -15,6 +15,7 @@
     "custom_message": "We are looking for new cavers, join us!",
     "isOfficialPartner": true,
     "url": "https://organization1.com",
+    "type": "SPELEOLOGY",
     "id_country": "FR",
     "names": [1],
     "documents": [1],
@@ -36,6 +37,7 @@
     "customMessage": "Hello Grottocenter :)",
     "isOfficialPartner": true,
     "url": "https://organization2.fr",
+    "type": "EDITION",
     "country": "FR",
     "names": [2]
   },

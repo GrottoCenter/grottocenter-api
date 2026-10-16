@@ -5,6 +5,9 @@ const { validateNameLength } = require('../../../utils/nameValidation');
 const {
   validatePostalCodeLength,
 } = require('../../../utils/postalCodeValidation');
+const {
+  validateOrganizationType,
+} = require('../../../utils/organizationTypeValidation');
 
 module.exports = async (req, res) => {
   // Check params
@@ -20,8 +23,16 @@ module.exports = async (req, res) => {
     return res.badRequest(nameError);
   }
 
+  // A new organization must be given a type: only those registered before
+  // types were introduced may have none
+  const typeError = validateOrganizationType(req.body.type, { required: true });
+  if (typeError) {
+    return res.badRequest(typeError);
+  }
+
   const cleanedData = {
     ...GrottoService.getConvertedDataFromClientRequest(req),
+    type: req.body.type,
     author: req.token.id,
     dateInscription: new Date(),
   };

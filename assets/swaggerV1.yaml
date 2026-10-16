@@ -5564,6 +5564,14 @@ paths:
                         maximum: 100
                         nullable: true
                       example: [50, 100]
+                    type:
+                      type: string
+                      description: >-
+                        For entity=organizations, the organization type (see
+                        OrganizationType); several values may be given as an
+                        array, and untyped organizations match none. For
+                        entity=documents, the document type name.
+                      example: CAVE_RESCUE
                   additionalProperties: true
                 matchAllFields:
                   allOf:
@@ -6033,7 +6041,10 @@ paths:
     get:
       tags:
         - geoloc
-      description: Count entrances contained inside the given coords
+      description: >-
+        Organizations located inside the given coords, for the map. Only
+        caving (SPELEOLOGY) and cave-rescue (CAVE_RESCUE) organizations are
+        returned, together with those whose type is not set yet.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
         - $ref: '#/components/parameters/sw_lng'
@@ -6051,6 +6062,12 @@ paths:
                     type: integer
                   name:
                     type: string
+                  type:
+                    type: string
+                    enum:
+                      - SPELEOLOGY
+                      - CAVE_RESCUE
+                    nullable: true
                   address:
                     type: string
                   longitude:
@@ -6641,71 +6658,74 @@ paths:
     post:
       tags:
         - organizations
-      description: Create an organization.
-      parameters:
-        - name: address
-          in: query
-          schema:
-            type: string
-        - name: city
-          in: query
-          schema:
-            type: string
-        - name: county
-          in: query
-          schema:
-            type: string
-        - name: country
-          in: query
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-        - name: customMessage
-          in: query
-          schema:
-            type: string
-        - name: latitude
-          in: query
-          schema:
-            type: number
-        - name: longitude
-          in: query
-          schema:
-            type: number
-        - name: mail
-          in: query
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: Organization main name
-          required: true
-          schema:
-            type: object
-            properties:
-              text:
-                type: string
-              language:
-                type: string
-        - name: postalCode
-          in: query
-          schema:
-            type: string
-            maxLength: 10
-        - name: region
-          in: query
-          schema:
-            type: string
-        - name: url
-          in: query
-          schema:
-            type: string
-        - name: yearBirth
-          in: query
-          schema:
-            type: number
+      description: >-
+        Create an organization. The type is required: only the organizations
+        registered before types were introduced may have none.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                address:
+                  type: string
+                city:
+                  type: string
+                country:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ISO 3166-1 alpha-2 country code
+                county:
+                  type: string
+                customMessage:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                mail:
+                  type: string
+                name:
+                  type: object
+                  description: Organization main name
+                  properties:
+                    text:
+                      type: string
+                      description: Name text (max 200 characters)
+                      maxLength: 200
+                    language:
+                      type: string
+                postalCode:
+                  type: string
+                  description: Postal code (max 10 characters)
+                  maxLength: 10
+                region:
+                  type: string
+                type:
+                  allOf:
+                    - $ref: '#/components/schemas/OrganizationType'
+                  description: >-
+                    Required. Read from the JSON body only: a type given in
+                    the query string is ignored. Missing, null or outside the
+                    list is rejected with a 400 and nothing is created.
+                url:
+                  type: string
+                yearBirth:
+                  type: integer
+            example:
+              name:
+                text: Spéléo-club de Montpellier
+                language: fra
+              type: SPELEOLOGY
+              city: Montpellier
+              country:
+                id: FR
       responses:
         '200':
           description: Successful operation
@@ -6716,7 +6736,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/Organization'
         '400':
-          description: You must provide at least a name to create an organization, or the postal code is too long.
+          description: >-
+            The name is missing or too long, the postal code is too long, or
+            the type is missing, null or not in the list.
         '403':
           description: You are not authorized to create an organization.
 
@@ -6841,6 +6863,12 @@ paths:
                   maxLength: 10
                 region:
                   type: string
+                type:
+                  allOf:
+                    - $ref: '#/components/schemas/OrganizationType'
+                  description: >-
+                    Optional. Left unchanged when absent. Cannot be cleared:
+                    null is rejected with a 400, like a value outside the list.
                 url:
                   type: string
                 yearBirth:
@@ -6865,7 +6893,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
         400:
-          description: Validation error (name too long, postal code too long, language null or not found)
+          description: Validation error (name too long, postal code too long, language null or not found, type null or not in the list)
         403:
           description: You are not authorized to update an organization.
         404:
@@ -8919,6 +8947,11 @@ components:
                 type: string
               language:
                 type: string
+              type:
+                allOf:
+                  - $ref: '#/components/schemas/OrganizationType'
+                nullable: true
+                description: Absent on a deleted organization.
               isDeleted:
                 type: boolean
               redirectTo:
@@ -9948,6 +9981,11 @@ components:
                 type: string
               language:
                 type: string
+              type:
+                allOf:
+                  - $ref: '#/components/schemas/OrganizationType'
+                nullable: true
+                description: Absent on a deleted organization.
               isDeleted:
                 type: boolean
               redirectTo:
@@ -10423,6 +10461,10 @@ components:
           type: 'string'
         reviewer:
           $ref: '#/components/schemas/Caver'
+        type:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationType'
+          nullable: true
         village:
           type: 'string'
         yearBirth:
@@ -10441,6 +10483,34 @@ components:
         name:
           type: string
           nullable: true
+        type:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationType'
+          nullable: true
+
+    OrganizationType:
+      type: string
+      description: >-
+        Kind of organization, from a controlled list. The front end translates
+        the values. Every new organization must be given one; only those
+        registered before types were introduced have a null type, until
+        someone sets it. The API never clears a type.
+          - SPELEOLOGY: caving club (https://www.wikidata.org/wiki/Q179132)
+          - CAVE_RESCUE: cave rescue (https://www.wikidata.org/wiki/Q1643871)
+          - EDITION: publisher (https://www.wikidata.org/wiki/Q57933693)
+          - RESEARCH: research body (https://www.wikidata.org/wiki/Q42240)
+          - ADMINISTRATION: public administration (https://www.wikidata.org/wiki/Q31728)
+          - NATURE_CONSERVATION: nature conservation (https://www.wikidata.org/wiki/Q20113959)
+          - LIBRARY: library holding caving books (https://www.wikidata.org/wiki/Q7075)
+      enum:
+        - SPELEOLOGY
+        - CAVE_RESCUE
+        - EDITION
+        - RESEARCH
+        - ADMINISTRATION
+        - NATURE_CONSERVATION
+        - LIBRARY
+      example: SPELEOLOGY
 
     Point:
       type: object
@@ -10478,6 +10548,11 @@ components:
                 type: string
               language:
                 type: string
+              type:
+                allOf:
+                  - $ref: '#/components/schemas/OrganizationType'
+                nullable: true
+                description: Absent on a deleted organization.
               isDeleted:
                 type: boolean
               redirectTo:

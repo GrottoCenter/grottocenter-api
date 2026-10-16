@@ -284,7 +284,11 @@ describe('searchDocuments', () => {
     };
     // Each kind: a live target, a row merged into it, a row deleted for good
     const kinds = {
-      organization: { model: () => TGrotto, owner: 'grotto' },
+      organization: {
+        model: () => TGrotto,
+        owner: 'grotto',
+        attributes: { type: 'EDITION' },
+      },
       massif: { model: () => TMassif, owner: 'massif' },
       cave: { model: () => TCave, owner: 'cave' },
       entrance: {
@@ -376,7 +380,11 @@ describe('searchDocuments', () => {
 
     it('embeds the organization a merged editor went into', async () => {
       const [doc] = await buildDocuments('documents', [5]);
-      should(doc.editor).eql({ name: 'Live organization', language: 'fra' });
+      should(doc.editor).eql({
+        name: 'Live organization',
+        language: 'fra',
+        type: 'EDITION',
+      });
     });
 
     it('leaves out a deleted library that was never merged', async () => {
@@ -386,7 +394,9 @@ describe('searchDocuments', () => {
 
     it('embeds each live author organization once', async () => {
       const [doc] = await buildDocuments('documents', [5]);
-      should(doc.authorsOrganization).eql([{ name: 'Live organization' }]);
+      should(doc.authorsOrganization).eql([
+        { name: 'Live organization', type: 'EDITION' },
+      ]);
     });
 
     it('embeds each live entrance once, by its own id', async () => {

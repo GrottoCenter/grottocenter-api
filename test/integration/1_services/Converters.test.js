@@ -718,18 +718,24 @@ describe('Converters Service', () => {
   });
 
   describe('toManagingOrganization()', () => {
-    it('should map an active organization to {id, name, language}', () => {
+    it('should map an active organization to {id, name, language, type}', () => {
       const result = converters.toManagingOrganization({
         id: 5,
         name: 'Speleo Club',
         language: 'fra',
+        type: 'SPELEOLOGY',
       });
-      should(result).eql({ id: 5, name: 'Speleo Club', language: 'fra' });
+      should(result).eql({
+        id: 5,
+        name: 'Speleo Club',
+        language: 'fra',
+        type: 'SPELEOLOGY',
+      });
     });
 
-    it('should null out missing name/language on an active organization', () => {
+    it('should null out missing name/language/type on an active organization', () => {
       const result = converters.toManagingOrganization({ id: 5 });
-      should(result).eql({ id: 5, name: null, language: null });
+      should(result).eql({ id: 5, name: null, language: null, type: null });
     });
 
     it('should map a soft-deleted organization to a redirect stub', () => {
@@ -766,7 +772,7 @@ describe('Converters Service', () => {
         ],
       });
       should(result.organizations).eql([
-        { id: 5, name: 'Active Org', language: 'fra' },
+        { id: 5, name: 'Active Org', language: 'fra', type: null },
         { id: 7, isDeleted: true, redirectTo: 42 },
       ]);
     });
