@@ -136,7 +136,8 @@ async function expand(rows) {
         break;
       case 'organization':
         targets.organizations.add(id);
-        if (touched(row, 'is_deleted', 'redirect_to')) {
+        // Documents embed the type of their editor, library and authors
+        if (touched(row, 'is_deleted', 'redirect_to', 'type')) {
           organizationDocuments.add(id);
         }
         break;

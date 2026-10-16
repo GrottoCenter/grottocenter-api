@@ -5,6 +5,10 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
+const {
+  ORGANIZATION_TYPE_VALUES,
+} = require('../../config/constants/organization');
+
 module.exports = {
   tableName: 'h_grotto',
 
@@ -146,6 +150,14 @@ module.exports = {
       allowNull: true,
       columnName: 'picture_file_name',
       maxLength: 100,
+    },
+
+    type: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'type',
+      maxLength: 32,
+      isIn: [...ORGANIZATION_TYPE_VALUES],
     },
   },
 };

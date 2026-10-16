@@ -7,6 +7,9 @@ const { validateNameLength } = require('../../../utils/nameValidation');
 const {
   validatePostalCodeLength,
 } = require('../../../utils/postalCodeValidation');
+const {
+  validateOrganizationType,
+} = require('../../../utils/organizationTypeValidation');
 
 module.exports = async (req, res) => {
   // Check if organization exists
@@ -18,8 +21,17 @@ module.exports = async (req, res) => {
     });
   }
 
+  // The type is optional here (an omitted type is left as is) but cannot be
+  // cleared, so it stays out of getConvertedDataFromClientRequest, which
+  // would turn an absent value into null
+  const typeError = validateOrganizationType(req.body.type);
+  if (typeError) {
+    return res.badRequest(typeError);
+  }
+
   const cleanedData = {
     ...GrottoService.getConvertedDataFromClientRequest(req),
+    ...(req.body.type !== undefined && { type: req.body.type }),
     reviewer: req.token.id,
     id: organizationId,
   };

@@ -775,12 +775,14 @@ const c = {
           id: source.id,
           name: source.name ?? null,
           language: source.language ?? null,
+          type: source.type ?? null,
         },
 
   toSimpleOrganization: (source) => ({
     id: source.id,
     name: getMainName(source),
     language: getMainLanguage(source),
+    type: source.type ?? null,
     isDeleted: source.isDeleted,
   }),
 
@@ -795,6 +797,7 @@ const c = {
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
     name: getMainName(source),
+    type: source.type ?? null,
     nameId: Array.isArray(source.names)
       ? source.names.find((name) => name.isMain)?.id // PostgreSQL
       : undefined,

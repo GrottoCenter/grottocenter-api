@@ -75,7 +75,7 @@ async function* processRows(source) {
         rows,
         rowsKey: 'editorId',
         localField: 'editor',
-        fields: ['n.name', 'n.id_language AS language'],
+        fields: ['n.name', 'n.id_language AS language', 'le.type'],
         join: [
           exportUtils.liveRowJoin('t_grotto', 'e', 'le'),
           `LEFT JOIN t_name n ON n.id_grotto = le.id AND n.is_main = true`,
@@ -88,7 +88,7 @@ async function* processRows(source) {
         rows,
         rowsKey: 'libraryId',
         localField: 'library',
-        fields: ['n.name', 'n.id_language AS language'],
+        fields: ['n.name', 'n.id_language AS language', 'll.type'],
         join: [
           exportUtils.liveRowJoin('t_grotto', 'l', 'll'),
           `LEFT JOIN t_name n ON n.id_grotto = ll.id AND n.is_main = true`,
@@ -136,7 +136,7 @@ async function* processRows(source) {
         foreignField: 'j.id_document',
         rows,
         localField: 'authorsOrganization',
-        fields: ['lg.id', 'n.name'],
+        fields: ['lg.id', 'n.name', 'lg.type'],
         where: [],
         join: [
           'JOIN t_grotto g ON g.id = j.id_grotto',
@@ -212,7 +212,7 @@ async function* processRows(source) {
       row.massifs = exportUtils.uniqueBy(row.massifs, 'id');
       row.authorsOrganization = exportUtils
         .uniqueBy(row.authorsOrganization, 'id')
-        ?.map(({ name }) => ({ name }));
+        ?.map(({ name, type }) => ({ name, type }));
 
       row.authorsSort = computeDocumentAuthorsSort(
         row.authors?.map((e) => e.nickname),

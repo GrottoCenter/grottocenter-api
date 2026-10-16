@@ -956,6 +956,14 @@ const SEARCH_OUTBOX_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after SEARCH_OUTBOX_MIGRATION, whose t_grotto triggers it replaces
+const ORGANIZATION_TYPE_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_23_2026_10_15_organization_type.sql'),
+    'utf8'
+  )
+);
+
 // Document history, as production runs it: every t_document update copies the
 // old row into h_document, keyed by (id, date_reviewed). Waterline builds
 // h_document with date_reviewed alone as primary key and without the issue
@@ -1006,4 +1014,5 @@ module.exports = {
   DETACH_DOCUMENT_HISTO_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
+  ORGANIZATION_TYPE_MIGRATION,
 };

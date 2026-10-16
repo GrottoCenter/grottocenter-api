@@ -19,6 +19,9 @@ describe('Organization find-all', () => {
           if (err) return done(err);
           should(res.body).have.property('organizations');
           should(res.body.organizations).be.an.Array();
+          // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+          const first = res.body.organizations.find((o) => o.id === 1);
+          should(first).have.property('type', 'SPELEOLOGY');
           return done();
         });
     });

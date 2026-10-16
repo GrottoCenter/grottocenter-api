@@ -36,8 +36,8 @@ describe('Document citation payload on embedded document lists', () => {
 
     // getMainName / getMainLanguage read the main TName row, so each
     // organization needs one for `name` and `language` to be non-null.
-    const createOrg = async (name) => {
-      const org = await TGrotto.create({ author: 1 }).fetch();
+    const createOrg = async (name, type) => {
+      const org = await TGrotto.create({ author: 1, type }).fetch();
       await TName.create({
         author: 1,
         name,
@@ -49,9 +49,9 @@ describe('Document citation payload on embedded document lists', () => {
     };
 
     [editorOrg, libraryOrg, authorOrg] = await Promise.all([
-      createOrg('Citation Editor Org'),
-      createOrg('Citation Library Org'),
-      createOrg('Citation Author Org'),
+      createOrg('Citation Editor Org', 'EDITION'),
+      createOrg('Citation Library Org', 'LIBRARY'),
+      createOrg('Citation Author Org', 'RESEARCH'),
     ]);
 
     author = await TCaver.create({
@@ -181,6 +181,10 @@ describe('Document citation payload on embedded document lists', () => {
       'name',
       'Citation Author Org'
     );
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+    should(document.editor).have.property('type', 'EDITION');
+    should(document.library).have.property('type', 'LIBRARY');
+    should(document.authorsOrganization[0]).have.property('type', 'RESEARCH');
 
     should(document.authors.map((a) => a.id)).containDeep([author.id]);
 
@@ -226,6 +230,17 @@ describe('Document citation payload on embedded document lists', () => {
     should(document).not.be.undefined();
     return document;
   };
+
+  // https://github.com/GrottoCenter/grottocenter-api/issues/1806
+  it('should expose the organization types on GET /documents/:id', async () => {
+    const res = await supertest(sails.hooks.http.app)
+      .get(`/api/v1/documents/${citedDoc.id}`)
+      .set('Accept', 'application/json')
+      .expect(200);
+    should(res.body.editor).have.property('type', 'EDITION');
+    should(res.body.library).have.property('type', 'LIBRARY');
+    should(res.body.authorsOrganization[0]).have.property('type', 'RESEARCH');
+  });
 
   it('should expose the citation fields on GET /caves/:id', async () => {
     const res = await supertest(sails.hooks.http.app)
