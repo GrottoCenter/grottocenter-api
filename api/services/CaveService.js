@@ -220,7 +220,12 @@ module.exports = {
     return cave;
   },
 
-  async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId) {
+  /**
+   * @param {Object} [db] connection to run every write on, typically the
+   *   caller's transaction
+   */
+  async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId, db) {
+    const on = (query) => (db ? query.usingConnection(db) : query);
     const ids = (arr) => (arr || []).map((e) => e.id);
     const action = shouldMergeInto ? 'merge' : 'delete';
     const target = shouldMergeInto ? mergeIntoId : null;
@@ -237,34 +242,38 @@ module.exports = {
       `Permanent ${action} cave ${cave.id}: ${JSON.stringify(audit)}`
     );
 
-    await TCave.update({ redirectTo: cave.id }).set({
-      redirectTo: target,
-    });
-    await TNotification.destroy({ cave: cave.id });
+    await on(
+      TCave.update({ redirectTo: cave.id }).set({
+        redirectTo: target,
+      })
+    );
+    await on(TNotification.destroy({ cave: cave.id }));
 
     if (cave.documents.length > 0) {
       if (shouldMergeInto) {
         const newDocuments = cave.documents.map((e) => e.id);
-        await TCave.addToCollection(mergeIntoId, 'documents', newDocuments);
+        await on(TCave.addToCollection(mergeIntoId, 'documents', newDocuments));
       }
-      await TCave.updateOne(cave.id).set({ documents: [] });
+      await on(TCave.updateOne(cave.id).set({ documents: [] }));
     }
 
     if (cave.entrances.length > 0 && shouldMergeInto) {
       const newEntrances = cave.entrances.map((e) => e.id);
-      await TCave.addToCollection(mergeIntoId, 'entrances', newEntrances);
+      await on(TCave.addToCollection(mergeIntoId, 'entrances', newEntrances));
     }
 
     if (cave.descriptions.length > 0) {
       if (shouldMergeInto) {
-        await TDescription.update({ cave: cave.id }).set({ cave: mergeIntoId });
+        await on(
+          TDescription.update({ cave: cave.id }).set({ cave: mergeIntoId })
+        );
       } else {
-        await TDescription.destroy({ cave: cave.id }); // Soft delete (is_deleted = true)
-        await TDescription.destroy({ cave: cave.id }); // Hard delete (removes row)
+        await on(TDescription.destroy({ cave: cave.id })); // Soft delete (is_deleted = true)
+        await on(TDescription.destroy({ cave: cave.id })); // Hard delete (removes row)
       }
     }
 
-    await NameService.permanentDelete({ cave: cave.id });
+    await NameService.permanentDelete({ cave: cave.id }, db);
 
     // Clean up junction tables before hard delete.
     // Using raw SQL because the cave is already soft-deleted at this point,
@@ -272,19 +281,22 @@ module.exports = {
     await Promise.all([
       CommonService.query(
         'DELETE FROM j_grotto_cave_explorer WHERE id_cave = $1',
-        [cave.id]
+        [cave.id],
+        db
       ),
       CommonService.query(
         'DELETE FROM j_caver_cave_explorer WHERE id_cave = $1',
-        [cave.id]
+        [cave.id],
+        db
       ),
       CommonService.query(
         'DELETE FROM j_grotto_cave_partner WHERE id_cave = $1',
-        [cave.id]
+        [cave.id],
+        db
       ),
     ]);
 
     // h_ rows are intentionally preserved for auditability.
-    await TCave.destroyOne({ id: cave.id }); // Hard delete
+    await on(TCave.destroyOne({ id: cave.id })); // Hard delete
   },
 };
