@@ -859,9 +859,9 @@ DROP TRIGGER IF EXISTS last_change_rigging ON t_rigging;
 CREATE TRIGGER last_change_rigging BEFORE INSERT OR UPDATE ON t_rigging FOR EACH ROW EXECUTE PROCEDURE change_rigging();
 `;
 
-// Mirrors sql/9_22_2026_10_12_fix_change_document_trigger.sql (#1781). Only the
-// t_last_change trigger is installed: the document history triggers are not
-// needed by any test.
+// Mirrors sql/9_22_2026_10_12_fix_change_document_trigger.sql (#1781). The
+// document history trigger is handled separately, by
+// CREATE_DOCUMENT_HISTO_FUNCTION.
 const CREATE_DOCUMENT_CHANGE_TRIGGER = `
 CREATE OR REPLACE FUNCTION change_document() RETURNS trigger AS $$
 DECLARE type_change varchar(20);
@@ -964,6 +964,33 @@ const ORGANIZATION_TYPE_MIGRATION = forTestDatabase(
   )
 );
 
+// Document history, as production runs it: every t_document update copies the
+// old row into h_document, keyed by (id, date_reviewed). Waterline builds
+// h_document with date_reviewed alone as primary key and without the issue
+// column the trigger writes, so both are aligned on production first. Only the
+// function is installed here: many fixtures have no date_inscription, which
+// the trigger would turn into a NULL history key, so the tests that need the
+// history attach the trigger themselves (ATTACH/DETACH_DOCUMENT_HISTO_TRIGGER).
+const CREATE_DOCUMENT_HISTO_FUNCTION = `
+ALTER TABLE h_document ADD COLUMN IF NOT EXISTS issue VARCHAR(100);
+ALTER TABLE h_document DROP CONSTRAINT IF EXISTS h_document_pkey;
+ALTER TABLE h_document ADD CONSTRAINT h_document_pkey PRIMARY KEY (id, date_reviewed);
+${forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/5_02_2025_11_19_update_document_trigger.sql'),
+    'utf8'
+  )
+)}
+`;
+
+const ATTACH_DOCUMENT_HISTO_TRIGGER = `
+DROP TRIGGER IF EXISTS histo_update_document ON t_document;
+CREATE TRIGGER histo_update_document BEFORE UPDATE ON t_document FOR EACH ROW EXECUTE PROCEDURE histo_update_document();
+`;
+
+const DETACH_DOCUMENT_HISTO_TRIGGER =
+  'DROP TRIGGER IF EXISTS histo_update_document ON t_document;';
+
 module.exports = {
   forTestDatabase,
   UPDATE_SEQUENCES_QUERY,
@@ -982,6 +1009,9 @@ module.exports = {
   CREATE_COMMENT_TRIGGERS,
   CREATE_SUB_ENTITY_TRIGGERS,
   CREATE_DOCUMENT_CHANGE_TRIGGER,
+  CREATE_DOCUMENT_HISTO_FUNCTION,
+  ATTACH_DOCUMENT_HISTO_TRIGGER,
+  DETACH_DOCUMENT_HISTO_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
   ORGANIZATION_TYPE_MIGRATION,

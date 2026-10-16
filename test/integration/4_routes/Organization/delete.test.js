@@ -2,6 +2,10 @@ const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
+const {
+  ATTACH_DOCUMENT_HISTO_TRIGGER,
+  DETACH_DOCUMENT_HISTO_TRIGGER,
+} = require('../../../customSQL');
 
 describe('Organization features', () => {
   let userToken;
@@ -373,6 +377,124 @@ describe('Organization features', () => {
         )
       );
       await TGrotto.destroy({ id: targetOrg.id });
+    });
+
+    describe('Documents edited or held by the organization (#1757)', () => {
+      const reviewedAt = new Date('2021-03-04T05:06:07Z');
+
+      before(() =>
+        sails.getDatastore().sendNativeQuery(ATTACH_DOCUMENT_HISTO_TRIGGER)
+      );
+      after(() =>
+        sails.getDatastore().sendNativeQuery(DETACH_DOCUMENT_HISTO_TRIGGER)
+      );
+
+      // The t_document update trigger copies the old row into h_document,
+      // keyed by (id, date_reviewed). A history row already holding the
+      // document's current review date makes any update that leaves
+      // date_reviewed untouched collide on that key.
+      const createDocumentWithHistory = async (fields) => {
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          dateInscription: new Date('2020-01-01T00:00:00Z'),
+          dateReviewed: reviewedAt,
+          ...fields,
+        }).fetch();
+        await sails
+          .getDatastore()
+          .sendNativeQuery(
+            'INSERT INTO h_document (id, date_reviewed, id_author) VALUES ($1, $2, 1)',
+            [doc.id, reviewedAt]
+          );
+        return doc;
+      };
+
+      const deletePermanently = (orgId, query = '') =>
+        supertest(sails.hooks.http.app)
+          .delete(`/api/v1/organizations/${orgId}?isPermanent=true${query}`)
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json');
+
+      const historyOf = async (docId) =>
+        (
+          await sails
+            .getDatastore()
+            .sendNativeQuery(
+              'SELECT id_editor, id_library FROM h_document WHERE id = $1 ORDER BY date_reviewed',
+              [docId]
+            )
+        ).rows;
+
+      it('should hand the documents over to the merge target despite an existing history row', async () => {
+        const targetOrg = await TGrotto.create({ author: 1 }).fetch();
+        const org = await TGrotto.create({ author: 1 }).fetch();
+        const edited = await createDocumentWithHistory({ editor: org.id });
+        const held = await createDocumentWithHistory({ library: org.id });
+
+        await deletePermanently(org.id, `&entityId=${targetOrg.id}`).expect(
+          200
+        );
+
+        should((await TDocument.findOne(edited.id)).editor).equal(targetOrg.id);
+        should((await TDocument.findOne(held.id)).library).equal(targetOrg.id);
+        // The reassignment is historized next to the existing row, and the
+        // history follows the organization into the merge target.
+        should(await historyOf(edited.id)).deepEqual([
+          { id_editor: null, id_library: null },
+          { id_editor: targetOrg.id, id_library: null },
+        ]);
+        should(await historyOf(held.id)).deepEqual([
+          { id_editor: null, id_library: null },
+          { id_editor: null, id_library: targetOrg.id },
+        ]);
+
+        await TDocument.destroy({ id: [edited.id, held.id] });
+        await TGrotto.destroy({ id: targetOrg.id });
+      });
+
+      it('should reassign a document both edited and held by the organization', async () => {
+        const targetOrg = await TGrotto.create({ author: 1 }).fetch();
+        const org = await TGrotto.create({ author: 1 }).fetch();
+        const doc = await createDocumentWithHistory({
+          editor: org.id,
+          library: org.id,
+        });
+
+        await deletePermanently(org.id, `&entityId=${targetOrg.id}`).expect(
+          200
+        );
+
+        const reassigned = await TDocument.findOne(doc.id);
+        should(reassigned.editor).equal(targetOrg.id);
+        should(reassigned.library).equal(targetOrg.id);
+
+        await TDocument.destroy({ id: doc.id });
+        await TGrotto.destroy({ id: targetOrg.id });
+      });
+
+      it('should clear editor and library without a merge target', async () => {
+        const org = await TGrotto.create({ author: 1 }).fetch();
+        const doc = await createDocumentWithHistory({
+          editor: org.id,
+          library: org.id,
+        });
+
+        await deletePermanently(org.id).expect(200);
+
+        const cleared = await TDocument.findOne(doc.id);
+        should(cleared.editor).be.null();
+        should(cleared.library).be.null();
+        // Historized once, and no history row still points at the deleted
+        // organization.
+        should(await historyOf(doc.id)).deepEqual([
+          { id_editor: null, id_library: null },
+          { id_editor: null, id_library: null },
+        ]);
+
+        await TDocument.destroy({ id: doc.id });
+      });
     });
   });
 
