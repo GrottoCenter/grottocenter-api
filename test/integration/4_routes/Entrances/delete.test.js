@@ -6,9 +6,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Entrance features', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
   });
 
   describe('Delete', () => {
@@ -100,7 +102,7 @@ describe('Entrance features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/entrances/${entrance.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -127,7 +129,7 @@ describe('Entrance features', () => {
         .delete(
           `/api/v1/entrances/${entrance.id}?isPermanent=true&entityId=${targetEntrance.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -141,7 +143,9 @@ describe('Entrance features', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TEntrance,
     createEntity: () =>
       TEntrance.create({ author: 1, latitude: '0', longitude: '0' }).fetch(),

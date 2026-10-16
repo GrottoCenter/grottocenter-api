@@ -5,8 +5,10 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
 describe('Cave features', () => {
   let moderatorToken;
+  let adminToken;
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
   });
 
   describe('Delete', () => {
@@ -144,7 +146,7 @@ describe('Cave features', () => {
       it('should return 400 when trying to permanently delete cave with entrances without merge target', async () => {
         await supertest(sails.hooks.http.app)
           .delete(`/api/v1/caves/${caveWithEntranceId}?isPermanent=true`)
-          .set('Authorization', moderatorToken)
+          .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .expect(400);
       });
@@ -152,7 +154,9 @@ describe('Cave features', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TCave,
     createEntity: () => TCave.create({}).fetch(),
     deleteUrl: (id) => `/api/v1/caves/${id}`,

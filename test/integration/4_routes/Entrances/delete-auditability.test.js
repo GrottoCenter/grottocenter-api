@@ -5,7 +5,7 @@ const CommonService = require('../../../../api/services/CommonService');
 
 describe('Entrance features', () => {
   describe('Delete - Auditability', () => {
-    let moderatorToken;
+    let adminToken;
     let entrance;
     let cave;
     let organization;
@@ -18,7 +18,7 @@ describe('Entrance features', () => {
     let document;
 
     before(async () => {
-      moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+      adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
 
       // Create a cave (sole entrance triggers cave cascade delete)
       cave = await TCave.create({
@@ -195,7 +195,7 @@ describe('Entrance features', () => {
     it('should permanently delete entrance and preserve all h_ rows', async () => {
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/entrances/${entrance.id}?isPermanent=1`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);

@@ -11,6 +11,10 @@ module.exports = async (req, res) => {
     req.token.groups,
     RightService.G.MODERATOR
   );
+  const hasAdminRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
   if (!hasRight)
     return res.forbidden('You are not authorized to delete description.');
 
@@ -21,6 +25,14 @@ module.exports = async (req, res) => {
     false
   );
   if (isPermanentError) return res.badRequest(isPermanentError);
+
+  // Permanent (irreversible) deletion is gated to administrators; moderators
+  // may only soft-delete (matches device/delete.js, guideline/delete.js).
+  if (deletePermanently && !hasAdminRight) {
+    return res.forbidden(
+      'You are not authorized to permanently delete description.'
+    );
+  }
 
   const descriptionId = req.param('id');
   const description = await DescriptionService.getDescription(descriptionId);

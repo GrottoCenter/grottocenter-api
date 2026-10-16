@@ -6,9 +6,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Rigging features', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
   });
 
   describe('Delete', () => {
@@ -51,7 +53,7 @@ describe('Rigging features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/riggings/${rig.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const deleted = await TRigging.findOne(rig.id);
@@ -60,7 +62,9 @@ describe('Rigging features', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TRigging,
     createEntity: () =>
       TRigging.create({ author: 1, title: 'Test', entrance: 999 }).fetch(),

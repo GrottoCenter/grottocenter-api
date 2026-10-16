@@ -267,6 +267,10 @@ paths:
           description: Successful operation
         '400':
           description: Cave(s) not found, or `isPermanent` is not a `BooleanLike` value.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Not a moderator, or `isPermanent=true` without the Administrator role.
         '410':
           description: Cave already deleted
 
@@ -1380,6 +1384,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the description
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -1393,7 +1398,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete description.
+          description: You are not authorized to delete description, or `isPermanent=true` without the Administrator role.
         '404':
           description: Description not found.
     patch:
@@ -1750,6 +1755,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the document
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -1772,7 +1778,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete a document.
+          description: You are not authorized to delete a document, or `isPermanent=true` without the Administrator role.
         '404':
           description: Document not found.
     get:
@@ -3401,6 +3407,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the location
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3414,7 +3421,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete location.
+          description: You are not authorized to delete location, or `isPermanent=true` without the Administrator role.
         '404':
           description: Location not found.
     put:
@@ -3572,6 +3579,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the history
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3585,7 +3593,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete history.
+          description: You are not authorized to delete history, or `isPermanent=true` without the Administrator role.
         '404':
           description: History not found.
     patch:
@@ -3688,6 +3696,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the comment
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3701,7 +3710,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete comment.
+          description: You are not authorized to delete comment, or `isPermanent=true` without the Administrator role.
         '404':
           description: Comment not found.
     patch:
@@ -3837,6 +3846,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the rigging
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3850,7 +3860,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete rigging.
+          description: You are not authorized to delete rigging, or `isPermanent=true` without the Administrator role.
         '404':
           description: Rigging not found.
     patch:
@@ -5222,6 +5232,10 @@ paths:
           $ref: '#/components/responses/InvalidBoolean'
         '204':
           description: Successful operation
+        '401':
+          description: Authentication required.
+        '403':
+          description: Not a moderator, or `isPermanent=true` without the Administrator role.
         '404':
           description: Entrance not found.
         '410':
@@ -6395,6 +6409,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the massif
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -6417,7 +6432,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete a massif.
+          description: You are not authorized to delete a massif, or `isPermanent=true` without the Administrator role.
         '404':
           description: Massif not found.
 
@@ -6772,6 +6787,7 @@ paths:
           description: >
             When true, permanently (hard) delete the organization instead of
             soft-deleting it.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -6787,7 +6803,7 @@ paths:
         '200':
           description: Successful operation
         '403':
-          description: You are not authorized to delete an organization.
+          description: You are not authorized to delete an organization, or `isPermanent=true` without the Administrator role.
         '404':
           description: Organization not found.
         '410':
@@ -8358,6 +8374,8 @@ components:
       description: >
         When true, permanently (hard) delete the entity instead of
         soft-deleting it.
+        Requires the Administrator role (403 otherwise, before anything is
+        written).
       schema:
         allOf:
           - $ref: '#/components/schemas/BooleanLike'

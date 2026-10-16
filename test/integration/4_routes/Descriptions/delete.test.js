@@ -6,9 +6,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Description features', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
   });
 
   describe('Delete', () => {
@@ -54,7 +56,7 @@ describe('Description features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/descriptions/${desc.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const deleted = await TDescription.findOne(desc.id);
@@ -63,7 +65,9 @@ describe('Description features', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TDescription,
     createEntity: () =>
       TDescription.create({ author: 1, title: 'Test', entrance: 1 }).fetch(),

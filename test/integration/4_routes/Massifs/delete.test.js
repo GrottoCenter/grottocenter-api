@@ -7,9 +7,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Massif features', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
   });
 
   describe('Delete', () => {
@@ -84,7 +86,7 @@ describe('Massif features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/massifs/${massif.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -107,7 +109,7 @@ describe('Massif features', () => {
         .delete(
           `/api/v1/massifs/${massif.id}?isPermanent=true&entityId=${targetMassif.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -177,7 +179,7 @@ describe('Massif features', () => {
       const permanentDelete = (id, query = '') =>
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/massifs/${id}?isPermanent=true${query}`)
-          .set('Authorization', moderatorToken)
+          .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json');
 
@@ -330,7 +332,8 @@ describe('Massif features', () => {
       // Inside this describe so the soft-delete trigger is attached: without it
       // a permanent delete of a live massif loses its row to the first DELETE.
       deleteIsPermanentCases({
-        getToken: () => moderatorToken,
+        getToken: () => adminToken,
+        getModeratorToken: () => moderatorToken,
         getModel: () => TMassif,
         createEntity: () => TMassif.create({ author: 1 }).fetch(),
         deleteUrl: (id) => `/api/v1/massifs/${id}`,

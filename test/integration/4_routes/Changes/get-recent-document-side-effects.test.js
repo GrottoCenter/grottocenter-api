@@ -47,6 +47,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
   describe('Issue #1781 — side effects on documents are not document changes', () => {
     let userToken;
     let moderatorToken;
+    let adminToken;
     let userId;
 
     // PUT /documents/validate for one document, checking its outcome (#1817)
@@ -62,6 +63,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
     before(async () => {
       userToken = await AuthTokenService.getRawBearerUserToken();
       moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+      adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
       userId = (await TCaver.findOne({ mail: 'user1@user1.com' })).id;
     });
 
@@ -75,7 +77,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         .delete(
           `/api/v1/caves/${caveId}?isPermanent=true&entityId=${targetCaveId}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       should((await TDocument.findOne(document.id)).cave).equal(targetCaveId);
@@ -308,7 +310,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         .delete(
           `/api/v1/caves/${caveId}?isPermanent=true&entityId=${targetCaveId}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const res = await supertest(sails.hooks.http.app)
