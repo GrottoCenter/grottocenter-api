@@ -10,9 +10,11 @@ const {
 describe('Organization features', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
   describe('Delete', () => {
@@ -127,7 +129,7 @@ describe('Organization features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -158,7 +160,7 @@ describe('Organization features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -199,7 +201,7 @@ describe('Organization features', () => {
         .delete(
           `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -248,7 +250,7 @@ describe('Organization features', () => {
         .delete(
           `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -302,7 +304,7 @@ describe('Organization features', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -342,7 +344,7 @@ describe('Organization features', () => {
         .delete(
           `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -413,7 +415,7 @@ describe('Organization features', () => {
       const deletePermanently = (orgId, query = '') =>
         supertest(sails.hooks.http.app)
           .delete(`/api/v1/organizations/${orgId}?isPermanent=true${query}`)
-          .set('Authorization', moderatorToken)
+          .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json');
 
@@ -499,7 +501,9 @@ describe('Organization features', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TGrotto,
     createEntity: () => TGrotto.create({ author: 1 }).fetch(),
     deleteUrl: (id) => `/api/v1/organizations/${id}`,

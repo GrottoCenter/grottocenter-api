@@ -3,10 +3,12 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Massif restore features', () => {
   let moderatorToken;
+  let adminToken;
   let userToken;
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -32,7 +34,7 @@ describe('Massif restore features', () => {
         .expect(404, done);
     });
 
-    it('should return 200 and restore deleted massif', async () => {
+    it('should return 200 to an administrator without the Moderator role and restore deleted massif', async () => {
       const massif = await TMassif.create({
         isDeleted: true,
         author: 1,
@@ -48,7 +50,7 @@ describe('Massif restore features', () => {
 
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/massifs/${massif.id}/restore`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const restored = await TMassif.findOne(massif.id);

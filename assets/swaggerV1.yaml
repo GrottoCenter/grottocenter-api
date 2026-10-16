@@ -267,6 +267,10 @@ paths:
           description: Successful operation
         '400':
           description: Cave(s) not found, or `isPermanent` is not a `BooleanLike` value.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
         '410':
           description: Cave already deleted
 
@@ -1355,7 +1359,7 @@ paths:
       tags:
         - descriptions
       description: >
-        Delete a description (moderators only). By default this is a reversible
+        Delete a description (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted description leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the description is
@@ -1380,6 +1384,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the description
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -1393,7 +1398,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete description.
+          description: You are not authorized to delete description, or `isPermanent=true` without the Administrator role.
         '404':
           description: Description not found.
     patch:
@@ -1716,7 +1721,7 @@ paths:
       tags:
         - documents
       description: >
-        Delete a document (moderators only). By default this is a reversible
+        Delete a document (moderators or administrators). By default this is a reversible
         soft-delete that also removes the document from search. Deleting an
         already soft-deleted document leaves it unchanged and returns 200, but
         notifies its subscribers again (a new notification, plus an email for
@@ -1750,6 +1755,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the document
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -1772,7 +1778,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete a document.
+          description: You are not authorized to delete a document, or `isPermanent=true` without the Administrator role.
         '404':
           description: Document not found.
     get:
@@ -3376,7 +3382,7 @@ paths:
       tags:
         - locations
       description: >
-        Delete a location (moderators only). By default this is a reversible
+        Delete a location (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted location leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the location is
@@ -3401,6 +3407,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the location
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3414,7 +3421,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete location.
+          description: You are not authorized to delete location, or `isPermanent=true` without the Administrator role.
         '404':
           description: Location not found.
     put:
@@ -3547,7 +3554,7 @@ paths:
       tags:
         - histories
       description: >
-        Delete a history (moderators only). By default this is a reversible
+        Delete a history (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted history leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the history is
@@ -3572,6 +3579,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the history
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3585,7 +3593,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete history.
+          description: You are not authorized to delete history, or `isPermanent=true` without the Administrator role.
         '404':
           description: History not found.
     patch:
@@ -3663,7 +3671,7 @@ paths:
       tags:
         - comments
       description: >
-        Delete a comment (moderators only). By default this is a reversible
+        Delete a comment (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted comment leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the comment is
@@ -3688,6 +3696,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the comment
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3701,7 +3710,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete comment.
+          description: You are not authorized to delete comment, or `isPermanent=true` without the Administrator role.
         '404':
           description: Comment not found.
     patch:
@@ -3812,7 +3821,7 @@ paths:
       tags:
         - riggings
       description: >
-        Delete a rigging (moderators only). By default this is a reversible
+        Delete a rigging (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted rigging leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the rigging is
@@ -3837,6 +3846,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the rigging
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
       responses:
         '200':
           description: |
@@ -3850,7 +3860,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete rigging.
+          description: You are not authorized to delete rigging, or `isPermanent=true` without the Administrator role.
         '404':
           description: Rigging not found.
     patch:
@@ -4246,7 +4256,7 @@ paths:
     post:
       tags:
         - guidelines
-      description: Restore a soft-deleted guideline. Authenticated action (moderator only).
+      description: Restore a soft-deleted guideline. Authenticated action (moderator or administrator).
       security:
         - bearerAuth: []
       parameters:
@@ -5222,6 +5232,10 @@ paths:
           $ref: '#/components/responses/InvalidBoolean'
         '204':
           description: Successful operation
+        '401':
+          description: Authentication required.
+        '403':
+          description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
         '404':
           description: Entrance not found.
         '410':
@@ -6366,7 +6380,7 @@ paths:
       tags:
         - massifs
       description: >
-        Delete a massif (moderators only). By default this is a reversible
+        Delete a massif (moderators or administrators). By default this is a reversible
         soft-delete; deleting an already soft-deleted massif is a no-op that
         still returns 200. When `isPermanent=true`, the massif is soft-deleted
         first if needed, then permanently removed together with its names,
@@ -6395,6 +6409,7 @@ paths:
             When true (`true` or `1`), permanently (hard) delete the massif
             instead of soft-deleting it. `false`, `0` or no value performs a
             soft delete; any other value is a 400.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -6417,7 +6432,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: You are not authorized to delete a massif.
+          description: You are not authorized to delete a massif, or `isPermanent=true` without the Administrator role.
         '404':
           description: Massif not found.
 
@@ -6748,7 +6763,7 @@ paths:
         - organizations
       description: >
         Delete an organization. By default this is a reversible soft-delete
-        (moderators only). When `isPermanent=true`, the organization and its
+        (moderators or administrators). When `isPermanent=true`, the organization and its
         history snapshots are permanently removed — this is irreversible. If
         `entityId` points to a surviving organization, the deleted
         organization's documents, explored caves, editor/library links,
@@ -6772,6 +6787,7 @@ paths:
           description: >
             When true, permanently (hard) delete the organization instead of
             soft-deleting it.
+            Requires the Administrator role (403 otherwise, before anything is written).
         - name: entityId
           in: query
           required: false
@@ -6787,7 +6803,7 @@ paths:
         '200':
           description: Successful operation
         '403':
-          description: You are not authorized to delete an organization.
+          description: You are not authorized to delete an organization, or `isPermanent=true` without the Administrator role.
         '404':
           description: Organization not found.
         '410':
@@ -7608,7 +7624,7 @@ paths:
       tags:
         - devices
       summary: Delete a device
-      description: Soft-delete a device (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      description: Soft-delete a device (Moderator or Administrator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -7838,7 +7854,7 @@ paths:
       tags:
         - SensorConfiguration
       summary: Delete a sensor configuration
-      description: Soft-delete a sensor configuration (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      description: Soft-delete a sensor configuration (Moderator or Administrator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -8358,6 +8374,8 @@ components:
       description: >
         When true, permanently (hard) delete the entity instead of
         soft-deleting it.
+        Requires the Administrator role (403 otherwise, before anything is
+        written).
       schema:
         allOf:
           - $ref: '#/components/schemas/BooleanLike'
