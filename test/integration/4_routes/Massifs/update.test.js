@@ -15,7 +15,7 @@ describe('Massif features', () => {
 
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
-    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     const massif = await TMassif.create({ author: 1, reviewer: 2 }).fetch();
     testMassifId = massif.id;
     const doc1 = await TDocument.create({

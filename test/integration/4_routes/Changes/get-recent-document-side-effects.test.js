@@ -63,7 +63,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
     before(async () => {
       userToken = await AuthTokenService.getRawBearerUserToken();
       moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
-      adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
+      adminToken = await AuthTokenService.getRawBearerAdminToken();
       userId = (await TCaver.findOne({ mail: 'user1@user1.com' })).id;
     });
 

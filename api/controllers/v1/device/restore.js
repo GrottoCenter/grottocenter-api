@@ -4,11 +4,15 @@ const { toDevice } = require('../../../services/mapping/converters');
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  const hasRight = RightService.hasGroup(
+  const hasModeratorRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.MODERATOR
   );
-  if (!hasRight)
+  const hasAdminRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  if (!hasModeratorRight && !hasAdminRight)
     return res.forbidden('You are not authorized to restore a device.');
 
   const { id } = req.params;

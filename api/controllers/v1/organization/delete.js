@@ -17,7 +17,7 @@ const GEO_JUNCTIONS = [
 ];
 
 module.exports = async (req, res) => {
-  const hasRight = RightService.hasGroup(
+  const hasModeratorRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.MODERATOR
   );
@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     req.token.groups,
     RightService.G.ADMINISTRATOR
   );
-  if (!hasRight) {
+  if (!hasModeratorRight && !hasAdminRight) {
     return res.forbidden('You are not authorized to delete an organization.');
   }
 

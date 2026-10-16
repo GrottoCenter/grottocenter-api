@@ -3,10 +3,12 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Description restore features', () => {
   let moderatorToken;
+  let adminToken;
   let userToken;
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -32,7 +34,7 @@ describe('Description restore features', () => {
         .expect(404, done);
     });
 
-    it('should return 200 and restore deleted description', async () => {
+    it('should return 200 to an administrator without the Moderator role and restore deleted description', async () => {
       const desc = await TDescription.create({
         isDeleted: true,
         author: 1,
@@ -42,7 +44,7 @@ describe('Description restore features', () => {
 
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/descriptions/${desc.id}/restore`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const restored = await TDescription.findOne(desc.id);

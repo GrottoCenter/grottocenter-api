@@ -10,7 +10,7 @@ describe('Document delete', () => {
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
-    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
   describe('Delete', () => {

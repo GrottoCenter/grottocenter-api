@@ -270,7 +270,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: Not a moderator, or `isPermanent=true` without the Administrator role.
+          description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
         '410':
           description: Cave already deleted
 
@@ -1359,7 +1359,7 @@ paths:
       tags:
         - descriptions
       description: >
-        Delete a description (moderators only). By default this is a reversible
+        Delete a description (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted description leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the description is
@@ -1721,7 +1721,7 @@ paths:
       tags:
         - documents
       description: >
-        Delete a document (moderators only). By default this is a reversible
+        Delete a document (moderators or administrators). By default this is a reversible
         soft-delete that also removes the document from search. Deleting an
         already soft-deleted document leaves it unchanged and returns 200, but
         notifies its subscribers again (a new notification, plus an email for
@@ -3382,7 +3382,7 @@ paths:
       tags:
         - locations
       description: >
-        Delete a location (moderators only). By default this is a reversible
+        Delete a location (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted location leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the location is
@@ -3554,7 +3554,7 @@ paths:
       tags:
         - histories
       description: >
-        Delete a history (moderators only). By default this is a reversible
+        Delete a history (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted history leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the history is
@@ -3671,7 +3671,7 @@ paths:
       tags:
         - comments
       description: >
-        Delete a comment (moderators only). By default this is a reversible
+        Delete a comment (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted comment leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the comment is
@@ -3821,7 +3821,7 @@ paths:
       tags:
         - riggings
       description: >
-        Delete a rigging (moderators only). By default this is a reversible
+        Delete a rigging (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted rigging leaves it
         unchanged and returns 200, but notifies its subscribers again (a new
         notification, plus an email for those who opted in). When `isPermanent=true`, the rigging is
@@ -4256,7 +4256,7 @@ paths:
     post:
       tags:
         - guidelines
-      description: Restore a soft-deleted guideline. Authenticated action (moderator only).
+      description: Restore a soft-deleted guideline. Authenticated action (moderator or administrator).
       security:
         - bearerAuth: []
       parameters:
@@ -5235,7 +5235,7 @@ paths:
         '401':
           description: Authentication required.
         '403':
-          description: Not a moderator, or `isPermanent=true` without the Administrator role.
+          description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
         '404':
           description: Entrance not found.
         '410':
@@ -6380,7 +6380,7 @@ paths:
       tags:
         - massifs
       description: >
-        Delete a massif (moderators only). By default this is a reversible
+        Delete a massif (moderators or administrators). By default this is a reversible
         soft-delete; deleting an already soft-deleted massif is a no-op that
         still returns 200. When `isPermanent=true`, the massif is soft-deleted
         first if needed, then permanently removed together with its names,
@@ -6763,7 +6763,7 @@ paths:
         - organizations
       description: >
         Delete an organization. By default this is a reversible soft-delete
-        (moderators only). When `isPermanent=true`, the organization and its
+        (moderators or administrators). When `isPermanent=true`, the organization and its
         history snapshots are permanently removed — this is irreversible. If
         `entityId` points to a surviving organization, the deleted
         organization's documents, explored caves, editor/library links,
@@ -7624,7 +7624,7 @@ paths:
       tags:
         - devices
       summary: Delete a device
-      description: Soft-delete a device (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      description: Soft-delete a device (Moderator or Administrator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -7854,7 +7854,7 @@ paths:
       tags:
         - SensorConfiguration
       summary: Delete a sensor configuration
-      description: Soft-delete a sensor configuration (Moderator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
+      description: Soft-delete a sensor configuration (Moderator or Administrator) or permanently delete (Administrator with isPermanent=true). Requires authentication.
       security:
         - bearerAuth: []
       parameters:

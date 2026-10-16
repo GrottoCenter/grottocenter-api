@@ -10,7 +10,7 @@ describe('Entrance features', () => {
 
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
-    adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
   describe('Create', () => {

@@ -18,7 +18,7 @@ describe('Entrance features', () => {
     let document;
 
     before(async () => {
-      adminToken = await AuthTokenService.getRawBearerAllGroupsToken();
+      adminToken = await AuthTokenService.getRawBearerAdminToken();
 
       // Create a cave (sole entrance triggers cave cascade delete)
       cave = await TCave.create({
