@@ -3,10 +3,12 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Entrance restore features', () => {
   let moderatorToken;
+  let adminToken;
   let userToken;
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -32,7 +34,7 @@ describe('Entrance restore features', () => {
         .expect(404, done);
     });
 
-    it('should return 200 and restore deleted entrance', async () => {
+    it('should return 200 to an administrator without the Moderator role and restore deleted entrance', async () => {
       const entrance = await TEntrance.create({
         isDeleted: true,
         latitude: 0,
@@ -50,7 +52,7 @@ describe('Entrance restore features', () => {
 
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/entrances/${entrance.id}/restore`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const restored = await TEntrance.findOne(entrance.id);

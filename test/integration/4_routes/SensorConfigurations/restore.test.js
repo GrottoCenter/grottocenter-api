@@ -6,6 +6,7 @@ describe('SensorConfiguration features', () => {
   describe('restore', () => {
     let userToken;
     let moderatorToken;
+    let adminToken;
 
     const DEVICE_ID = 1; // existing non-deleted device from fixtures
     const VALID_QUANTITY_KIND = 1;
@@ -17,6 +18,7 @@ describe('SensorConfiguration features', () => {
     before(async () => {
       userToken = await AuthTokenService.getRawBearerUserToken();
       moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+      adminToken = await AuthTokenService.getRawBearerAdminToken();
     });
 
     describe('Permission denied', () => {
@@ -87,12 +89,12 @@ describe('SensorConfiguration features', () => {
         }
       });
 
-      it('should return 200 and restore a soft-deleted configuration with populated response', (done) => {
+      it('should return 200 to an administrator without the Moderator role and restore a soft-deleted configuration with populated response', (done) => {
         supertest(sails.hooks.http.app)
           .post(
             `/api/v1/devices/${DEVICE_ID}/configurations/${configToRestoreId}/restore`
           )
-          .set('Authorization', moderatorToken)
+          .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200)

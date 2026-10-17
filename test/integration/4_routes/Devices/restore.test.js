@@ -6,10 +6,12 @@ describe('Device features', () => {
   describe('restore', () => {
     let userToken;
     let moderatorToken;
+    let adminToken;
 
     before(async () => {
       userToken = await AuthTokenService.getRawBearerUserToken();
       moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+      adminToken = await AuthTokenService.getRawBearerAdminToken();
     });
 
     describe('Permission denied', () => {
@@ -64,10 +66,10 @@ describe('Device features', () => {
         }
       });
 
-      it('should return 200 and restore a soft-deleted device', (done) => {
+      it('should return 200 to an administrator without the Moderator role and restore a soft-deleted device', (done) => {
         supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${deviceToRestoreId}/restore`)
-          .set('Authorization', moderatorToken)
+          .set('Authorization', adminToken)
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(200)

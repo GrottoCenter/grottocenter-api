@@ -7,11 +7,15 @@ const RecentChangeService = require('../../../services/RecentChangeService');
 const readBoolParam = require('../../../utils/readBoolParam');
 
 module.exports = async (req, res) => {
-  const hasRight = RightService.hasGroup(
+  const hasModeratorRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.MODERATOR
   );
-  if (!hasRight)
+  const hasAdminRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  if (!hasModeratorRight && !hasAdminRight)
     return res.forbidden('You are not authorized to delete history.');
 
   // Read before any write: an invalid value must not leave a half-done delete.
@@ -21,6 +25,14 @@ module.exports = async (req, res) => {
     false
   );
   if (isPermanentError) return res.badRequest(isPermanentError);
+
+  // Permanent (irreversible) deletion is gated to administrators; moderators
+  // may only soft-delete (matches device/delete.js, guideline/delete.js).
+  if (deletePermanently && !hasAdminRight) {
+    return res.forbidden(
+      'You are not authorized to permanently delete history.'
+    );
+  }
 
   const historyId = req.param('id');
   const history = await HistoryService.getHistory(historyId);

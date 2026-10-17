@@ -7,12 +7,16 @@ const {
 const RightService = require('../../../services/RightService');
 
 module.exports = async (req, res) => {
-  // 1. Check Moderator permission
-  const hasRight = RightService.hasGroup(
+  // 1. Check Moderator or Administrator permission
+  const hasModeratorRight = RightService.hasGroup(
     req.token.groups,
     RightService.G.MODERATOR
   );
-  if (!hasRight)
+  const hasAdminRight = RightService.hasGroup(
+    req.token.groups,
+    RightService.G.ADMINISTRATOR
+  );
+  if (!hasModeratorRight && !hasAdminRight)
     return res.forbidden(
       'You are not authorized to restore a sensor configuration.'
     );

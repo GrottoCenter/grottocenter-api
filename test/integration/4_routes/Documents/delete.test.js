@@ -6,9 +6,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Document delete', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
   describe('Delete', () => {
@@ -108,7 +110,7 @@ describe('Document delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/documents/${doc.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -137,7 +139,7 @@ describe('Document delete', () => {
         .delete(
           `/api/v1/documents/${doc.id}?isPermanent=true&entityId=${targetDoc.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -159,7 +161,7 @@ describe('Document delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/documents/${doc.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -184,7 +186,7 @@ describe('Document delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/documents/${doc.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -217,7 +219,7 @@ describe('Document delete', () => {
         .delete(
           `/api/v1/documents/${doc.id}?isPermanent=true&entityId=${targetDoc.id}`
         )
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -252,7 +254,7 @@ describe('Document delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/documents/${doc.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -268,7 +270,9 @@ describe('Document delete', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TDocument,
     createEntity: () =>
       TDocument.create({ author: 1, type: 1, license: 1 }).fetch(),

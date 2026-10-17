@@ -6,9 +6,11 @@ const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 describe('Comment delete', () => {
   let userToken;
   let moderatorToken;
+  let adminToken;
   before(async () => {
     userToken = await AuthTokenService.getRawBearerUserToken();
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
   });
 
   describe('Delete', () => {
@@ -76,7 +78,7 @@ describe('Comment delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(`/api/v1/comments/${comment.id}?isPermanent=true`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(200);
@@ -87,7 +89,9 @@ describe('Comment delete', () => {
   });
 
   deleteIsPermanentCases({
-    getToken: () => moderatorToken,
+    getToken: () => adminToken,
+
+    getModeratorToken: () => moderatorToken,
     getModel: () => TComment,
     createEntity: () =>
       TComment.create({

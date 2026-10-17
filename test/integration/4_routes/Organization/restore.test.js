@@ -3,10 +3,12 @@ const AuthTokenService = require('../../AuthTokenService');
 
 describe('Organization restore features', () => {
   let moderatorToken;
+  let adminToken;
   let userToken;
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    adminToken = await AuthTokenService.getRawBearerAdminToken();
     userToken = await AuthTokenService.getRawBearerUserToken();
   });
 
@@ -32,7 +34,7 @@ describe('Organization restore features', () => {
         .expect(404, done);
     });
 
-    it('should return 200 and restore deleted organization', async () => {
+    it('should return 200 to an administrator without the Moderator role and restore deleted organization', async () => {
       const org = await TGrotto.create({
         isDeleted: true,
         author: 1,
@@ -41,7 +43,7 @@ describe('Organization restore features', () => {
 
       await supertest(sails.hooks.http.app)
         .post(`/api/v1/organizations/${org.id}/restore`)
-        .set('Authorization', moderatorToken)
+        .set('Authorization', adminToken)
         .expect(200);
 
       const restored = await TGrotto.findOne(org.id);

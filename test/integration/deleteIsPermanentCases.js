@@ -13,12 +13,19 @@ const sinon = require('sinon');
  *
  * - `observe: 'notification'` — the route notifies subscribers with either
  *   DELETE or PERMANENT_DELETE, so the notification type is the observable.
+ *   `getToken` must then hold the Administrator group.
  * - `observe: 'forbidden'` — permanent deletion is administrator-only, so a
  *   moderator asking for it gets a 403 before anything is written, while a
  *   soft delete succeeds.
  *
+ * With `getModeratorToken`, a case also checks that a moderator without the
+ * Administrator group gets a 403, and leaves the entity untouched, when asking
+ * for a permanent delete.
+ *
  * @param {object} options
- * @param {() => string} options.getToken moderator bearer token
+ * @param {() => string} options.getToken bearer token used for every case
+ * @param {() => string} [options.getModeratorToken] bearer token of a
+ *   moderator who is not an administrator
  * @param {() => object} options.getModel the Waterline model of the entity,
  *   used to destroy what the cases created (a getter: models are globals set
  *   by the lift, after this is called)
@@ -31,6 +38,7 @@ const sinon = require('sinon');
  */
 module.exports = ({
   getToken,
+  getModeratorToken,
   getModel,
   createEntity: createRawEntity,
   deleteUrl,
@@ -68,10 +76,10 @@ module.exports = ({
       await getModel().destroy({ id: createdIds });
     });
 
-    const sendDelete = (id, query) =>
+    const sendDelete = (id, query, token = getToken()) =>
       supertest(sails.hooks.http.app)
         .delete(`${deleteUrl(id)}${query}`)
-        .set('Authorization', getToken())
+        .set('Authorization', token)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json');
 
@@ -108,6 +116,23 @@ module.exports = ({
         should(untouched.isDeleted).be.false();
       }
     });
+
+    if (getModeratorToken) {
+      it('should return 403 to a non-administrator moderator when isPermanent=1', async () => {
+        const entity = await createEntity();
+
+        await sendDelete(
+          entity.id,
+          '?isPermanent=1',
+          getModeratorToken()
+        ).expect(403);
+
+        const untouched = await findEntity(entity.id);
+        should(untouched).not.be.undefined();
+        should(untouched.isDeleted).be.false();
+        should(notifySpy.called).be.false();
+      });
+    }
 
     ['yes', 'TRUE', '2', 'on'].forEach((value) => {
       it(`should return 400 and leave the entity untouched when isPermanent=${value}`, async () => {
