@@ -140,6 +140,52 @@ describe('Entrance features', () => {
       // Clean up target entrance
       await TEntrance.destroy({ id: targetEntrance.id });
     });
+
+    it('should merge documents already linked to the target entrance (#1902)', async () => {
+      const [targetEntrance, entrance] = await Promise.all(
+        [false, true].map((isDeleted) =>
+          TEntrance.create({
+            author: 1,
+            latitude: '0',
+            longitude: '0',
+            isDeleted,
+          }).fetch()
+        )
+      );
+      const [sharedDocument, ownDocument] = await Promise.all(
+        [1, 2].map(() =>
+          TDocument.create({ author: 1, type: 1, license: 1 }).fetch()
+        )
+      );
+      await JDocumentEntrance.createEach([
+        { document: sharedDocument.id, entrance: targetEntrance.id },
+        { document: sharedDocument.id, entrance: entrance.id },
+        { document: ownDocument.id, entrance: entrance.id },
+      ]);
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/entrances/${entrance.id}?isPermanent=true&entityId=${targetEntrance.id}`
+        )
+        .set('Authorization', adminToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TEntrance.findOne(entrance.id)).be.undefined();
+      const links = await JDocumentEntrance.find({
+        document: [sharedDocument.id, ownDocument.id],
+      });
+      should(
+        links.map((l) => [l.document, l.entrance]).sort((a, b) => a[0] - b[0])
+      ).eql([
+        [sharedDocument.id, targetEntrance.id],
+        [ownDocument.id, targetEntrance.id],
+      ]);
+
+      await JDocumentEntrance.destroy({ entrance: targetEntrance.id });
+      await TDocument.destroy({ id: [sharedDocument.id, ownDocument.id] });
+      await TEntrance.destroy({ id: targetEntrance.id });
+    });
   });
 
   deleteIsPermanentCases({

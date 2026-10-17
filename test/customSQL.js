@@ -112,6 +112,7 @@ CREATE INDEX IF NOT EXISTS idx_t_name_cave ON t_name(id_cave) WHERE id_cave IS N
 CREATE INDEX IF NOT EXISTS idx_t_name_entrance ON t_name(id_entrance) WHERE id_entrance IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_j_document_entrance_entrance ON j_document_entrance(id_entrance);
 CREATE INDEX IF NOT EXISTS idx_j_document_entrance_document ON j_document_entrance(id_document);
+CREATE UNIQUE INDEX IF NOT EXISTS j_document_entrance_unique ON j_document_entrance (id_document, id_entrance);
 CREATE INDEX IF NOT EXISTS idx_t_description_document ON t_description(id_document) WHERE id_document IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_description_entrance ON t_description(id_entrance) WHERE id_entrance IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_description_cave ON t_description(id_cave) WHERE id_cave IS NOT NULL;

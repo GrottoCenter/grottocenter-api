@@ -267,8 +267,19 @@ module.exports = async (req, res) => {
 
     if (entrance.documents.length > 0) {
       if (shouldMergeInto) {
-        const newDocuments = entrance.documents.map((e) => e.id);
-        await TEntrance.addToCollection(mergeIntoId, 'documents', newDocuments);
+        // Skip documents the target already has: j_document_entrance is keyed
+        // by (id_document, id_entrance), a second link would violate it (#1902).
+        const existingDocuments = (
+          await JDocumentEntrance.find({ entrance: mergeIntoId })
+        ).map((e) => e.document);
+        const documentsToAdd = entrance.documents
+          .map((e) => e.id)
+          .filter((e) => !existingDocuments.includes(e));
+        await TEntrance.addToCollection(
+          mergeIntoId,
+          'documents',
+          documentsToAdd
+        );
       }
       await TEntrance.updateOne(entranceId).set({ documents: [] });
     }
