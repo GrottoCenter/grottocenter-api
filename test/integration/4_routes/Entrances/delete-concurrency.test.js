@@ -175,6 +175,57 @@ describe('Entrance features', () => {
       ).equal(1);
     });
 
+    it('should run on its own connection when the pool has no other free one', async () => {
+      const { cave, entrance } = await createDeletedEntrance();
+      const target = await createTarget();
+      const datastore = sails.getDatastore();
+      const { max } = datastore.manager.pool.options;
+
+      // Hold every connection but one: the request takes it for its
+      // transaction, then must not need another one before committing
+      let release;
+      const released = new Promise((resolve) => {
+        release = resolve;
+      });
+      const acquired = [];
+      // A Waterline deferred only runs once `.then()` is called on it
+      const leases = Array.from({ length: max - 1 }, () =>
+        datastore
+          .leaseConnection(async () => {
+            acquired.push(true);
+            await released;
+          })
+          .then(() => {})
+      );
+      while (acquired.length < max - 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
+      }
+
+      let status;
+      try {
+        status = await Promise.race([
+          deleteEntrance(
+            entrance.id,
+            `isPermanent=1&entityId=${target.id}`
+          ).then((res) => res.status),
+          new Promise((resolve) => {
+            setTimeout(() => resolve('stalled'), 5000);
+          }),
+        ]);
+      } finally {
+        release();
+        await Promise.all(leases);
+      }
+
+      should(status).equal(200);
+      should(await TEntrance.findOne(entrance.id)).be.undefined();
+      should(await TCave.findOne(cave.id)).be.undefined();
+      should(await historyOf('h_name', target.id)).equal(1);
+    }).timeout(15000);
+
     it('should roll back every write when the permanent merge fails midway', async () => {
       const { cave, entrance, location } = await createDeletedEntrance();
       const target = await createTarget();

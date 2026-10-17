@@ -67,13 +67,45 @@ async function subEntityDelete(
 }
 
 /**
+ * Load what the permanent delete of an entrance reads: its row with its names
+ * and documents, the ids of its sub-entities, and the entrances of its cave.
+ *
+ * Everything is read on `db`. A transaction holds its pool connection until
+ * it ends, so a read through another one could wait for a connection held by
+ * a concurrent delete that is itself waiting for this transaction's lock.
+ */
+async function loadForPermanentDelete(entranceId, db) {
+  const entrance = await TEntrance.findOne(entranceId)
+    .populate('names')
+    .populate('documents')
+    .usingConnection(db);
+  const idsOf = (model, where) =>
+    model.find({ where, select: ['id'] }).usingConnection(db);
+  [
+    entrance.locations,
+    entrance.descriptions,
+    entrance.riggings,
+    entrance.histories,
+    entrance.comments,
+    entrance.caveEntrances,
+  ] = await Promise.all([
+    ...[TLocation, TDescription, TRigging, THistory, TComment].map((model) =>
+      idsOf(model, { entrance: entranceId })
+    ),
+    entrance.cave ? idsOf(TEntrance, { cave: entrance.cave }) : [],
+  ]);
+  return entrance;
+}
+
+/**
  * Permanently delete an entrance, or merge it into `mergeIntoId`, in one
  * transaction, soft-deleting it first when it is not already.
  *
  * The entrance row is locked first, so a concurrent permanent delete or
  * merge of the same entrance waits for this one to finish, then finds the
- * entrance gone. Every write below runs on `db`: a write through another
- * connection to a row this transaction has locked would wait forever.
+ * entrance gone. Every query below runs on `db`: a write through another
+ * connection to a row this transaction has locked would wait forever, and
+ * a read through another connection could wait for a free one forever.
  *
  * @param {Object} params
  * @param {number} params.entranceId
@@ -82,9 +114,9 @@ async function subEntityDelete(
  * @param {number} params.mergeIntoId NaN when not merging
  * @param {number} params.authorId the moderator deleting it
  * @param {Object} db the transaction
- * @returns {Promise<Object|string>} the entrance as it was before the
- *   delete, or GONE when it no longer exists, or RESTORED when it was
- *   restored since the request loaded it
+ * @returns {Promise<string|undefined>} GONE when the entrance no longer
+ *   exists, RESTORED when it was restored since the request loaded it,
+ *   nothing once it is deleted
  */
 async function permanentlyDelete(
   { entranceId, wasDeleted, mergeIntoId, authorId },
@@ -100,14 +132,13 @@ async function permanentlyDelete(
   if (wasDeleted && !isDeleted) return RESTORED;
 
   // Reloaded under the lock: what the request loaded at its start may
-  // already be stale. Nothing has been written on `db` yet, so reading
-  // through the pool sees the same state.
-  const entrance = await EntranceService.getPopulatedEntrance(entranceId);
+  // already be stale
+  const entrance = await loadForPermanentDelete(entranceId, db);
+  const deletesCave = !!entrance.cave && entrance.caveEntrances.length === 1;
 
   if (!isDeleted) {
     // Its redirect_to is not written: the row is about to be removed
     await TEntrance.destroyOne({ id: entranceId }).usingConnection(db); // Soft delete
-    entrance.isDeleted = true;
     await RecentChangeService.setDeleteRestoreAuthor(
       'delete',
       'entrance',
@@ -140,10 +171,7 @@ async function permanentlyDelete(
     comments: ids(entrance.comments),
     documents: ids(entrance.documents),
     names: ids(entrance.names),
-    ...(entrance.cave &&
-      entrance.cave.entrances.length === 1 && {
-        cave: entrance.cave.id,
-      }),
+    ...(deletesCave && { cave: entrance.cave }),
   };
   sails.log.info(
     `Permanent ${action} entrance ${entranceId}: ${JSON.stringify(audit)}`
@@ -240,7 +268,7 @@ async function permanentlyDelete(
       .usingConnection(db);
   }
 
-  if (entrance.cave && entrance.cave.entrances.length === 1) {
+  if (deletesCave) {
     await TEntrance.updateOne(entranceId)
       .set({ cave: null })
       .usingConnection(db);
@@ -249,10 +277,10 @@ async function permanentlyDelete(
     // Read on `db`, where this entrance is already detached from it.
     await CommonService.query(
       'SELECT id FROM t_cave WHERE id = $1 FOR UPDATE',
-      [entrance.cave.id],
+      [entrance.cave],
       db
     );
-    const cave = await TCave.findOne(entrance.cave.id)
+    const cave = await TCave.findOne(entrance.cave)
       .populate('names')
       .populate('entrances')
       .populate('descriptions')
@@ -281,8 +309,7 @@ async function permanentlyDelete(
   ]);
 
   await TEntrance.destroyOne({ id: entranceId }).usingConnection(db); // Hard delete
-
-  return entrance;
+  return undefined;
 }
 
 module.exports = async (req, res) => {
@@ -315,7 +342,7 @@ module.exports = async (req, res) => {
   }
 
   const entranceId = Number(req.param('id'));
-  let entrance = await EntranceService.getPopulatedEntrance(entranceId);
+  const entrance = await EntranceService.getPopulatedEntrance(entranceId);
   if (!entrance) {
     return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
   }
@@ -365,7 +392,7 @@ module.exports = async (req, res) => {
         message: `Entrance of id ${entranceId} was restored during its permanent deletion.`,
       });
     }
-    entrance = outcome;
+    entrance.isDeleted = true;
   }
 
   // Fire-and-forget: don't block the response on subscriber notifications
