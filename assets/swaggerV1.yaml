@@ -2056,6 +2056,25 @@ paths:
         Validate or not multiple documents, with or without a comment.
 
 
+        **Refusal.** Refusing a document (`isValidated` false, which requires a
+        `validationComment`) depends on what is pending:
+
+
+        * a document that was never accepted — a new submission, edited or not
+        before moderation — stays unpublished: `isValidated` remains `false`,
+        `dateValidation`, `validator` and `validationComment` record the
+        decision, and any pending modification is cleared. It leaves the
+        moderation queue (`GET /documents?isValidated=false` only returns
+        documents without a `dateValidation`), and it is listed neither by
+        `GET /documents` nor on the entrances, caves and massifs it is linked
+        to;
+
+
+        * a modification of an accepted document is discarded: the accepted
+        version and its associations are kept and `isValidated` returns to
+        `true`.
+
+
         A pending modification (`modifiedDocJson`) is a snapshot taken when it
         was submitted, and the database may have changed since. Before applying
         one, the API re-checks it against the current state.
@@ -2087,7 +2106,8 @@ paths:
         An auto-rejected document keeps its last validated state: its
         associations are left as they were and `isValidated` returns to `true`,
         so the document stays visible rather than sitting between the published
-        list and the moderation queue. `modifiedDocJson` is cleared,
+        list and the moderation queue. A document that was never accepted is
+        refused instead, as described above. `modifiedDocJson` is cleared,
         `validationComment` is set to a message prefixed `Auto-rejected:` naming
         the reason, and the author receives a REJECT notification.
 
@@ -8479,7 +8499,8 @@ components:
           enum: [validated, rejected, auto_rejected, not_found, error]
           description: >
             `validated`: accepted, including its pending modification if any.
-            `rejected`: refused by the moderator (`isValidated` false).
+            `rejected`: refused by the moderator (see the endpoint
+            description).
             `auto_rejected`: the pending modification was refused by the API
             (see the endpoint description). `not_found`: no document has this
             id. `error`: an unexpected error occurred and the document was left
