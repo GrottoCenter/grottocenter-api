@@ -128,7 +128,7 @@ describe('Entrance features', () => {
         author: 1,
         latitude: '0',
         longitude: '0',
-        idDbImport: 88888,
+        idDbImport: '88888',
         nameDbImport: 'Existing Source',
       }).fetch();
       createdEntranceId = entrance.id;
@@ -209,6 +209,60 @@ describe('Entrance features', () => {
       should(res.body.wontBeCreated).have.length(1);
       should(res.body.wontBeCreated[0]).have.property('line', 2);
       should(res.body.wontBeCreated[0].message).match(/Invalid id/);
+    });
+
+    describe('with an 11-digit Georisques id', () => {
+      let georisquesEntranceId;
+
+      after(async () => {
+        if (georisquesEntranceId) {
+          await TEntrance.destroy({ id: georisquesEntranceId });
+        }
+      });
+
+      const checkRows = (id) =>
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/entrances/check-rows')
+          .send({
+            data: [
+              {
+                id,
+                'dct:rights/cc:attributionName':
+                  'Inventaire des cavités souterraines',
+              },
+            ],
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+
+      it('should mark a new one as willBeCreated', async () => {
+        const res = await checkRows('10000000001');
+        should(res.body.willBeCreated).have.length(1);
+        should(res.body.wontBeCreated).have.length(0);
+      });
+
+      it('should mark an existing one as willBeCreatedAsDuplicates', async () => {
+        const entrance = await TEntrance.create({
+          author: 1,
+          latitude: '0',
+          longitude: '0',
+          idDbImport: '10000000001',
+          nameDbImport: 'Inventaire des cavités souterraines',
+        }).fetch();
+        georisquesEntranceId = entrance.id;
+        should(entrance.idDbImport).equal('10000000001');
+
+        const res = await checkRows('10000000001');
+        should(res.body.willBeCreatedAsDuplicates).have.length(1);
+      });
+
+      it('should not match a neighbouring id', async () => {
+        const res = await checkRows('10000000002');
+        should(res.body.willBeCreated).have.length(1);
+        should(res.body.willBeCreatedAsDuplicates).have.length(0);
+      });
     });
   });
 });

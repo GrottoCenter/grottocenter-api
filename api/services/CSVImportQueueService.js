@@ -11,7 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 const { ENTRANCE_MANDATORY_COLUMNS } = require('../utils/csvHelper');
 const parseImportId = require('../utils/parseImportId');
 
-const { MAX_PG_INTEGER, invalidImportIdMessage } = parseImportId;
+const { MAX_PG_BIGINT, invalidImportIdMessage } = parseImportId;
 
 const QUEUE_NAME = 'csv-import';
 const COMPLETION_QUEUE_NAME = 'csv-import-completion';
@@ -244,11 +244,11 @@ module.exports = {
           }
 
           // Stop if the id cannot be stored in id_db_import
-          const idDb = parseImportId(row.id, MAX_PG_INTEGER);
+          const idDb = parseImportId(row.id, MAX_PG_BIGINT);
           if (idDb === null) {
             result.failures.push({
               line: originalLine,
-              message: invalidImportIdMessage(row.id, MAX_PG_INTEGER),
+              message: invalidImportIdMessage(row.id, MAX_PG_BIGINT),
             });
             continue;
           }

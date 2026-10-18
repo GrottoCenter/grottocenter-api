@@ -135,7 +135,7 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
       existingCave = await TCave.create({ author: 1 }).fetch();
       existingEntrance = await TEntrance.create({
         author: 1,
-        idDbImport: 88880,
+        idDbImport: '88880',
         nameDbImport: 'Dup Worker Author',
         latitude: 45.0,
         longitude: 6.0,
@@ -339,7 +339,7 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
       existingCave = await TCave.create({ author: 1 }).fetch();
       existingEntrance = await TEntrance.create({
         author: 1,
-        idDbImport: 88881,
+        idDbImport: '88881',
         nameDbImport: 'Mixed Dup Author',
         latitude: 45.0,
         longitude: 6.0,

@@ -1,7 +1,7 @@
 const { valIfTruthyOrNull } = require('../../../utils/csvHelper');
 const parseImportId = require('../../../utils/parseImportId');
 
-const { MAX_PG_INTEGER, invalidImportIdMessage } = parseImportId;
+const { MAX_PG_BIGINT, invalidImportIdMessage } = parseImportId;
 
 module.exports = async (req, res) => {
   const { data } = req.body || {};
@@ -27,11 +27,11 @@ module.exports = async (req, res) => {
     }
 
     // Stop if the id cannot be stored in id_db_import
-    const idDbImport = parseImportId(rawId, MAX_PG_INTEGER);
+    const idDbImport = parseImportId(rawId, MAX_PG_BIGINT);
     if (idDbImport === null) {
       wontBeCreated.push({
         line: index + 2,
-        message: invalidImportIdMessage(rawId, MAX_PG_INTEGER),
+        message: invalidImportIdMessage(rawId, MAX_PG_BIGINT),
       });
       continue; // eslint-disable-line no-continue
     }
