@@ -322,6 +322,16 @@ module.exports = {
   },
 
   /**
+   * Whether a moderator refused the document: a refused submission keeps
+   * isValidated false with a dateValidation, a pending one has none (#1907).
+   * @param {Object} document
+   * @returns {boolean}
+   */
+  isRefused(document) {
+    return document.isValidated === false && document.dateValidation != null;
+  },
+
+  /**
    * Whether a document was accepted before its pending modification, so
    * refusing the modification can return it to that state (#1907). Read before
    * a new modification overwrites modifiedDocJson: one already pending has

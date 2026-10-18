@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const DataQualityComputeService = require('../../../services/DataQualityComputeService');
+const DocumentService = require('../../../services/DocumentService');
 const EntranceService = require('../../../services/EntranceService');
 const RightService = require('../../../services/RightService');
 const GuidelineService = require('../../../services/GuidelineService');
@@ -28,6 +29,9 @@ module.exports = async (req, res) => {
   );
 
   if (!entrance) return res.notFound(`${params.searchedItem} not found`);
+  entrance.documents = entrance.documents.filter(
+    (d) => !DocumentService.isRefused(d)
+  );
 
   // Fetch quality data and guidelines.
   // The quality query may return null for deleted entrances (the materialized
