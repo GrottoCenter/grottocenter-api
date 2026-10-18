@@ -5226,7 +5226,26 @@ paths:
     delete:
       tags:
         - entrances
-      description: Delete an entrance.
+      description: >
+        Delete an entrance (moderators and administrators). By default this
+        is a reversible soft-delete. When `isPermanent=true`, which requires
+        the Administrator role, the entrance is soft-deleted
+        first if needed, then permanently removed together with its
+        locations, descriptions, riggings, histories, comments, names and
+        notifications, and with its cave when it is the cave's only entrance
+        — this is irreversible. If `entityId` points to an existing entrance,
+        the locations, descriptions, riggings, histories, comments and
+        documents, and the history rows of these sub-entities and of the
+        names, are moved to that entrance instead, and the cave is merged
+        into that entrance's cave. The current names and the notifications
+        are deleted in both cases: a merge does not add the names to the
+        target entrance, it only moves their history.
+        A permanent delete or merge runs in a single transaction: it is
+        applied entirely or not at all. Concurrent permanent deletes of the
+        same entrance are serialised; the ones that wait find it gone and
+        get a 404.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -5235,19 +5254,41 @@ paths:
           schema:
             type: string
         - $ref: '#/components/parameters/isPermanent'
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: >
+            Id of the entrance this one is a duplicate of. Sets `redirectTo`
+            on a soft-delete, and is used as the merge target on a permanent
+            delete.
       responses:
+        '200':
+          description: |
+            Successful operation. Returns the deleted entrance with `isDeleted: true`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
         '400':
           $ref: '#/components/responses/InvalidBoolean'
-        '204':
-          description: Successful operation
         '401':
           description: Authentication required.
         '403':
           description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
         '404':
-          description: Entrance not found.
-        '410':
-          description: Entrance already deleted.
+          description: >
+            Entrance not found, including when a concurrent request deleted
+            it permanently first.
+        '409':
+          description: >
+            The entrance was restored by a concurrent request before its
+            permanent deletion could start; nothing was deleted.
+        '500':
+          description: >
+            Unexpected error. A failed permanent delete or merge is rolled
+            back entirely.
 
     put:
       tags:
