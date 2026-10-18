@@ -10,6 +10,16 @@ const { Pool } = require(
   })
 );
 const guardPgPool = require('../../../api/utils/guardPgPool');
+const logger = require('../../../api/utils/logger');
+
+const { cancelLeasedQueries } = guardPgPool;
+
+// Run `fn` in a request-like async context that tracks its leases.
+const inRequest = (leases, fn) =>
+  logger.run('test-trace', () => {
+    logger.getStore().pgLeases = leases;
+    return fn();
+  });
 
 const socketError = () =>
   Object.assign(new Error('read ETIMEDOUT'), {
@@ -21,6 +31,7 @@ const socketError = () =>
 const fakePool = () =>
   Object.assign(new EventEmitter(), {
     options: {},
+    connect: sinon.stub(),
     _clients: [],
     totalCount: 1,
     idleCount: 0,
@@ -102,6 +113,67 @@ describe('guardPgPool', () => {
       sinon.assert.calledOnceWithExactly(setKeepAlive, true, 60000);
     });
 
+    describe('lease attribution (#1849)', () => {
+      let client;
+
+      beforeEach(() => {
+        client = new EventEmitter();
+        pool.connect.callsFake((cb) => {
+          if (cb) return setImmediate(() => cb(undefined, client, () => {}));
+          return Promise.resolve(client);
+        });
+        guardPgPool(pool, log);
+      });
+
+      it('records a callback lease in the calling request', async () => {
+        const leases = new Set();
+        await inRequest(
+          leases,
+          () =>
+            new Promise((resolve) => {
+              pool.connect(resolve);
+            })
+        );
+        should([...leases]).eql([client]);
+      });
+
+      it('records a promise lease in the calling request', async () => {
+        const leases = new Set();
+        await inRequest(leases, () => pool.connect());
+        should([...leases]).eql([client]);
+      });
+
+      it('forgets the lease on release', async () => {
+        const leases = new Set();
+        await inRequest(leases, () => pool.connect());
+        pool.emit('release', undefined, client);
+        should(leases.size).equal(0);
+      });
+
+      it('tracks nothing outside a request', async () => {
+        should(await pool.connect()).equal(client);
+        await logger.run('job-trace', () => pool.connect());
+        pool.emit('release', undefined, client);
+      });
+
+      it('passes connection errors through', async () => {
+        const leases = new Set();
+        const failure = new Error('getConnection failed');
+        const failing = fakePool();
+        failing.connect.yieldsAsync(failure);
+        guardPgPool(failing, log);
+        const err = await inRequest(
+          leases,
+          () =>
+            new Promise((resolve) => {
+              failing.connect(resolve);
+            })
+        );
+        should(err).equal(failure);
+        should(leases.size).equal(0);
+      });
+    });
+
     it('is idempotent', () => {
       guardPgPool(pool, log);
       guardPgPool(pool, log);
@@ -155,6 +227,48 @@ describe('guardPgPool', () => {
       // The pool still works afterwards.
       const { rows } = await pool.query('SELECT 1 AS ok');
       should(rows[0].ok).equal(1);
+    });
+
+    it('cancels the queries leased by a request (#1849)', async () => {
+      const log = { error: sinon.stub(), warn: sinon.stub() };
+      guardPgPool(pool, log);
+      const leases = new Set();
+      const client = await inRequest(leases, () => pool.connect());
+
+      const startedAt = Date.now();
+      const pending = client.query('SELECT pg_sleep(30)');
+      should(await cancelLeasedQueries(leases, pool, log)).equal(1);
+      await should(pending).be.rejectedWith({ code: '57014' });
+      should(Date.now() - startedAt).be.below(5000);
+      sinon.assert.notCalled(log.warn);
+
+      // The connection is still usable and goes back to the pool.
+      should((await client.query('SELECT 1 AS ok')).rows[0].ok).equal(1);
+      client.release();
+      should(leases.size).equal(0);
+      should(pool.idleCount).equal(1);
+    });
+
+    it('skips a connection released before the cancel', async () => {
+      const log = { error: sinon.stub(), warn: sinon.stub() };
+      guardPgPool(pool, log);
+      const leases = new Set();
+      const client = await inRequest(leases, () => pool.connect());
+      client.release();
+
+      should(await cancelLeasedQueries(leases, pool, log)).equal(0);
+    });
+
+    it('logs instead of throwing when the cancel cannot connect', async () => {
+      const log = { error: sinon.stub(), warn: sinon.stub() };
+      const leases = new Set([{ processID: 1 }]);
+      const unreachable = {
+        Client: pool.Client,
+        options: { host: '127.0.0.1', port: 1, connectionTimeoutMillis: 1000 },
+      };
+
+      should(await cancelLeasedQueries(leases, unreachable, log)).equal(0);
+      sinon.assert.calledOnce(log.warn);
     });
   });
 });

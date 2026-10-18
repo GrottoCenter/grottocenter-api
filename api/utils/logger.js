@@ -34,6 +34,7 @@ const patchSailsLog = () => {
 
 module.exports = {
   getTraceId,
+  getStore: () => asyncLocalStorage.getStore(),
   run: (traceId, callback) => asyncLocalStorage.run({ traceId }, callback),
   patchSailsLog,
 };

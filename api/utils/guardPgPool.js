@@ -22,7 +22,16 @@
  * setting it there reaches each new connection; connections opened before the
  * guard get it set on their socket directly. The delay is kept under the
  * 4 minute idle timeout after which Azure drops a flow without notice.
+ *
+ * Finally, it attributes each lease to the request that asked for it (#1849),
+ * so that a request whose client went away can have its queries cancelled
+ * (see `cancelLeasedQueries`). The owner is read from the async context when
+ * `pool.connect` is *called*: pg-pool's 'acquire' event may fire from another
+ * request's release, in that request's context. Only contexts that carry a
+ * `pgLeases` Set are tracked; background jobs never are.
  */
+
+const { getStore } = require('./logger');
 
 const KEEP_ALIVE_INITIAL_DELAY_MS = 60 * 1000;
 
@@ -39,6 +48,7 @@ const guardPgPool = (pool, log) => {
 
   const guardedClients = new WeakSet();
   const leasedAt = new WeakMap();
+  const leaseOwner = new WeakMap();
 
   const attach = (client) => {
     if (guardedClients.has(client)) return;
@@ -62,7 +72,34 @@ const guardPgPool = (pool, log) => {
 
   pool.on('connect', attach);
   pool.on('acquire', (client) => leasedAt.set(client, Date.now()));
-  pool.on('release', (err, client) => leasedAt.delete(client));
+  pool.on('release', (err, client) => {
+    leasedAt.delete(client);
+    const owner = leaseOwner.get(client);
+    if (owner) owner.delete(client);
+    leaseOwner.delete(client);
+  });
+
+  const connect = pool.connect.bind(pool);
+  // eslint-disable-next-line no-param-reassign
+  pool.connect = (cb) => {
+    const leases = getStore()?.pgLeases;
+    if (!leases) return connect(cb);
+
+    const track = (client) => {
+      leaseOwner.set(client, leases);
+      leases.add(client);
+    };
+    if (cb) {
+      return connect((err, client, done) => {
+        if (!err) track(client);
+        cb(err, client, done);
+      });
+    }
+    return connect().then((client) => {
+      track(client);
+      return client;
+    });
+  };
 
   // Clients opened before the guard was installed missed both the 'connect'
   // event and the keepalive options. A TLS stream forwards setKeepAlive to
@@ -77,4 +114,43 @@ const guardPgPool = (pool, log) => {
   });
 };
 
+/**
+ * Cancel whatever the connections in `leases` are running, with
+ * `pg_cancel_backend()` sent on a dedicated connection: the pool itself may be
+ * exhausted, which is precisely when cancelling matters (#1784). Postgres
+ * answers the cancelled query with `57014 query_canceled`, rolls back its
+ * transaction if any, and the connection goes back to the pool as usual.
+ *
+ * A connection released in the meantime is skipped. The check happens just
+ * before the cancel is sent; a connection released and leased again within
+ * that last round trip would be hit, a window accepted as negligible.
+ *
+ * Never throws; resolves to the number of backends signalled.
+ */
+const cancelLeasedQueries = async (leases, pool, log) => {
+  if (!leases || leases.size === 0) return 0;
+
+  const canceller = new pool.Client(pool.options);
+  canceller.on('error', () => {});
+  try {
+    await canceller.connect();
+    const pids = [...leases]
+      .map((client) => client.processID)
+      .filter((pid) => pid);
+    await Promise.all(
+      pids.map((pid) => canceller.query('SELECT pg_cancel_backend($1)', [pid]))
+    );
+    return pids.length;
+  } catch (err) {
+    log.warn('[pgPoolGuard] Could not cancel an aborted request', {
+      code: err && err.code,
+      message: err && err.message,
+    });
+    return 0;
+  } finally {
+    canceller.end().catch(() => {});
+  }
+};
+
 module.exports = guardPgPool;
+module.exports.cancelLeasedQueries = cancelLeasedQueries;
