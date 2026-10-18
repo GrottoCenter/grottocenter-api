@@ -321,6 +321,23 @@ module.exports = {
     return languages.filter((l) => l.isMain);
   },
 
+  /**
+   * Whether a document was accepted before its pending modification, so
+   * refusing the modification can return it to that state (#1907). Read before
+   * a new modification overwrites modifiedDocJson: one already pending has
+   * already set isValidated false, so its own flag is carried over. A snapshot
+   * stored before the flag existed counts as accepted, which is how every
+   * refusal was handled until then.
+   * @param {Object} document the row as it is before the modification
+   * @returns {boolean}
+   */
+  wasValidatedBeforeModification(document) {
+    if (document.modifiedDocJson) {
+      return document.modifiedDocJson.wasValidated !== false;
+    }
+    return document.isValidated === true;
+  },
+
   async updateDocument({
     documentId,
     reviewerId,
@@ -330,12 +347,15 @@ module.exports = {
     modifiedFiles,
     deletedFiles,
   } = {}) {
+    const document = await TDocument.findOne(documentId);
+    if (!document) return null;
     return TDocument.updateOne(documentId).set({
       dateReviewed: new Date(), // Avoid an uniqueness error
       isValidated: false,
       dateValidation: null,
       modifiedDocJson: {
         reviewerId,
+        wasValidated: module.exports.wasValidatedBeforeModification(document),
         documentData,
         descriptionData,
         newFiles,

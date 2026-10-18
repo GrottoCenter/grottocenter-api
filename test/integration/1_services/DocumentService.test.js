@@ -358,6 +358,65 @@ describe('DocumentService', () => {
       should(result).not.be.null();
       should(result.isValidated).be.false();
     });
+
+    it('should record whether the document was accepted before the modification', async () => {
+      const accepted = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: true,
+      }).fetch();
+      const submitted = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+      }).fetch();
+      try {
+        const modify = (doc) =>
+          DocumentService.updateDocument({
+            documentId: doc.id,
+            reviewerId: 2,
+            documentData: { title: 'Updated' },
+          });
+
+        should((await modify(accepted)).modifiedDocJson.wasValidated).be.true();
+        should(
+          (await modify(submitted)).modifiedDocJson.wasValidated
+        ).be.false();
+        // A second modification keeps the flag of the first, although the
+        // first one already set isValidated false
+        should((await modify(accepted)).modifiedDocJson.wasValidated).be.true();
+      } finally {
+        await TDocument.destroy({ id: [accepted.id, submitted.id] });
+      }
+    });
+  });
+
+  describe('wasValidatedBeforeModification()', () => {
+    [
+      { label: 'an accepted document', doc: { isValidated: true }, out: true },
+      { label: 'a new submission', doc: { isValidated: false }, out: false },
+      {
+        label: 'a pending modification of an accepted document',
+        doc: { isValidated: false, modifiedDocJson: { wasValidated: true } },
+        out: true,
+      },
+      {
+        label: 'a pending modification of a new submission',
+        doc: { isValidated: false, modifiedDocJson: { wasValidated: false } },
+        out: false,
+      },
+      {
+        label: 'a pending modification stored before the flag existed',
+        doc: { isValidated: false, modifiedDocJson: { documentData: {} } },
+        out: true,
+      },
+    ].forEach(({ label, doc, out }) => {
+      it(`should return ${out} for ${label}`, () => {
+        should(DocumentService.wasValidatedBeforeModification(doc)).equal(out);
+      });
+    });
   });
 
   describe('createDocument()', () => {

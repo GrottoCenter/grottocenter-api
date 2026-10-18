@@ -2,6 +2,7 @@ const supertest = require('supertest');
 const should = require('should');
 const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
+const DocumentService = require('../../../../api/services/DocumentService');
 
 describe('Document multiple-validate', () => {
   let userToken;
@@ -188,9 +189,127 @@ describe('Document multiple-validate', () => {
       should(res.body).deepEqual([
         { id: doc.id, status: 'rejected', reason: null },
       ]);
+      // A refused submission stays unpublished, with the decision recorded:
+      // isValidated false with a dateValidation is the refused state, out of
+      // both the public list and the moderation queue (find-all.js) (#1907).
       const updated = await TDocument.findOne(doc.id);
-      should(updated.isValidated).be.true();
+      should(updated.isValidated).be.false();
+      should(updated.dateValidation).not.be.null();
+      should(updated.validator).equal(2);
       should(updated.validationComment).equal('Rejected for testing');
+    });
+
+    describe('Rejection of a new submission or of a modification (#1907)', () => {
+      const createdDocIds = [];
+      const createdDescIds = [];
+
+      afterEach(async () => {
+        await TDocument.destroy({ id: createdDocIds.splice(0) });
+        await TDescription.destroy({ id: createdDescIds.splice(0) });
+      });
+
+      const createDocument = async (isValidated) => {
+        const desc = await TDescription.create({
+          author: 1,
+          title: 'Original',
+          body: 'Original body',
+        }).fetch();
+        createdDescIds.push(desc.id);
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated,
+          descriptions: [desc.id],
+        }).fetch();
+        createdDocIds.push(doc.id);
+        return doc;
+      };
+
+      const submitModification = (doc, documentData = { type: 17 }) =>
+        DocumentService.updateDocument({
+          documentId: doc.id,
+          reviewerId: 1,
+          documentData,
+          descriptionData: { title: 'Updated', body: 'Updated body' },
+        });
+
+      const sendDocuments = (documents) =>
+        supertest(sails.hooks.http.app)
+          .put('/api/v1/documents/validate')
+          .send({ documents })
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+
+      const refuse = (doc) =>
+        sendDocuments([
+          { id: doc.id, isValidated: 'false', validationComment: 'No' },
+        ]);
+
+      it('should keep a new submission edited before moderation unvalidated when refused', async () => {
+        const doc = await createDocument(false);
+        await submitModification(doc);
+
+        const res = await refuse(doc);
+
+        should(res.body).deepEqual([
+          { id: doc.id, status: 'rejected', reason: null },
+        ]);
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.isValidated).be.false();
+        should(updated.dateValidation).not.be.null();
+        should(updated.modifiedDocJson).be.null();
+        should(updated.type).equal(1);
+        should(updated.validationComment).equal('No');
+      });
+
+      it('should return a refused modification of an accepted document to its accepted version', async () => {
+        const doc = await createDocument(true);
+        await submitModification(doc);
+
+        await refuse(doc);
+
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.isValidated).be.true();
+        should(updated.modifiedDocJson).be.null();
+        should(updated.type).equal(1);
+        should(updated.validationComment).equal('No');
+      });
+
+      it('should still treat a moderator re-edit of a pending modification as a modification', async () => {
+        const doc = await createDocument(true);
+        await submitModification(doc);
+        await submitModification(doc, { type: 18 });
+
+        await refuse(doc);
+
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.isValidated).be.true();
+        should(updated.type).equal(1);
+      });
+
+      it('should keep a new submission unvalidated when its modification is auto-rejected', async () => {
+        const doc = await createDocument(false);
+        const child = await TDocument.create({
+          author: 1,
+          type: 17,
+          license: 1,
+          parent: doc.id,
+          isValidated: true,
+        }).fetch();
+        createdDocIds.push(child.id);
+        await submitModification(doc, { type: 17, parent: child.id });
+
+        const res = await sendDocuments([{ id: doc.id, isValidated: 'true' }]);
+
+        should(res.body[0].status).equal('auto_rejected');
+        const updated = await TDocument.findOne(doc.id);
+        should(updated.isValidated).be.false();
+        should(updated.dateValidation).not.be.null();
+        should(updated.parent).not.equal(child.id);
+      });
     });
 
     it('should validate document with modifiedDocJson', async () => {

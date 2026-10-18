@@ -203,7 +203,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
         'rejected'
       );
 
-      should((await TDocument.findOne(document.id)).isValidated).be.true();
+      should((await TDocument.findOne(document.id)).isValidated).be.false();
       should(await documentChanges(document.id)).have.length(0);
     });
 
