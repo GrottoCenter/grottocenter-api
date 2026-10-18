@@ -27,6 +27,16 @@ const patchSailsLog = () => {
   // holds a string-level backstop for the log methods not patched here.
   Object.keys(originalMethods).forEach((level) => {
     sails.log[level] = (...args) => {
+      // Once a request's queries were cancelled because its client went away
+      // (#1849), the errors they raise are expected: keep them, as warnings.
+      if (level === 'error' && asyncLocalStorage.getStore()?.cancelledOnAbort) {
+        originalMethods.warn(
+          `[${getTraceId()}]`,
+          '(after client abort)',
+          ...args.map(redactLogArgs)
+        );
+        return;
+      }
       originalMethods[level](`[${getTraceId()}]`, ...args.map(redactLogArgs));
     };
   });

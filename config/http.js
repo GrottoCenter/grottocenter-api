@@ -18,6 +18,7 @@ const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
 const RightService = require('../api/services/RightService');
 const logger = require('../api/utils/logger');
+const { cancelLeasedQueries } = require('../api/utils/guardPgPool');
 const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
 
@@ -349,23 +350,47 @@ module.exports.http = {
       const { traceId } = req;
       const startedAt = Date.now();
 
+      // The pool guard records here the connections this request leases, so
+      // an abort can cancel their queries (#1849). Reads only: a write cut
+      // between two statements outside a transaction would be left half done.
+      const store = logger.getStore();
+      if (store && ['GET', 'HEAD'].includes(req.method)) {
+        store.pgLeases = new Set();
+      }
+
       // Aborts handling
       res.on('close', () => {
         // Normal completion also emits 'close', right after 'finish'.
         if (res.writableEnded) return;
 
-        logger.run(traceId, () => {
-          // 499 is not a real HTTP status, it is the nginx convention for
-          // "client closed request". Reusing it here lets these lines be
-          // correlated with the proxy's access log.
-          sails.log.info(
-            'Res :: (client aborted)',
-            req.method,
-            req.url,
-            499,
-            `${Date.now() - startedAt}ms`
-          );
-        });
+        const leases = store && store.pgLeases;
+        const logAbort = (cancelled) =>
+          logger.run(traceId, () => {
+            // 499 is not a real HTTP status, it is the nginx convention for
+            // "client closed request". Reusing it here lets these lines be
+            // correlated with the proxy's access log.
+            sails.log.info(
+              'Res :: (client aborted)',
+              req.method,
+              req.url,
+              499,
+              `${Date.now() - startedAt}ms`,
+              ...(cancelled ? [`(${cancelled} backend(s) cancelled)`] : [])
+            );
+          });
+
+        if (!leases || leases.size === 0) {
+          logAbort(0);
+          return;
+        }
+        // The cancelled query fails with 57014 in the request's own context;
+        // what it logs on its way out is no server error.
+        store.cancelledOnAbort = true;
+        cancelLeasedQueries(
+          leases,
+          sails.getDatastore().manager.pool,
+          sails.log
+        ).then(logAbort);
       });
 
       // 'finish' only fires when the response was fully handed off.

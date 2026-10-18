@@ -106,5 +106,21 @@ describe('Logger utility', () => {
         done();
       });
     });
+
+    it('should log errors as warnings once the request was cancelled on abort', (done) => {
+      const [, error, warn] = stubs;
+      logger.run('test-abort-1849', () => {
+        sails.log.error('before the abort');
+        logger.getStore().cancelledOnAbort = true;
+        sails.log.error('canceling statement due to user request');
+
+        sinon.assert.calledOnce(error);
+        sinon.assert.calledOnce(warn);
+        should(collected[1]).equal(
+          '[test-abort-1849] (after client abort) canceling statement due to user request'
+        );
+        done();
+      });
+    });
   });
 });
