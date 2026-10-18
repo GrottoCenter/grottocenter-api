@@ -168,5 +168,39 @@ describe('Document check-rows', () => {
           return done();
         });
     });
+
+    it('should mark rows with id "abc" as wontBeCreated', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/documents/check-rows')
+        .send({
+          data: [{ id: 'abc', 'dct:rights/cc:attributionName': 'Source' }],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body.willBeCreated).have.length(0);
+      should(res.body.wontBeCreated).have.length(1);
+      should(res.body.wontBeCreated[0]).have.property('line', 2);
+      should(res.body.wontBeCreated[0].message).match(/Invalid id/);
+    });
+
+    it('should mark rows with id above the integer range as wontBeCreated', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/documents/check-rows')
+        .send({
+          data: [
+            { id: '10000000001', 'dct:rights/cc:attributionName': 'Source' },
+          ],
+        })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body.willBeCreated).have.length(0);
+      should(res.body.wontBeCreated).have.length(1);
+      should(res.body.wontBeCreated[0]).have.property('line', 2);
+      should(res.body.wontBeCreated[0].message).match(/Invalid id/);
+    });
   });
 });

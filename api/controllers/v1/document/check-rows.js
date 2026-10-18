@@ -1,4 +1,7 @@
 const { valIfTruthyOrNull } = require('../../../utils/csvHelper');
+const parseImportId = require('../../../utils/parseImportId');
+
+const { MAX_PG_INTEGER, invalidImportIdMessage } = parseImportId;
 
 module.exports = async (req, res) => {
   const { data } = req.body || {};
@@ -12,14 +15,24 @@ module.exports = async (req, res) => {
   const willBeCreatedAsDuplicates = [];
   const wontBeCreated = [];
   for (const [index, row] of data.entries()) {
-    const idDbImport = valIfTruthyOrNull(row.id);
+    const rawId = valIfTruthyOrNull(row.id);
     const nameDbImport = valIfTruthyOrNull(
       row['dct:rights/cc:attributionName']
     );
 
     // Stop if no id or name provided
-    if (!idDbImport || !nameDbImport) {
+    if (!rawId || !nameDbImport) {
       wontBeCreated.push({ line: index + 2 });
+      continue; // eslint-disable-line no-continue
+    }
+
+    // Stop if the id cannot be stored in id_db_import
+    const idDbImport = parseImportId(rawId, MAX_PG_INTEGER);
+    if (idDbImport === null) {
+      wontBeCreated.push({
+        line: index + 2,
+        message: invalidImportIdMessage(rawId, MAX_PG_INTEGER),
+      });
       continue; // eslint-disable-line no-continue
     }
 

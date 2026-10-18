@@ -9,6 +9,9 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { ENTRANCE_MANDATORY_COLUMNS } = require('../utils/csvHelper');
+const parseImportId = require('../utils/parseImportId');
+
+const { MAX_PG_INTEGER, invalidImportIdMessage } = parseImportId;
 
 const QUEUE_NAME = 'csv-import';
 const COMPLETION_QUEUE_NAME = 'csv-import-completion';
@@ -240,7 +243,15 @@ module.exports = {
             continue;
           }
 
-          const idDb = valIfTruthyOrNull(row.id);
+          // Stop if the id cannot be stored in id_db_import
+          const idDb = parseImportId(row.id, MAX_PG_INTEGER);
+          if (idDb === null) {
+            result.failures.push({
+              line: originalLine,
+              message: invalidImportIdMessage(row.id, MAX_PG_INTEGER),
+            });
+            continue;
+          }
           const nameDb = valIfTruthyOrNull(
             row['dct:rights/cc:attributionName']
           );

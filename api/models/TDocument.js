@@ -187,6 +187,7 @@ module.exports = {
 
     idDbImport: {
       type: 'number',
+      columnType: 'integer',
       columnName: 'id_db_import',
       allowNull: true,
     },

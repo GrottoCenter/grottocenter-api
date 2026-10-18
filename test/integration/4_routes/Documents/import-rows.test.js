@@ -122,6 +122,33 @@ describe('Document import-rows', () => {
       await TDocument.destroy({ id: existingDoc.id });
     });
 
+    it('should fail when the id does not fit id_db_import', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/documents/import-rows')
+        .send({
+          data: [
+            {
+              id: '10000000001',
+              'rdf:type': 'Document',
+              'dct:rights/cc:attributionName': 'Overflow Source',
+              'dct:rights/karstlink:licenseType': 'CC-BY-SA',
+              'gn:countryCode': 'FR',
+              'rdfs:label': 'Test Title',
+              'dct:creator': 'Test Author',
+            },
+          ],
+        })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body.failureImport).have.length(1);
+      should(res.body.failureImport[0]).have.property('line', 2);
+      should(res.body.failureImport[0].message).match(
+        /^Invalid id "10000000001"/
+      );
+    });
+
     it('should handle import errors gracefully', (done) => {
       supertest(sails.hooks.http.app)
         .post('/api/v1/documents/import-rows')
