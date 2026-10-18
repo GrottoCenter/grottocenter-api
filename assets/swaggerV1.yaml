@@ -5234,8 +5234,12 @@ paths:
         locations, descriptions, riggings, histories, comments, names and
         notifications, and with its cave when it is the cave's only entrance
         — this is irreversible. If `entityId` points to an existing entrance,
-        these sub-entities, the documents and the history are moved to that
-        entrance instead, and the cave is merged into that entrance's cave.
+        the locations, descriptions, riggings, histories, comments and
+        documents, and the history rows of these sub-entities and of the
+        names, are moved to that entrance instead, and the cave is merged
+        into that entrance's cave. The current names and the notifications
+        are deleted in both cases: a merge does not add the names to the
+        target entrance, it only moves their history.
         A permanent delete or merge runs in a single transaction: it is
         applied entirely or not at all. Concurrent permanent deletes of the
         same entrance are serialised; the ones that wait find it gone and
