@@ -2374,12 +2374,20 @@ paths:
                     items:
                       $ref: '#/components/schemas/Import-csv'
                   wontBeCreated:
+                    description: Rows missing an id or a source name, or whose id cannot be stored (integer). The `id` must be a string of decimal digits, or an integer, between 0 and 2147483647.
                     type: array
                     items:
                       type: object
+                      required:
+                        - line
                       properties:
                         line:
                           type: integer
+                          description: Line in the CSV file (header is line 1).
+                        message:
+                          type: string
+                          description: Present when the id is invalid.
+                          example: 'Invalid id "abc": expected an integer between 0 and 2147483647.'
         '400':
           description: Missing or invalid "data" property in request body.
         '401':
@@ -5328,12 +5336,20 @@ paths:
                     items:
                       $ref: '#/components/schemas/Import-csv'
                   wontBeCreated:
+                    description: Rows missing an id or a source name, or whose id cannot be stored (bigint). The `id` must be a string of decimal digits, or an integer, between 0 and 9223372036854775807.
                     type: array
                     items:
                       type: object
+                      required:
+                        - line
                       properties:
                         line:
                           type: integer
+                          description: Line in the CSV file (header is line 1).
+                        message:
+                          type: string
+                          description: Present when the id is invalid.
+                          example: 'Invalid id "abc": expected an integer between 0 and 9223372036854775807.'
         '400':
           description: Missing or invalid "data" property in request body.
         '401':

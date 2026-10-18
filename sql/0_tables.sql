@@ -433,7 +433,7 @@ CREATE TABLE t_entrance (
 	id_geology bpchar(10) NOT NULL DEFAULT 'Q35758'::bpchar,
 	is_deleted bool NOT NULL DEFAULT false,
 	redirect_to int4 NULL,
-	id_db_import int4 NULL,
+	id_db_import int8 NULL,
 	name_db_import varchar(200) NULL,
 	CONSTRAINT t_entrance_pk PRIMARY KEY (id),
 	CONSTRAINT t_entrance_type_check CHECK (

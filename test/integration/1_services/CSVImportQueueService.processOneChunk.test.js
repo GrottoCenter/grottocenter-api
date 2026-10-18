@@ -135,7 +135,7 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
       existingCave = await TCave.create({ author: 1 }).fetch();
       existingEntrance = await TEntrance.create({
         author: 1,
-        idDbImport: 88880,
+        idDbImport: '88880',
         nameDbImport: 'Dup Worker Author',
         latitude: 45.0,
         longitude: 6.0,
@@ -230,6 +230,57 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
     });
   });
 
+  describe('invalid id', () => {
+    let result;
+
+    before(async () => {
+      invalidateSpy = sinon.spy(
+        sails.services.coordinatessnapshotservice,
+        'invalidate'
+      );
+      const job = makeJob([
+        {
+          id: '99999999999999999999',
+          'rdf:type': 'Entrance',
+          'dct:rights/cc:attributionName': 'Invalid Id Author',
+          'dct:rights/karstlink:licenseType': 'CC-BY-SA',
+          'gn:countryCode': 'FR',
+          'w3geo:latitude': '46.5',
+          'w3geo:longitude': '3.2',
+          'rdfs:label/dc:language': 'eng',
+          'rdfs:label': 'Invalid Id Entrance',
+        },
+      ]);
+      result = await CSVImportQueueService.processOneChunk(job);
+    });
+
+    after(() => {
+      invalidateSpy.restore();
+    });
+
+    it('should return one failure', () => {
+      should(result.successes).have.length(0);
+      should(result.duplicates).have.length(0);
+      should(result.failures).have.length(1);
+    });
+
+    it('should report the invalid id', () => {
+      should(result.failures[0]).have.property('line', 2);
+      should(result.failures[0].message).match(
+        /^Invalid id "99999999999999999999"/
+      );
+    });
+
+    it('should not create the author', async () => {
+      const authors = await TCaver.find({ nickname: 'Invalid' });
+      should(authors).have.length(0);
+    });
+
+    it('should NOT call CoordinatesSnapshotService.invalidate()', () => {
+      should(invalidateSpy.called).be.false();
+    });
+  });
+
   describe('invalid data (graceful error handling)', () => {
     let result;
 
@@ -288,7 +339,7 @@ describe('CSVImportQueueService - processOneChunk (DB integration)', () => {
       existingCave = await TCave.create({ author: 1 }).fetch();
       existingEntrance = await TEntrance.create({
         author: 1,
-        idDbImport: 88881,
+        idDbImport: '88881',
         nameDbImport: 'Mixed Dup Author',
         latitude: 45.0,
         longitude: 6.0,

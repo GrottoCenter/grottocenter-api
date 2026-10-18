@@ -6,6 +6,9 @@ const {
   valIfTruthyOrNull,
   getOrCreateAuthor,
 } = require('../../../utils/csvHelper');
+const parseImportId = require('../../../utils/parseImportId');
+
+const { MAX_PG_INTEGER, invalidImportIdMessage } = parseImportId;
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -37,6 +40,16 @@ module.exports = async (req, res) => {
       continue; // eslint-disable-line no-continue
     }
 
+    // Stop if the id cannot be stored in id_db_import
+    const idDb = parseImportId(data.id, MAX_PG_INTEGER);
+    if (idDb === null) {
+      requestResponse.failureImport.push({
+        line: index + 2,
+        message: invalidImportIdMessage(data.id, MAX_PG_INTEGER),
+      });
+      continue; // eslint-disable-line no-continue
+    }
+
     try {
       // Data formatting
       // Author retrieval : create one if not present in db
@@ -59,7 +72,6 @@ module.exports = async (req, res) => {
         );
 
       // Check for duplicates
-      const idDb = valIfTruthyOrNull(data.id);
       const nameDb = valIfTruthyOrNull(data['dct:rights/cc:attributionName']);
       // eslint-disable-next-line no-await-in-loop
       const dbDocument = await TDocument.findOne({

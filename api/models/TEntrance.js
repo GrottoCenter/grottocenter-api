@@ -251,8 +251,10 @@ module.exports = {
       model: 'TCountry',
     },
 
+    // bigint: pg returns int8 as a string, hence `type: 'string'`
     idDbImport: {
-      type: 'number',
+      type: 'string',
+      columnType: 'bigint',
       columnName: 'id_db_import',
       allowNull: true,
     },
