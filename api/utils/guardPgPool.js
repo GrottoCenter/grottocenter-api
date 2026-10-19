@@ -28,7 +28,9 @@
  * (see `cancelLeasedQueries`). The owner is read from the async context when
  * `pool.connect` is *called*: pg-pool's 'acquire' event may fire from another
  * request's release, in that request's context. Only contexts that carry a
- * `pgLeases` Set are tracked; background jobs never are.
+ * `pgLeases` Set are tracked; background jobs never are. Once a request is
+ * aborted, it gets no connection any more, including one it was already
+ * queued for when its client went away.
  */
 
 const { getStore } = require('./logger');
@@ -36,6 +38,15 @@ const { getStore } = require('./logger');
 const KEEP_ALIVE_INITIAL_DELAY_MS = 60 * 1000;
 
 const guardedPools = new WeakSet();
+
+// The `pgLeases` Sets of the requests whose client went away.
+const abortedRequests = new WeakSet();
+
+// Fails the acquisition like the cancelled query it would have run.
+const abortedError = () =>
+  Object.assign(new Error('canceling statement: client aborted the request'), {
+    code: '57014',
+  });
 
 const guardPgPool = (pool, log) => {
   if (guardedPools.has(pool)) return;
@@ -85,18 +96,31 @@ const guardPgPool = (pool, log) => {
     const leases = getStore()?.pgLeases;
     if (!leases) return connect(cb);
 
+    if (abortedRequests.has(leases)) {
+      if (cb) return process.nextTick(cb, abortedError());
+      return Promise.reject(abortedError());
+    }
+
+    // Returns false, and gives the client back, when the request was aborted
+    // while it waited for a connection.
     const track = (client) => {
+      if (abortedRequests.has(leases)) {
+        client.release();
+        return false;
+      }
       leaseOwner.set(client, leases);
       leases.add(client);
+      return true;
     };
     if (cb) {
       return connect((err, client, done) => {
-        if (!err) track(client);
-        cb(err, client, done);
+        if (err) return cb(err, client, done);
+        if (!track(client)) return cb(abortedError());
+        return cb(err, client, done);
       });
     }
     return connect().then((client) => {
-      track(client);
+      if (!track(client)) throw abortedError();
       return client;
     });
   };
@@ -115,38 +139,48 @@ const guardPgPool = (pool, log) => {
 };
 
 /**
- * Cancel whatever the connections in `leases` are running, with
+ * Mark the request owning `leases` as aborted, so that it gets no further
+ * connection, and cancel whatever the connections it holds are running, with
  * `pg_cancel_backend()` sent on a dedicated connection: the pool itself may be
  * exhausted, which is precisely when cancelling matters (#1784). Postgres
  * answers the cancelled query with `57014 query_canceled`, rolls back its
  * transaction if any, and the connection goes back to the pool as usual.
  *
- * A connection released in the meantime is skipped. The check happens just
- * before the cancel is sent; a connection released and leased again within
- * that last round trip would be hit, a window accepted as negligible.
+ * The cancels are sent one at a time, and a connection released in the
+ * meantime is skipped: it may already serve another request. The check
+ * happens just before each cancel is sent; a connection released and leased
+ * again within that last round trip would be hit, a window accepted as
+ * negligible.
  *
  * Never throws; resolves to the number of backends signalled.
  */
 const cancelLeasedQueries = async (leases, pool, log) => {
-  if (!leases || leases.size === 0) return 0;
+  if (!leases) return 0;
+  abortedRequests.add(leases);
+  if (leases.size === 0) return 0;
 
   const canceller = new pool.Client(pool.options);
   canceller.on('error', () => {});
+  let signalled = 0;
   try {
     await canceller.connect();
-    const pids = [...leases]
-      .map((client) => client.processID)
-      .filter((pid) => pid);
-    await Promise.all(
-      pids.map((pid) => canceller.query('SELECT pg_cancel_backend($1)', [pid]))
-    );
-    return pids.length;
+    // A snapshot: releases delete from `leases` while we iterate.
+    for (const client of [...leases]) {
+      if (leases.has(client) && client.processID) {
+        // eslint-disable-next-line no-await-in-loop
+        await canceller.query('SELECT pg_cancel_backend($1)', [
+          client.processID,
+        ]);
+        signalled += 1;
+      }
+    }
+    return signalled;
   } catch (err) {
     log.warn('[pgPoolGuard] Could not cancel an aborted request', {
       code: err && err.code,
       message: err && err.message,
     });
-    return 0;
+    return signalled;
   } finally {
     canceller.end().catch(() => {});
   }

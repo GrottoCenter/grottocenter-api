@@ -115,10 +115,13 @@ describe('guardPgPool', () => {
 
     describe('lease attribution (#1849)', () => {
       let client;
+      // The pool's own connect, which the guard wraps.
+      let rawConnect;
 
       beforeEach(() => {
         client = new EventEmitter();
-        pool.connect.callsFake((cb) => {
+        rawConnect = pool.connect;
+        rawConnect.callsFake((cb) => {
           if (cb) return setImmediate(() => cb(undefined, client, () => {}));
           return Promise.resolve(client);
         });
@@ -154,6 +157,68 @@ describe('guardPgPool', () => {
         should(await pool.connect()).equal(client);
         await logger.run('job-trace', () => pool.connect());
         pool.emit('release', undefined, client);
+      });
+
+      it('refuses any connection to an aborted request', async () => {
+        const leases = new Set();
+        await cancelLeasedQueries(leases, pool, log);
+
+        await should(inRequest(leases, () => pool.connect())).be.rejectedWith({
+          code: '57014',
+        });
+        const err = await inRequest(
+          leases,
+          () =>
+            new Promise((resolve) => {
+              pool.connect(resolve);
+            })
+        );
+        should(err).match({ code: '57014' });
+        sinon.assert.notCalled(rawConnect);
+      });
+
+      it('gives back a callback lease granted after the abort', async () => {
+        const leases = new Set();
+        const done = sinon.stub();
+        let grant;
+        rawConnect.callsFake((cb) => {
+          grant = () => cb(undefined, client, done);
+        });
+        const acquired = inRequest(
+          leases,
+          () =>
+            new Promise((resolve) => {
+              pool.connect((err, granted) => resolve({ err, granted }));
+            })
+        );
+        await cancelLeasedQueries(leases, pool, log);
+        client.release = sinon.stub();
+        grant();
+
+        const { err, granted } = await acquired;
+        should(err).match({ code: '57014' });
+        should(granted).be.undefined();
+        sinon.assert.calledOnce(client.release);
+        should(leases.size).equal(0);
+      });
+
+      it('gives back a promise lease granted after the abort', async () => {
+        const leases = new Set();
+        let grant;
+        rawConnect.callsFake(
+          () =>
+            new Promise((resolve) => {
+              grant = () => resolve(client);
+            })
+        );
+        const acquired = inRequest(leases, () => pool.connect());
+        await cancelLeasedQueries(leases, pool, log);
+        client.release = sinon.stub();
+        grant();
+
+        await should(acquired).be.rejectedWith({ code: '57014' });
+        sinon.assert.calledOnce(client.release);
+        should(leases.size).equal(0);
       });
 
       it('passes connection errors through', async () => {
@@ -257,6 +322,77 @@ describe('guardPgPool', () => {
       client.release();
 
       should(await cancelLeasedQueries(leases, pool, log)).equal(0);
+    });
+
+    it('never runs the query of a request aborted while queued', async () => {
+      const log = { error: sinon.stub(), warn: sinon.stub() };
+      guardPgPool(pool, log);
+      // The pool's only connection is busy: the request has to wait for it.
+      const busy = await pool.connect();
+      const leases = new Set();
+      const query = sinon.spy();
+      const pending = inRequest(leases, async () => {
+        const client = await pool.connect();
+        query();
+        return client.query('SELECT pg_sleep(30)');
+      });
+      should(pool.waitingCount).equal(1);
+
+      should(await cancelLeasedQueries(leases, pool, log)).equal(0);
+      busy.release();
+
+      await should(pending).be.rejectedWith({ code: '57014' });
+      sinon.assert.notCalled(query);
+      should(leases.size).equal(0);
+      should(pool.idleCount).equal(1);
+    });
+
+    it('skips a connection released while an earlier cancel is pending', async () => {
+      const log = { error: sinon.stub(), warn: sinon.stub() };
+      const wide = new Pool({
+        connectionString: sails.getDatastore().manager.connectionString,
+        max: 2,
+      });
+      wide.on('error', () => {});
+      try {
+        guardPgPool(wide, log);
+        const leases = new Set();
+        const first = await inRequest(leases, () => wide.connect());
+        const second = await inRequest(leases, () => wide.connect());
+        const slow = first.query('SELECT pg_sleep(30)');
+
+        // Before the first cancel goes out, the second connection is
+        // released and leased to another request, which starts a write.
+        let otherQuery;
+        let hooked = false;
+        class Canceller extends wide.Client {
+          query(...args) {
+            if (hooked) return super.query(...args);
+            hooked = true;
+            second.release();
+            return wide.connect().then((other) => {
+              should(other).equal(second);
+              otherQuery = other
+                .query('SELECT pg_sleep(0.5), 1 AS ok')
+                .finally(() => other.release());
+              return super.query(...args);
+            });
+          }
+        }
+
+        should(
+          await cancelLeasedQueries(
+            leases,
+            { Client: Canceller, options: wide.options },
+            log
+          )
+        ).equal(1);
+        await should(slow).be.rejectedWith({ code: '57014' });
+        should((await otherQuery).rows[0].ok).equal(1);
+        first.release();
+      } finally {
+        await wide.end();
+      }
     });
 
     it('logs instead of throwing when the cancel cannot connect', async () => {

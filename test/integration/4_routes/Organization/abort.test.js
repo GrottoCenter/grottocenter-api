@@ -78,4 +78,51 @@ describe('Client-aborted request', () => {
     ).be.true('the query is still running after the abort');
     sinon.assert.calledOnce(stub);
   }).timeout(20000);
+
+  it('never starts the query of a GET aborted before it got a connection', async () => {
+    // Stands for a GET queued behind a full pool: it holds no connection yet
+    // when its client goes away.
+    let reached;
+    const atGate = new Promise((resolve) => {
+      reached = resolve;
+    });
+    let openGate;
+    const gate = new Promise((resolve) => {
+      openGate = resolve;
+    });
+    let settle;
+    const outcome = new Promise((resolve) => {
+      settle = resolve;
+    });
+    stub = sinon
+      .stub(GrottoService, 'getPopulatedOrganization')
+      .callsFake(async () => {
+        reached();
+        await gate;
+        return sails.sendNativeQuery(SLOW_QUERY).then(
+          () => settle(null),
+          (err) => settle(err)
+        );
+      });
+
+    const request = supertest(sails.hooks.http.app)
+      .get('/api/v1/organizations/1')
+      .timeout(30000);
+    const aborted = request.then(
+      () => null,
+      (err) => err
+    );
+    await atGate;
+    request.abort();
+    await aborted;
+    // Let the server see the closed socket before the GET asks for its
+    // connection.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 200);
+    });
+    openGate();
+
+    should(await outcome).match({ raw: { error: { code: '57014' } } });
+    should(await activeSlowQueries()).equal(0);
+  }).timeout(20000);
 });

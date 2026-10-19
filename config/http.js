@@ -379,12 +379,13 @@ module.exports.http = {
             );
           });
 
-        if (!leases || leases.size === 0) {
+        if (!leases) {
           logAbort(0);
           return;
         }
-        // The cancelled query fails with 57014 in the request's own context;
-        // what it logs on its way out is no server error.
+        // The cancelled query, or a connection refused from now on, fails
+        // with 57014 in the request's own context; what it logs on its way out
+        // is no server error.
         store.cancelledOnAbort = true;
         cancelLeasedQueries(
           leases,
