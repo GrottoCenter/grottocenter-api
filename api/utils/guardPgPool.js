@@ -31,16 +31,30 @@
  * `pgLeases` Set are tracked; background jobs never are. Once a request is
  * aborted, it gets no connection any more, including one it was already
  * queued for when its client went away.
+ *
+ * That attribution needs every pg callback to run in its caller's context.
+ * Node runs a socket's callbacks in the context the socket was opened in, so
+ * without help a query callback runs in the context of whichever request
+ * opened that pooled connection, and Waterline's next `pool.connect` from it
+ * is credited to that request. The guard therefore binds the callbacks of
+ * `pool.connect` and `client.query` to the context they were passed in.
  */
 
+const { AsyncResource } = require('async_hooks');
 const { getStore } = require('./logger');
 
 const KEEP_ALIVE_INITIAL_DELAY_MS = 60 * 1000;
 
 const guardedPools = new WeakSet();
 
-// The `pgLeases` Sets of the requests whose client went away.
-const abortedRequests = new WeakSet();
+// The `pgLeases` Sets of the requests whose client went away. Kept on global,
+// like the logger's AsyncLocalStorage: Sails' loader clears the require cache,
+// so the copy of this module that marks an abort (config/http.js) may not be
+// the one that installed the guard.
+if (!global.grottoAbortedPgRequests) {
+  global.grottoAbortedPgRequests = new WeakSet();
+}
+const abortedRequests = global.grottoAbortedPgRequests;
 
 // Fails the acquisition like the cancelled query it would have run.
 const abortedError = () =>
@@ -64,6 +78,20 @@ const guardPgPool = (pool, log) => {
   const attach = (client) => {
     if (guardedClients.has(client)) return;
     guardedClients.add(client);
+
+    // Only the trailing-callback form is rebound: it is the one
+    // machinepack-postgresql uses. A promise continuation already runs in
+    // the context of its `then`.
+    const query = client.query.bind(client);
+    // eslint-disable-next-line no-param-reassign
+    client.query = (...args) => {
+      const last = args.length - 1;
+      if (typeof args[last] === 'function') {
+        // eslint-disable-next-line no-param-reassign
+        args[last] = AsyncResource.bind(args[last]);
+      }
+      return query(...args);
+    };
 
     client.on('error', (err) => {
       const since = leasedAt.get(client);
@@ -92,7 +120,10 @@ const guardPgPool = (pool, log) => {
 
   const connect = pool.connect.bind(pool);
   // eslint-disable-next-line no-param-reassign
-  pool.connect = (cb) => {
+  pool.connect = (callback) => {
+    // pg-pool may hand a released connection to a waiter from the releasing
+    // request's context.
+    const cb = callback && AsyncResource.bind(callback);
     const leases = getStore()?.pgLeases;
     if (!leases) return connect(cb);
 

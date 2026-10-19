@@ -28,6 +28,10 @@ const socketError = () =>
     syscall: 'read',
   });
 
+// A pooled client as far as the guard is concerned.
+const fakeClient = (props = {}) =>
+  Object.assign(new EventEmitter(), { query: () => {} }, props);
+
 const fakePool = () =>
   Object.assign(new EventEmitter(), {
     options: {},
@@ -56,7 +60,7 @@ describe('guardPgPool', () => {
 
     it('logs instead of throwing when a connected client errors', () => {
       guardPgPool(pool, log);
-      const client = new EventEmitter();
+      const client = fakeClient();
       pool.emit('connect', client);
 
       should(() => client.emit('error', socketError())).not.throw();
@@ -74,7 +78,7 @@ describe('guardPgPool', () => {
       const clock = sinon.useFakeTimers({ now: 1000 });
       try {
         guardPgPool(pool, log);
-        const client = new EventEmitter();
+        const client = fakeClient();
         pool.emit('connect', client);
         pool.emit('acquire', client);
         clock.tick(1500);
@@ -94,7 +98,7 @@ describe('guardPgPool', () => {
     });
 
     it('guards clients opened before it was installed', () => {
-      const client = new EventEmitter();
+      const client = fakeClient();
       pool._clients.push(client);
       guardPgPool(pool, log);
 
@@ -104,7 +108,7 @@ describe('guardPgPool', () => {
 
     it('turns on TCP keepalive for clients opened before it was installed', () => {
       const setKeepAlive = sinon.stub();
-      const client = Object.assign(new EventEmitter(), {
+      const client = fakeClient({
         connection: { stream: { setKeepAlive } },
       });
       pool._clients.push(client);
@@ -119,7 +123,7 @@ describe('guardPgPool', () => {
       let rawConnect;
 
       beforeEach(() => {
-        client = new EventEmitter();
+        client = fakeClient();
         rawConnect = pool.connect;
         rawConnect.callsFake((cb) => {
           if (cb) return setImmediate(() => cb(undefined, client, () => {}));
@@ -175,6 +179,27 @@ describe('guardPgPool', () => {
         );
         should(err).match({ code: '57014' });
         sinon.assert.notCalled(rawConnect);
+      });
+
+      // Sails' loader clears the require cache: config/http.js may hold
+      // another copy of the module than the one that installed the guard.
+      it('refuses a connection when another copy of the module marked the abort', async () => {
+        const path = require.resolve('../../../api/utils/guardPgPool');
+        const cached = require.cache[path];
+        delete require.cache[path];
+        try {
+          // eslint-disable-next-line global-require, import/no-dynamic-require
+          const otherCopy = require(path);
+          should(otherCopy).not.equal(guardPgPool);
+          const leases = new Set();
+          await otherCopy.cancelLeasedQueries(leases, pool, log);
+
+          await should(inRequest(leases, () => pool.connect())).be.rejectedWith(
+            { code: '57014' }
+          );
+        } finally {
+          require.cache[path] = cached;
+        }
       });
 
       it('gives back a callback lease granted after the abort', async () => {
@@ -242,7 +267,7 @@ describe('guardPgPool', () => {
     it('is idempotent', () => {
       guardPgPool(pool, log);
       guardPgPool(pool, log);
-      const client = new EventEmitter();
+      const client = fakeClient();
       pool.emit('connect', client);
 
       should(client.listenerCount('error')).equal(1);
@@ -393,6 +418,58 @@ describe('guardPgPool', () => {
       } finally {
         await wide.end();
       }
+    });
+
+    // Node runs a socket's callbacks in the context the socket was opened in.
+    it('credits a query callback to its caller, not to the request that opened the connection', async () => {
+      guardPgPool(pool, { error: sinon.stub() });
+      const opener = new Set();
+      (await inRequest(opener, () => pool.connect())).release();
+      await cancelLeasedQueries(opener, pool, {});
+
+      const caller = new Set();
+      const next = await inRequest(
+        caller,
+        () =>
+          new Promise((resolve, reject) => {
+            pool.connect((err, client) => {
+              if (err) return reject(err);
+              return client.query('SELECT 1', (queryErr) => {
+                client.release();
+                if (queryErr) return reject(queryErr);
+                return pool.connect((nextErr, nextClient) =>
+                  nextErr ? reject(nextErr) : resolve(nextClient)
+                );
+              });
+            });
+          })
+      );
+      should([...caller]).eql([next]);
+      next.release();
+    });
+
+    it('credits a connection handed over on release to its waiter', async () => {
+      guardPgPool(pool, { error: sinon.stub() });
+      const holder = new Set();
+      const held = await inRequest(holder, () => pool.connect());
+
+      const waiter = new Set();
+      const granted = inRequest(
+        waiter,
+        () =>
+          new Promise((resolve, reject) => {
+            pool.connect((err, client) => {
+              if (err) return reject(err);
+              return resolve({ client, store: logger.getStore() });
+            });
+          })
+      );
+      inRequest(holder, () => held.release());
+
+      const { client, store } = await granted;
+      should(store.pgLeases).equal(waiter);
+      should([...waiter]).eql([client]);
+      client.release();
     });
 
     it('logs instead of throwing when the cancel cannot connect', async () => {
