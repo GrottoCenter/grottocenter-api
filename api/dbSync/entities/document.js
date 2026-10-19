@@ -260,10 +260,13 @@ module.exports = {
   search: {
     importFormater,
     // A validated document being modified waits for its re-validation with
-    // is_validated = false: the index keeps its last validated version.
+    // is_validated = false and no date_validation: the index keeps its last
+    // validated version. A refused submission has a date_validation (#1907)
+    // and is removed.
     retainedIdsQuery: `
       SELECT id FROM t_document
       WHERE id = ANY($1::int[]) AND is_deleted = false AND is_validated = false
+        AND date_validation IS NULL
     `,
     schema: {
       name: 'documents',

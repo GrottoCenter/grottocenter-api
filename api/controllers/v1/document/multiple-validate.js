@@ -34,7 +34,7 @@ async function markDocumentValidated(
 // credited to the last reviewer, or a 'create' of a refused submission.
 // app.document_skip_log makes the trigger skip it. SET LOCAL scopes the flag to
 // this transaction, so it reverts when the transaction ends.
-async function markDocumentRejected(
+async function markModificationRejected(
   documentId,
   validationComment,
   validationAuthor
@@ -49,6 +49,38 @@ async function markDocumentRejected(
       .set(validatedFields(validationComment, validationAuthor))
       .usingConnection(db);
   });
+}
+
+// A document that was never accepted stays unvalidated when it is refused, with
+// the decision recorded (#1907): isValidated false with a dateValidation is the
+// refused state find-all.js tells apart from a pending one. Any modification
+// submitted before the decision goes with it. The trigger only logs a document
+// that becomes validated, so this write needs no app.document_skip_log.
+async function markSubmissionRejected(
+  documentId,
+  validationComment,
+  validationAuthor
+) {
+  await TDocument.updateOne(documentId).set({
+    ...validatedFields(validationComment, validationAuthor),
+    isValidated: false,
+  });
+}
+
+// Refuse whatever is pending on the document: a modification of an accepted
+// document returns it to that accepted version, a submission that was never
+// accepted is refused outright.
+async function markDocumentRejected(
+  document,
+  validationComment,
+  validationAuthor
+) {
+  const wasValidated =
+    await DocumentService.wasValidatedBeforeModification(document);
+  const markRejected = wasValidated
+    ? markModificationRejected
+    : markSubmissionRejected;
+  await markRejected(document.id, validationComment, validationAuthor);
 }
 
 // The seven m2m associations on TDocument that must be handled via replaceCollection.
@@ -70,24 +102,26 @@ const MAX_APPLY_ATTEMPTS = 2;
 
 // Refuse a pending modification that can no longer be applied to the current
 // database state. The document returns to its last validated state and the
-// reason is recorded so the author and moderator can see why.
+// reason is recorded so the author and moderator can see why. A modification
+// of a document that was never accepted leaves it refused instead, as a manual
+// rejection would: both go through markDocumentRejected.
 //
-// isValidated must be restored to true, matching the manual-rejection path:
-// both go through markDocumentRejected. Submitting a modification sets isValidated false and
-// dateValidation null (DocumentService.updateDocument); rejecting it sets
-// dateValidation but leaves the flag false, and find-all.js then returns
-// neither — the default list requires isValidated true, and the moderation queue
-// requires isValidated false *with* a null dateValidation. A document left in
-// that combination disappears from the site instead of reverting to its last
+// For an accepted document isValidated must be restored to true. Submitting a
+// modification sets isValidated false and dateValidation null
+// (DocumentService.updateDocument); rejecting it sets dateValidation but leaves
+// the flag false, and find-all.js then returns neither — the default list
+// requires isValidated true, and the moderation queue requires isValidated
+// false *with* a null dateValidation. An accepted document left in that
+// combination disappears from the site instead of reverting to its last
 // validated state.
-async function autoRejectModification(documentId, reason, validationAuthor) {
+async function autoRejectModification(document, reason, validationAuthor) {
   const comment = `Auto-rejected: ${reason}`.slice(
     0,
     VALIDATION_COMMENT_MAX_LENGTH
   );
-  await markDocumentRejected(documentId, comment, validationAuthor);
+  await markDocumentRejected(document, comment, validationAuthor);
   sails.log.warn(
-    `Document ${documentId} modification auto-rejected: ${reason}`
+    `Document ${document.id} modification auto-rejected: ${reason}`
   );
   return { rejected: true, reason: comment };
 }
@@ -158,7 +192,7 @@ async function validateAndUpdateDocument(
     );
     if (parentError) {
       // Reject the modification rather than persisting a corrupt hierarchy.
-      return autoRejectModification(document.id, parentError, validationAuthor);
+      return autoRejectModification(document, parentError, validationAuthor);
     }
   }
 
@@ -288,7 +322,7 @@ async function validateAndUpdateDocument(
   // it leaves the document in its last validated state instead of permanently
   // unvalidatable, which is the failure #1815 reported.
   return autoRejectModification(
-    document.id,
+    document,
     'linked entities kept being deleted while this modification was being validated',
     validationAuthor
   );
@@ -357,8 +391,8 @@ async function notifyRejectionSafely(documentId, userId, comment) {
 // failed when it was in fact validated.
 async function processDocument(document, change, userId) {
   if (!change.isValidated) {
-    // Validate it but do not update its fields (reject change)
-    await markDocumentRejected(document.id, change.validationComment, userId);
+    // Do not apply the pending fields (reject change)
+    await markDocumentRejected(document, change.validationComment, userId);
     await notifyRejectionSafely(document.id, userId, change.validationComment);
     return { status: OUTCOME.REJECTED, reason: null };
   }

@@ -1,5 +1,6 @@
 const CaveService = require('../../../services/CaveService');
 const ControllerService = require('../../../services/ControllerService');
+const DocumentService = require('../../../services/DocumentService');
 const RightService = require('../../../services/RightService');
 const GuidelineService = require('../../../services/GuidelineService');
 const {
@@ -22,6 +23,7 @@ module.exports = async (req, res) => {
   const cave = await CaveService.getPopulatedCave(caveId, where);
 
   if (!cave) return res.notFound(`${params.searchedItem} not found`);
+  cave.documents = cave.documents.filter((d) => !DocumentService.isRefused(d));
 
   const guidelines = await GuidelineService.getGuidelinesForCave(caveId);
 

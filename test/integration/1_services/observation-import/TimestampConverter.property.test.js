@@ -217,6 +217,10 @@ describe('TimestampConverter - Property 6: Component-based timestamp round-trip'
 
     fc.assert(
       fc.property(unixSecondsArb, timezoneArb, (unixSeconds, timezone) => {
+        // Skip DST-ambiguous timestamps — the components of a "fall back"
+        // local time have two valid UTC interpretations.
+        fc.pre(!isDSTAmbiguous(unixSeconds, timezone));
+
         // 1. Create a dayjs instance in the given timezone
         const original = dayjs.unix(unixSeconds).tz(timezone);
 

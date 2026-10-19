@@ -1,4 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
+const DocumentService = require('../../../services/DocumentService');
 const MassifService = require('../../../services/MassifService');
 const RightService = require('../../../services/RightService');
 const GuidelineService = require('../../../services/GuidelineService');
@@ -21,6 +22,9 @@ module.exports = async (req, res) => {
     const massif = await MassifService.getPopulatedMassif(massifId);
 
     if (!massif) return res.notFound(`${params.searchedItem} not found`);
+    massif.documents = massif.documents.filter(
+      (d) => !DocumentService.isRefused(d)
+    );
 
     const guidelines = await GuidelineService.getGuidelinesForEntity(
       'massif',

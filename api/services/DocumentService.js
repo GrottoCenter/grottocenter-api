@@ -321,6 +321,39 @@ module.exports = {
     return languages.filter((l) => l.isMain);
   },
 
+  /**
+   * Whether a moderator refused the document: a refused submission keeps
+   * isValidated false with a dateValidation, a pending one has none (#1907).
+   * @param {Object} document
+   * @returns {boolean}
+   */
+  isRefused(document) {
+    return document.isValidated === false && document.dateValidation != null;
+  },
+
+  /**
+   * Whether a document was accepted before its pending modification, so
+   * refusing the modification can return it to that state (#1907). Read before
+   * a new modification overwrites modifiedDocJson: one already pending has
+   * already set isValidated false, so its own flag is carried over. A snapshot
+   * stored before the flag existed falls back on the document history: the
+   * histo_update_document trigger copies the accepted row into h_document when
+   * the modification is submitted, while a new submission has only unvalidated
+   * rows there.
+   * @param {Object} document the row as it is before the modification
+   * @returns {Promise<boolean>}
+   */
+  async wasValidatedBeforeModification(document) {
+    if (!document.modifiedDocJson) return document.isValidated === true;
+    const { wasValidated } = document.modifiedDocJson;
+    if (typeof wasValidated === 'boolean') return wasValidated;
+    const validatedSnapshots = await HDocument.count({
+      t_id: document.id,
+      isValidated: true,
+    });
+    return validatedSnapshots > 0;
+  },
+
   async updateDocument({
     documentId,
     reviewerId,
@@ -330,12 +363,17 @@ module.exports = {
     modifiedFiles,
     deletedFiles,
   } = {}) {
+    const document = await TDocument.findOne(documentId);
+    if (!document) return null;
+    const wasValidated =
+      await module.exports.wasValidatedBeforeModification(document);
     return TDocument.updateOne(documentId).set({
       dateReviewed: new Date(), // Avoid an uniqueness error
       isValidated: false,
       dateValidation: null,
       modifiedDocJson: {
         reviewerId,
+        wasValidated,
         documentData,
         descriptionData,
         newFiles,
