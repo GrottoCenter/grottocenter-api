@@ -11,6 +11,19 @@ const asyncLocalStorage = global.grottoAsyncLocalStorage;
 
 const getTraceId = () => asyncLocalStorage.getStore()?.traceId || 'no-trace';
 
+const QUERY_CANCELED = '57014';
+const MAX_CAUSE_DEPTH = 5;
+
+// Whether `arg` is, or was caused by, a cancelled query. Waterline nests the
+// driver's error under `cause` and `raw.error`.
+const isQueryCanceled = (arg, depth = 0) => {
+  if (!arg || typeof arg !== 'object' || depth > MAX_CAUSE_DEPTH) return false;
+  if (arg.code === QUERY_CANCELED) return true;
+  return [arg.cause, arg.raw, arg.error].some((next) =>
+    isQueryCanceled(next, depth + 1)
+  );
+};
+
 const patchSailsLog = () => {
   const originalMethods = {
     info: sails.log.info,
@@ -27,6 +40,23 @@ const patchSailsLog = () => {
   // holds a string-level backstop for the log methods not patched here.
   Object.keys(originalMethods).forEach((level) => {
     sails.log[level] = (...args) => {
+      // Once a request's queries were cancelled because its client went away
+      // (#1849), the errors the cancellation raises are expected: keep them,
+      // as warnings. Any other error stays one: a pooled socket keeps the
+      // context it was opened in, and may log a genuine failure in it long
+      // after that request is gone.
+      if (
+        level === 'error' &&
+        asyncLocalStorage.getStore()?.cancelledOnAbort &&
+        args.some((arg) => isQueryCanceled(arg))
+      ) {
+        originalMethods.warn(
+          `[${getTraceId()}]`,
+          '(after client abort)',
+          ...args.map(redactLogArgs)
+        );
+        return;
+      }
       originalMethods[level](`[${getTraceId()}]`, ...args.map(redactLogArgs));
     };
   });
@@ -34,6 +64,7 @@ const patchSailsLog = () => {
 
 module.exports = {
   getTraceId,
+  getStore: () => asyncLocalStorage.getStore(),
   run: (traceId, callback) => asyncLocalStorage.run({ traceId }, callback),
   patchSailsLog,
 };
