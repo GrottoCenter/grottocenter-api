@@ -21,6 +21,7 @@ const logger = require('../api/utils/logger');
 const { cancelLeasedQueries } = require('../api/utils/guardPgPool');
 const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
+const accessLogEntry = require('../api/utils/accessLogEntry');
 
 // Auth endpoints that receive credentials and need stricter limits.
 // Note: PATCH /api/v1/account is intentionally excluded — while it can accept
@@ -330,7 +331,12 @@ module.exports.http = {
       return upload.fields([{ name: 'files' }, { name: 'file', maxCount: 1 }]);
     })(),
 
-    // Logs each request to the console
+    // Logs each request to the console.
+    //
+    // Legacy: the `Access ::` line written by responseTimeLogger supersedes
+    // `Client data:`, which conflates Origin with Referer and logs 'unknown' for
+    // a missing header (#1788). Both lines are kept until the log consumers
+    // read `Access ::`.
     requestLogger(req, res, next) {
       sails.log.info('Req ::', req.method, req.url);
       sails.log.info(
@@ -349,6 +355,16 @@ module.exports.http = {
     responseTimeLogger(req, res, next) {
       const { traceId } = req;
       const startedAt = Date.now();
+
+      // One structured line per request, client data and outcome together, so
+      // log consumers need no join by trace ID (#1788).
+      const logAccess = (status) =>
+        sails.log.info(
+          'Access ::',
+          JSON.stringify(
+            accessLogEntry(req, { status, durationMs: Date.now() - startedAt })
+          )
+        );
 
       // The pool guard records here the connections this request leases, so
       // an abort can cancel their queries (#1849). Reads only: a write cut
@@ -377,6 +393,7 @@ module.exports.http = {
               `${Date.now() - startedAt}ms`,
               ...(cancelled ? [`(${cancelled} backend(s) cancelled)`] : [])
             );
+            logAccess(499);
           });
 
         if (!leases) {
@@ -405,6 +422,7 @@ module.exports.http = {
             res.statusCode,
             res.get('X-Response-Time')
           );
+          logAccess(res.statusCode);
 
           if (res.statusCode >= 500) {
             sails.log.error(
