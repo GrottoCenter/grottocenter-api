@@ -310,6 +310,24 @@ describe('Document multiple-validate', () => {
         should(updated.dateValidation).not.be.null();
         should(updated.parent).not.equal(child.id);
       });
+
+      it('should let search remove a refused new submission but keep a pending modification', async () => {
+        // eslint-disable-next-line global-require
+        const { planSync } = require('../../../../api/dbSync/searchDocuments');
+        const refused = await createDocument(false);
+        await submitModification(refused);
+        await refuse(refused);
+        const pending = await createDocument(true);
+        await submitModification(pending);
+
+        const { documents, removedIds } = await planSync('documents', [
+          refused.id,
+          pending.id,
+        ]);
+
+        should(documents).eql([]);
+        should(removedIds).eql([refused.id]);
+      });
     });
 
     it('should validate document with modifiedDocJson', async () => {

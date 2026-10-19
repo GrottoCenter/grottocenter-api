@@ -517,10 +517,27 @@ describe('searchDocuments', () => {
   });
 
   describe('planSync()', () => {
+    let dateValidations;
+
+    before(async () => {
+      ({ rows: dateValidations } = await CommonService.query(
+        'SELECT id, date_validation FROM t_document WHERE id = ANY($1::int[])',
+        [[2, 3]]
+      ));
+    });
+
     afterEach(async () => {
       await CommonService.query(
         'UPDATE t_document SET is_validated = true, is_deleted = false WHERE id = ANY($1::int[])',
         [[2, 3]]
+      );
+      await Promise.all(
+        dateValidations.map(({ id, date_validation: date }) =>
+          CommonService.query(
+            'UPDATE t_document SET date_validation = $2 WHERE id = $1',
+            [id, date]
+          )
+        )
       );
     });
 
@@ -540,14 +557,27 @@ describe('searchDocuments', () => {
     });
 
     it('keeps a document pending re-validation in the index', async () => {
+      // What DocumentService.updateDocument writes for a modification
       await CommonService.query(
-        'UPDATE t_document SET is_validated = false WHERE id = 2'
+        'UPDATE t_document SET is_validated = false, date_validation = NULL WHERE id = 2'
       );
 
       const { documents, removedIds } = await planSync('documents', [2, 4]);
 
       should(documents.map((d) => d.id)).eql([4]);
       should(removedIds).eql([]);
+    });
+
+    it('removes an indexed document refused as a new submission (#1907)', async () => {
+      // What refusing a never-accepted document writes: the decision date stays
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = false, date_validation = now() WHERE id = 2'
+      );
+
+      const { documents, removedIds } = await planSync('documents', [2, 4]);
+
+      should(documents.map((d) => d.id)).eql([4]);
+      should(removedIds).eql([2]);
     });
 
     it('removes a soft-deleted document, validated or not', async () => {
