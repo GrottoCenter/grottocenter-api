@@ -45,6 +45,9 @@ const { getStore } = require('./logger');
 
 const KEEP_ALIVE_INITIAL_DELAY_MS = 60 * 1000;
 
+// Bounds both the cancellation connection's startup and each cancel it sends.
+const CANCEL_TIMEOUT_MS = 5 * 1000;
+
 const guardedPools = new WeakSet();
 
 // The `pgLeases` Sets of the requests whose client went away. Kept on global,
@@ -183,16 +186,32 @@ const guardPgPool = (pool, log) => {
  * again within that last round trip would be hit, a window accepted as
  * negligible.
  *
+ * The connection is bounded by `timeoutMs`, for its startup and for each
+ * cancel: the pool sets no connection timeout, and during an outage an
+ * unbounded attempt would pile up one stalled client per aborted request.
+ *
  * Never throws; resolves to the number of backends signalled.
  */
-const cancelLeasedQueries = async (leases, pool, log) => {
+const cancelLeasedQueries = async (
+  leases,
+  pool,
+  log,
+  { timeoutMs = CANCEL_TIMEOUT_MS } = {}
+) => {
   if (!leases) return 0;
   abortedRequests.add(leases);
   if (leases.size === 0) return 0;
 
-  const canceller = new pool.Client(pool.options);
+  const canceller = new pool.Client({
+    ...pool.options,
+    // pg-pool makes it non-enumerable, so that it stays out of stack traces.
+    password: pool.options.password,
+    connectionTimeoutMillis: timeoutMs,
+    query_timeout: timeoutMs,
+  });
   canceller.on('error', () => {});
   let signalled = 0;
+  let failed = false;
   try {
     await canceller.connect();
     // A snapshot: releases delete from `leases` while we iterate.
@@ -207,13 +226,16 @@ const cancelLeasedQueries = async (leases, pool, log) => {
     }
     return signalled;
   } catch (err) {
+    failed = true;
     log.warn('[pgPoolGuard] Could not cancel an aborted request', {
       code: err && err.code,
       message: err && err.message,
     });
     return signalled;
   } finally {
-    canceller.end().catch(() => {});
+    // A stalled server may never answer the goodbye: drop the socket instead.
+    if (failed) canceller.connection.stream.destroy();
+    else canceller.end().catch(() => {});
   }
 };
 

@@ -107,19 +107,66 @@ describe('Logger utility', () => {
       });
     });
 
-    it('should log errors as warnings once the request was cancelled on abort', (done) => {
-      const [, error, warn] = stubs;
-      logger.run('test-abort-1849', () => {
-        sails.log.error('before the abort');
-        logger.getStore().cancelledOnAbort = true;
-        sails.log.error('canceling statement due to user request');
+    describe('after a client abort (#1849)', () => {
+      // How Waterline reports a cancelled query: the driver's error is nested.
+      const cancelledQueryError = () => {
+        const driverError = Object.assign(
+          new Error('canceling statement due to user request'),
+          { code: '57014' }
+        );
+        return Object.assign(new Error('Query failed'), {
+          name: 'OperationalError',
+          cause: Object.assign(new Error('Query failed'), {
+            raw: { error: driverError },
+          }),
+          raw: { error: driverError },
+        });
+      };
+
+      const inAbortedRequest = (fn) =>
+        logger.run('test-abort-1849', () => {
+          logger.getStore().cancelledOnAbort = true;
+          fn();
+        });
+
+      it('should log the cancelled query error as a warning', () => {
+        const [, error, warn] = stubs;
+        inAbortedRequest(() =>
+          sails.log.error(
+            'Sending 500 ("Server Error") response: \n',
+            cancelledQueryError()
+          )
+        );
+
+        sinon.assert.notCalled(error);
+        sinon.assert.calledOnce(warn);
+        should(collected[0]).startWith(
+          '[test-abort-1849] (after client abort) Sending 500'
+        );
+      });
+
+      it('should keep an unrelated error as an error', () => {
+        const [, error, warn] = stubs;
+        inAbortedRequest(() =>
+          sails.log.error(
+            '[pgPoolGuard] Error on pooled Postgres connection',
+            Object.assign(new Error('read ETIMEDOUT'), { code: 'ETIMEDOUT' })
+          )
+        );
 
         sinon.assert.calledOnce(error);
-        sinon.assert.calledOnce(warn);
-        should(collected[1]).equal(
-          '[test-abort-1849] (after client abort) canceling statement due to user request'
-        );
-        done();
+        sinon.assert.notCalled(warn);
+      });
+
+      it('should keep a cancelled query as an error outside an aborted request', (done) => {
+        const [, error, warn] = stubs;
+        logger.run('test-no-abort', () => {
+          sails.log.error('Query failed', cancelledQueryError());
+
+          sinon.assert.calledOnce(error);
+          sinon.assert.notCalled(warn);
+          done();
+        });
       });
     });
   });

@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies, no-underscore-dangle */
 const EventEmitter = require('events');
+const net = require('net');
 const should = require('should');
 const sinon = require('sinon');
 // The pg copy Waterline actually uses, wherever npm put it.
@@ -31,6 +32,39 @@ const socketError = () =>
 // A pooled client as far as the guard is concerned.
 const fakeClient = (props = {}) =>
   Object.assign(new EventEmitter(), { query: () => {} }, props);
+
+// A server that accepts connections and then stalls: right away, or once the
+// Postgres startup is done (AuthenticationOk + ReadyForQuery), on the first
+// query.
+const stallingServer = async ({ afterStartup }) => {
+  const sockets = new Set();
+  const server = net.createServer((socket) => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
+    socket.on('error', () => {});
+    // Read, so that the client closing its end is seen.
+    socket.resume();
+    if (!afterStartup) return;
+    socket.once('data', () => {
+      const authOk = Buffer.from([0x52, 0, 0, 0, 8, 0, 0, 0, 0]);
+      const ready = Buffer.from([0x5a, 0, 0, 0, 5, 0x49]);
+      socket.write(Buffer.concat([authOk, ready]));
+    });
+  });
+  await new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  return {
+    options: { host: '127.0.0.1', port: server.address().port, user: 'x' },
+    sockets,
+    close: () => {
+      sockets.forEach((socket) => socket.destroy());
+      return new Promise((resolve) => {
+        server.close(resolve);
+      });
+    },
+  };
+};
 
 const fakePool = () =>
   Object.assign(new EventEmitter(), {
@@ -470,6 +504,38 @@ describe('guardPgPool', () => {
       should(store.pgLeases).equal(waiter);
       should([...waiter]).eql([client]);
       client.release();
+    });
+
+    [
+      ['while connecting', false],
+      ['while cancelling', true],
+    ].forEach(([when, afterStartup]) => {
+      it(`gives up on a server that stalls ${when}`, async () => {
+        const server = await stallingServer({ afterStartup });
+        try {
+          const log = { warn: sinon.stub() };
+          const leases = new Set([{ processID: 1 }]);
+          const startedAt = Date.now();
+
+          should(
+            await cancelLeasedQueries(
+              leases,
+              { Client: pool.Client, options: server.options },
+              log,
+              { timeoutMs: 200 }
+            )
+          ).equal(0);
+          should(Date.now() - startedAt).be.below(2000);
+          sinon.assert.calledOnce(log.warn);
+          // The stalled connection is dropped, not left open.
+          await new Promise((resolve) => {
+            setTimeout(resolve, 50);
+          });
+          should(server.sockets.size).equal(0);
+        } finally {
+          await server.close();
+        }
+      });
     });
 
     it('logs instead of throwing when the cancel cannot connect', async () => {
