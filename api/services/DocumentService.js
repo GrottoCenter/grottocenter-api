@@ -336,16 +336,22 @@ module.exports = {
    * refusing the modification can return it to that state (#1907). Read before
    * a new modification overwrites modifiedDocJson: one already pending has
    * already set isValidated false, so its own flag is carried over. A snapshot
-   * stored before the flag existed counts as accepted, which is how every
-   * refusal was handled until then.
+   * stored before the flag existed falls back on the document history: the
+   * histo_update_document trigger copies the accepted row into h_document when
+   * the modification is submitted, while a new submission has only unvalidated
+   * rows there.
    * @param {Object} document the row as it is before the modification
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  wasValidatedBeforeModification(document) {
-    if (document.modifiedDocJson) {
-      return document.modifiedDocJson.wasValidated !== false;
-    }
-    return document.isValidated === true;
+  async wasValidatedBeforeModification(document) {
+    if (!document.modifiedDocJson) return document.isValidated === true;
+    const { wasValidated } = document.modifiedDocJson;
+    if (typeof wasValidated === 'boolean') return wasValidated;
+    const validatedSnapshots = await HDocument.count({
+      t_id: document.id,
+      isValidated: true,
+    });
+    return validatedSnapshots > 0;
   },
 
   async updateDocument({
@@ -359,13 +365,15 @@ module.exports = {
   } = {}) {
     const document = await TDocument.findOne(documentId);
     if (!document) return null;
+    const wasValidated =
+      await module.exports.wasValidatedBeforeModification(document);
     return TDocument.updateOne(documentId).set({
       dateReviewed: new Date(), // Avoid an uniqueness error
       isValidated: false,
       dateValidation: null,
       modifiedDocJson: {
         reviewerId,
-        wasValidated: module.exports.wasValidatedBeforeModification(document),
+        wasValidated,
         documentData,
         descriptionData,
         newFiles,

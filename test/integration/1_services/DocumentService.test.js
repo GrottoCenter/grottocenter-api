@@ -407,14 +407,57 @@ describe('DocumentService', () => {
         doc: { isValidated: false, modifiedDocJson: { wasValidated: false } },
         out: false,
       },
-      {
-        label: 'a pending modification stored before the flag existed',
-        doc: { isValidated: false, modifiedDocJson: { documentData: {} } },
-        out: true,
-      },
     ].forEach(({ label, doc, out }) => {
-      it(`should return ${out} for ${label}`, () => {
-        should(DocumentService.wasValidatedBeforeModification(doc)).equal(out);
+      it(`should return ${out} for ${label}`, async () => {
+        should(await DocumentService.wasValidatedBeforeModification(doc)).equal(
+          out
+        );
+      });
+    });
+
+    describe('with a snapshot stored before the flag existed', () => {
+      let legacy;
+
+      before(async () => {
+        legacy = await TDocument.create({
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated: false,
+          modifiedDocJson: { documentData: {} },
+        }).fetch();
+      });
+
+      afterEach(async () => {
+        await HDocument.destroy({ t_id: legacy.id });
+      });
+
+      after(async () => {
+        await TDocument.destroy({ id: legacy.id });
+      });
+
+      const createSnapshot = (isValidated) =>
+        HDocument.create({
+          id: '2030-01-01T00:00:00.000Z',
+          t_id: legacy.id,
+          author: 1,
+          type: 1,
+          license: 1,
+          isValidated,
+        });
+
+      it('should return true when the history holds an accepted version', async () => {
+        await createSnapshot(true);
+        should(
+          await DocumentService.wasValidatedBeforeModification(legacy)
+        ).be.true();
+      });
+
+      it('should return false when the document was never accepted', async () => {
+        await createSnapshot(false);
+        should(
+          await DocumentService.wasValidatedBeforeModification(legacy)
+        ).be.false();
       });
     });
   });

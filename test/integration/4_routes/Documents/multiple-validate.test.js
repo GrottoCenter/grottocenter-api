@@ -311,6 +311,62 @@ describe('Document multiple-validate', () => {
         should(updated.parent).not.equal(child.id);
       });
 
+      describe('with a modification submitted before the flag existed', () => {
+        afterEach(async () => {
+          await HDocument.destroy({ t_id: createdDocIds });
+        });
+
+        // The history row the histo_update_document trigger writes when the
+        // modification is submitted: a copy of the row as it was before.
+        const submitLegacyModification = async (doc) => {
+          await HDocument.create({
+            id: new Date().toISOString(),
+            t_id: doc.id,
+            author: 1,
+            type: 1,
+            license: 1,
+            isValidated: doc.isValidated,
+          });
+          await TDocument.updateOne(doc.id).set({
+            isValidated: false,
+            dateValidation: null,
+            modifiedDocJson: { reviewerId: 1, documentData: { type: 17 } },
+          });
+        };
+
+        it('should keep a new submission unvalidated when refused', async () => {
+          const doc = await createDocument(false);
+          await submitLegacyModification(doc);
+
+          await refuse(doc);
+
+          const updated = await TDocument.findOne(doc.id);
+          should(updated.isValidated).be.false();
+          should(updated.dateValidation).not.be.null();
+          should(updated.type).equal(1);
+        });
+
+        it('should return a refused modification of an accepted document to its accepted version', async () => {
+          const doc = await createDocument(true);
+          await submitLegacyModification(doc);
+
+          await refuse(doc);
+
+          const updated = await TDocument.findOne(doc.id);
+          should(updated.isValidated).be.true();
+          should(updated.type).equal(1);
+        });
+
+        it('should record the flag when a new submission is edited again', async () => {
+          const doc = await createDocument(false);
+          await submitLegacyModification(doc);
+
+          const updated = await submitModification(doc, { type: 18 });
+
+          should(updated.modifiedDocJson.wasValidated).be.false();
+        });
+      });
+
       it('should let search remove a refused new submission but keep a pending modification', async () => {
         // eslint-disable-next-line global-require
         const { planSync } = require('../../../../api/dbSync/searchDocuments');
@@ -595,6 +651,7 @@ describe('Document multiple-validate', () => {
         await TDocument.updateOne(docA.id).set({
           modifiedDocJson: {
             reviewerId: 2,
+            wasValidated: true,
             documentData: { type: 17, parent: docB.id },
             descriptionData: { title: 'Cycle test', body: 'Body' },
           },
@@ -1056,6 +1113,7 @@ describe('Document multiple-validate', () => {
             descriptions: [desc.id],
             modifiedDocJson: {
               reviewerId: 2,
+              wasValidated: true,
               documentData: { type: 1, authors: [6] },
               descriptionData: { title: 'Racing applied', body: 'New body' },
             },

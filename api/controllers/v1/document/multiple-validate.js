@@ -75,9 +75,8 @@ async function markDocumentRejected(
   validationComment,
   validationAuthor
 ) {
-  const wasValidated = document.modifiedDocJson
-    ? DocumentService.wasValidatedBeforeModification(document)
-    : document.isValidated;
+  const wasValidated =
+    await DocumentService.wasValidatedBeforeModification(document);
   const markRejected = wasValidated
     ? markModificationRejected
     : markSubmissionRejected;

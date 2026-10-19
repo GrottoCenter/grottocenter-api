@@ -223,6 +223,7 @@ describe('Changes - GET /api/v1/changes/recent', () => {
       await TDocument.updateOne(document.id).set({
         modifiedDocJson: {
           reviewerId: userId,
+          wasValidated: true,
           documentData: { type: 17, parent: child.id },
           descriptionData: {},
         },
