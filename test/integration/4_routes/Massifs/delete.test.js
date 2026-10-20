@@ -312,6 +312,46 @@ describe('Massif features', () => {
         });
       });
 
+      it('should notify the subscribers of the massif of its permanent delete', async () => {
+        // Its subscribers are cleared by the delete itself, so the
+        // notification has to be prepared before
+        const SUBSCRIBER_ID = 3;
+        const massif = await TMassif.create({ author: 1 }).fetch();
+        await TName.create({
+          name: 'Doomed massif',
+          isMain: true,
+          language: 'fra',
+          author: 1,
+          dateInscription: new Date(),
+          massif: massif.id,
+        });
+        await TMassif.addToCollection(massif.id, 'subscribedCavers', [
+          SUBSCRIBER_ID,
+        ]);
+        const beforeIds = (await TNotification.find().select(['id'])).map(
+          (n) => n.id
+        );
+
+        await permanentDelete(massif.id).expect(200);
+        should(await TMassif.findOne(massif.id)).be.undefined();
+
+        const rows = (
+          await TNotification.find({ notified: SUBSCRIBER_ID })
+        ).filter((n) => !beforeIds.includes(n.id));
+        try {
+          should(rows).have.length(1);
+          should(rows[0].massif).be.null();
+          should(rows[0].entitySnapshot).eql({
+            type: 'massif',
+            id: massif.id,
+            name: 'Doomed massif',
+            parent: null,
+          });
+        } finally {
+          await TNotification.destroy({ id: rows.map((n) => n.id) });
+        }
+      });
+
       ['false', '0'].forEach((value) => {
         it(`should only soft delete when isPermanent=${value}`, async () => {
           const massif = await TMassif.create({ author: 1 }).fetch();

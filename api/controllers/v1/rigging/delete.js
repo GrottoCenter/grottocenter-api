@@ -40,6 +40,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Rigging of id ${riggingId} not found.` });
   }
 
+  // Built before the rigging is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      rigging,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.RIGGING
+    );
+
   if (!rigging.isDeleted) {
     await TRigging.destroyOne({ id: riggingId }); // Soft delete
     rigging.isDeleted = true;
@@ -58,13 +70,8 @@ module.exports = async (req, res) => {
     await TRigging.destroyOne({ id: riggingId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    rigging,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.RIGGING
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

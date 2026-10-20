@@ -40,6 +40,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `History of id ${historyId} not found.` });
   }
 
+  // Built before the history is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      history,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.HISTORY
+    );
+
   if (!history.isDeleted) {
     await THistory.destroyOne({ id: historyId }); // Soft delete
     history.isDeleted = true;
@@ -58,13 +70,8 @@ module.exports = async (req, res) => {
     await THistory.destroyOne({ id: historyId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    history,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.HISTORY
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

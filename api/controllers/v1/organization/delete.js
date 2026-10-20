@@ -59,6 +59,18 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Built before the organization is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      organization,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.ORGANIZATION
+    );
+
   if (!organization.isDeleted) {
     const redirectTo = parseInt(req.param('entityId'), 10);
     if (!Number.isNaN(redirectTo)) {
@@ -180,13 +192,8 @@ module.exports = async (req, res) => {
     await TGrotto.destroyOne({ id: organizationId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    organization,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.ORGANIZATION
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

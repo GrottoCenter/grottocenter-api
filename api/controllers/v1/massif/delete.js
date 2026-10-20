@@ -82,6 +82,18 @@ module.exports = async (req, res) => {
   }
   massif.isDeleted = true;
 
+  // Built before the massif is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      massif,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.MASSIF
+    );
+
   if (!deletePermanently && !wasDeleted) {
     if (hasRedirect) {
       await TMassif.updateOne(massifId)
@@ -218,13 +230,8 @@ module.exports = async (req, res) => {
     });
   }
 
-  await NotificationService.notifySubscribers(
-    massif,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.MASSIF
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(
