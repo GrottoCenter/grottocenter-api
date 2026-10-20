@@ -297,14 +297,7 @@ module.exports = {
     if (allMassifs.length > 0) {
       asyncQueue.push(NameService.setNames(allMassifs, 'massif'));
     }
-    const allGrottos = [];
-    if (document.library) allGrottos.push(document.library);
-    if (document.editor) allGrottos.push(document.editor);
-    if (document.authorsOrganization)
-      allGrottos.push(...document.authorsOrganization);
-    if (allGrottos.length > 0) {
-      asyncQueue.push(NameService.setNames(allGrottos, 'grotto'));
-    }
+    asyncQueue.push(module.exports.setOrganizationNames([document]));
 
     async function resolveDocument(doc, key) {
       // eslint-disable-next-line no-param-reassign
@@ -597,14 +590,11 @@ module.exports = {
       .populate('editor')
       .populate('library');
 
-    const grottos = documents.flatMap((d) =>
-      [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter((g) => g)
-    );
-
-    // setNames mutates grottos in place; its result is intentionally unused.
+    // setOrganizationNames mutates the organizations in place; its result is
+    // intentionally unused.
     const [parentsById] = await Promise.all([
       resolveCitationParentChain(documents),
-      grottos.length > 0 ? NameService.setNames(grottos, 'grotto') : null,
+      module.exports.setOrganizationNames(documents),
     ]);
 
     for (const document of documents) {
