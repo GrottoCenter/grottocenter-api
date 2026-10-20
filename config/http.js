@@ -23,6 +23,7 @@ const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
 const accessLogEntry = require('../api/utils/accessLogEntry');
 const { toScrubSafeJson } = require('../api/utils/redactLogArgs');
+const isMultipartClientError = require('../api/utils/isMultipartClientError');
 
 // Auth endpoints that receive credentials and need stricter limits.
 // Note: PATCH /api/v1/account is intentionally excluded — while it can accept
@@ -329,7 +330,22 @@ module.exports.http = {
         limits: { fileSize: 100 * 1024 * 1024 },
         defParamCharset: 'utf8',
       });
-      return upload.fields([{ name: 'files' }, { name: 'file', maxCount: 1 }]);
+      const parseFiles = upload.fields([
+        { name: 'files' },
+        { name: 'file', maxCount: 1 },
+      ]);
+      // A malformed or truncated multipart body is the client's fault. Left
+      // to next(err), it reaches Sails' catch-all as a bare 500 (#1809).
+      // res.badRequest is not attached yet: Sails adds it in the router.
+      return (req, res, next) =>
+        parseFiles(req, res, (err) => {
+          if (!err) return next();
+          if (!isMultipartClientError(err)) return next(err);
+          sails.log.warn('Rejected multipart body:', err.message);
+          return res.status(400).json({
+            message: `Malformed multipart body: ${err.message}`,
+          });
+        });
     })(),
 
     // Logs each request to the console.
