@@ -259,3 +259,91 @@ describe('redactLogArgs - Property: non-sensitive content survives', () => {
     );
   });
 });
+
+// Fragments the textual scrub reacts to, mixed with JSON's own escapes. The
+// line built from them goes through scrubString twice in production: once in
+// patchSailsLog(), once in the config/log.js formatter.
+const hostileFragmentArb = fc.constantFrom(
+  '"',
+  "'",
+  '`',
+  '\\',
+  '\\"',
+  ':',
+  '=',
+  '?',
+  '&',
+  '@',
+  '%74',
+  ' ',
+  '\n',
+  '?token=',
+  '&password=',
+  'password: ',
+  "secret='",
+  'apiKey="',
+  'postgres://u:',
+  'Bearer ',
+  'https://example.org/'
+);
+const hostileStringArb = fc.oneof(
+  fc.string(),
+  fc
+    .array(fc.oneof(hostileFragmentArb, fc.string({ maxLength: 4 })), {
+      maxLength: 12,
+    })
+    .map((parts) => parts.join(''))
+);
+// Field names of the access line, each present or not; none is sensitive.
+const recordArb = fc.record(
+  {
+    path: fc.option(hostileStringArb),
+    userAgent: fc.option(hostileStringArb),
+    origin: fc.option(hostileStringArb),
+    referer: fc.option(hostileStringArb),
+  },
+  { requiredKeys: [] }
+);
+const { scrubString, toScrubSafeJson } = redactLogArgs;
+
+describe('toScrubSafeJson - Property: the line survives the log scrub', () => {
+  it('should be left unchanged by scrubString, so it always parses', () => {
+    fc.assert(
+      fc.property(recordArb, (record) => {
+        const line = toScrubSafeJson(record);
+        should(scrubString(line)).equal(line);
+        should(Object.keys(JSON.parse(scrubString(line)))).eql(
+          Object.keys(record)
+        );
+      }),
+      { numRuns: 500 }
+    );
+  });
+
+  it('should round-trip a value the scrub has no reason to touch', () => {
+    // Letters, digits and URL punctuation, but no `=`: nothing to redact.
+    const safeArb = fc
+      .array(fc.constantFrom(...'abcXYZ019 -_./:?&#"\'\\@'.split('')), {
+        maxLength: 30,
+      })
+      .map((chars) => chars.join(''));
+    fc.assert(
+      fc.property(fc.record({ a: safeArb, b: safeArb }), (record) => {
+        should(JSON.parse(scrubString(toScrubSafeJson(record)))).eql({
+          ...record,
+        });
+      }),
+      { numRuns: 200 }
+    );
+  });
+
+  it('should still remove a secret passed as a query parameter', () => {
+    fc.assert(
+      fc.property(secretArb, keyArb, hostileStringArb, (secret, key, tail) => {
+        const record = { referer: `https://x.org/?${key}=${secret}"${tail}` };
+        should(toScrubSafeJson(record)).not.containEql(secret);
+      }),
+      { numRuns: 200 }
+    );
+  });
+});

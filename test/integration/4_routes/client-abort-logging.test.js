@@ -47,15 +47,17 @@ const startServer = () =>
   });
 
 // Resolves once the request has settled, with every 'Res ::' line the
-// middleware produced.
+// middleware produced and, apart, every 'Access ::' line (#1788).
 const captureResponseLogs = (port, { abort }) =>
   new Promise((resolve, reject) => {
     const lines = [];
+    const access = [];
     const collect =
       (level) =>
       (...args) => {
         const line = args.join(' ');
         if (line.startsWith('Res ::')) lines.push({ level, line });
+        if (line.startsWith('Access ::')) access.push({ level, line });
       };
     const info = sinon.stub(sails.log, 'info').callsFake(collect('info'));
     const error = sinon.stub(sails.log, 'error').callsFake(collect('error'));
@@ -82,7 +84,7 @@ const captureResponseLogs = (port, { abort }) =>
       if (abort) setTimeout(() => req.destroy(), ABORT_AFTER);
       setTimeout(() => {
         restore();
-        resolve(lines);
+        resolve({ lines, access });
       }, SETTLE);
     };
     handlerReached.once('reached', onReached);
@@ -109,9 +111,10 @@ describe('Client abort logging middleware', () => {
 
   describe('when the client disconnects mid-flight', () => {
     let lines;
+    let access;
 
     before(async () => {
-      lines = await captureResponseLogs(port, { abort: true });
+      ({ lines, access } = await captureResponseLogs(port, { abort: true }));
     });
 
     it('should log the aborted request', () => {
@@ -143,13 +146,22 @@ describe('Client abort logging middleware', () => {
         lines.filter((l) => !l.line.startsWith('Res :: (client aborted)'))
       ).have.length(0);
     });
+
+    it('should write one access line with status 499', () => {
+      should(access).have.length(1);
+      should(access[0].level).equal('info');
+      const entry = JSON.parse(access[0].line.slice('Access :: '.length));
+      should(entry).containDeep({ method: 'GET', path: '/slow', status: 499 });
+      should(entry.durationMs).be.aboveOrEqual(ABORT_AFTER);
+    });
   });
 
   describe('when the response completes normally', () => {
     let lines;
+    let access;
 
     before(async () => {
-      lines = await captureResponseLogs(port, { abort: false });
+      ({ lines, access } = await captureResponseLogs(port, { abort: false }));
     });
 
     it('should log exactly one response line', () => {
@@ -162,6 +174,12 @@ describe('Client abort logging middleware', () => {
       should(lines[0].line).not.match(/client aborted/);
       should(lines[0].line).not.match(/\b499\b/);
       should(lines[0].line).match(/\b200\b/);
+    });
+
+    it('should write one access line with the real status', () => {
+      should(access).have.length(1);
+      const entry = JSON.parse(access[0].line.slice('Access :: '.length));
+      should(entry.status).equal(200);
     });
   });
 });

@@ -440,6 +440,12 @@ ALTER TABLE h_guideline DROP CONSTRAINT IF EXISTS h_guideline_t_guideline_fk;
 `;
 
 const CREATE_GUIDELINE_TRIGGERS = `
+-- History key, as in production. Waterline builds h_guideline with
+-- date_reviewed alone as primary key, so two guidelines registered in the same
+-- millisecond collided in histo_insert_guideline.
+ALTER TABLE h_guideline DROP CONSTRAINT IF EXISTS h_guideline_pkey;
+ALTER TABLE h_guideline ADD CONSTRAINT h_guideline_pkey PRIMARY KEY (id, date_reviewed);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_t_guideline_is_deleted ON t_guideline(is_deleted);
 CREATE INDEX IF NOT EXISTS idx_j_guideline_country_guideline ON j_guideline_country(id_guideline);

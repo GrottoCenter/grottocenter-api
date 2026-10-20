@@ -21,6 +21,8 @@ const logger = require('../api/utils/logger');
 const { cancelLeasedQueries } = require('../api/utils/guardPgPool');
 const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
+const accessLogEntry = require('../api/utils/accessLogEntry');
+const { toScrubSafeJson } = require('../api/utils/redactLogArgs');
 const isMultipartClientError = require('../api/utils/isMultipartClientError');
 
 // Auth endpoints that receive credentials and need stricter limits.
@@ -78,13 +80,16 @@ module.exports.http = {
 
     order: [
       'traceId',
+      // Right after traceId, before anything that can answer on its own (an
+      // OPTIONS preflight, a 401 token rejection, a 429): its listeners then
+      // see every response, and `req.token` is read only once it is sent.
+      'responseTimeLogger',
       'corsHeaders',
       'securityHeaders',
       'parseAuthToken',
       'generalRateLimit',
       'deleteRateLimit',
       'authRateLimit',
-      'responseTimeLogger',
       'requestLogger',
       'fileMiddleware',
       'bodyParser',
@@ -346,7 +351,12 @@ module.exports.http = {
         });
     })(),
 
-    // Logs each request to the console
+    // Logs each request to the console.
+    //
+    // Legacy: the `Access ::` line written by responseTimeLogger supersedes
+    // `Client data:`, which conflates Origin with Referer and logs 'unknown' for
+    // a missing header (#1788). Both lines are kept until the log consumers
+    // read `Access ::`.
     requestLogger(req, res, next) {
       sails.log.info('Req ::', req.method, req.url);
       sails.log.info(
@@ -365,6 +375,18 @@ module.exports.http = {
     responseTimeLogger(req, res, next) {
       const { traceId } = req;
       const startedAt = Date.now();
+
+      // One structured line per request, client data and outcome together, so
+      // log consumers need no join by trace ID (#1788). Not plain
+      // JSON.stringify: the log redaction would corrupt it (see
+      // toScrubSafeJson).
+      const logAccess = (status) =>
+        sails.log.info(
+          'Access ::',
+          toScrubSafeJson(
+            accessLogEntry(req, { status, durationMs: Date.now() - startedAt })
+          )
+        );
 
       // The pool guard records here the connections this request leases, so
       // an abort can cancel their queries (#1849). Reads only: a write cut
@@ -393,6 +415,7 @@ module.exports.http = {
               `${Date.now() - startedAt}ms`,
               ...(cancelled ? [`(${cancelled} backend(s) cancelled)`] : [])
             );
+            logAccess(499);
           });
 
         if (!leases) {
@@ -421,6 +444,7 @@ module.exports.http = {
             res.statusCode,
             res.get('X-Response-Time')
           );
+          logAccess(res.statusCode);
 
           if (res.statusCode >= 500) {
             sails.log.error(
