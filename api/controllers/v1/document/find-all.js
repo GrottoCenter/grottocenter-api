@@ -47,6 +47,7 @@ module.exports = async (req, res) => {
     });
   }
 
+  await DocumentService.setOrganizationNames(documents);
   for (const document of documents) {
     document.mainLanguage = DocumentService.getMainLanguage(document.languages);
   }
