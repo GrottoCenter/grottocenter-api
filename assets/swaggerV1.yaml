@@ -6843,9 +6843,9 @@ paths:
         (moderators or administrators). When `isPermanent=true`, the organization and its
         history snapshots are permanently removed — this is irreversible. If
         `entityId` points to a surviving organization, the deleted
-        organization's documents, explored caves, editor/library links,
-        country/region/massif associations and incoming redirects are merged
-        into it instead of being dropped.
+        organization's documents, explored and partner caves, cavers,
+        editor/library links, country/region/massif associations and incoming
+        redirects are merged into it instead of being dropped.
       security:
         - bearerAuth: []
       parameters:
@@ -6885,10 +6885,6 @@ paths:
           description: Organization not found.
         '410':
           description: Organization already deleted.
-        '501':
-          description: >
-            Permanent delete is not supported yet for organizations that still
-            have partner networks, partner entrances or cavers attached.
 
     get:
       tags:

@@ -381,6 +381,83 @@ describe('Organization features', () => {
       await TGrotto.destroy({ id: targetOrg.id });
     });
 
+    // Partner caves and cavers used to answer an empty 501 instead of being
+    // handled (#1904). Caver 6 is the fixture caver; a partner cave without
+    // any entrance is the case the old check did not even see, which left a
+    // row to break the hard delete on its FK in production.
+    it('should drop partner caves and cavers when permanently deleting without a merge target', async () => {
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+      const cave = await TCave.create({ author: 1 }).fetch();
+      await JGrottoCavePartner.create({ cave: cave.id, grotto: org.id });
+      await JGrottoCaver.create({ caver: 6, grotto: org.id });
+
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+      should(await JGrottoCavePartner.find({ grotto: org.id })).have.length(0);
+      should(await JGrottoCaver.find({ grotto: org.id })).have.length(0);
+      // Only the links go: the cave and the caver themselves are untouched.
+      should(await TCave.findOne(cave.id)).not.be.undefined();
+      should(await TCaver.findOne(6)).not.be.undefined();
+
+      await TCave.destroy({ id: cave.id });
+    });
+
+    it('should hand partner caves and cavers over to the merge target', async () => {
+      const targetOrg = await TGrotto.create({ author: 1 }).fetch();
+      const org = await TGrotto.create({ author: 1, isDeleted: true }).fetch();
+
+      // `sharedCave` and caver 6 are already linked to the survivor, to
+      // exercise the dedup against the (id_grotto, id_cave) and
+      // (id_caver, id_grotto) primary keys; `onlyCave` and caver 7 belong to
+      // the deleted org only.
+      const sharedCave = await TCave.create({ author: 1 }).fetch();
+      const onlyCave = await TCave.create({ author: 1 }).fetch();
+      await JGrottoCavePartner.createEach([
+        { cave: sharedCave.id, grotto: org.id },
+        { cave: sharedCave.id, grotto: targetOrg.id },
+        { cave: onlyCave.id, grotto: org.id },
+      ]);
+      await JGrottoCaver.createEach([
+        { caver: 6, grotto: org.id },
+        { caver: 6, grotto: targetOrg.id },
+        { caver: 7, grotto: org.id },
+      ]);
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${targetOrg.id}`
+        )
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TGrotto.findOne(org.id)).be.undefined();
+      should(await JGrottoCavePartner.find({ grotto: org.id })).have.length(0);
+      should(await JGrottoCaver.find({ grotto: org.id })).have.length(0);
+
+      // The survivor holds each cave and each caver exactly once.
+      const survivorCaves = await JGrottoCavePartner.find({
+        grotto: targetOrg.id,
+      });
+      should(survivorCaves.map((r) => r.cave).sort()).deepEqual(
+        [sharedCave.id, onlyCave.id].sort()
+      );
+      const survivorCavers = await JGrottoCaver.find({ grotto: targetOrg.id });
+      should(survivorCavers.map((r) => r.caver).sort()).deepEqual([6, 7]);
+
+      await JGrottoCavePartner.destroy({ grotto: targetOrg.id });
+      await JGrottoCaver.destroy({ grotto: targetOrg.id });
+      await TCave.destroy({ id: [sharedCave.id, onlyCave.id] });
+      await TGrotto.destroy({ id: targetOrg.id });
+    });
+
     describe('Documents edited or held by the organization (#1757)', () => {
       const reviewedAt = new Date('2021-03-04T05:06:07Z');
 

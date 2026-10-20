@@ -34,6 +34,7 @@ module.exports = {
     JDocumentMassif: 'readonly',
     JGrottoCaver: 'readonly',
     JGrottoCaveExplorer: 'readonly',
+    JGrottoCavePartner: 'readonly',
     MessageService: 'readonly',
     NotificationService: 'readonly',
     JGuidelineCountry: 'readonly',
