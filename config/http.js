@@ -338,6 +338,9 @@ module.exports.http = {
       return (req, res, next) =>
         parseFiles(req, res, (err) => {
           if (!err) return next();
+          // The client disconnected mid-upload (#1808): there is no one left
+          // to answer, and responseTimeLogger already logs it as a 499.
+          if (req.socket.destroyed) return undefined;
           if (!isMultipartClientError(err)) return next(err);
           sails.log.warn('Rejected multipart body:', err.message);
           return res.status(400).json({

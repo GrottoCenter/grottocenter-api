@@ -5,7 +5,8 @@
  *
  * Busboy errors are plain Errors, so they are recognised by message. A client
  * that disconnects mid-upload ('Request aborted', 'Request closed') is not
- * covered: there is no one left to answer.
+ * covered: there is no one left to answer, so fileMiddleware in config/http.js
+ * drops the request instead (#1808).
  *
  * @param {*} err
  * @returns {boolean}
