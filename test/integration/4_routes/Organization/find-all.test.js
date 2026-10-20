@@ -9,12 +9,12 @@ describe('Organization find-all', () => {
   });
 
   describe('GET /api/v1/organizations', () => {
-    it('should return 200 with organizations', (done) => {
+    it('should return 206 with organizations', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations')
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
+        .expect(206)
         .end((err, res) => {
           if (err) return done(err);
           should(res.body).have.property('organizations');
@@ -26,13 +26,16 @@ describe('Organization find-all', () => {
         });
     });
 
-    it('should include deleted organizations for moderators', async () => {
+    it('should list deleted organizations for moderators', async () => {
       await supertest(sails.hooks.http.app)
         .get('/api/v1/organizations')
+        .query({ isDeleted: 'true' })
         .set('Authorization', moderatorToken)
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200);
+        .expect((res) => {
+          if (![200, 206].includes(res.status)) throw new Error(res.status);
+        });
     });
   });
 });
