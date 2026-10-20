@@ -294,14 +294,52 @@ module.exports = {
   ...(process.env.NODE_ENV === 'test' ? { sendNotificationEmail } : undefined),
 
   /**
+   * Notify the subscribers of the country, massifs and region of `entity`:
+   * one in-app notification each, plus an email for those who asked for one.
+   *
+   * Everything that reads the entity happens in prepareSubscribersNotification(),
+   * the rows are written by dispatchSubscribersNotification(). A permanent
+   * delete calls the two around its hard delete, so the notification is built
+   * while the entity is still there and written only once it is gone.
    *
    * @param {*} entity
    * @param {Number} notifierId
    * @param {NOTIFICATION_TYPES} notificationType
    * @param {NOTIFICATION_ENTITIES} notificationEntity
-   * @return {Boolean} true if everything went well, else false
+   * @return {Boolean[]|false} one flag per notified subscriber (true if
+   *   everything went well), or false when nothing could be prepared
    */
   notifySubscribers: async (
+    entity,
+    notifierId,
+    notificationType,
+    notificationEntity
+  ) =>
+    module.exports.dispatchSubscribersNotification(
+      await module.exports.prepareSubscribersNotification(
+        entity,
+        notifierId,
+        notificationType,
+        notificationEntity
+      )
+    ),
+
+  /**
+   * First half of notifySubscribers(): everything that depends on the entity
+   * being there. Populate it, take its snapshot, work out the country, massifs
+   * and region it belongs to and gather their subscribers. Nothing is written.
+   *
+   * Call it before a permanent delete, then give what it returns to
+   * dispatchSubscribersNotification() once the entity is gone.
+   *
+   * @param {*} entity
+   * @param {Number} notifierId
+   * @param {NOTIFICATION_TYPES} notificationType
+   * @param {NOTIFICATION_ENTITIES} notificationEntity
+   * @return {Object|null} the pending notification, or null when it could not
+   *   be prepared (logged, never thrown, so a delete never fails on it)
+   */
+  prepareSubscribersNotification: async (
     entity,
     notifierId,
     notificationType,
@@ -524,19 +562,63 @@ module.exports = {
         subscriptionType: user.subscriptionTypes.join(', '),
       }));
 
-      // A permanently deleted entity has no row left to reference: the
-      // snapshot is all the notification keeps of it
-      const entityId =
-        notificationType === NOTIFICATION_TYPES.PERMANENT_DELETE
-          ? null
-          : populatedEntity.id;
+      return {
+        notificationType,
+        notificationEntity,
+        notificationTypeId: notification.notificationType,
+        notifierId,
+        entityKey,
+        // A permanently deleted entity has no row left to reference: the
+        // snapshot is all the notification keeps of it
+        entityId:
+          notificationType === NOTIFICATION_TYPES.PERMANENT_DELETE
+            ? null
+            : populatedEntity.id,
+        entitySnapshot,
+        populatedEntity,
+        users: uniqueUsers,
+      };
+    } catch (error) {
+      // Fail silently to avoid sending an error to the user
+      sails.log.error(
+        `An error occurred when trying to notify subscribers: ${error.message} ${error.stack}`
+      );
+      return null;
+    }
+  },
 
+  /**
+   * Second half of notifySubscribers(): write one notification per subscriber
+   * gathered by prepareSubscribersNotification() and email those who asked
+   * for it. Reads nothing from the entity, which may be gone by now.
+   *
+   * @param {Object|null} pending what prepareSubscribersNotification() returned
+   * @return {Boolean[]|false} one flag per subscriber (true if everything went
+   *   well), or false when there was nothing to dispatch
+   */
+  dispatchSubscribersNotification: async (pending) => {
+    if (!pending) return false;
+    const {
+      notificationType,
+      notificationEntity,
+      notificationTypeId,
+      notifierId,
+      entityKey,
+      entityId,
+      entitySnapshot,
+      populatedEntity,
+      users,
+    } = pending;
+
+    try {
       // Create notifications & optionally send email
       const res = await Promise.all(
-        uniqueUsers.map(async (user) => {
+        users.map(async (user) => {
           try {
             await TNotification.create({
-              ...notification,
+              dateInscription: new Date(),
+              notificationType: notificationTypeId,
+              notifier: notifierId,
               notified: user.id,
               entitySnapshot,
               [entityKey]: entityId, // id only for the DB storage

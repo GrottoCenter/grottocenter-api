@@ -417,6 +417,78 @@ describe('NotificationService', () => {
       });
     });
 
+    it('should prepare a notification while the entity is there and dispatch it once it is gone', async () => {
+      // A comment on entrance 2: region FR-01 (caver 102) and, through cave 1,
+      // massif 1 (user 1)
+      const comment = await TComment.create({
+        author: user3.id,
+        title: 'Doomed comment',
+        body: 'Soon permanently deleted',
+        entrance: 2,
+      }).fetch();
+      const permanentDeleteTypeId = (
+        await TNotificationType.findOne({
+          name: NOTIFICATION_TYPES.PERMANENT_DELETE,
+        })
+      ).id;
+
+      await trackNotifications(async () => {
+        const countBefore = await TNotification.count();
+        const pending =
+          await NotificationService.prepareSubscribersNotification(
+            comment,
+            user3.id,
+            NOTIFICATION_TYPES.PERMANENT_DELETE,
+            NOTIFICATION_ENTITIES.COMMENT
+          );
+        should(pending).not.be.null();
+        should(pending.users.map((u) => u.id)).containEql(102);
+        // Nothing is written before dispatch
+        should(await TNotification.count()).equal(countBefore);
+
+        await TComment.destroy({ id: comment.id }); // Soft delete
+        await TComment.destroy({ id: comment.id }); // Hard delete
+        should(await TComment.findOne(comment.id)).be.undefined();
+
+        const res =
+          await NotificationService.dispatchSubscribersNotification(pending);
+        should(res).not.be.false();
+        const notifications = (
+          await TNotification.find({
+            notified: 102,
+            notificationType: permanentDeleteTypeId,
+          })
+        ).filter((n) => n.entitySnapshot?.id === comment.id);
+        should(notifications).have.length(1);
+        should(notifications[0].notifier).equal(user3.id);
+        should(notifications[0].comment).be.null();
+        should(notifications[0].entitySnapshot).eql({
+          type: NOTIFICATION_ENTITIES.COMMENT,
+          id: comment.id,
+          name: 'Doomed comment',
+          parent: { type: NOTIFICATION_ENTITIES.ENTRANCE, id: 2 },
+        });
+      });
+    });
+
+    it('should prepare nothing for an entity that cannot be found', async () => {
+      const pending = await NotificationService.prepareSubscribersNotification(
+        { id: 999999 },
+        user3.id,
+        NOTIFICATION_TYPES.PERMANENT_DELETE,
+        NOTIFICATION_ENTITIES.COMMENT
+      );
+      should(pending).be.null();
+    });
+
+    it('should dispatch nothing when nothing was prepared', async () => {
+      await trackNotifications(async () => {
+        const res =
+          await NotificationService.dispatchSubscribersNotification(null);
+        should(res).be.false();
+      });
+    });
+
     // Additional coverage tests
     it('should throw error for invalid notification entity in notifySubscribers', async () => {
       try {
