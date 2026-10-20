@@ -8355,7 +8355,8 @@ paths:
       responses:
         '206':
           description: >-
-            A page of notifications. `Content-Range` holds `skip-to/total`.
+            A page of notifications, empty when the user has none or `skip`
+            is beyond the last one. `Content-Range` holds `skip-to/total`.
           headers:
             Content-Range:
               schema:
@@ -8368,20 +8369,6 @@ paths:
                 properties:
                   notifications:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Notification'
-        '200':
-          description: >-
-            The user has no notification, or `skip` is beyond the last one:
-            the list is empty.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  notifications:
-                    type: array
-                    maxItems: 0
                     items:
                       $ref: '#/components/schemas/Notification'
         '401':
