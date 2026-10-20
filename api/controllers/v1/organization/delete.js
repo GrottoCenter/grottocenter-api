@@ -8,12 +8,16 @@ const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
 const readBoolParam = require('../../../utils/readBoolParam');
 
-// Geo junction tables referencing t_grotto, with their geo column. Constants
-// only: they are interpolated into SQL.
-const GEO_JUNCTIONS = [
+// Junction tables referencing t_grotto, with the column that completes their
+// (id_grotto, <column>) primary key or unique constraint. Constants only: they
+// are interpolated into SQL.
+const ORGANIZATION_JUNCTIONS = [
   ['j_organization_country', 'id_country'],
   ['j_organization_region', 'id_region'],
   ['j_organization_massif', 'id_massif'],
+  ['j_grotto_cave_explorer', 'id_cave'],
+  ['j_grotto_cave_partner', 'id_cave'],
+  ['j_grotto_caver', 'id_caver'],
 ];
 
 module.exports = async (req, res) => {
@@ -83,34 +87,25 @@ module.exports = async (req, res) => {
   }
 
   if (deletePermanently) {
-    if (
-      organization.partnerNetworks.length > 0 ||
-      organization.partnerEntrances.length > 0 ||
-      organization.cavers.length > 0
-    ) {
-      // TODO Properly handle the removal of these properties once there are APIs to set/disable them
-      return res.status(501).send();
-    }
-
-    // Explored caves: when merging into a surviving organization, re-point the
-    // deleted org's relationships to it instead of dropping them. The join
-    // table's PK is (id_cave, id_grotto), so first delete the deleted org's
-    // rows for caves the survivor already explores to avoid a PK collision,
-    // then re-point the remainder. Both statements run in a transaction: a
-    // failure between them would delete the shared caves without ever handing
-    // the rest over to the survivor. Without a merge target, drop them all.
-    // Country, region and massif associations follow the same rule, deduped
-    // against their (id_grotto, id_<geo>) unique constraint (#1783).
+    // Junction rows (explored and partner caves, cavers, countries, regions,
+    // massifs): when merging into a surviving organization, re-point the
+    // deleted org's rows to it instead of dropping them. Each table's key is
+    // (id_grotto, <other id>), so first delete the deleted org's rows the
+    // survivor already holds to avoid a key collision, then re-point the
+    // remainder. Every statement runs in one transaction: a failure between
+    // them would delete the shared rows without ever handing the rest over to
+    // the survivor (#1783, #1795, #1904). Without a merge target, drop them
+    // all.
     if (shouldMergeInto) {
       await sails.getDatastore().transaction(async (db) => {
-        for (const [table, geoColumn] of GEO_JUNCTIONS) {
+        for (const [table, otherColumn] of ORGANIZATION_JUNCTIONS) {
           // eslint-disable-next-line no-await-in-loop
           await CommonService.query(
             `DELETE FROM ${table} d
                WHERE d.id_grotto = $1
                  AND EXISTS (
                    SELECT 1 FROM ${table} k
-                   WHERE k.id_grotto = $2 AND k.${geoColumn} = d.${geoColumn}
+                   WHERE k.id_grotto = $2 AND k.${otherColumn} = d.${otherColumn}
                  )`,
             [organizationId, mergeIntoId],
             db
@@ -122,26 +117,11 @@ module.exports = async (req, res) => {
             db
           );
         }
-        await CommonService.query(
-          `DELETE FROM j_grotto_cave_explorer d
-             WHERE d.id_grotto = $1
-               AND EXISTS (
-                 SELECT 1 FROM j_grotto_cave_explorer k
-                 WHERE k.id_grotto = $2 AND k.id_cave = d.id_cave
-               )`,
-          [organizationId, mergeIntoId],
-          db
-        );
-        await CommonService.query(
-          `UPDATE j_grotto_cave_explorer
-             SET id_grotto = $2
-             WHERE id_grotto = $1`,
-          [organizationId, mergeIntoId],
-          db
-        );
       });
     } else {
       await JGrottoCaveExplorer.destroy({ grotto: organizationId });
+      await JGrottoCavePartner.destroy({ grotto: organizationId });
+      await JGrottoCaver.destroy({ grotto: organizationId });
       await JOrganizationCountry.destroy({ grotto: organizationId });
       await JOrganizationRegion.destroy({ grotto: organizationId });
       await JOrganizationMassif.destroy({ grotto: organizationId });
