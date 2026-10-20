@@ -80,13 +80,16 @@ module.exports.http = {
 
     order: [
       'traceId',
+      // Right after traceId, before anything that can answer on its own (an
+      // OPTIONS preflight, a 401 token rejection, a 429): its listeners then
+      // see every response, and `req.token` is read only once it is sent.
+      'responseTimeLogger',
       'corsHeaders',
       'securityHeaders',
       'parseAuthToken',
       'generalRateLimit',
       'deleteRateLimit',
       'authRateLimit',
-      'responseTimeLogger',
       'requestLogger',
       'fileMiddleware',
       'bodyParser',

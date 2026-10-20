@@ -7,7 +7,9 @@ workbook queries, ad-hoc KQL). Introduced by
 ## The `Access ::` line
 
 `responseTimeLogger` (`config/http.js`) writes one line per request, once its
-outcome is known:
+outcome is known. It runs right after `traceId`, so the line is written even
+for responses sent before the router: CORS preflights (`OPTIONS`, 200), token
+rejections by `parseAuthToken` (401) and rate-limit refusals (429).
 
 ```text
 [<traceId>] Access :: {"method":"GET","path":"/api/v1/geoloc/entrances","status":200,"durationMs":42,"ip":"37.58.156.218","userAgent":"okhttp/4.9.2","origin":null,"referer":null,"authenticated":false,"userId":null}
@@ -70,5 +72,7 @@ AppServiceConsoleLogs
 - `Client data: {"ip":…,"rawIp":…,"userAgent":…,"origin":…}`, whose `origin`
   is the `Origin` header, else the `Referer`, else the string `'unknown'`.
 
-The `Res :: <method> <url> <status> <time>` line from `responseTimeLogger` is
-unchanged.
+`requestLogger` runs after the rate limiters, so a request refused before it
+has no legacy lines. The `Res :: <method> <url> <status> <time>` line from
+`responseTimeLogger` keeps its format, and is now written for those requests
+too.

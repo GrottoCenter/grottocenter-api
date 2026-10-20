@@ -58,12 +58,12 @@ const isTestOrDev = () =>
 /**
  * Builds the `handler` that express-rate-limit invokes when a limit is exceeded.
  *
- * Without this, rejections are invisible in the logs. `generalRateLimit`,
- * `deleteRateLimit` and `authRateLimit` all run *before* `responseTimeLogger`
- * and `requestLogger` in the middleware order (see config/http.js), and the
- * library's default handler responds without calling `next()`. Neither the
- * `Req ::` nor the `Res ::` line is ever emitted, so a 429 leaves no trace
- * beyond Azure's own HTTP logs — which carry no trace ID to correlate with.
+ * `generalRateLimit`, `deleteRateLimit` and `authRateLimit` all run *before*
+ * `requestLogger` in the middleware order (see config/http.js), and the
+ * library's default handler responds without calling `next()`, so a 429 has no
+ * `Req ::` line. `responseTimeLogger` runs earlier and still writes its
+ * `Res ::` and `Access ::` lines (#1788), but only this one says which limiter
+ * fired and at what limit.
  *
  * Overriding `handler` replaces the default responder entirely, so this must
  * also send the response itself.

@@ -2,9 +2,11 @@ const http = require('http');
 const express = require('express');
 const should = require('should');
 const sinon = require('sinon');
+const jwt = require('jsonwebtoken');
 
 const { http: httpConfig } = require('../../../config/http');
 const logger = require('../../../api/utils/logger');
+const { tokenSalt } = require('../../../api/services/TokenService');
 const { scrubString } = require('../../../api/utils/redactLogArgs');
 
 // Exercises the `Access ::` line the real responseTimeLogger writes once per
@@ -38,8 +40,21 @@ const startServer = () =>
     const server = app.listen(0, () => resolve(server));
   });
 
+// The configured middleware order, up to requestLogger: everything in it that
+// can answer before the router does, in production order.
+const startConfiguredServer = () =>
+  new Promise((resolve) => {
+    const app = express();
+    const { order } = httpConfig.middleware;
+    order
+      .slice(0, order.indexOf('requestLogger') + 1)
+      .forEach((name) => app.use(httpConfig.middleware[name]));
+    app.use((req, res) => res.status(404).json({}));
+    const server = app.listen(0, () => resolve(server));
+  });
+
 // Resolves with every line logged for one request.
-const captureLogs = (port, { path, headers = {} }) =>
+const captureLogs = (port, { path, method = 'GET', headers = {} }) =>
   new Promise((resolve, reject) => {
     const lines = [];
     const collect =
@@ -49,14 +64,16 @@ const captureLogs = (port, { path, headers = {} }) =>
     // Stubbed first, so patchSailsLog captures the collectors as its originals.
     const info = sinon.stub(sails.log, 'info').callsFake(collect());
     const error = sinon.stub(sails.log, 'error').callsFake(collect());
+    const warn = sinon.stub(sails.log, 'warn').callsFake(collect());
     logger.patchSailsLog();
     const restore = () => {
       info.restore();
       error.restore();
+      warn.restore();
     };
 
     const req = http.request(
-      { host: '127.0.0.1', port, method: 'GET', path, headers },
+      { host: '127.0.0.1', port, method, path, headers },
       (res) => {
         res.resume();
         // The server-side 'finish' handler runs independently of the client
@@ -211,6 +228,73 @@ describe('Access logging', () => {
         status: 200,
       });
       should(line).not.containEql(SECRET);
+    });
+  });
+
+  // Middleware that answers on its own never calls next(); the access line
+  // must still be written for it.
+  describe('responses sent before the router, in the configured order', () => {
+    let configured;
+    let configuredPort;
+
+    before(async () => {
+      configured = await startConfiguredServer();
+      ({ port: configuredPort } = configured.address());
+    });
+
+    after(() => {
+      if (configured) configured.close();
+    });
+
+    it('should log a CORS preflight answered by corsHeaders', async () => {
+      const lines = await captureLogs(configuredPort, {
+        path: '/api/v1/caves',
+        method: 'OPTIONS',
+      });
+      should(accessLines(lines).map(parseAccess)).containDeep([
+        { method: 'OPTIONS', path: '/api/v1/caves', status: 200 },
+      ]);
+      should(accessLines(lines)).have.length(1);
+    });
+
+    it('should log a token rejected by parseAuthToken', async () => {
+      // Valid signature, but no `iat`: parseAuthToken answers 401 itself.
+      const token = jwt.sign({ id: 7, sub: 'Authentication' }, tokenSalt, {
+        noTimestamp: true,
+      });
+      const lines = await captureLogs(configuredPort, {
+        path: '/api/v1/caves',
+        headers: { authorization: `Bearer ${token}` },
+      });
+      should(accessLines(lines)).have.length(1);
+      should(parseAccess(accessLines(lines)[0])).containDeep({
+        status: 401,
+        authenticated: false,
+        userId: null,
+      });
+    });
+
+    it('should log a request refused by a rate limiter', async () => {
+      // The limiters skip test and development; an anonymous caller gets one
+      // DELETE per hour in production.
+      const nodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        const send = () =>
+          captureLogs(configuredPort, {
+            path: '/api/v1/caves/1',
+            method: 'DELETE',
+          });
+        await send();
+        const lines = await send();
+        should(accessLines(lines)).have.length(1);
+        should(parseAccess(accessLines(lines)[0])).containDeep({
+          method: 'DELETE',
+          status: 429,
+        });
+      } finally {
+        process.env.NODE_ENV = nodeEnv;
+      }
     });
   });
 });
