@@ -274,6 +274,36 @@ const redactError = (error, depth, seen) => {
 /** Redacts one log argument. Primitives and secret-free strings pass through. */
 const redactLogArgs = (value) => redactValue(value, 0, new WeakSet());
 
+// Every textual pattern above needs a raw `:` or `=`: the secret's separator,
+// the query parameter's `=`, the colon of a connection URI. Inside a JSON string
+// neither is ever part of an escape sequence, so writing them as `\u003a` and
+// `\u003d` is still the same JSON, but leaves the scrub nothing to match.
+const JSON_STRING = /"(?:[^"\\]|\\.)*"/g;
+const SCRUB_SEPARATOR = /[:=]/g;
+const escapeSeparators = (literal) =>
+  literal.replace(
+    SCRUB_SEPARATOR,
+    (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`
+  );
+
+/**
+ * Serializes a value for a structured log line: redacts it value by value, then
+ * writes JSON that `scrubString` leaves unchanged.
+ *
+ * `JSON.stringify` alone is not enough. The line still goes through
+ * patchSailsLog() and the formatter in config/log.js, and their regexes are not
+ * JSON-aware: a Referer of `?token=a"b` serializes to `?token=a\"b`, and the
+ * query-parameter pass eats the backslash, leaving JSON that no longer parses.
+ * Redacting each value first, then escaping the separators, makes both later
+ * passes no-ops.
+ *
+ * @param {*} value - JSON-serializable
+ * @returns {string}
+ */
+const toScrubSafeJson = (value) =>
+  JSON.stringify(redactLogArgs(value)).replace(JSON_STRING, escapeSeparators);
+
 module.exports = redactLogArgs;
 // Used by config/log.js, which only ever sees the already-flattened log string.
 module.exports.scrubString = scrubString;
+module.exports.toScrubSafeJson = toScrubSafeJson;

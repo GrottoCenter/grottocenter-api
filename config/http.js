@@ -22,6 +22,7 @@ const { cancelLeasedQueries } = require('../api/utils/guardPgPool');
 const { normalizeClientIp } = require('../api/utils/clientIp');
 const sanitize = require('../api/utils/sanitize');
 const accessLogEntry = require('../api/utils/accessLogEntry');
+const { toScrubSafeJson } = require('../api/utils/redactLogArgs');
 
 // Auth endpoints that receive credentials and need stricter limits.
 // Note: PATCH /api/v1/account is intentionally excluded — while it can accept
@@ -357,11 +358,13 @@ module.exports.http = {
       const startedAt = Date.now();
 
       // One structured line per request, client data and outcome together, so
-      // log consumers need no join by trace ID (#1788).
+      // log consumers need no join by trace ID (#1788). Not plain
+      // JSON.stringify: the log redaction would corrupt it (see
+      // toScrubSafeJson).
       const logAccess = (status) =>
         sails.log.info(
           'Access ::',
-          JSON.stringify(
+          toScrubSafeJson(
             accessLogEntry(req, { status, durationMs: Date.now() - startedAt })
           )
         );

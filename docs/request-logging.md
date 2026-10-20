@@ -14,7 +14,9 @@ outcome is known:
 ```
 
 Everything after `Access :: ` is one JSON object, built by
-`api/utils/accessLogEntry.js`:
+`api/utils/accessLogEntry.js`. Inside its strings, `:` and `=` are written
+`\u003a` and `\u003d` (`"https\u003a//…"`): the log redaction is not JSON-aware,
+and this keeps it from corrupting the line. Any JSON parser restores them.
 
 | Field           | Value                                                                                 |
 | --------------- | ------------------------------------------------------------------------------------- |
@@ -33,7 +35,8 @@ Things to know when querying it:
 
 - **`null` means the header was absent.** Native apps and HTTP libraries
   (`okhttp`, `CFNetwork`, …) never send `Origin`; a `null` origin is not by itself
-  a bot signal. Use `isnull()`, not a string comparison.
+  a bot signal. In KQL, `tostring()` turns that `null` into `""`, the same as an
+  empty header: filter on the `has*` columns below, not on the strings.
 - **`origin` and `referer` are different signals.** `Origin` is set by the
   browser and is scheme, host and port only. `Referer` is client-controlled and
   often stripped.
@@ -52,7 +55,10 @@ AppServiceConsoleLogs
     durationMs = toint(a.durationMs), ip = tostring(a.ip),
     userAgent = tostring(a.userAgent), origin = tostring(a.origin),
     referer = tostring(a.referer), authenticated = tobool(a.authenticated),
-    userId = toint(a.userId)
+    userId = toint(a.userId),
+    // Before tostring() folds null into "": was the header sent at all?
+    hasUserAgent = isnotnull(a.userAgent), hasOrigin = isnotnull(a.origin),
+    hasReferer = isnotnull(a.referer)
 ```
 
 ## Legacy lines

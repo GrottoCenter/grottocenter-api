@@ -5,6 +5,7 @@ const sinon = require('sinon');
 
 const { http: httpConfig } = require('../../../config/http');
 const logger = require('../../../api/utils/logger');
+const { scrubString } = require('../../../api/utils/redactLogArgs');
 
 // Exercises the `Access ::` line the real responseTimeLogger writes once per
 // request (#1788), through the same patchSailsLog() redaction it goes through
@@ -177,6 +178,39 @@ describe('Access logging', () => {
 
     it('should not leak a credential from the headers or the Referer', () => {
       should(accessLines(lines)[0]).not.containEql(SECRET);
+    });
+  });
+
+  describe('quotes in client-controlled header and query values', () => {
+    let line;
+
+    before(async () => {
+      const lines = await captureLogs(port, {
+        path: `/ok?token=${SECRET}"x&q='a'`,
+        headers: {
+          referer: `https://example.org/?token=${SECRET}"def&lang='fr'`,
+          'user-agent': 'Mozilla "quoted" password=\'x\' a:b',
+          origin: 'https://example.org',
+        },
+      });
+      // The production formatter (config/log.js) scrubs the line once more.
+      line = scrubString(accessLines(lines)[0]);
+    });
+
+    it('should still emit a line that parses as JSON', () => {
+      should(() => parseAccess(line)).not.throw();
+    });
+
+    it('should keep every field, redacting only the credentials', () => {
+      const entry = parseAccess(line);
+      should(entry).containDeep({
+        path: '/ok',
+        origin: 'https://example.org',
+        referer: `https://example.org/?token=[REDACTED]"def&lang='fr'`,
+        userAgent: `Mozilla "quoted" password='[REDACTED]' a:b`,
+        status: 200,
+      });
+      should(line).not.containEql(SECRET);
     });
   });
 });
