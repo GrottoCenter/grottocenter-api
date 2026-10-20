@@ -103,5 +103,15 @@ module.exports = {
       columnName: 'id_job_batch',
       model: 'TJobBatch',
     },
+
+    // The entity's identity as it was when the notification was created:
+    // { type, id, name, parent: { type, id } | null }. A PERMANENT_DELETE
+    // notification has no entity row left to reference (its FK column stays
+    // null), so this is all the client gets to tell what was deleted.
+    entitySnapshot: {
+      type: 'json',
+      columnName: 'entity_snapshot',
+      columnType: 'jsonb',
+    },
   },
 };

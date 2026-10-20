@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const CaveService = require('../../../api/services/CaveService');
 const MessageService = require('../../../api/services/MessageService');
+const NameService = require('../../../api/services/NameService');
 const NotificationService = require('../../../api/services/NotificationService');
 const {
   NOTIFICATION_ENTITIES,
@@ -306,7 +307,64 @@ describe('NotificationService', () => {
           entrance: entrance2.id,
         });
         should(user1Notifications).have.length(1);
+        should(user1Notifications[0].entitySnapshot).match({
+          type: NOTIFICATION_ENTITIES.ENTRANCE,
+          id: entrance2.id,
+          parent: null,
+        });
+        should(user1Notifications[0].entitySnapshot).have.property('name');
       });
+    });
+
+    it('should keep only a snapshot of the entity of a PERMANENT_DELETE notification', async () => {
+      // A fresh entrance in region FR-01 (caver 102) and country FR (user 1)
+      const entrance = await TEntrance.create({
+        author: 1,
+        latitude: '0',
+        longitude: '0',
+        iso_3166_2: 'FR-01',
+      }).fetch();
+      const name = await TName.create({
+        name: 'Doomed entrance',
+        isMain: true,
+        language: 'fra',
+        author: 1,
+        dateInscription: new Date(),
+        entrance: entrance.id,
+      }).fetch();
+      try {
+        await trackNotifications(async () => {
+          const res = await NotificationService.notifySubscribers(
+            { ...entrance, country: 'FR' },
+            user3.id,
+            NOTIFICATION_TYPES.PERMANENT_DELETE,
+            NOTIFICATION_ENTITIES.ENTRANCE
+          );
+          if (!res) throw Error('should succeed');
+          const notifications = await TNotification.find({
+            notified: 1,
+            notifier: 3,
+            notificationType: (
+              await TNotificationType.findOne({
+                name: NOTIFICATION_TYPES.PERMANENT_DELETE,
+              })
+            ).id,
+          });
+          should(notifications).have.length(1);
+          // No row to reference once the entity is gone
+          should(notifications[0].entrance).be.null();
+          should(notifications[0].entitySnapshot).eql({
+            type: NOTIFICATION_ENTITIES.ENTRANCE,
+            id: entrance.id,
+            name: 'Doomed entrance',
+            parent: null,
+          });
+        });
+      } finally {
+        await NameService.permanentDelete({ id: name.id });
+        await TEntrance.destroy({ id: entrance.id });
+        await TEntrance.destroy({ id: entrance.id });
+      }
     });
 
     it('should create a notification about the cave history for user 1 subscribed to the massif with id 1', async () => {
@@ -325,6 +383,14 @@ describe('NotificationService', () => {
         });
         should(user1Notifications).have.length(1);
         should(user1Notifications[0].history).be.equal(1);
+        // A history has no title: its body stands for its name, and it points
+        // at the cave it belongs to
+        should(user1Notifications[0].entitySnapshot).eql({
+          type: NOTIFICATION_ENTITIES.HISTORY,
+          id: history1.id,
+          name: `${history1.body.slice(0, 50)}...`,
+          parent: { type: NOTIFICATION_ENTITIES.CAVE, id: history1.cave.id },
+        });
       });
     });
 
@@ -577,6 +643,12 @@ describe('NotificationService', () => {
       should(notification.notified).equal(authorId);
       should(notification.document).equal(document.id);
       should(notification.notificationType).equal(validateTypeId);
+      should(notification.entitySnapshot).eql({
+        type: NOTIFICATION_ENTITIES.DOCUMENT,
+        id: document.id,
+        name: 'Test Document',
+        parent: null,
+      });
     });
 
     it('should create a REJECT notification for the document author on rejection', async () => {

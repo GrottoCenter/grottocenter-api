@@ -1,6 +1,7 @@
 const NameService = require('./NameService');
 const CommonService = require('./CommonService');
 const LanguageService = require('./LanguageService');
+const getEntityDisplayName = require('../utils/getEntityDisplayName');
 
 const NOTIFICATION_ENTITIES = {
   CAVE: 'cave',
@@ -43,6 +44,53 @@ const safeGetPropId = (prop, data) => {
   return undefined;
 };
 
+// Entities without a page of their own: their notification links to the cave,
+// entrance or massif they belong to
+const SUB_ENTITIES = [
+  NOTIFICATION_ENTITIES.COMMENT,
+  NOTIFICATION_ENTITIES.DESCRIPTION,
+  NOTIFICATION_ENTITIES.HISTORY,
+  NOTIFICATION_ENTITIES.LOCATION,
+  NOTIFICATION_ENTITIES.RIGGING,
+];
+const PARENT_ENTITIES = [
+  NOTIFICATION_ENTITIES.CAVE,
+  NOTIFICATION_ENTITIES.ENTRANCE,
+  NOTIFICATION_ENTITIES.MASSIF,
+];
+
+/**
+ * The entity's identity, frozen into the notification row: once the entity is
+ * permanently deleted, this is all that is left to tell what the notification
+ * was about. `parent` is the cave, entrance or massif a sub-entity belongs to
+ * (the same one the email and the web client link to), null otherwise.
+ *
+ * @param {object} populatedEntity the entity as populateEntities() returns it
+ * @param {NOTIFICATION_ENTITIES} notificationEntity
+ * @returns {{ type: string, id: number, name: string|null, parent: { type: string, id: number }|null }|null}
+ */
+const buildEntitySnapshot = (populatedEntity, notificationEntity) => {
+  if (!populatedEntity) return null;
+  let parent = null;
+  if (SUB_ENTITIES.includes(notificationEntity)) {
+    const parentType = PARENT_ENTITIES.find((type) =>
+      safeGetPropId(type, populatedEntity)
+    );
+    if (parentType) {
+      parent = {
+        type: parentType,
+        id: safeGetPropId(parentType, populatedEntity),
+      };
+    }
+  }
+  return {
+    type: notificationEntity,
+    id: populatedEntity.id,
+    name: getEntityDisplayName(populatedEntity),
+    parent,
+  };
+};
+
 const sendNotificationEmail = async (
   entity,
   notificationType,
@@ -54,18 +102,7 @@ const sendNotificationEmail = async (
     (await LanguageService.getLocale(user.language)) ||
     sails.config.i18n.defaultLocale;
 
-  // Get entity name (handle all cases)
-  const getEntityName = (entityData) => {
-    if (entityData.name) return entityData.name;
-    if (entityData.names) return entityData.names[0]?.name;
-    if (entityData.title) return entityData.title;
-    if (entityData.titles) return entityData.titles[0]?.text;
-    if (entityData.body) return `${entityData.body.slice(0, 50)}...`;
-    if (entityData.descriptions) return entityData.descriptions[0].title;
-    return '';
-  };
-
-  const entityName = getEntityName(entity);
+  const entityName = getEntityDisplayName(entity) ?? '';
 
   // Format action verb
   const actionVerbMap = {
@@ -305,6 +342,10 @@ module.exports = {
       });
 
       const populatedEntity = notification[entityKey];
+      const entitySnapshot = buildEntitySnapshot(
+        populatedEntity,
+        notificationEntity
+      );
 
       const caveId = safeGetPropId('cave', populatedEntity);
       const entranceId = safeGetPropId('entrance', populatedEntity);
@@ -483,6 +524,13 @@ module.exports = {
         subscriptionType: user.subscriptionTypes.join(', '),
       }));
 
+      // A permanently deleted entity has no row left to reference: the
+      // snapshot is all the notification keeps of it
+      const entityId =
+        notificationType === NOTIFICATION_TYPES.PERMANENT_DELETE
+          ? null
+          : populatedEntity.id;
+
       // Create notifications & optionally send email
       const res = await Promise.all(
         uniqueUsers.map(async (user) => {
@@ -490,7 +538,8 @@ module.exports = {
             await TNotification.create({
               ...notification,
               notified: user.id,
-              [entityKey]: notification[entityKey].id, // id only for the DB storage
+              entitySnapshot,
+              [entityKey]: entityId, // id only for the DB storage
             });
           } catch (e) {
             sails.log.error(
@@ -579,6 +628,10 @@ module.exports = {
         notifier: moderatorId,
         notified: authorId,
         document: document.id,
+        entitySnapshot: buildEntitySnapshot(
+          document,
+          NOTIFICATION_ENTITIES.DOCUMENT
+        ),
       });
 
       const author = await TCaver.findOne(authorId);
