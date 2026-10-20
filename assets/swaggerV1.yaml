@@ -6747,6 +6747,91 @@ paths:
           description: Massif not found
 
   '/organizations':
+    get:
+      tags:
+        - organizations
+      description: >-
+        List the organizations, sorted by id ascending and paginated with
+        `skip` and `limit` like `/documents`. By default (or with
+        `isDeleted=false`) only the active organizations are returned, to
+        anyone. With `isDeleted=true` only the soft-deleted organizations are
+        returned, including those merged into another organization: this
+        requires a Moderator bearer token. The total of the filtered set is
+        given in the `Content-Range` header (`skip-to/total`).
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: isDeleted
+          in: query
+          description: >-
+            `false` (default) lists the active organizations only, `true`
+            lists the soft-deleted ones only (Moderator role required).
+          required: false
+          schema:
+            default: false
+            allOf:
+              - $ref: '#/components/schemas/BooleanLike'
+        - name: skip
+          in: query
+          description: Number of organizations to skip. Negative values count as 0.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: >-
+            Maximum number of organizations per page. Values below 1 are
+            raised to 1, values above 100 are capped to 100.
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '206':
+          description: >-
+            A page of organizations. `Content-Range` holds `skip-to/total`
+            where `total` counts the organizations matching the filter.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: 50-100/137
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimpleOrganization'
+        '200':
+          description: >-
+            No organization matches the filter, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/SimpleOrganization'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          description: >-
+            `isDeleted=true` was requested without the Moderator role (missing
+            or insufficient bearer token).
+        '500':
+          description: Internal server error
     post:
       tags:
         - organizations
