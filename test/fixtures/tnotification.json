@@ -58,5 +58,28 @@
     "notificationType": 2,
     "notifier": 1,
     "notified": 2
+  },
+  {
+    "_comment": "PERMANENT_DELETE of a comment: no entity row left to reference, only the snapshot",
+    "id": 5,
+    "dateInscription": "2022-09-02 09:00:00",
+    "dateReadAt": null,
+    "cave": null,
+    "comment": null,
+    "description": null,
+    "document": null,
+    "entrance": null,
+    "grotto": null,
+    "location": null,
+    "massif": null,
+    "notificationType": 5,
+    "notifier": 2,
+    "notified": 1,
+    "entitySnapshot": {
+      "type": "comment",
+      "id": 987654,
+      "name": "A comment that is gone",
+      "parent": { "type": "entrance", "id": 1 }
+    }
   }
 ]

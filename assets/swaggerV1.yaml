@@ -57,6 +57,8 @@ tags:
   - name: comments
   - name: riggings
   - name: messaging
+  - name: notifications
+    description: In-app notifications of the authenticated user
   - name: devices
     description: Physical measurement instrument (device) management
   - name: SensorConfiguration
@@ -8301,6 +8303,92 @@ paths:
         '500':
           description: The signing secret is not configured for the requested product (server misconfiguration).
 
+  '/notifications':
+    get:
+      tags:
+        - notifications
+      summary: List the notifications of the authenticated user
+      description: >-
+        A page of the authenticated user's notifications, most recent first by
+        default. Each notification carries the entity it is about in its typed
+        field (`cave`, `comment`, `document`, …, `organization`) and, in
+        `entity`, a snapshot of that entity as it was when the notification was
+        created. A `PERMANENT_DELETE` notification has no entity row left to
+        reference: its typed fields are all null and `entity` is all it keeps
+        of the deleted entity. `IMPORT_COMPLETE` notifications have neither.
+        The total is given in the `Content-Range` header (`skip-to/total`).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: skip
+          in: query
+          description: Number of notifications to skip.
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of notifications per page, capped to 50.
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 50
+        - name: sortBy
+          in: query
+          description: Attribute to sort on.
+          required: false
+          schema:
+            type: string
+            default: dateInscription
+        - name: orderBy
+          in: query
+          description: Sort direction.
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        '206':
+          description: >-
+            A page of notifications. `Content-Range` holds `skip-to/total`.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: 0-50/137
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+        '200':
+          description: >-
+            The user has no notification, or `skip` is beyond the last one:
+            the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/Notification'
+        '401':
+          description: Bearer token not found or invalid.
+        '500':
+          description: Internal server error
+
   '/notifications/read':
     put:
       tags:
@@ -10172,6 +10260,138 @@ components:
               redirectTo:
                 type: integer
                 nullable: true
+
+    NotificationEntity:
+      type: object
+      description: >-
+        The entity a notification is about, as it was when the notification was
+        created. It outlives the entity itself: a `PERMANENT_DELETE`
+        notification only has this left to tell what was deleted.
+      required: [type, id, name, parent]
+      properties:
+        type:
+          type: string
+          enum:
+            - cave
+            - comment
+            - description
+            - document
+            - entrance
+            - history
+            - location
+            - massif
+            - organization
+            - rigging
+        id:
+          type: integer
+          description: Id the entity had; it no longer resolves once the entity is permanently deleted.
+        name:
+          type: string
+          nullable: true
+          description: >-
+            Display name at creation time: the main name of a cave, entrance,
+            massif or organization, the title of a comment, description,
+            location, rigging or document, an excerpt of the body of a
+            history. Null when the entity had none.
+        parent:
+          type: object
+          nullable: true
+          description: >-
+            The cave, entrance or massif a comment, description, history,
+            location or rigging belongs to, where the web client links to.
+            Null for the other entity types.
+          required: [type, id]
+          properties:
+            type:
+              type: string
+              enum: [cave, entrance, massif]
+            id:
+              type: integer
+
+    Notification:
+      type: object
+      description: >-
+        One in-app notification. Exactly one of the typed entity fields is set,
+        except on a `PERMANENT_DELETE` notification, where they are all null
+        and `entity` describes the deleted entity, and on `IMPORT_COMPLETE`,
+        which has no entity at all.
+      properties:
+        id:
+          type: integer
+        dateInscription:
+          type: string
+          format: date-time
+        dateReadAt:
+          type: string
+          format: date-time
+          nullable: true
+        notificationType:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+              enum:
+                - CREATE
+                - UPDATE
+                - DELETE
+                - VALIDATE
+                - PERMANENT_DELETE
+                - RESTORE
+                - REJECT
+                - IMPORT_COMPLETE
+        notified:
+          $ref: '#/components/schemas/SimpleCaver'
+        notifier:
+          $ref: '#/components/schemas/SimpleCaver'
+        entity:
+          allOf:
+            - $ref: '#/components/schemas/NotificationEntity'
+          nullable: true
+          description: >-
+            Null on notifications created before the snapshot existed and on
+            `IMPORT_COMPLETE`.
+        cave:
+          allOf:
+            - $ref: '#/components/schemas/Cave'
+          nullable: true
+        comment:
+          allOf:
+            - $ref: '#/components/schemas/Comment'
+          nullable: true
+        description:
+          allOf:
+            - $ref: '#/components/schemas/Description'
+          nullable: true
+        document:
+          type: object
+          nullable: true
+          description: The document, in its simple form (id, titles, authors…).
+        entrance:
+          allOf:
+            - $ref: '#/components/schemas/Entrance'
+          nullable: true
+        history:
+          allOf:
+            - $ref: '#/components/schemas/History'
+          nullable: true
+        location:
+          allOf:
+            - $ref: '#/components/schemas/Location'
+          nullable: true
+        massif:
+          allOf:
+            - $ref: '#/components/schemas/Massif'
+          nullable: true
+        organization:
+          allOf:
+            - $ref: '#/components/schemas/Organization'
+          nullable: true
+        rigging:
+          allOf:
+            - $ref: '#/components/schemas/Rigging'
+          nullable: true
 
     StructuredError:
       type: object
