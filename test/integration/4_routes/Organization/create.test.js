@@ -122,6 +122,15 @@ describe('Organization features', () => {
         should(stored.type).equal('LIBRARY');
       });
 
+      // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+      it('should create an organization typed OTHER', async () => {
+        const res = await postOrganization({ type: 'OTHER' }).expect(200);
+        createdIds.push(res.body.id);
+        should(res.body.type).equal('OTHER');
+        const stored = await TGrotto.findOne({ id: res.body.id });
+        should(stored.type).equal('OTHER');
+      });
+
       it('should return 400 for an unknown type', async () => {
         await shouldBeRejected(
           { type: 'FAN_CLUB' },

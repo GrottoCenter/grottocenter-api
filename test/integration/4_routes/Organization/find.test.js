@@ -91,6 +91,21 @@ describe('Organization features', () => {
       should(res.body).have.property('type', null);
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('should return OTHER unchanged', async () => {
+      // Organization 2 is an EDITION in the fixtures
+      await TGrotto.updateOne({ id: 2 }).set({ type: 'OTHER' });
+      try {
+        const res = await supertest(sails.hooks.http.app)
+          .get('/api/v1/organizations/2')
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(res.body.type).equal('OTHER');
+      } finally {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+      }
+    });
+
     it('should expose authored and published documents as separate lists', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/1')

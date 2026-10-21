@@ -227,6 +227,18 @@ describe('DbExport', () => {
       should(rows.some((e) => typeof e.latitude === 'number')).be.true();
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('exports the OTHER type of an organization as is', async () => {
+      // Organization 2 is an EDITION in the fixtures
+      await TGrotto.updateOne({ id: 2 }).set({ type: 'OTHER' });
+      try {
+        const rows = await exportRows(organization);
+        should(rows.find((e) => e.id === 2)).have.property('type', 'OTHER');
+      } finally {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+      }
+    });
+
     it('exports documents with their validated files', async () => {
       const document1 = (await exportRows(document)).find((e) => e.id === 1);
       should(document1.files.map((e) => e.url.split('/').pop()).sort()).eql([
