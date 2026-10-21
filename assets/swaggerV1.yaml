@@ -10890,6 +10890,7 @@ components:
           - ADMINISTRATION: public administration (https://www.wikidata.org/wiki/Q31728)
           - NATURE_CONSERVATION: nature conservation (https://www.wikidata.org/wiki/Q20113959)
           - LIBRARY: library holding caving books (https://www.wikidata.org/wiki/Q7075)
+          - OTHER: none of the categories above, as a deliberate classification; a null type still means "not classified yet"
       enum:
         - SPELEOLOGY
         - CAVE_RESCUE
@@ -10898,6 +10899,7 @@ components:
         - ADMINISTRATION
         - NATURE_CONSERVATION
         - LIBRARY
+        - OTHER
       example: SPELEOLOGY
 
     Point:
