@@ -260,6 +260,26 @@ module.exports = {
     return docQuery;
   },
 
+  /**
+   * Load the main name of every organization linked to the documents
+   * (editor, library and organization authors) in one batched query.
+   * The associations only carry the TGrotto rows; the names live in TName,
+   * which the populates cannot reach, so without this step the converters
+   * render `name: null` (https://github.com/GrottoCenter/grottocenter-api/issues/1914).
+   * Mutates the organizations in place.
+   * @param {TDocument[]} documents populated with editor, library and authorsOrganization
+   * @returns {Promise<TDocument[]>} the same documents
+   */
+  setOrganizationNames: async (documents) => {
+    const grottos = documents.flatMap((d) =>
+      [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter(
+        (g) => g && typeof g === 'object'
+      )
+    );
+    if (grottos.length > 0) await NameService.setNames(grottos, 'grotto');
+    return documents;
+  },
+
   // Set name of cave, entrance, massif, editor and library if present
   populateFullDocumentSubEntities: async (document) => {
     const asyncQueue = [];
@@ -277,14 +297,7 @@ module.exports = {
     if (allMassifs.length > 0) {
       asyncQueue.push(NameService.setNames(allMassifs, 'massif'));
     }
-    const allGrottos = [];
-    if (document.library) allGrottos.push(document.library);
-    if (document.editor) allGrottos.push(document.editor);
-    if (document.authorsOrganization)
-      allGrottos.push(...document.authorsOrganization);
-    if (allGrottos.length > 0) {
-      asyncQueue.push(NameService.setNames(allGrottos, 'grotto'));
-    }
+    asyncQueue.push(module.exports.setOrganizationNames([document]));
 
     async function resolveDocument(doc, key) {
       // eslint-disable-next-line no-param-reassign
@@ -577,14 +590,11 @@ module.exports = {
       .populate('editor')
       .populate('library');
 
-    const grottos = documents.flatMap((d) =>
-      [d.editor, d.library, ...(d.authorsOrganization ?? [])].filter((g) => g)
-    );
-
-    // setNames mutates grottos in place; its result is intentionally unused.
+    // setOrganizationNames mutates the organizations in place; its result is
+    // intentionally unused.
     const [parentsById] = await Promise.all([
       resolveCitationParentChain(documents),
-      grottos.length > 0 ? NameService.setNames(grottos, 'grotto') : null,
+      module.exports.setOrganizationNames(documents),
     ]);
 
     for (const document of documents) {
