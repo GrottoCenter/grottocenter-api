@@ -43,6 +43,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Document of id ${documentId} not found.` });
   }
 
+  // Built before the document is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      document,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
+    );
+
   if (!document.isDeleted) {
     const redirectTo = parseInt(req.param('entityId'), 10);
     if (!Number.isNaN(redirectTo)) {
@@ -172,13 +184,8 @@ module.exports = async (req, res) => {
     await TDocument.destroyOne({ id: documentId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    document,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

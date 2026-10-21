@@ -1,6 +1,7 @@
 const NameService = require('./NameService');
 const CommonService = require('./CommonService');
 const LanguageService = require('./LanguageService');
+const getEntityDisplayName = require('../utils/getEntityDisplayName');
 
 const NOTIFICATION_ENTITIES = {
   CAVE: 'cave',
@@ -43,6 +44,53 @@ const safeGetPropId = (prop, data) => {
   return undefined;
 };
 
+// Entities without a page of their own: their notification links to the cave,
+// entrance or massif they belong to
+const SUB_ENTITIES = [
+  NOTIFICATION_ENTITIES.COMMENT,
+  NOTIFICATION_ENTITIES.DESCRIPTION,
+  NOTIFICATION_ENTITIES.HISTORY,
+  NOTIFICATION_ENTITIES.LOCATION,
+  NOTIFICATION_ENTITIES.RIGGING,
+];
+const PARENT_ENTITIES = [
+  NOTIFICATION_ENTITIES.CAVE,
+  NOTIFICATION_ENTITIES.ENTRANCE,
+  NOTIFICATION_ENTITIES.MASSIF,
+];
+
+/**
+ * The entity's identity, frozen into the notification row: once the entity is
+ * permanently deleted, this is all that is left to tell what the notification
+ * was about. `parent` is the cave, entrance or massif a sub-entity belongs to
+ * (the same one the email and the web client link to), null otherwise.
+ *
+ * @param {object} populatedEntity the entity as populateEntities() returns it
+ * @param {NOTIFICATION_ENTITIES} notificationEntity
+ * @returns {{ type: string, id: number, name: string|null, parent: { type: string, id: number }|null }|null}
+ */
+const buildEntitySnapshot = (populatedEntity, notificationEntity) => {
+  if (!populatedEntity) return null;
+  let parent = null;
+  if (SUB_ENTITIES.includes(notificationEntity)) {
+    const parentType = PARENT_ENTITIES.find((type) =>
+      safeGetPropId(type, populatedEntity)
+    );
+    if (parentType) {
+      parent = {
+        type: parentType,
+        id: safeGetPropId(parentType, populatedEntity),
+      };
+    }
+  }
+  return {
+    type: notificationEntity,
+    id: populatedEntity.id,
+    name: getEntityDisplayName(populatedEntity),
+    parent,
+  };
+};
+
 const sendNotificationEmail = async (
   entity,
   notificationType,
@@ -54,18 +102,7 @@ const sendNotificationEmail = async (
     (await LanguageService.getLocale(user.language)) ||
     sails.config.i18n.defaultLocale;
 
-  // Get entity name (handle all cases)
-  const getEntityName = (entityData) => {
-    if (entityData.name) return entityData.name;
-    if (entityData.names) return entityData.names[0]?.name;
-    if (entityData.title) return entityData.title;
-    if (entityData.titles) return entityData.titles[0]?.text;
-    if (entityData.body) return `${entityData.body.slice(0, 50)}...`;
-    if (entityData.descriptions) return entityData.descriptions[0].title;
-    return '';
-  };
-
-  const entityName = getEntityName(entity);
+  const entityName = getEntityDisplayName(entity) ?? '';
 
   // Format action verb
   const actionVerbMap = {
@@ -257,14 +294,52 @@ module.exports = {
   ...(process.env.NODE_ENV === 'test' ? { sendNotificationEmail } : undefined),
 
   /**
+   * Notify the subscribers of the country, massifs and region of `entity`:
+   * one in-app notification each, plus an email for those who asked for one.
+   *
+   * Everything that reads the entity happens in prepareSubscribersNotification(),
+   * the rows are written by dispatchSubscribersNotification(). A permanent
+   * delete calls the two around its hard delete, so the notification is built
+   * while the entity is still there and written only once it is gone.
    *
    * @param {*} entity
    * @param {Number} notifierId
    * @param {NOTIFICATION_TYPES} notificationType
    * @param {NOTIFICATION_ENTITIES} notificationEntity
-   * @return {Boolean} true if everything went well, else false
+   * @return {Boolean[]|false} one flag per notified subscriber (true if
+   *   everything went well), or false when nothing could be prepared
    */
   notifySubscribers: async (
+    entity,
+    notifierId,
+    notificationType,
+    notificationEntity
+  ) =>
+    module.exports.dispatchSubscribersNotification(
+      await module.exports.prepareSubscribersNotification(
+        entity,
+        notifierId,
+        notificationType,
+        notificationEntity
+      )
+    ),
+
+  /**
+   * First half of notifySubscribers(): everything that depends on the entity
+   * being there. Populate it, take its snapshot, work out the country, massifs
+   * and region it belongs to and gather their subscribers. Nothing is written.
+   *
+   * Call it before a permanent delete, then give what it returns to
+   * dispatchSubscribersNotification() once the entity is gone.
+   *
+   * @param {*} entity
+   * @param {Number} notifierId
+   * @param {NOTIFICATION_TYPES} notificationType
+   * @param {NOTIFICATION_ENTITIES} notificationEntity
+   * @return {Object|null} the pending notification, or null when it could not
+   *   be prepared (logged, never thrown, so a delete never fails on it)
+   */
+  prepareSubscribersNotification: async (
     entity,
     notifierId,
     notificationType,
@@ -305,6 +380,10 @@ module.exports = {
       });
 
       const populatedEntity = notification[entityKey];
+      const entitySnapshot = buildEntitySnapshot(
+        populatedEntity,
+        notificationEntity
+      );
 
       const caveId = safeGetPropId('cave', populatedEntity);
       const entranceId = safeGetPropId('entrance', populatedEntity);
@@ -483,14 +562,66 @@ module.exports = {
         subscriptionType: user.subscriptionTypes.join(', '),
       }));
 
+      return {
+        notificationType,
+        notificationEntity,
+        notificationTypeId: notification.notificationType,
+        notifierId,
+        entityKey,
+        // A permanently deleted entity has no row left to reference: the
+        // snapshot is all the notification keeps of it
+        entityId:
+          notificationType === NOTIFICATION_TYPES.PERMANENT_DELETE
+            ? null
+            : populatedEntity.id,
+        entitySnapshot,
+        populatedEntity,
+        users: uniqueUsers,
+      };
+    } catch (error) {
+      // Fail silently to avoid sending an error to the user
+      sails.log.error(
+        `An error occurred when trying to notify subscribers: ${error.message} ${error.stack}`
+      );
+      return null;
+    }
+  },
+
+  /**
+   * Second half of notifySubscribers(): write one notification per subscriber
+   * gathered by prepareSubscribersNotification() and email those who asked
+   * for it. Reads nothing from the entity, which may be gone by now.
+   *
+   * @param {Object|null} pending what prepareSubscribersNotification() returned
+   * @return {Boolean[]|false} one flag per subscriber (true if everything went
+   *   well), or false when there was nothing to dispatch
+   */
+  dispatchSubscribersNotification: async (pending) => {
+    if (!pending) return false;
+    const {
+      notificationType,
+      notificationEntity,
+      notificationTypeId,
+      notifierId,
+      entityKey,
+      entityId,
+      entitySnapshot,
+      populatedEntity,
+      users,
+    } = pending;
+
+    try {
       // Create notifications & optionally send email
       const res = await Promise.all(
-        uniqueUsers.map(async (user) => {
+        users.map(async (user) => {
           try {
             await TNotification.create({
-              ...notification,
+              dateInscription: new Date(),
+              notificationType: notificationTypeId,
+              notifier: notifierId,
               notified: user.id,
-              [entityKey]: notification[entityKey].id, // id only for the DB storage
+              entitySnapshot,
+              [entityKey]: entityId, // id only for the DB storage
             });
           } catch (e) {
             sails.log.error(
@@ -579,6 +710,10 @@ module.exports = {
         notifier: moderatorId,
         notified: authorId,
         document: document.id,
+        entitySnapshot: buildEntitySnapshot(
+          document,
+          NOTIFICATION_ENTITIES.DOCUMENT
+        ),
       });
 
       const author = await TCaver.findOne(authorId);

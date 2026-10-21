@@ -14,4 +14,5 @@ module.exports = {
   massif: undefined,
   organization: undefined,
   rigging: undefined,
+  entity: undefined,
 };

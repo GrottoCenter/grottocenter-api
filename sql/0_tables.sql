@@ -1275,6 +1275,7 @@ CREATE TABLE t_notification (
   id_notifier int4 NOT NULL,
   id_notified int4 NOT NULL,
   id_rigging int4 NULL,
+  entity_snapshot jsonb NULL,
   CONSTRAINT t_notification_pk PRIMARY KEY (id),
   CONSTRAINT t_notification_notifier_t_caver_fk FOREIGN KEY (id_notifier) REFERENCES t_caver(id),
   CONSTRAINT t_notification_notified_t_caver_fk FOREIGN KEY (id_notified) REFERENCES t_caver(id),

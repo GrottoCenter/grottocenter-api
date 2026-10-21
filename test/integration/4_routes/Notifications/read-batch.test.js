@@ -17,6 +17,7 @@ describe('Notifications batch mark-as-read', () => {
       dateReadAt: new Date('2022-09-01T12:05:52Z'),
     });
     await TNotification.updateOne(4).set({ dateReadAt: null });
+    await TNotification.updateOne(5).set({ dateReadAt: null });
   });
 
   describe('PUT /api/v1/notifications/read — mark all', () => {

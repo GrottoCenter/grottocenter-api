@@ -42,6 +42,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Cave of id ${caveId} not found.` });
   }
 
+  // Built before the cave is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      cave,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.CAVE
+    );
+
   if (!cave.isDeleted) {
     const redirectTo = parseInt(req.param('entityId'), 10);
     if (!Number.isNaN(redirectTo)) {
@@ -80,13 +92,8 @@ module.exports = async (req, res) => {
   }
 
   // Fire-and-forget: don't block the response on subscriber notifications
-  NotificationService.notifySubscribers(
-    cave,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.CAVE
+  NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   ).catch((err) => {
     sails.log.error(
       `Failed to notify subscribers for cave ${caveId}: ${err.message}`

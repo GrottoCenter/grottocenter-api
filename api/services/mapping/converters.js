@@ -755,7 +755,24 @@ const c = {
       meta,
     });
     result.rigging = convertIfObject(source.rigging, c.toRigging, { meta });
+    // What the notification was about, as it was when it was created. It is
+    // all that is left of a permanently deleted entity, whose typed field
+    // above is null. Null on rows created before the snapshot existed and on
+    // IMPORT_COMPLETE, which has no entity.
+    result.entity = c.toNotificationEntity(source.entitySnapshot);
     return result;
+  },
+
+  toNotificationEntity: (snapshot) => {
+    if (!snapshot) return null;
+    return {
+      type: snapshot.type,
+      id: snapshot.id,
+      name: snapshot.name ?? null,
+      parent: snapshot.parent
+        ? { type: snapshot.parent.type, id: snapshot.parent.id }
+        : null,
+    };
   },
 
   // Schema for an entry in a geographic entity's `organizations` list, as built

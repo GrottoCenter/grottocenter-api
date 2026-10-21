@@ -42,6 +42,18 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Built before the description is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      description,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.DESCRIPTION
+    );
+
   if (!description.isDeleted) {
     await TDescription.destroyOne({ id: descriptionId }); // Soft delete
     description.isDeleted = true;
@@ -60,13 +72,8 @@ module.exports = async (req, res) => {
     await TDescription.destroyOne({ id: descriptionId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    description,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.DESCRIPTION
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

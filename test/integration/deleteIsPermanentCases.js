@@ -47,7 +47,8 @@ module.exports = ({
 }) => {
   describe('isPermanent parsing', () => {
     let NotificationService;
-    let notifySpy;
+    let prepareSpy;
+    let dispatchSpy;
     let createdIds;
 
     // Rejected deletes leave their entity behind. Under `npm run coverage` every
@@ -68,11 +69,21 @@ module.exports = ({
 
     beforeEach(() => {
       createdIds = [];
-      notifySpy = sinon.spy(NotificationService, 'notifySubscribers');
+      // The delete prepares the notification before the entity is gone and
+      // dispatches it afterwards; the type goes to prepare
+      prepareSpy = sinon.spy(
+        NotificationService,
+        'prepareSubscribersNotification'
+      );
+      dispatchSpy = sinon.spy(
+        NotificationService,
+        'dispatchSubscribersNotification'
+      );
     });
 
     afterEach(async () => {
-      notifySpy.restore();
+      prepareSpy.restore();
+      dispatchSpy.restore();
       await getModel().destroy({ id: createdIds });
     });
 
@@ -84,8 +95,8 @@ module.exports = ({
         .set('Accept', 'application/json');
 
     const notifiedType = () => {
-      should(notifySpy.calledOnce).be.true();
-      return notifySpy.firstCall.args[2];
+      should(prepareSpy.calledOnce).be.true();
+      return prepareSpy.firstCall.args[2];
     };
 
     ['false', '0', ''].forEach((value) => {
@@ -110,6 +121,13 @@ module.exports = ({
         should(notifiedType()).equal(
           NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
         );
+        // Prepared while the entity was still there (a prepare after the
+        // hard delete finds nothing and gives null), then dispatched as is
+        const pending = await prepareSpy.firstCall.returnValue;
+        should(pending).not.be.null();
+        should(pending.entitySnapshot).match({ id: entity.id });
+        should(pending.entityId).be.null();
+        should(dispatchSpy.calledOnceWith(pending)).be.true();
       } else {
         await sendDelete(entity.id, '?isPermanent=1').expect(403);
         const untouched = await findEntity(entity.id);
@@ -130,7 +148,7 @@ module.exports = ({
         const untouched = await findEntity(entity.id);
         should(untouched).not.be.undefined();
         should(untouched.isDeleted).be.false();
-        should(notifySpy.called).be.false();
+        should(prepareSpy.called).be.false();
       });
     }
 
@@ -147,7 +165,7 @@ module.exports = ({
         const untouched = await findEntity(entity.id);
         should(untouched).not.be.undefined();
         should(untouched.isDeleted).be.false();
-        should(notifySpy.called).be.false();
+        should(prepareSpy.called).be.false();
       });
     });
 

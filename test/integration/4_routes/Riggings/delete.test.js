@@ -67,7 +67,7 @@ describe('Rigging features', () => {
     getModeratorToken: () => moderatorToken,
     getModel: () => TRigging,
     createEntity: () =>
-      TRigging.create({ author: 1, title: 'Test', entrance: 999 }).fetch(),
+      TRigging.create({ author: 1, title: 'Test', entrance: 1 }).fetch(),
     deleteUrl: (id) => `/api/v1/riggings/${id}`,
     findEntity: (id) => TRigging.findOne(id),
     observe: 'notification',

@@ -40,6 +40,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Location of id ${locationId} not found.` });
   }
 
+  // Built before the location is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      location,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.LOCATION
+    );
+
   if (!location.isDeleted) {
     await TLocation.destroyOne({ id: locationId }); // Soft delete
     location.isDeleted = true;
@@ -58,13 +70,8 @@ module.exports = async (req, res) => {
     await TLocation.destroyOne({ id: locationId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    location,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.LOCATION
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(

@@ -347,6 +347,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
   }
 
+  // Built before the entrance is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      entrance,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
+    );
+
   const redirectTo = parseInt(req.param('entityId'), 10);
 
   if (!deletePermanently && !entrance.isDeleted) {
@@ -396,13 +408,8 @@ module.exports = async (req, res) => {
   }
 
   // Fire-and-forget: don't block the response on subscriber notifications
-  NotificationService.notifySubscribers(
-    entrance,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
+  NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   ).catch((err) => {
     sails.log.error(
       `Failed to notify subscribers for entrance ${entranceId}: ${err.message}`

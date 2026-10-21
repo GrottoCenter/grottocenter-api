@@ -40,6 +40,18 @@ module.exports = async (req, res) => {
     return res.notFound({ message: `Comment of id ${commentId} not found.` });
   }
 
+  // Built before the comment is touched: once it is gone, there is nothing
+  // left to read it from. Nothing is written until the delete went through
+  const pendingNotification =
+    await NotificationService.prepareSubscribersNotification(
+      comment,
+      req.token.id,
+      deletePermanently
+        ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
+        : NotificationService.NOTIFICATION_TYPES.DELETE,
+      NotificationService.NOTIFICATION_ENTITIES.COMMENT
+    );
+
   if (!comment.isDeleted) {
     await TComment.destroyOne({ id: commentId }); // Soft delete
     comment.isDeleted = true;
@@ -58,13 +70,8 @@ module.exports = async (req, res) => {
     await TComment.destroyOne({ id: commentId }); // Hard delete
   }
 
-  await NotificationService.notifySubscribers(
-    comment,
-    req.token.id,
-    deletePermanently
-      ? NotificationService.NOTIFICATION_TYPES.PERMANENT_DELETE
-      : NotificationService.NOTIFICATION_TYPES.DELETE,
-    NotificationService.NOTIFICATION_ENTITIES.COMMENT
+  await NotificationService.dispatchSubscribersNotification(
+    pendingNotification
   );
 
   return ControllerService.treatAndConvert(
