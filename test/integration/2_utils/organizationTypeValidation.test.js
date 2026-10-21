@@ -28,6 +28,12 @@ describe('organizationTypeValidation', () => {
       should(validateOrganizationType('LIBRARY', { required: true })).be.null();
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('should accept OTHER, optional or required', () => {
+      should(validateOrganizationType('OTHER')).be.null();
+      should(validateOrganizationType('OTHER', { required: true })).be.null();
+    });
+
     it('should reject null, since a type cannot be cleared', () => {
       should(validateOrganizationType(null)).containEql('null');
       should(validateOrganizationType(null, { required: true })).containEql(

@@ -86,6 +86,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.CREATE_GROTTO_SOFT_DELETE_TRIGGER,
                 customSQL.SEARCH_OUTBOX_MIGRATION,
                 customSQL.ORGANIZATION_TYPE_MIGRATION,
+                customSQL.ORGANIZATION_TYPE_OTHER_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))
