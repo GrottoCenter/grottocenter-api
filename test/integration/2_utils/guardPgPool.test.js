@@ -280,6 +280,90 @@ describe('guardPgPool', () => {
         should(leases.size).equal(0);
       });
 
+      // #1919: the 500 a request ends with after such a refusal, or after the
+      // driver's own 57014, is the cancellation, and must be logged as such.
+      describe('recording the cancellation on the request', () => {
+        const cancelledQueryError = () =>
+          Object.assign(new Error('canceling statement due to user request'), {
+            code: '57014',
+          });
+        // Whether the request's context carries the record once `fn` is done
+        // with it.
+        const recordedBy = (leases, fn) =>
+          inRequest(leases, async () => {
+            await fn().catch(() => {});
+            return logger.getStore().queryCancelled;
+          });
+        const queryAnswering = (err) =>
+          fakeClient({
+            query: (text, cb) => setImmediate(() => cb(err)),
+          });
+
+        it('records a refused connection', async () => {
+          const leases = new Set();
+          await cancelLeasedQueries(leases, pool, log);
+          should(await recordedBy(leases, () => pool.connect())).be.true();
+        });
+
+        it('records a cancelled query answered by the driver', async () => {
+          client = queryAnswering(cancelledQueryError());
+          pool.emit('connect', client);
+          const leases = new Set();
+          await cancelLeasedQueries(leases, pool, log);
+          should(
+            await recordedBy(
+              leases,
+              () =>
+                new Promise((resolve, reject) => {
+                  client.query('SELECT 1', (err) =>
+                    err ? reject(err) : resolve()
+                  );
+                })
+            )
+          ).be.true();
+        });
+
+        it('records nothing for a cancelled query of a request still there', async () => {
+          client = queryAnswering(cancelledQueryError());
+          pool.emit('connect', client);
+          should(
+            await recordedBy(
+              new Set(),
+              () =>
+                new Promise((resolve, reject) => {
+                  client.query('SELECT 1', (err) =>
+                    err ? reject(err) : resolve()
+                  );
+                })
+            )
+          ).be.undefined();
+        });
+
+        it('records nothing for another failure of an aborted request', async () => {
+          client = queryAnswering(socketError());
+          pool.emit('connect', client);
+          const leases = new Set();
+          await cancelLeasedQueries(leases, pool, log);
+          should(
+            await recordedBy(
+              leases,
+              () =>
+                new Promise((resolve, reject) => {
+                  client.query('SELECT 1', (err) =>
+                    err ? reject(err) : resolve()
+                  );
+                })
+            )
+          ).be.undefined();
+        });
+
+        it('records nothing for a granted connection', async () => {
+          should(
+            await recordedBy(new Set(), () => pool.connect())
+          ).be.undefined();
+        });
+      });
+
       it('passes connection errors through', async () => {
         const leases = new Set();
         const failure = new Error('getConnection failed');

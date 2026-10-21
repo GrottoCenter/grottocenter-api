@@ -26,11 +26,17 @@ const isQueryCanceled = (arg, depth = 0) => {
 
 // Whether `data`, on its way to a 500, is the cancellation of the current
 // request's queries after its client went away (#1849), rather than an
-// unrelated failure: a cancelled query error, or no error at all (the message
-// of a controller that caught the error, and logged it, itself).
-const isCancelledOnAbort = (data) =>
-  Boolean(asyncLocalStorage.getStore()?.cancelledOnAbort) &&
-  (!(data instanceof Error) || isQueryCanceled(data));
+// unrelated failure. Either `data` is the cancelled query error itself, or the
+// pool guard delivered that cancellation to the request (`queryCancelled`,
+// see api/utils/guardPgPool.js) and the controller, having caught it, reports
+// it with a message of its own. An error of any other kind is a genuine
+// failure, whether or not a query was cancelled along the way.
+const isCancelledOnAbort = (data) => {
+  const store = asyncLocalStorage.getStore();
+  if (!store?.cancelledOnAbort) return false;
+  if (isQueryCanceled(data)) return true;
+  return Boolean(store.queryCancelled) && !(data instanceof Error);
+};
 
 const patchSailsLog = () => {
   const originalMethods = {

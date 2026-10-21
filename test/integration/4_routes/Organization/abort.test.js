@@ -140,14 +140,15 @@ describe('Client-aborted request', () => {
     });
 
     // patchSailsLog() is where the downgrade lives, and the test environment
-    // never calls it. Stubbed first, so the patch delegates to the collectors.
+    // never calls it. Stubbed first, so the patch delegates to the collectors:
+    // every level it wraps, or the wrapper would outlive the test on the rest.
     beforeEach(() => {
       lines = [];
       const collect =
         (level) =>
         (...args) =>
           lines.push({ level, line: args.map(String).join(' ') });
-      logStubs = ['info', 'warn', 'error'].map((level) =>
+      logStubs = ['info', 'warn', 'error', 'debug', 'verbose'].map((level) =>
         sinon.stub(sails.log, level).callsFake(collect(level))
       );
       logger.patchSailsLog();
@@ -208,5 +209,48 @@ describe('Client-aborted request', () => {
       should(linesWith('Sending 500')[0].level).equal('error');
       should(linesWith('Dropped 500')).be.empty();
     });
+
+    it('keeps the 500 of an aborted request that failed for another reason', async () => {
+      // option/find-all.js catches, logs nothing and answers with a message:
+      // nothing but the pool guard's record says whether the failure was the
+      // cancellation. Here no query ran, so it was not.
+      let reached;
+      const atGate = new Promise((resolve) => {
+        reached = resolve;
+      });
+      let openGate;
+      const gate = new Promise((resolve) => {
+        openGate = resolve;
+      });
+      stub = sinon.stub(TOption, 'find').callsFake(async () => {
+        reached();
+        await gate;
+        throw Object.assign(new Error('read ECONNRESET'), {
+          code: 'ECONNRESET',
+        });
+      });
+
+      const request = supertest(sails.hooks.http.app)
+        .get('/api/v1/options')
+        .timeout(30000);
+      const aborted = request.then(
+        () => null,
+        (err) => err
+      );
+      await atGate;
+      request.abort();
+      await aborted;
+      // Let the server see the closed socket before the failure lands.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+      openGate();
+
+      should(
+        await waitFor(async () => linesWith('Sending 500').length > 0, 5000)
+      ).be.true('the server error was never logged');
+      should(linesWith('Sending 500')[0].level).equal('error');
+      should(linesWith('Dropped 500')).be.empty();
+    }).timeout(20000);
   });
 });

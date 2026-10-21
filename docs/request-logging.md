@@ -82,13 +82,16 @@ line at all:
 - `Dropped 500 ("Server Error") response (query cancelled after client abort)`
   at `warn`, where a request still being listened to would have logged
   `Sending 500`
-  ([#1919](https://github.com/GrottoCenter/grottocenter-api/issues/1919)). The
-  500 is written to a closed socket and never leaves the process.
+  ([#1919](https://github.com/GrottoCenter/grottocenter-api/issues/1919)): the
+  500 carries the `57014` error itself, or the controller answered with its own
+  message after the pool guard cancelled or refused one of the request's
+  queries. The 500 is written to a closed socket and never leaves the process.
 
 A 500 caused by anything other than the cancellation keeps its `Sending 500`
-line at `error` level, client gone or not. Writes (`POST`, `PUT`, `PATCH`,
-`DELETE`) are never cancelled: an aborted write that fails is a real
-`Sending 500`.
+line at `error` level, client gone or not: an error without `57014` in its
+cause chain, or a controller message when no query of the request was
+cancelled. Writes (`POST`, `PUT`, `PATCH`, `DELETE`) are never cancelled: an
+aborted write that fails is a real `Sending 500`.
 
 ## Legacy lines
 
