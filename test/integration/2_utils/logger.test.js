@@ -5,6 +5,29 @@ const logger = require('../../../api/utils/logger');
 
 const SECRET = 'Tr0ub4dor-3-correct-horse-battery';
 
+// How Waterline reports a cancelled query: the driver's error is nested.
+const cancelledQueryError = () => {
+  const driverError = Object.assign(
+    new Error('canceling statement due to user request'),
+    { code: '57014' }
+  );
+  return Object.assign(new Error('Query failed'), {
+    name: 'OperationalError',
+    cause: Object.assign(new Error('Query failed'), {
+      raw: { error: driverError },
+    }),
+    raw: { error: driverError },
+  });
+};
+
+// Runs `fn` in the context of a request whose queries were cancelled because
+// its client went away (#1849).
+const inAbortedRequest = (fn) =>
+  logger.run('test-abort-1849', () => {
+    logger.getStore().cancelledOnAbort = true;
+    return fn();
+  });
+
 describe('Logger utility', () => {
   describe('getTraceId', () => {
     it('should return "no-trace" when no trace context exists', () => {
@@ -108,27 +131,6 @@ describe('Logger utility', () => {
     });
 
     describe('after a client abort (#1849)', () => {
-      // How Waterline reports a cancelled query: the driver's error is nested.
-      const cancelledQueryError = () => {
-        const driverError = Object.assign(
-          new Error('canceling statement due to user request'),
-          { code: '57014' }
-        );
-        return Object.assign(new Error('Query failed'), {
-          name: 'OperationalError',
-          cause: Object.assign(new Error('Query failed'), {
-            raw: { error: driverError },
-          }),
-          raw: { error: driverError },
-        });
-      };
-
-      const inAbortedRequest = (fn) =>
-        logger.run('test-abort-1849', () => {
-          logger.getStore().cancelledOnAbort = true;
-          fn();
-        });
-
       it('should log the cancelled query error as a warning', () => {
         const [, error, warn] = stubs;
         inAbortedRequest(() =>
@@ -167,6 +169,47 @@ describe('Logger utility', () => {
           sinon.assert.notCalled(warn);
           done();
         });
+      });
+    });
+  });
+
+  // Whether what a request is about to answer 500 with is the cancellation
+  // of its queries after its client went away (#1919).
+  describe('isCancelledOnAbort', () => {
+    it('should recognise a cancelled query error', () => {
+      should(
+        inAbortedRequest(() => logger.isCancelledOnAbort(cancelledQueryError()))
+      ).be.true();
+    });
+
+    it('should trust a message from a controller that caught the error itself', () => {
+      should(
+        inAbortedRequest(() =>
+          logger.isCancelledOnAbort('An internal error occurred when getting X')
+        )
+      ).be.true();
+      should(
+        inAbortedRequest(() =>
+          logger.isCancelledOnAbort({ code: 'E_SERVER_ERROR', message: 'x' })
+        )
+      ).be.true();
+      should(inAbortedRequest(() => logger.isCancelledOnAbort())).be.true();
+    });
+
+    it('should keep an unrelated error as a server error', () => {
+      should(
+        inAbortedRequest(() =>
+          logger.isCancelledOnAbort(
+            Object.assign(new Error('read ETIMEDOUT'), { code: 'ETIMEDOUT' })
+          )
+        )
+      ).be.false();
+    });
+
+    it('should be false outside an aborted request', () => {
+      should(logger.isCancelledOnAbort(cancelledQueryError())).be.false();
+      logger.run('test-no-abort', () => {
+        should(logger.isCancelledOnAbort(cancelledQueryError())).be.false();
       });
     });
   });

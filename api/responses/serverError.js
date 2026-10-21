@@ -16,6 +16,8 @@
  * @param  {Object | string | undefined} data
  */
 
+const { isCancelledOnAbort } = require('../utils/logger');
+
 module.exports = function serverError(data) {
   const { req } = this;
   const { res } = this;
@@ -25,7 +27,18 @@ module.exports = function serverError(data) {
 
   const httpCode = 500;
   res.status(httpCode);
-  logResponse.with({ httpCode, data });
+  if (isCancelledOnAbort(data)) {
+    // The client went away and the queries it was waiting for were cancelled
+    // (#1849): nothing failed on the server, and no one receives this 500.
+    // Not a `Sending 500` line, which is what triage counts (#1919). The
+    // write below lands on a dead socket and is discarded (#1818).
+    const dropped =
+      'Dropped 500 ("Server Error") response (query cancelled after client abort)';
+    if (data === undefined) sails.log.warn(dropped);
+    else sails.log.warn(`${dropped}: \n`, data);
+  } else {
+    logResponse.with({ httpCode, data });
+  }
   return res.json(
     formatResponseData.with({
       data: { message: 'An internal server error occurred.' },

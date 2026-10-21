@@ -24,6 +24,14 @@ const isQueryCanceled = (arg, depth = 0) => {
   );
 };
 
+// Whether `data`, on its way to a 500, is the cancellation of the current
+// request's queries after its client went away (#1849), rather than an
+// unrelated failure: a cancelled query error, or no error at all (the message
+// of a controller that caught the error, and logged it, itself).
+const isCancelledOnAbort = (data) =>
+  Boolean(asyncLocalStorage.getStore()?.cancelledOnAbort) &&
+  (!(data instanceof Error) || isQueryCanceled(data));
+
 const patchSailsLog = () => {
   const originalMethods = {
     info: sails.log.info,
@@ -66,5 +74,6 @@ module.exports = {
   getTraceId,
   getStore: () => asyncLocalStorage.getStore(),
   run: (traceId, callback) => asyncLocalStorage.run({ traceId }, callback),
+  isCancelledOnAbort,
   patchSailsLog,
 };
