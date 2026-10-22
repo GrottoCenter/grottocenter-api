@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const guardPgPool = require('../../../../api/utils/guardPgPool');
+const logger = require('../../../../api/utils/logger');
 
 // Passed as a parameter, so the polling queries never match themselves.
 const MARKER = 'abort-1849';
@@ -125,4 +126,131 @@ describe('Client-aborted request', () => {
     should(await outcome).match({ raw: { error: { code: '57014' } } });
     should(await activeSlowQueries()).equal(0);
   }).timeout(20000);
+
+  // #1919: the 500 an aborted request ends with goes nowhere, and a cancelled
+  // query is no server error. Triage counts `Sending 500` lines.
+  describe('logging of the 500 it ends with', () => {
+    let StatisticsMassifService;
+    let lines;
+    let logStubs;
+
+    before(() => {
+      // eslint-disable-next-line global-require
+      StatisticsMassifService = require('../../../../api/services/StatisticsMassifService');
+    });
+
+    // patchSailsLog() is where the downgrade lives, and the test environment
+    // never calls it. Stubbed first, so the patch delegates to the collectors:
+    // every level it wraps, or the wrapper would outlive the test on the rest.
+    beforeEach(() => {
+      lines = [];
+      const collect =
+        (level) =>
+        (...args) =>
+          lines.push({ level, line: args.map(String).join(' ') });
+      logStubs = ['info', 'warn', 'error', 'debug', 'verbose'].map((level) =>
+        sinon.stub(sails.log, level).callsFake(collect(level))
+      );
+      logger.patchSailsLog();
+    });
+
+    // Restoring the stubs also discards the patch wrapper, which matters
+    // because patchSailsLog is not idempotent.
+    afterEach(() => logStubs.forEach((logStub) => logStub.restore()));
+
+    const linesWith = (text) => lines.filter(({ line }) => line.includes(text));
+    const errorLines = () => lines.filter(({ level }) => level === 'error');
+
+    const expectDroppedResponse = async () => {
+      should(
+        await waitFor(async () => linesWith('Dropped 500').length > 0, 5000)
+      ).be.true('the dropped response was never logged');
+      should(linesWith('Dropped 500')[0].level).equal('warn');
+      should(linesWith('Sending 500')).be.empty();
+      should(errorLines()).be.empty();
+    };
+
+    it('logs the cancelled query of an uncaught throw as a dropped response', async () => {
+      stub = sinon
+        .stub(GrottoService, 'getPopulatedOrganization')
+        .callsFake(() => sails.sendNativeQuery(SLOW_QUERY));
+
+      await abortAfterQueryStarts(
+        supertest(sails.hooks.http.app).get('/api/v1/organizations/1')
+      );
+
+      await expectDroppedResponse();
+    }).timeout(20000);
+
+    it('logs the cancelled query a controller catches itself as a dropped response', async () => {
+      // The controller logs the error and answers with its own message, which
+      // carries no `57014` for the logger to recognise.
+      stub = sinon
+        .stub(StatisticsMassifService, 'getNbCavesInMassif')
+        .callsFake(() => sails.sendNativeQuery(SLOW_QUERY));
+
+      await abortAfterQueryStarts(
+        supertest(sails.hooks.http.app).get('/api/v1/massifs/1/statistics')
+      );
+
+      await expectDroppedResponse();
+    }).timeout(20000);
+
+    it('keeps the 500 of a request whose client is still there', async () => {
+      stub = sinon
+        .stub(GrottoService, 'getPopulatedOrganization')
+        .rejects(new Error('boom'));
+
+      await supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/1')
+        .expect(500);
+
+      should(linesWith('Sending 500')).have.length(1);
+      should(linesWith('Sending 500')[0].level).equal('error');
+      should(linesWith('Dropped 500')).be.empty();
+    });
+
+    it('keeps the 500 of an aborted request that failed for another reason', async () => {
+      // option/find-all.js catches, logs nothing and answers with a message:
+      // nothing but the pool guard's record says whether the failure was the
+      // cancellation. Here no query ran, so it was not.
+      let reached;
+      const atGate = new Promise((resolve) => {
+        reached = resolve;
+      });
+      let openGate;
+      const gate = new Promise((resolve) => {
+        openGate = resolve;
+      });
+      stub = sinon.stub(TOption, 'find').callsFake(async () => {
+        reached();
+        await gate;
+        throw Object.assign(new Error('read ECONNRESET'), {
+          code: 'ECONNRESET',
+        });
+      });
+
+      const request = supertest(sails.hooks.http.app)
+        .get('/api/v1/options')
+        .timeout(30000);
+      const aborted = request.then(
+        () => null,
+        (err) => err
+      );
+      await atGate;
+      request.abort();
+      await aborted;
+      // Let the server see the closed socket before the failure lands.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+      openGate();
+
+      should(
+        await waitFor(async () => linesWith('Sending 500').length > 0, 5000)
+      ).be.true('the server error was never logged');
+      should(linesWith('Sending 500')[0].level).equal('error');
+      should(linesWith('Dropped 500')).be.empty();
+    }).timeout(20000);
+  });
 });

@@ -63,6 +63,36 @@ AppServiceConsoleLogs
     hasReferer = isnotnull(a.referer)
 ```
 
+## Server errors and client aborts
+
+`Sending 500 ("Server Error") response` (`error` level, written by
+`api/responses/serverError.js`) is the line to count for real server errors.
+
+Since [#1908](https://github.com/GrottoCenter/grottocenter-api/pull/1908), the
+API cancels the Postgres queries of a `GET` or `HEAD` request whose client
+disconnected before the response was sent. Such a request produces no `error`
+line at all:
+
+- `Res :: (client aborted) <method> <url> 499 <n>ms (<k> backend(s) cancelled)`
+  and the `Access ::` line with `status` 499, both at `info`, when the client
+  disconnects;
+- `(after client abort) …` at `warn` for every error the cancellation raises on
+  the way out (`57014 query_canceled`), including the one the controller logs
+  itself;
+- `Dropped 500 ("Server Error") response (query cancelled after client abort)`
+  at `warn`, where a request still being listened to would have logged
+  `Sending 500`
+  ([#1919](https://github.com/GrottoCenter/grottocenter-api/issues/1919)): the
+  500 carries the `57014` error itself, or the controller answered with its own
+  message after the pool guard cancelled or refused one of the request's
+  queries. The 500 is written to a closed socket and never leaves the process.
+
+A 500 caused by anything other than the cancellation keeps its `Sending 500`
+line at `error` level, client gone or not: an error without `57014` in its
+cause chain, or a controller message when no query of the request was
+cancelled. Writes (`POST`, `PUT`, `PATCH`, `DELETE`) are never cancelled: an
+aborted write that fails is a real `Sending 500`.
+
 ## Legacy lines
 
 `requestLogger` still writes the two lines below while consumers migrate to

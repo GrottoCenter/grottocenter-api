@@ -30,7 +30,9 @@
  * request's release, in that request's context. Only contexts that carry a
  * `pgLeases` Set are tracked; background jobs never are. Once a request is
  * aborted, it gets no connection any more, including one it was already
- * queued for when its client went away.
+ * queued for when its client went away. A cancellation the request does get,
+ * from the driver or as a refused connection, is recorded on its context
+ * (`queryCancelled`): the 500 it then ends with is no server error (#1919).
  *
  * That attribution needs every pg callback to run in its caller's context.
  * Node runs a socket's callbacks in the context the socket was opened in, so
@@ -59,11 +61,21 @@ if (!global.grottoAbortedPgRequests) {
 }
 const abortedRequests = global.grottoAbortedPgRequests;
 
+const QUERY_CANCELED = '57014';
+
 // Fails the acquisition like the cancelled query it would have run.
 const abortedError = () =>
   Object.assign(new Error('canceling statement: client aborted the request'), {
-    code: '57014',
+    code: QUERY_CANCELED,
   });
+
+// Records on the request's context that one of its queries was cancelled, or
+// refused, because its client went away. `api/responses/serverError.js` reads
+// it (#1919).
+const recordCancellation = (store) => {
+  // eslint-disable-next-line no-param-reassign
+  store.queryCancelled = true;
+};
 
 const guardPgPool = (pool, log) => {
   if (guardedPools.has(pool)) return;
@@ -90,8 +102,21 @@ const guardPgPool = (pool, log) => {
     client.query = (...args) => {
       const last = args.length - 1;
       if (typeof args[last] === 'function') {
+        const callback = args[last];
+        const store = getStore();
         // eslint-disable-next-line no-param-reassign
-        args[last] = AsyncResource.bind(args[last]);
+        args[last] = AsyncResource.bind((err, ...rest) => {
+          // The driver's answer to the cancel sent on abort.
+          if (
+            err &&
+            err.code === QUERY_CANCELED &&
+            store?.pgLeases &&
+            abortedRequests.has(store.pgLeases)
+          ) {
+            recordCancellation(store);
+          }
+          return callback(err, ...rest);
+        });
       }
       return query(...args);
     };
@@ -127,10 +152,12 @@ const guardPgPool = (pool, log) => {
     // pg-pool may hand a released connection to a waiter from the releasing
     // request's context.
     const cb = callback && AsyncResource.bind(callback);
-    const leases = getStore()?.pgLeases;
+    const store = getStore();
+    const leases = store?.pgLeases;
     if (!leases) return connect(cb);
 
     if (abortedRequests.has(leases)) {
+      recordCancellation(store);
       if (cb) return process.nextTick(cb, abortedError());
       return Promise.reject(abortedError());
     }
@@ -140,6 +167,7 @@ const guardPgPool = (pool, log) => {
     const track = (client) => {
       if (abortedRequests.has(leases)) {
         client.release();
+        recordCancellation(store);
         return false;
       }
       leaseOwner.set(client, leases);
