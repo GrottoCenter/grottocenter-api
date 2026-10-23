@@ -8388,6 +8388,7 @@ paths:
         Marks multiple notifications as read for the authenticated user.
         If `ids` is provided and non-empty, only those specific notifications are marked as read.
         If `ids` is omitted or empty, all unread notifications for the authenticated user are marked as read.
+        Any other value of `ids` (a number, a string, null, an object) is rejected with a 400.
         Already-read notifications in the list are silently skipped (idempotent).
       security:
         - bearerAuth: []
@@ -8412,7 +8413,7 @@ paths:
         '204':
           description: Notifications successfully marked as read.
         '400':
-          description: Invalid request body (ids must be an array of positive integers).
+          description: Invalid request body (ids, when present, must be an array of positive integers).
         '401':
           description: Bearer token not found or invalid.
         '403':
