@@ -391,6 +391,75 @@ describe('Converters Service', () => {
     });
   });
 
+  describe('toParentDocument()', () => {
+    // A parent as DocumentService.getParentDocument() returns it: the
+    // identifierType id is a blank-padded bpchar(5).
+    const parent = {
+      id: 456,
+      type: { id: 17, name: 'Issue' },
+      descriptions: [{ title: 'Scialet n°1', body: 'Issue body' }],
+      identifier: 'https://example.org/scialet01.pdf',
+      identifierType: { id: 'url  ', text: 'uniform resource locator' },
+    };
+
+    it('should expose the identifier and the trimmed identifier type', () => {
+      const result = converters.toParentDocument(parent);
+      should(result.identifier).equal('https://example.org/scialet01.pdf');
+      should(result.identifierType).equal('url');
+    });
+
+    it('should keep a non-URL identifier type', () => {
+      const result = converters.toParentDocument({
+        ...parent,
+        identifier: '1234-5678',
+        identifierType: { id: 'issn ' },
+      });
+      should(result.identifier).equal('1234-5678');
+      should(result.identifierType).equal('issn');
+    });
+
+    it('should leave both fields undefined for a parent without identifier', () => {
+      const result = converters.toParentDocument({
+        ...parent,
+        identifier: null,
+        identifierType: null,
+      });
+      should(result).have.property('identifier', undefined);
+      should(result).have.property('identifierType', undefined);
+    });
+
+    it('should keep the simple document fields', () => {
+      const result = converters.toParentDocument(parent);
+      should(result).containEql({
+        id: 456,
+        type: 'Issue',
+        title: 'Scialet n°1',
+        description: 'Issue body',
+      });
+    });
+  });
+
+  describe('toDocument() parent', () => {
+    it("should expose the parent's identifier without inheriting it", () => {
+      const result = converters.toDocument({
+        id: 123,
+        identifier: null,
+        identifierType: null,
+        parent: {
+          id: 456,
+          identifier: 'https://example.org/scialet01.pdf',
+          identifierType: { id: 'url  ' },
+        },
+      });
+      should(result.identifier).be.undefined();
+      should(result.identifierType).be.undefined();
+      should(result.parent.identifier).equal(
+        'https://example.org/scialet01.pdf'
+      );
+      should(result.parent.identifierType).equal('url');
+    });
+  });
+
   describe('toEntrance()', () => {
     it('should hide coordinates for sensitive entrances without rights', () => {
       const source = {

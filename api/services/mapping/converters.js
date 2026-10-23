@@ -250,6 +250,16 @@ const c = {
     return { ...simpleDocument, hasFiles: (source.files?.length ?? 0) > 0 };
   },
 
+  // The parent embedded in a document's details: a simple document plus its
+  // own identifier, so a client can fall back on the parent's PDF URL. Only for
+  // sources coming from DocumentService.getParentDocument(), whose
+  // identifierType is populated.
+  toParentDocument: (source) => ({
+    ...c.toSimpleDocument(source),
+    identifier: source.identifier ?? undefined,
+    identifierType: source.identifierType?.id?.trim(),
+  }),
+
   // An ancestor in a citation's parent chain, kept far lighter than a document:
   // a reference only needs what identifies the parent publication.
   //
@@ -352,7 +362,7 @@ const c = {
           []),
         ...(source.isoRegions?.map((e) => ({ iso: e.id, name: e.name })) ?? []),
       ],
-      parent: convertIfObject(source.parent, c.toSimpleDocument),
+      parent: convertIfObject(source.parent, c.toParentDocument),
       files: toList('files', source, c.toFile),
       authorizationDocument: convertIfObject(
         source.authorizationDocument,

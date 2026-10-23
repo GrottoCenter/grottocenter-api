@@ -73,6 +73,14 @@ const getDocumentLanguages = (body) => {
   return lang ? [lang] : [];
 };
 
+// The query behind getDocuments(): the descriptions (for the title), the type
+// and the validated files. Returned unawaited so callers can extend it.
+const findSimpleDocuments = (documentIds) =>
+  TDocument.find({ id: documentIds })
+    .populate('descriptions')
+    .populate('type')
+    .populate('files', { where: { isValidated: true } });
+
 // The parent chain is at most Article → Issue → Collection (see
 // TYPES_ALLOWING_PARENT), so two hops reach the top. An ISO 690 article
 // reference needs both levels: the Issue carries the number and the
@@ -304,7 +312,13 @@ module.exports = {
       doc[key] = (await module.exports.getDocuments([doc[key]]))[0];
     }
 
-    if (document.parent) asyncQueue.push(resolveDocument(document, 'parent'));
+    if (document.parent)
+      asyncQueue.push(
+        module.exports.getParentDocument(document.parent).then((parent) => {
+          // eslint-disable-next-line no-param-reassign
+          document.parent = parent;
+        })
+      );
     if (document.authorizationDocument)
       asyncQueue.push(resolveDocument(document, 'authorizationDocument'));
 
@@ -544,9 +558,7 @@ module.exports = {
       ? await TEntrance.find({ id: toIds(entrances) })
       : [];
     doc.massifs = massifs ? await TMassif.find({ id: toIds(massifs) }) : [];
-    doc.parent = parent
-      ? (await module.exports.getDocuments([parent]))[0]
-      : null;
+    doc.parent = parent ? await module.exports.getParentDocument(parent) : null;
     doc.authorizationDocument = authorizationDocument
       ? await TDocument.findOne(authorizationDocument)
       : null;
@@ -561,11 +573,21 @@ module.exports = {
    */
   getDocuments: async (documentIds) => {
     if (documentIds.length === 0) return [];
-    return TDocument.find({ id: documentIds })
-      .populate('descriptions')
-      .populate('type')
-      .populate('files', { where: { isValidated: true } });
+    return findSimpleDocuments(documentIds);
   },
+
+  /**
+   * Like getDocuments(), for the parent embedded in a document's details:
+   * also populates the identifierType, so the parent's identifier (often the
+   * URL of an Issue's PDF) can be exposed by the toParentDocument converter.
+   * Kept apart from getDocuments(): createDocument() downloads the identifier
+   * when getDocuments() returns a populated `url` type, a download that has
+   * stayed disabled since getDocuments() stopped populating it.
+   * @param {Number} parentId
+   * @returns {Promise<TDocument|undefined>}
+   */
+  getParentDocument: async (parentId) =>
+    (await findSimpleDocuments([parentId]).populate('identifierType'))[0],
 
   /**
    * Like getDocuments(), but also populates the citation fields
