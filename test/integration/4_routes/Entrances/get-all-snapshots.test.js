@@ -1,3 +1,4 @@
+require('should');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
 
@@ -33,6 +34,14 @@ describe('Entrance get-all-snapshots', () => {
 
       // Clean up
       await TEntrance.destroy({ id: entrance.id });
+    });
+
+    it('should return 404 for an unknown entrance', async () => {
+      await supertest(sails.hooks.http.app)
+        .get('/api/v1/entrances/999999/all-snapshots')
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404);
     });
 
     it('should return 200 with snapshots for entrance with history', async () => {

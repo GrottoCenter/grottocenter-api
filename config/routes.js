@@ -193,19 +193,10 @@ module.exports.routes = {
     'v1/partner/find-for-carousel',
 
   // Comment
-  'GET /api/v1/comments/stats/:entranceId': 'v1/comment/get-entrance-stats',
-  'GET /api/v1/comments/timeinfos/:entranceId':
-    'v1/comment/get-entrance-time-infos',
   'POST /api/v1/comments': 'v1/comment/create',
   'PATCH /api/v1/comments/:id': 'v1/comment/update',
   'DELETE /api/v1/comments/:id': 'v1/comment/delete',
   'POST /api/v1/comments/:id/restore': 'v1/comment/restore',
-
-  /**
-   * @deprecated use /v1 routes above instead
-   */
-  'GET /api/comments/stats/:entry': 'v1/comment/get-entrance-stats',
-  'GET /api/comments/timeinfos/:entry': 'v1/comment/get-entrance-time-infos',
 
   // Country
   'GET /api/v1/countries/:id': 'v1/country/find',

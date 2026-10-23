@@ -56,6 +56,37 @@ describe('Caver features', () => {
         });
     });
 
+    it('should return 404 for a non-numeric caver id', async () => {
+      const adminToken = await AuthTokenService.getRawBearerAdminToken();
+      await supertest(sails.hooks.http.app)
+        .post('/api/v1/cavers/abc/groups')
+        .send({ groups: [{ id: testGroupId }] })
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(404);
+    });
+
+    [
+      ['missing', {}],
+      ['a string', { groups: 'x' }],
+      ['an object', { groups: { id: testGroupId } }],
+      ['an array without ids', { groups: [{}] }],
+      ['an array with a non-integer id', { groups: [{ id: 'abc' }] }],
+      ['an array of null', { groups: [null] }],
+    ].forEach(([label, body]) => {
+      it(`should return 400 when groups is ${label}`, async () => {
+        const adminToken = await AuthTokenService.getRawBearerAdminToken();
+        await supertest(sails.hooks.http.app)
+          .post(`/api/v1/cavers/${testCaverId}/groups`)
+          .send(body)
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+      });
+    });
+
     it('should set groups successfully', async () => {
       const adminToken = await AuthTokenService.getRawBearerAdminToken();
       await supertest(sails.hooks.http.app)

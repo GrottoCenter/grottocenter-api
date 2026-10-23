@@ -911,29 +911,50 @@ paths:
       tags:
         - cavers
         - groups
-      description: Set caver groups.
+      description: Set caver groups (administrators only). Replaces all the caver's groups.
+      security:
+        - bearerAuth: []
       parameters:
         - name: caverId
           in: path
           description: Caver id whose groups you want to define.
           required: true
           schema:
-            type: string
-        - name: groups
-          in: query
-          description: Group ids to set for the caver.
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - groups
+              properties:
+                groups:
+                  type: array
+                  description: Groups to set for the caver. An empty array removes all groups.
+                  items:
+                    type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+                        minimum: 1
+                  example: [{ id: 1 }, { id: 2 }]
       responses:
         '200':
           description: Successful operation
         '400':
-          description: Bad request, could not find caver with the caver id you provided or could not find one or multiple groups with group ids you provided.
+          description: >-
+            Bad request: groups is missing or is not an array of objects with an integer id,
+            no caver has the given id, or one or more groups do not exist.
+        '401':
+          description: Bearer token not found or invalid.
         '403':
           description: You are not authorized to set caver groups.
+        '404':
+          description: The caver id is not a positive integer.
 
   '/cavers/{caverId}/groups/{groupId}':
     put:
@@ -3098,7 +3119,7 @@ paths:
             type: string
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -3106,7 +3127,7 @@ paths:
         '204':
           description: Successfully unsubscribed from region
         '400':
-          description: You are not subscribed to this region
+          description: userId is not a positive integer, or you are not subscribed to this region
         '403':
           description: You are not authorized to unsubscribe from a region
         '404':
@@ -6551,7 +6572,7 @@ paths:
             type: integer
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -6559,7 +6580,7 @@ paths:
         '204':
           description: Successfully unsubscribed from massif
         '400':
-          description: You are not subscribed to this massif
+          description: userId is not a positive integer, or you are not subscribed to this massif
         '403':
           description: You are not authorized to unsubscribe from a massif
         '404':
@@ -7270,7 +7291,7 @@ paths:
             example: FR
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -7278,7 +7299,7 @@ paths:
         '204':
           description: Successfully unsubscribed from country
         '400':
-          description: You are not subscribed to this country
+          description: userId is not a positive integer, or you are not subscribed to this country
         '403':
           description: You are not authorized to unsubscribe from a country
         '404':
@@ -8388,6 +8409,7 @@ paths:
         Marks multiple notifications as read for the authenticated user.
         If `ids` is provided and non-empty, only those specific notifications are marked as read.
         If `ids` is omitted or empty, all unread notifications for the authenticated user are marked as read.
+        Any other value of `ids` (a number, a string, null, an object) is rejected with a 400.
         Already-read notifications in the list are silently skipped (idempotent).
       security:
         - bearerAuth: []
@@ -8412,7 +8434,7 @@ paths:
         '204':
           description: Notifications successfully marked as read.
         '400':
-          description: Invalid request body (ids must be an array of positive integers).
+          description: Invalid request body (ids, when present, must be an array of positive integers).
         '401':
           description: Bearer token not found or invalid.
         '403':

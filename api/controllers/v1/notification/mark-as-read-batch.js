@@ -1,7 +1,11 @@
 const MAX_IDS = 1000;
 
 module.exports = async (req, res) => {
-  const rawIds = req.body && Array.isArray(req.body.ids) ? req.body.ids : [];
+  // A present but malformed ids must not fall back to "mark all"
+  if (req.body?.ids !== undefined && !Array.isArray(req.body.ids)) {
+    return res.badRequest('ids must be an array of positive integers.');
+  }
+  const rawIds = req.body?.ids ?? [];
 
   if (rawIds.length > 0) {
     // Validate that all provided IDs are positive integers

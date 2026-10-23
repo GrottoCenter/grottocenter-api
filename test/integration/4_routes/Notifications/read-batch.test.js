@@ -127,6 +127,23 @@ describe('Notifications batch mark-as-read', () => {
         .expect(400, done);
     });
 
+    [5, '1,2', null, { 0: 1 }].forEach((ids) => {
+      it(`should return 400 and mark nothing when ids is ${JSON.stringify(ids)}`, async () => {
+        await supertest(sails.hooks.http.app)
+          .put('/api/v1/notifications/read')
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .send({ ids })
+          .expect(400);
+
+        const n1 = await TNotification.findOne(1);
+        const n2 = await TNotification.findOne(2);
+        should(n1.dateReadAt).be.null();
+        should(n2.dateReadAt).be.null();
+      });
+    });
+
     it('should return 400 when ids array exceeds maximum length', (done) => {
       const tooManyIds = Array.from({ length: 1001 }, (_, i) => i + 1);
       supertest(sails.hooks.http.app)

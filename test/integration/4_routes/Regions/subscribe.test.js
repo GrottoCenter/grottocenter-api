@@ -139,5 +139,40 @@ describe('Region features', () => {
             });
         });
     });
+
+    it('should allow a leader to unsubscribe themself with an explicit userId', async () => {
+      await supertest(sails.hooks.http.app)
+        .post(`/api/v1/countries/${countryId}/regions/${regionId}/subscribe`)
+        .set('Authorization', leaderToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      // Leader has id = 7
+      await supertest(sails.hooks.http.app)
+        .post(
+          `/api/v1/countries/${countryId}/regions/${regionId}/unsubscribe?userId=7`
+        )
+        .set('Authorization', leaderToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      const updatedCaver = await TCaver.findOne(7).populate(
+        'subscribedToRegions'
+      );
+      should(updatedCaver.subscribedToRegions).have.length(0);
+    });
+
+    it('should return 400 for a non-integer userId', async () => {
+      await supertest(sails.hooks.http.app)
+        .post(
+          `/api/v1/countries/${countryId}/regions/${regionId}/unsubscribe?userId=abc`
+        )
+        .set('Authorization', adminToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
   });
 });
