@@ -7079,7 +7079,10 @@ paths:
     get:
       tags:
         - organizations
-      description: Get the number of organizations.
+      description: >-
+        Get the number of non-deleted organizations whose type is SPELEOLOGY
+        or CAVE_RESCUE. Organizations of any other type, or whose type is not
+        set, are not counted.
       responses:
         '200':
           description: Successful operation
