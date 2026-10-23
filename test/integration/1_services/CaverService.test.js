@@ -121,29 +121,24 @@ describe('CaverService', () => {
   });
 
   describe('isARealCaver()', () => {
-    it('should return true with the id of an author', async () => {
-      const res = await CaverService.isARealCaver('Caver@test.com');
-      should(res).equal(true);
+    it('should return true for a regular email', () => {
+      should(CaverService.isARealCaver('Caver@test.com')).equal(true);
     });
 
-    it('should return false with the id of a non-author', async () => {
-      const res = await CaverService.isARealCaver('author@MAIL.no');
-      should(res).equal(false);
+    it('should return false for a placeholder @mail.no email', () => {
+      should(CaverService.isARealCaver('author@MAIL.no')).equal(false);
     });
 
-    it('should return null when email is null', async () => {
-      const res = await CaverService.isARealCaver(null);
-      should(res).be.null();
+    it('should return false when email is null', () => {
+      should(CaverService.isARealCaver(null)).equal(false);
     });
 
-    it('should return undefined when email is undefined', async () => {
-      const res = await CaverService.isARealCaver(undefined);
-      should(res).be.undefined();
+    it('should return false when email is undefined', () => {
+      should(CaverService.isARealCaver(undefined)).equal(false);
     });
 
-    it('should return empty string when email is empty string', async () => {
-      const res = await CaverService.isARealCaver('');
-      should(res).equal('');
+    it('should return false when email is empty string', () => {
+      should(CaverService.isARealCaver('')).equal(false);
     });
   });
 
