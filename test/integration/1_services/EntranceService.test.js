@@ -126,13 +126,13 @@ describe('EntranceService', () => {
   });
 
   describe('getHEntrancesWithName()', () => {
-    it('should return empty object when entrance does not exist', async () => {
+    it('should return an empty array when entrance does not exist', async () => {
       const result = await EntranceService.getHEntrancesWithName(
         99999,
         [],
         userReq.token
       );
-      should(result).eql({});
+      should(result).eql([]);
     });
 
     it('should hide sensitive data for non-admin users', async () => {

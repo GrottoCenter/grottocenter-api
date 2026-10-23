@@ -144,8 +144,8 @@ module.exports = {
       select: ['isSensitive', 'cave'],
     });
     // Check if the entrance exist
-    if (Object.keys(tEntranceRecords).length === 0) {
-      return {};
+    if (tEntranceRecords.length === 0) {
+      return [];
     }
     const isEntranceSensitive = tEntranceRecords[0]
       ? tEntranceRecords[0].isSensitive
