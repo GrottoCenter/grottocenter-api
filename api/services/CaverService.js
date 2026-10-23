@@ -2,8 +2,8 @@ const CommonService = require('./CommonService');
 const NameService = require('./NameService');
 
 module.exports = {
-  isARealCaver: async (email) =>
-    email && !email.toLowerCase().endsWith('@mail.no'),
+  isARealCaver: (email) =>
+    Boolean(email) && !email.toLowerCase().endsWith('@mail.no'),
 
   /**
    * Count the "real" users (@see REAL_USERS_QUERY)
@@ -79,9 +79,7 @@ module.exports = {
     delete caver.activationCode;
     delete caver.password;
 
-    caver.type = (await module.exports.isARealCaver(caver.mail))
-      ? 'CAVER'
-      : 'AUTHOR';
+    caver.type = module.exports.isARealCaver(caver.mail) ? 'CAVER' : 'AUTHOR';
 
     // Required here rather than at the top of the file: DocumentService pulls in
     // utils/csvHelper, which requires this service back, so a top-level capture
