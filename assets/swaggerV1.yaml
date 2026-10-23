@@ -911,29 +911,50 @@ paths:
       tags:
         - cavers
         - groups
-      description: Set caver groups.
+      description: Set caver groups (administrators only). Replaces all the caver's groups.
+      security:
+        - bearerAuth: []
       parameters:
         - name: caverId
           in: path
           description: Caver id whose groups you want to define.
           required: true
           schema:
-            type: string
-        - name: groups
-          in: query
-          description: Group ids to set for the caver.
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - groups
+              properties:
+                groups:
+                  type: array
+                  description: Groups to set for the caver. An empty array removes all groups.
+                  items:
+                    type: object
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: integer
+                        minimum: 1
+                  example: [{ id: 1 }, { id: 2 }]
       responses:
         '200':
           description: Successful operation
         '400':
-          description: Bad request, could not find caver with the caver id you provided or could not find one or multiple groups with group ids you provided.
+          description: >-
+            Bad request: groups is missing or is not an array of objects with an integer id,
+            no caver has the given id, or one or more groups do not exist.
+        '401':
+          description: Bearer token not found or invalid.
         '403':
           description: You are not authorized to set caver groups.
+        '404':
+          description: The caver id is not a positive integer.
 
   '/cavers/{caverId}/groups/{groupId}':
     put:

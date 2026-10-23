@@ -78,7 +78,7 @@ module.exports.policies = {
   'v1/caver/ban': 'tokenAuth',
   'v1/caver/unban': 'tokenAuth',
   'v1/caver/remove-from-group': 'tokenAuth',
-  'v1/caver/set-groups': 'tokenAuth',
+  'v1/caver/set-groups': ['tokenAuth', 'validateId'],
   'v1/caver/add-to-organization': 'tokenAuth',
   'v1/caver/remove-from-organization': 'tokenAuth',
   'v1/caver/update': 'tokenAuth',

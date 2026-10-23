@@ -1,5 +1,6 @@
 const ControllerService = require('../../../services/ControllerService');
 const RightService = require('../../../services/RightService');
+const isValidId = require('../../../utils/isValidId');
 
 module.exports = async (req, res) => {
   const hasRight = RightService.hasGroup(
@@ -10,13 +11,23 @@ module.exports = async (req, res) => {
     return res.forbidden('You are not authorized to set caver groups.');
   }
 
+  const groupsParam = req.param('groups');
+  if (
+    !Array.isArray(groupsParam) ||
+    !groupsParam.every((g) => isValidId(g?.id))
+  ) {
+    return res.badRequest(
+      'groups must be an array of objects with an integer id.'
+    );
+  }
+
   const caverId = req.param('caverId');
   const caver = await TCaver.findOne({ id: caverId });
   if (!caver) {
     return res.badRequest(`Could not find caver with id ${caverId}.`);
   }
 
-  const newGroupIds = req.param('groups').map((e) => e.id);
+  const newGroupIds = groupsParam.map((e) => e.id);
   const groups = await TGroup.find({ id: newGroupIds });
   if (newGroupIds.length !== groups.length) {
     return res.badRequest(`Could not find all given groups.`);
