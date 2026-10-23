@@ -9396,7 +9396,12 @@ components:
         pages:
           type: string
         parent:
-          $ref: '#/components/schemas/Document'
+          nullable: true
+          description: >
+            Parent publication (e.g. the Issue of an Article), with its own
+            identifier.
+          allOf:
+            - $ref: '#/components/schemas/ParentDocument'
         publication:
           type: string
         publicationFasciculeBBSOld:
@@ -9489,6 +9494,48 @@ components:
         hasFiles:
           type: boolean
           description: Whether the document has at least one validated file.
+        dateInscription:
+          type: string
+          nullable: true
+        dateReviewed:
+          type: string
+          nullable: true
+        datePublication:
+          type: string
+          nullable: true
+        isValidated:
+          type: boolean
+        isDeleted:
+          type: boolean
+    ParentDocument:
+      type: object
+      description: >
+        The parent embedded in a document's details. `identifier` and
+        `identifierType` are the parent's own values (e.g. the URL of an
+        Issue's PDF), never inherited by the child document; both are omitted
+        when the parent has no identifier. With `requireUpdate=true`, it is the
+        parent set by the pending update.
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          description: Name of the document type (e.g. Issue, Collection).
+        title:
+          type: string
+        description:
+          type: string
+        identifier:
+          type: string
+          description: The parent's identifier, e.g. a URL or an ISSN.
+        identifierType:
+          type: string
+          description: Identifier type code, e.g. "url", "issn", "isbn", "doi".
+        files:
+          type: array
+          description: The parent's validated files.
+          items:
+            $ref: '#/components/schemas/File'
         dateInscription:
           type: string
           nullable: true
