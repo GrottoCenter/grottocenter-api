@@ -1,5 +1,9 @@
 const supertest = require('supertest');
 const should = require('should');
+const {
+  ORGANIZATION_TYPES,
+  ORGANIZATION_TYPE_VALUES,
+} = require('../../../../config/constants/organization');
 
 const ORGANIZATION_PROPERTIES = [
   '@context',
@@ -127,19 +131,46 @@ describe('Organization features', () => {
   });
 
   describe('Count', () => {
-    it('should return code 200', (done) => {
-      supertest(sails.hooks.http.app)
+    const COUNTED_TYPES = [
+      ORGANIZATION_TYPES.SPELEOLOGY,
+      ORGANIZATION_TYPES.CAVE_RESCUE,
+    ];
+
+    const count = async () => {
+      const res = await supertest(sails.hooks.http.app)
         .get('/api/v1/organizations/count')
-        .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          res.body.should.have.property('count');
-          res.body.count.should.be.a.Number();
-          res.body.count.should.be.greaterThanOrEqual(3);
-          return done();
-        });
+        .expect(200);
+      should(res.body.count).be.a.Number();
+      return res.body.count;
+    };
+
+    it('should count only non-deleted speleology and cave rescue organizations', async () => {
+      const before = await count();
+      const created = await TGrotto.createEach([
+        ...ORGANIZATION_TYPE_VALUES.map((type) => ({ author: 1, type })),
+        { author: 1, type: null },
+        ...COUNTED_TYPES.map((type) => ({ author: 1, type, isDeleted: true })),
+      ]).fetch();
+      try {
+        should(await count()).equal(before + COUNTED_TYPES.length);
+      } finally {
+        await TGrotto.destroy({ id: created.map((o) => o.id) });
+      }
+    });
+
+    it('should return zero when no organization is counted', async () => {
+      const counted = await TGrotto.find({
+        where: { isDeleted: false, type: { in: COUNTED_TYPES } },
+        select: ['id'],
+      });
+      const ids = counted.map((o) => o.id);
+      await TGrotto.update({ id: ids }).set({ isDeleted: true });
+      try {
+        should(await count()).equal(0);
+      } finally {
+        await TGrotto.update({ id: ids }).set({ isDeleted: false });
+      }
     });
   });
 });
