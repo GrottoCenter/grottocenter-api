@@ -1,4 +1,5 @@
 const RightService = require('../../../services/RightService');
+const isValidId = require('../../../utils/isValidId');
 
 module.exports = async (req, res) => {
   const isAdmin = RightService.hasGroup(
@@ -16,7 +17,13 @@ module.exports = async (req, res) => {
     );
   }
 
-  const targetUserId = req.param('userId') || req.token.id;
+  // userId comes from the query string: compare it as a number with token.id
+  const rawUserId = req.param('userId');
+  const targetUserId =
+    rawUserId === undefined ? req.token.id : Number(rawUserId);
+  if (!isValidId(targetUserId)) {
+    return res.badRequest('userId must be a positive integer.');
+  }
 
   if (!isAdmin && targetUserId !== req.token.id) {
     return res.forbidden('You can only unsubscribe yourself.');

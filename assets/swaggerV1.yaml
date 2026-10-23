@@ -3098,7 +3098,7 @@ paths:
             type: string
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -3106,7 +3106,7 @@ paths:
         '204':
           description: Successfully unsubscribed from region
         '400':
-          description: You are not subscribed to this region
+          description: userId is not a positive integer, or you are not subscribed to this region
         '403':
           description: You are not authorized to unsubscribe from a region
         '404':
@@ -6551,7 +6551,7 @@ paths:
             type: integer
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -6559,7 +6559,7 @@ paths:
         '204':
           description: Successfully unsubscribed from massif
         '400':
-          description: You are not subscribed to this massif
+          description: userId is not a positive integer, or you are not subscribed to this massif
         '403':
           description: You are not authorized to unsubscribe from a massif
         '404':
@@ -7270,7 +7270,7 @@ paths:
             example: FR
         - name: userId
           in: query
-          description: User ID to unsubscribe (administrators only). If not provided, unsubscribes the authenticated user.
+          description: User ID to unsubscribe. Only administrators may pass another user's ID; a leader may pass their own. If not provided, unsubscribes the authenticated user.
           required: false
           schema:
             type: integer
@@ -7278,7 +7278,7 @@ paths:
         '204':
           description: Successfully unsubscribed from country
         '400':
-          description: You are not subscribed to this country
+          description: userId is not a positive integer, or you are not subscribed to this country
         '403':
           description: You are not authorized to unsubscribe from a country
         '404':
