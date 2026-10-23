@@ -41,6 +41,28 @@ describe('Organization features', () => {
         should(stored.type).equal('RESEARCH');
       });
 
+      // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+      it('should classify an untyped organization as OTHER', async () => {
+        // Organizations registered before types were introduced have none
+        await TGrotto.updateOne({ id: 2 }).set({ type: null });
+        const res = await putOrganization({ type: 'OTHER' }).expect(200);
+        should(res.body.type).equal('OTHER');
+        const stored = await TGrotto.findOne({ id: 2 });
+        should(stored.type).equal('OTHER');
+      });
+
+      it('should change a type to OTHER and OTHER to another type', async () => {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+        const toOther = await putOrganization({ type: 'OTHER' }).expect(200);
+        should(toOther.body.type).equal('OTHER');
+        const fromOther = await putOrganization({ type: 'RESEARCH' }).expect(
+          200
+        );
+        should(fromOther.body.type).equal('RESEARCH');
+        const stored = await TGrotto.findOne({ id: 2 });
+        should(stored.type).equal('RESEARCH');
+      });
+
       it('should leave the type as is when it is omitted', async () => {
         await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
         const res = await putOrganization({ city: 'Lyon' }).expect(200);

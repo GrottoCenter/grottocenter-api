@@ -733,6 +733,17 @@ describe('Converters Service', () => {
       });
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('should pass OTHER through unchanged', () => {
+      const result = converters.toManagingOrganization({
+        id: 5,
+        name: 'Amis du karst',
+        language: 'fra',
+        type: 'OTHER',
+      });
+      should(result.type).equal('OTHER');
+    });
+
     it('should null out missing name/language/type on an active organization', () => {
       const result = converters.toManagingOrganization({ id: 5 });
       should(result).eql({ id: 5, name: null, language: null, type: null });

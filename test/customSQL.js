@@ -971,6 +971,28 @@ const ORGANIZATION_TYPE_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after ORGANIZATION_TYPE_MIGRATION, whose CHECK constraint it extends
+const ORGANIZATION_TYPE_OTHER_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_26_2026_10_22_organization_type_other.sql'),
+    'utf8'
+  )
+);
+
+// Organization history, as production runs it: every t_grotto update copies
+// the old row into h_grotto. Waterline builds h_grotto with id alone as
+// primary key, so a second update of the same organization would collide:
+// only the tests that need the history attach the trigger, for one update per
+// organization (ATTACH/DETACH_GROTTO_HISTO_TRIGGER). The function itself is
+// installed by ORGANIZATION_TYPE_MIGRATION.
+const ATTACH_GROTTO_HISTO_TRIGGER = `
+DROP TRIGGER IF EXISTS histo_update_grotto ON t_grotto;
+CREATE TRIGGER histo_update_grotto BEFORE UPDATE ON t_grotto FOR EACH ROW EXECUTE PROCEDURE histo_update_grotto();
+`;
+
+const DETACH_GROTTO_HISTO_TRIGGER =
+  'DROP TRIGGER IF EXISTS histo_update_grotto ON t_grotto;';
+
 // Document history, as production runs it: every t_document update copies the
 // old row into h_document, keyed by (id, date_reviewed). Waterline builds
 // h_document with date_reviewed alone as primary key and without the issue
@@ -1022,4 +1044,7 @@ module.exports = {
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
   ORGANIZATION_TYPE_MIGRATION,
+  ORGANIZATION_TYPE_OTHER_MIGRATION,
+  ATTACH_GROTTO_HISTO_TRIGGER,
+  DETACH_GROTTO_HISTO_TRIGGER,
 };

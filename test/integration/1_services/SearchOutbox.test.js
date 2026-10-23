@@ -242,6 +242,35 @@ describe('searchOutbox', () => {
         ]);
       }
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('records the previous type of an organization reclassified as OTHER', async () => {
+      const organization = await TGrotto.create({
+        author: 1,
+        type: 'EDITION',
+      }).fetch();
+      await clearOutbox();
+      try {
+        await TGrotto.updateOne({ id: organization.id }).set({ type: 'OTHER' });
+
+        const rows = await readOutbox();
+        should(rows).eql([
+          {
+            kind: 'organization',
+            entityId: organization.id,
+            operation: 'U',
+            oldValues: { type: 'EDITION' },
+          },
+        ]);
+      } finally {
+        await CommonService.query('DELETE FROM t_grotto WHERE id = $1', [
+          organization.id,
+        ]);
+        await CommonService.query('DELETE FROM t_grotto WHERE id = $1', [
+          organization.id,
+        ]);
+      }
+    });
   });
 
   describe('expand()', () => {

@@ -278,6 +278,20 @@ describe('GeoLocService', () => {
         await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
       }
     });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1923
+    it('should leave an OTHER organization off the map', async () => {
+      await TGrotto.updateOne({ id: 2 }).set({ type: 'OTHER' });
+      try {
+        const grottos = await GeoLocService.getGrottosMap(
+          { lat: 48, lng: 2 },
+          { lat: 49, lng: 3 }
+        );
+        should(grottos.find((g) => g.id === 2)).be.undefined();
+      } finally {
+        await TGrotto.updateOne({ id: 2 }).set({ type: 'EDITION' });
+      }
+    });
   });
 
   describe('getNetworksMap()', () => {
