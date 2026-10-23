@@ -4637,7 +4637,7 @@ paths:
         '204':
           description: Successful operation
         '400':
-          description: You must provide an email in the body of your request.
+          description: You must provide a valid email in the body of your request. Placeholder author emails ending with `@mail.no` are rejected.
         '401':
           description: The account is not verified yet.
         '404':
@@ -4679,7 +4679,7 @@ paths:
         '401':
           description: |
             Authentication failed. Returns different statuses depending on the error:
-            - `Mismatch`: Invalid credentials or banned account (generic message to prevent information leakage)
+            - `Mismatch`: Invalid credentials, banned account, or placeholder author email ending with `@mail.no` (generic message to prevent information leakage)
             - `MustReset`: Password needs to be reset
             - `NotVerified`: Account email is not activated
             - `MfaEnrollmentRequired`: Administrator must enroll in MFA before accessing the system. Response includes a short-lived `enrollmentToken` (10-min TTL) for use with `/mfa/enroll` and `/mfa/verify` endpoints.
@@ -4854,7 +4854,7 @@ paths:
         '204':
           description: Successful sign up.
         '400':
-          description: Bad request (password too short, missing value(s)...).
+          description: Bad request (password too short, missing value(s), placeholder author email ending with `@mail.no`...).
         '409':
           description: Email or nickname is already used. The response intentionally does not specify which field caused the conflict to prevent account enumeration.
 
