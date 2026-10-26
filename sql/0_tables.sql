@@ -743,6 +743,7 @@ CREATE TABLE t_document (
 	validation_comment varchar(300) NULL,
 	pages varchar(100) NULL,
 	identifier varchar(250) NULL,
+	identifier_pdf_page_offset int4 NULL,
 	issue varchar(100) NULL,
 	id_identifier_type bpchar(5) NULL,
 	ref_bbs bpchar(10) NULL,
@@ -836,6 +837,7 @@ CREATE TABLE t_file (
 	id_document int4 NOT NULL,
 	path varchar(1000) NULL,
 	is_validated bool NOT NULL DEFAULT false,
+	pdf_page_offset int4 NULL,
 	CONSTRAINT t_file_pk PRIMARY KEY (id),
 	CONSTRAINT t_file_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT t_file_t_file_format_fk FOREIGN KEY (id_file_format) REFERENCES t_file_format(id)
@@ -964,6 +966,7 @@ CREATE TABLE h_document (
 	validation_comment varchar(300) NULL,
 	pages varchar(100) NULL,
 	identifier varchar(250) NULL,
+	identifier_pdf_page_offset int4 NULL,
 	issue varchar(100) NULL,
 	id_identifier_type bpchar(5) NULL,
 	ref_bbs bpchar(10) NULL,
