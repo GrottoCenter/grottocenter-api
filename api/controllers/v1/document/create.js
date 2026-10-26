@@ -36,8 +36,22 @@ module.exports = async (req, res) => {
     );
   }
 
+  // PDF page offsets are checked before anything is written (#1936)
+  const identifierOffset = DocumentService.resolveIdentifierPdfPageOffset(
+    req.body.identifierPdfPageOffset,
+    documentData
+  );
+  if (identifierOffset.error) return res.badRequest(identifierOffset.error);
+  const uploadedFiles = req.files?.files ?? [];
+  const newFileOffsets = await DocumentService.readNewFileOffsets(
+    req.body.newFilesMetadata,
+    uploadedFiles
+  );
+  if (newFileOffsets.error) return res.badRequest(newFileOffsets.error);
+
   const cleanedData = {
     ...documentData,
+    identifierPdfPageOffset: identifierOffset.value,
     author: req.token.id,
     dateInscription: new Date(),
   };
@@ -48,12 +62,18 @@ module.exports = async (req, res) => {
     descriptionData
   );
   const errorFiles = [];
-  if (req.files && req.files.files) {
-    const { files } = req.files;
+  if (uploadedFiles.length > 0) {
     try {
       await Promise.all(
-        files.map(async (file) => {
-          await FileService.document.create(file, createdDocument.id);
+        uploadedFiles.map(async (file, index) => {
+          await FileService.document.create(
+            file,
+            createdDocument.id,
+            false,
+            true,
+            null,
+            newFileOffsets.offsets[index]
+          );
         })
       );
     } catch (err) {

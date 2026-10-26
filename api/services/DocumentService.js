@@ -13,6 +13,7 @@ const {
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
 const isValidId = require('../utils/isValidId');
+const parsePdfPageOffset = require('../utils/parsePdfPageOffset');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -38,6 +39,43 @@ const normalizeMemberKey = (member) => String(member).trim();
 const getCollectionTargetModel = (field) => {
   const target = TDocument.attributes[field]?.collection;
   return target ? sails.models[String(target).toLowerCase()] : undefined;
+};
+
+const PDF_MIME_TYPE = 'application/pdf';
+
+// t_identifier_type.id is a blank-padded bpchar(5).
+const trimToNull = (value) =>
+  value == null ? null : String(value).trim() || null;
+
+const invalidOffsetMessage = (field) =>
+  `${field} must be an integer between -${parsePdfPageOffset.MAX} and ${parsePdfPageOffset.MAX}, or empty to clear it.`;
+
+// A multipart body turns `files[0][id]` into an array, but a JSON client may
+// send an object keyed by index: accept both, keeping the indexes.
+const toIndexedEntries = (value) => {
+  // Array.from visits the holes of a sparse multipart list, which map skips.
+  if (Array.isArray(value))
+    return Array.from(value, (entry, index) => [index, entry]);
+  if (value !== null && typeof value === 'object')
+    return Object.entries(value).map(([key, entry]) => [
+      /^\d+$/.test(key) ? Number(key) : NaN,
+      entry,
+    ]);
+  return null;
+};
+
+// Multipart bodies carry ids as strings.
+const parseFileId = (id) => {
+  const n = typeof id === 'string' && /^\d+$/.test(id) ? Number(id) : id;
+  return isValidId(n) ? n : null;
+};
+
+const isPdfFileName = async (fileName) => {
+  const lastDot = fileName?.lastIndexOf('.') ?? -1;
+  if (lastDot <= 0) return false;
+  const extension = fileName.slice(lastDot + 1).toLowerCase();
+  const format = await TFileFormat.findOne({ extension });
+  return format?.mimeType?.trim() === PDF_MIME_TYPE;
 };
 
 // Authorship is a many-to-many relation, which Waterline's count() cannot
@@ -141,6 +179,170 @@ module.exports = {
       id: e.id,
       fileName: e.fileName,
     })),
+
+  /**
+   * Identifier PDF page offset to write for a document create or update
+   * (#1936). The offset only applies to a URL identifier. When the update
+   * changes the identifier or its type without sending an offset, the offset
+   * configured for the previous PDF is cleared.
+   * @param {*} rawOffset identifierPdfPageOffset as sent by the client
+   * @param {Object} documentData from getConvertedDataFromClient()
+   * @param {Object|null} currentDocument the stored row, null on creation
+   * @returns {{ value: number|null|undefined } | { error: string }} value is
+   *   undefined when the stored offset must be left unchanged
+   */
+  resolveIdentifierPdfPageOffset(
+    rawOffset,
+    documentData,
+    currentDocument = null
+  ) {
+    const offset = parsePdfPageOffset(rawOffset);
+    if (offset === parsePdfPageOffset.INVALID)
+      return { error: invalidOffsetMessage('identifierPdfPageOffset') };
+
+    const sentIdentifier = documentData.identifier !== undefined;
+    const sentType = documentData.identifierType !== undefined;
+    const identifier = trimToNull(
+      sentIdentifier ? documentData.identifier : currentDocument?.identifier
+    );
+    const identifierType = trimToNull(
+      sentType ? documentData.identifierType : currentDocument?.identifierType
+    );
+
+    if (offset !== null && offset !== undefined) {
+      if (identifierType !== 'url' || !identifier)
+        return {
+          error:
+            'identifierPdfPageOffset is only allowed for a document whose identifier is a PDF URL (identifierType "url").',
+        };
+      return { value: offset };
+    }
+    if (offset === null || !currentDocument) return { value: offset };
+
+    const identifierChanged =
+      (sentIdentifier &&
+        identifier !== trimToNull(currentDocument.identifier)) ||
+      (sentType &&
+        identifierType !== trimToNull(currentDocument.identifierType));
+    return { value: identifierChanged ? null : undefined };
+  },
+
+  /**
+   * PDF page offsets of the files uploaded with a create or update (#1936).
+   * newFilesMetadata[i] describes the i-th binary of the multipart `files`
+   * collection, so the offsets are returned in that order, whatever order the
+   * uploads complete in.
+   * @param {*} rawMetadata newFilesMetadata as sent by the client
+   * @param {Object[]} files multer files of the request
+   * @returns {Promise<{ offsets: (number|null)[] } | { error: string }>}
+   */
+  async readNewFileOffsets(rawMetadata, files = []) {
+    const offsets = files.map(() => null);
+    if (rawMetadata === undefined) return { offsets };
+    const entries = toIndexedEntries(rawMetadata);
+    if (!entries)
+      return { error: 'newFilesMetadata must be a list of objects.' };
+
+    for (const [index, metadata] of entries) {
+      // A hole in a sparse multipart list: no metadata for that file.
+      // eslint-disable-next-line no-continue
+      if (metadata == null) continue;
+      if (!Number.isInteger(index) || index >= files.length)
+        return {
+          error: `newFilesMetadata[${index}] does not match an uploaded file: ${files.length} file(s) were sent.`,
+        };
+      if (typeof metadata !== 'object')
+        return { error: `newFilesMetadata[${index}] must be an object.` };
+
+      const field = `newFilesMetadata[${index}][pdfPageOffset]`;
+      const offset = parsePdfPageOffset(metadata.pdfPageOffset);
+      if (offset === parsePdfPageOffset.INVALID)
+        return { error: invalidOffsetMessage(field) };
+      if (offset !== null && offset !== undefined) {
+        // eslint-disable-next-line no-await-in-loop
+        if (!(await isPdfFileName(files[index].originalname)))
+          return {
+            error: `${field} is only allowed for a PDF file, not for "${files[index].originalname}".`,
+          };
+        offsets[index] = offset;
+      }
+    }
+    return { offsets };
+  },
+
+  /**
+   * Files modified and deleted by a document update, checked against the
+   * files of that document. A modified file keeps its pdfPageOffset only when
+   * the client sent one (null clears it), so an omitted offset is left
+   * unchanged when the modification is applied (#1936).
+   * @param {Number} documentId
+   * @param {*} rawModified modifiedFiles as sent by the client
+   * @param {*} rawDeleted deletedFiles as sent by the client
+   * @returns {Promise<{ modifiedFiles: Object[], deletedFiles: Object[] } | { error: string }>}
+   */
+  async readChangedFiles(documentId, rawModified = [], rawDeleted = []) {
+    const read = (raw, field) => {
+      const entries = toIndexedEntries(raw);
+      if (!entries) return { error: `${field} must be a list of files.` };
+      const changed = [];
+      for (const [index, entry] of entries) {
+        const id = parseFileId(entry?.id);
+        if (!id) return { error: `${field}[${index}][id] must be a file id.` };
+        const [file] = module.exports.getChangedFileFromClient([
+          { ...entry, id },
+        ]);
+        if (field === 'modifiedFiles') {
+          const offset = parsePdfPageOffset(entry.pdfPageOffset);
+          if (offset === parsePdfPageOffset.INVALID)
+            return {
+              error: invalidOffsetMessage(`${field}[${index}][pdfPageOffset]`),
+            };
+          if (offset !== undefined) file.pdfPageOffset = offset;
+        }
+        changed.push({ index, file });
+      }
+      return { changed };
+    };
+
+    const modified = read(rawModified, 'modifiedFiles');
+    if (modified.error) return modified;
+    const deleted = read(rawDeleted, 'deletedFiles');
+    if (deleted.error) return deleted;
+
+    const ids = [...modified.changed, ...deleted.changed].map((c) => c.file.id);
+    const storedFiles =
+      ids.length > 0
+        ? await TFile.find({ id: ids, document: documentId }).populate(
+            'fileFormat'
+          )
+        : [];
+    const storedById = new Map(storedFiles.map((f) => [f.id, f]));
+
+    for (const [field, { changed }] of [
+      ['modifiedFiles', modified],
+      ['deletedFiles', deleted],
+    ]) {
+      for (const { index, file } of changed) {
+        const stored = storedById.get(file.id);
+        if (!stored)
+          return {
+            error: `${field}[${index}]: file ${file.id} does not belong to this document.`,
+          };
+        if (
+          file.pdfPageOffset != null &&
+          stored.fileFormat?.mimeType?.trim() !== PDF_MIME_TYPE
+        )
+          return {
+            error: `${field}[${index}][pdfPageOffset] is only allowed for a PDF file, not for "${stored.fileName}".`,
+          };
+      }
+    }
+
+    return {
+      modifiedFiles: modified.changed.map((c) => c.file),
+      deletedFiles: deleted.changed.map((c) => c.file),
+    };
+  },
 
   // Extract everything from the request body except id and dateInscription
   // Used when creating or editing an existing document
