@@ -2,6 +2,10 @@ const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const AuthTokenService = require('../../AuthTokenService');
+const {
+  ATTACH_DOCUMENT_HISTO_TRIGGER,
+  DETACH_DOCUMENT_HISTO_TRIGGER,
+} = require('../../../customSQL');
 
 const PDF_FORMAT = 1;
 const TXT_FORMAT = 51;
@@ -423,6 +427,180 @@ describe('Document PDF page offsets (#1936)', () => {
         should(await TFile.count({ document: documentId })).equal(2);
         should(await pendingJson()).be.null();
       });
+    });
+  });
+  describe('Article details, pending previews and moderation', () => {
+    let parentId;
+    let parentFileId;
+    let articleId;
+
+    const getDocument = (id, query = '') =>
+      supertest(sails.hooks.http.app)
+        .get(`/api/v1/documents/${id}${query}`)
+        .set('Authorization', moderatorToken)
+        .expect(200);
+
+    const moderate = (id, isValidated) =>
+      supertest(sails.hooks.http.app)
+        .put('/api/v1/documents/validate')
+        .send({
+          documents: [
+            { id, isValidated, validationComment: 'PDF page offsets' },
+          ],
+        })
+        .set('Authorization', moderatorToken)
+        .set('Content-type', 'application/json')
+        .expect(200);
+
+    before(() =>
+      sails.getDatastore().sendNativeQuery(ATTACH_DOCUMENT_HISTO_TRIGGER)
+    );
+    after(() =>
+      sails.getDatastore().sendNativeQuery(DETACH_DOCUMENT_HISTO_TRIGGER)
+    );
+
+    beforeEach(async () => {
+      const parent = await TDocument.create({
+        author: 1,
+        type: 17, // Issue
+        license: 1,
+        isValidated: true,
+        dateInscription: new Date('2026-01-01T00:00:00Z'),
+        identifier: 'https://example.org/bulletin.pdf',
+        identifierType: 'url',
+        identifierPdfPageOffset: 1,
+      }).fetch();
+      parentId = parent.id;
+      const parentFile = await TFile.create({
+        dateInscription: new Date(),
+        fileName: 'bulletin.pdf',
+        fileFormat: PDF_FORMAT,
+        document: parentId,
+        path: 'attached-bulletin.pdf',
+        isValidated: true,
+        pdfPageOffset: 2,
+      }).fetch();
+      parentFileId = parentFile.id;
+      const article = await TDocument.create({
+        author: 1,
+        type: 18, // Article
+        license: 1,
+        isValidated: true,
+        dateInscription: new Date('2026-01-01T00:00:00Z'),
+        parent: parentId,
+        pages: '29-35',
+      }).fetch();
+      articleId = article.id;
+      createdDocIds.push(parentId, articleId);
+    });
+
+    afterEach(async () => {
+      await HDocument.destroy({ t_id: [parentId, articleId] });
+    });
+
+    it("should expose the parent's offsets in an article's details", async () => {
+      const { body } = await getDocument(articleId);
+      should(body.pages).equal('29-35');
+      should(body.identifierPdfPageOffset).be.null();
+      should(body.parent).containEql({
+        id: parentId,
+        identifier: 'https://example.org/bulletin.pdf',
+        identifierType: 'url',
+        identifierPdfPageOffset: 1,
+      });
+      should(body.parent.files).have.length(1);
+      should(body.parent.files[0]).containEql({
+        id: parentFileId,
+        fileName: 'bulletin.pdf',
+        pdfPageOffset: 2,
+      });
+    });
+
+    it("should expose the parent's offsets in an article's pending preview", async () => {
+      await updateRequest(userToken, articleId)
+        .field('title', 'Pending article')
+        .field('pages', '30-36')
+        .field('parent[id]', String(parentId))
+        .expect(200);
+      const { body } = await getDocument(articleId, '?requireUpdate=true');
+      should(body.pages).equal('30-36');
+      should(body.parent.identifierPdfPageOffset).equal(1);
+      should(body.parent.files[0].pdfPageOffset).equal(2);
+    });
+
+    it('should preview a pending clear and file offset, then apply them on validation', async () => {
+      await updateRequest(userToken, parentId)
+        .field('title', 'Pending bulletin')
+        .field('identifierPdfPageOffset', '')
+        .field('modifiedFiles[0][id]', String(parentFileId))
+        .field('modifiedFiles[0][fileName]', 'bulletin.pdf')
+        .field('modifiedFiles[0][pdfPageOffset]', '-5')
+        .expect(200);
+
+      const current = await getDocument(parentId);
+      should(current.body.identifierPdfPageOffset).equal(1);
+
+      const preview = await getDocument(parentId, '?requireUpdate=true');
+      should(preview.body.identifierPdfPageOffset).be.null();
+      should(preview.body.modifiedFiles).have.length(1);
+      should(preview.body.modifiedFiles[0]).containEql({
+        id: parentFileId,
+        pdfPageOffset: -5,
+      });
+
+      await moderate(parentId, true);
+
+      should(
+        (await TDocument.findOne(parentId)).identifierPdfPageOffset
+      ).be.null();
+      should((await TFile.findOne(parentFileId)).pdfPageOffset).equal(-5);
+      const history = await HDocument.find({ t_id: parentId });
+      should(history.map((h) => h.identifierPdfPageOffset)).containEql(1);
+
+      const article = await getDocument(articleId);
+      should(article.body.parent.identifierPdfPageOffset).be.null();
+      should(article.body.parent.files[0].pdfPageOffset).equal(-5);
+    });
+
+    it('should preview the stored offsets when the modification omits them', async () => {
+      await updateRequest(userToken, parentId)
+        .field('title', 'Pending bulletin')
+        .field('modifiedFiles[0][id]', String(parentFileId))
+        .field('modifiedFiles[0][fileName]', 'renamed.pdf')
+        .expect(200);
+
+      const preview = await getDocument(parentId, '?requireUpdate=true');
+      should(preview.body.identifierPdfPageOffset).equal(1);
+      should(preview.body.modifiedFiles[0]).containEql({
+        fileName: 'renamed.pdf',
+        pdfPageOffset: 2,
+      });
+
+      await moderate(parentId, true);
+      should((await TDocument.findOne(parentId)).identifierPdfPageOffset).equal(
+        1
+      );
+      should(await TFile.findOne(parentFileId)).containEql({
+        fileName: 'renamed.pdf',
+        pdfPageOffset: 2,
+      });
+    });
+
+    it('should keep the offsets when the modification is refused', async () => {
+      await updateRequest(userToken, parentId)
+        .field('title', 'Pending bulletin')
+        .field('identifierPdfPageOffset', '7')
+        .field('modifiedFiles[0][id]', String(parentFileId))
+        .field('modifiedFiles[0][fileName]', 'bulletin.pdf')
+        .field('modifiedFiles[0][pdfPageOffset]', '0')
+        .expect(200);
+
+      await moderate(parentId, false);
+
+      const stored = await TDocument.findOne(parentId);
+      should(stored.modifiedDocJson).be.null();
+      should(stored.identifierPdfPageOffset).equal(1);
+      should((await TFile.findOne(parentFileId)).pdfPageOffset).equal(2);
     });
   });
 });
