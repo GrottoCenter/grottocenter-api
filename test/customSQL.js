@@ -979,6 +979,13 @@ const ORGANIZATION_TYPE_OTHER_MIGRATION = forTestDatabase(
   )
 );
 
+const BOT_CASCADE_CHECK_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_27_2026_10_26_bot_cascade_check.sql'),
+    'utf8'
+  )
+);
+
 // Organization history, as production runs it: every t_grotto update copies
 // the old row into h_grotto. Waterline builds h_grotto with id alone as
 // primary key, so a second update of the same organization would collide:
@@ -1045,6 +1052,7 @@ module.exports = {
   SEARCH_OUTBOX_MIGRATION,
   ORGANIZATION_TYPE_MIGRATION,
   ORGANIZATION_TYPE_OTHER_MIGRATION,
+  BOT_CASCADE_CHECK_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
 };
