@@ -87,6 +87,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.SEARCH_OUTBOX_MIGRATION,
                 customSQL.ORGANIZATION_TYPE_MIGRATION,
                 customSQL.ORGANIZATION_TYPE_OTHER_MIGRATION,
+                customSQL.BOT_CASCADE_CHECK_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))
