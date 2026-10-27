@@ -152,9 +152,11 @@ describe('bot_cascade_check - massif-to-entrance sensitivity invariant', () => {
   it('counts an entrance once when two sensitive massifs contain it', async () => {
     await createMassif(true);
     await createMassif(true);
-    await createEntrance({});
+    const entrance = await createEntrance({});
 
-    should(Number((await check()).violation_count)).equal(1);
+    const result = await check();
+    should(Number(result.violation_count)).equal(1);
+    should(result.violation_ids).deepEqual([entrance.id]);
   });
 
   it('caps each id list at 100 and keeps the exact count', async () => {
