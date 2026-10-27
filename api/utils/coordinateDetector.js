@@ -35,15 +35,24 @@ const SEP = '(?:\\s{1,3}|\\s{0,3}[;,/]\\s{0,3})';
 const PATTERNS = Object.freeze(
   [
     {
-      // 46°06'08"N, 46° 06' 08'', 46°06.133'
+      // 46°06'08"N, 46° 06' 08'', 46°06.133', 43° 12,5 N (minutes without a mark)
       id: 'dms',
-      re: /\d{1,3}\s{0,3}[°º]\s{0,3}\d{1,2}(?:[.,]\d{1,6})?\s{0,3}['′’]/,
+      re: /\d{1,3}\s{0,3}°\s{0,3}\d{1,2}(?:[.,]\d{1,6})?\s{0,3}(?:['′’]|[NSEWO]\b)/,
     },
     {
-      // 54.183628°N 2.487239°W, 45° N, 46,10222 N. A standalone capital N or S
-      // before the number ("orientée N120°E") is a compass bearing, not a position.
+      // N 46.10222 E 6.51234, N46.10222, E6.51234, S 34.4512 W 85.1234. Ahead of
+      // degrees-hemisphere: a position has a second number after the east/west
+      // letter, which tells it from a bearing ("N120°E", "S 30° W").
+      id: 'hemisphere-prefix',
+      re: /\b[NS]\s{0,2}\d{1,3}(?:[.,]\d{1,8})?\s{0,3}°?\s{0,3}[,;/]?\s{0,3}[EWO]\s{0,2}\d{1,3}/,
+    },
+    {
+      // 54.183628°N 2.487239°W, 45° N, 46,10222 N, 46.10222° Nord, 45.5° North.
+      // A standalone capital N or S before the number ("orientée N120°E") is a
+      // compass bearing, not a position. The spelled-out hemispheres are
+      // case-sensitive: lowercase "est" is the French verb ("45° est visible").
       id: 'degrees-hemisphere',
-      re: /(?<!\b[NS]\s{0,2})(?<![\d.,])(?:\d{1,3}(?:[.,]\d{1,8})?\s{0,3}[°º]|\d{1,3}[.,]\d{3,8})\s{0,3}[NSEWO]\b/,
+      re: /(?<!\b[NS]\s{0,2})(?<![\d.,])(?:\d{1,3}(?:[.,]\d{1,8})?\s{0,3}°|\d{1,3}[.,]\d{3,8})\s{0,3}(?:[NSEWO]|Nord|Sud|Est|Ouest|North|South|East|West)\b/,
     },
     {
       // 46.10222, 6.51 / 46,10222 ; 6,51 / 46.102 6.510 / -34.4512 -85.1234
@@ -58,9 +67,10 @@ const PATTERNS = Object.freeze(
       re: /\b[Xx]\s{0,3}[=:]\s{0,3}\d{2,7}(?:[.,]\d{1,3})?[^\n]{0,60}?\b[Yy]\s{0,3}[=:]\s{0,3}\d{2,7}(?:[.,]\d{1,3})?/,
     },
     {
-      // Lambert II Centre, Lambert 93, Lambert zone III
+      // Lambert II Centre, Lambert IIe, Lambert 93, Lambert zone III, Lambert 2 étendu.
+      // A bare "Lambert 2" stays out: it is also a cave name.
       id: 'lambert-label',
-      re: /\blambert\s{0,3}(?:I{1,3}|IV|93|zone)\b/i,
+      re: /\blambert\s{0,3}(?:(?:I{1,3}|IV|93|zone)e?\b|[1-4]\s{0,3}(?:e|é|[eé]tendu)\b)/i,
     },
     {
       // 32T 340000 5105000, UTM 32 340000 5105000
@@ -73,9 +83,9 @@ const PATTERNS = Object.freeze(
       re: /\bNGR\b|\b[A-HJ-Z][A-HJ-Z]\s{0,2}(?:\d{3}\s{0,2}\d{3}|\d{4}\s{0,2}\d{4}|\d{5}\s{0,2}\d{5})\b/,
     },
     {
-      // Coordonnées : 46.1, Latitude 46.1, GPS: 46, Lat = 46
+      // Coordonnées : 46.1, Latitude 46.1, GPS: 46, Lat = 46, Coordonnées GPS : N 46.1
       id: 'labelled-coordinates',
-      re: /\b(?:latitude|longitude|coordonn[ée]es?|coordinates?|gps)\b\s{0,3}[:=]?\s{0,3}-?\d|\b(?:lat|lon|lng)\.?\s{0,3}[:=]\s{0,3}-?\d/i,
+      re: /\b(?:latitude|longitude|coordonn[ée]es?|coordinates?|gps)\b[^\d\n]{0,20}?-?\d|\b(?:lat|lon|lng)\.?\s{0,3}[:=]\s{0,3}-?\d/i,
     },
     {
       // Nord : 4510.123, East: 340000. Case-sensitive on purpose: lowercase "est" is the
@@ -119,8 +129,10 @@ const detect = (text) => {
       'coordinateDetector.detect expects a string, null or undefined'
     );
   }
-  // NFKC folds full-width digits, non-breaking and thin spaces ("943 370") into their plain forms.
-  const normalized = text.normalize('NFKC');
+  // º (masculine ordinal) and ˚ (ring above) are typed as degree signs, and NFKC
+  // would turn them into "o" and a space. Map them first, then let NFKC fold
+  // full-width digits, non-breaking and thin spaces ("943 370") into plain forms.
+  const normalized = text.replace(/[º˚]/g, '°').normalize('NFKC');
   for (const { id, re } of PATTERNS) {
     const found = re.exec(normalized);
     if (found) {

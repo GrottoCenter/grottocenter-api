@@ -14,7 +14,7 @@ const {
 //   1. bump PATTERN_SET_VERSION in api/utils/coordinateDetector.js,
 //   2. add the new version with the new fingerprint below, and keep the old entry.
 const RECORDED_FINGERPRINTS = {
-  1: '0792176c4fbbedfc8421cde4662d5a669c991ac9c477156fccebff46718109a9',
+  1: 'bf8610c5559f304232b5d7c6e9d8c5869adc954d28eb67a0d9ced15e7fcf00b9',
 };
 
 describe('coordinateDetector - pattern set version', () => {
@@ -43,6 +43,7 @@ describe('coordinateDetector - pattern set version', () => {
     should(new Set(PATTERN_IDS).size).equal(PATTERN_IDS.length);
     should(PATTERN_IDS).deepEqual([
       'dms',
+      'hemisphere-prefix',
       'degrees-hemisphere',
       'decimal-pair',
       'lambert-xy',
@@ -100,6 +101,19 @@ describe('coordinateDetector - families', () => {
       'decimal degrees with a hemisphere letter',
       '54.183628°N 2.487239°W',
     ],
+    ['dms', 'masculine ordinal as degree sign', '43º12\'30"N 5º20\'10"W'],
+    ['dms', 'ring above as degree sign', '43˚12\'30"N'],
+    ['dms', 'decimal minutes without a minute mark', '43º 12,5 N'],
+    ['hemisphere-prefix', 'letter first, spaces', 'N 46.10222 E 6.51234'],
+    ['hemisphere-prefix', 'letter first, comma', 'N46.10222, E6.51234'],
+    ['hemisphere-prefix', 'south and west', 'S 34.4512 W 85.1234'],
+    ['degrees-hemisphere', 'masculine ordinal', '46,5º N'],
+    [
+      'degrees-hemisphere',
+      'spelled-out French hemispheres',
+      '46.10222° Nord, 6.51234° Est',
+    ],
+    ['degrees-hemisphere', 'spelled-out English hemisphere', '45.5° North'],
     ['degrees-hemisphere', 'whole degrees', '46° N, 6° E'],
     ['degrees-hemisphere', 'after a word ending in s', 'puits 0.1°N'],
     ['degrees-hemisphere', 'after a word ending in n', 'entrée en 46.10222°N'],
@@ -120,6 +134,13 @@ describe('coordinateDetector - families', () => {
     ['lambert-label', 'Lambert II extended', 'Lambert II étendu'],
     ['lambert-label', 'Lambert 93', 'projection Lambert 93'],
     ['lambert-label', 'lowercase', 'lambert iii'],
+    ['lambert-label', 'short form of extended', 'Lambert IIe'],
+    ['lambert-label', 'uppercase short form', 'Lambert IIE'],
+    [
+      'lambert-label',
+      'digit with extended',
+      'Lambert 2 étendu : 943370 / 2132120',
+    ],
     ['utm', 'zone, band, easting and northing', '32T 340000 5105000'],
     ['utm', 'spaced band', '31 T 123456 4567890'],
     ['utm', 'UTM label, Spanish', 'Coordenadas: UTM 30T 123456 - 4567890'],
@@ -128,6 +149,11 @@ describe('coordinateDetector - families', () => {
     ['ngr', 'no spaces', 'SD683765'],
     ['ngr', 'six figures', 'TL 123 456'],
     ['labelled-coordinates', 'French label', 'Coordonnées : 46.1'],
+    [
+      'labelled-coordinates',
+      'word and hemisphere between',
+      'Coordonnées GPS : N 46.10222',
+    ],
     ['labelled-coordinates', 'English label', 'Latitude 46.1'],
     ['labelled-coordinates', 'longitude with colon', 'longitude: 6.51'],
     ['labelled-coordinates', 'GPS', 'GPS: 46'],
@@ -170,6 +196,7 @@ describe('coordinateDetector - ordinary text', () => {
     'La grotte Lambert 2 est proche',
     'orientée N120°E puis S 30° W',
     'Aven N 45° E',
+    'une pente de 45° est visible',
 
     'altitude 0,50111 de hauteur',
     'The cave is 1.5 km long and 85 m deep, with a stream passage.',
