@@ -44,6 +44,8 @@ const prose = fc
 
 const decimalSeparator = fc.constantFrom('.', ',');
 const hemisphere = fc.constantFrom('N', 'S', 'E', 'W', 'O');
+// Typed as a degree sign on many keyboards
+const degreeSign = fc.constantFrom('°', 'º', '˚');
 
 // One arbitrary per family. Each builds a fragment from random numbers, so a
 // wrong implementation cannot pass by memorising a few examples.
@@ -53,12 +55,30 @@ const FRAGMENTS = {
       deg: fc.integer({ min: 0, max: 179 }),
       min: fc.integer({ min: 0, max: 59 }),
       sec: fc.integer({ min: 0, max: 59 }),
+      sign: degreeSign,
       quote: fc.constantFrom('"', "''", '′′', '”'),
       hemi: hemisphere,
     })
     .map(
-      ({ deg, min, sec, quote, hemi }) =>
-        `${deg}°${pad2(min)}'${pad2(sec)}${quote}${hemi}`
+      ({ deg, min, sec, sign, quote, hemi }) =>
+        `${deg}${sign}${pad2(min)}'${pad2(sec)}${quote}${hemi}`
+    ),
+
+  'hemisphere-prefix': fc
+    .record({
+      ns: fc.constantFrom('N', 'S'),
+      lat: fc.integer({ min: 0, max: 89 }),
+      latFrac: fc.integer({ min: 1, max: 99999999 }),
+      ew: fc.constantFrom('E', 'W', 'O'),
+      lon: fc.integer({ min: 0, max: 179 }),
+      lonFrac: fc.integer({ min: 1, max: 99999999 }),
+      sep: decimalSeparator,
+      join: fc.constantFrom(' ', ', ', ' ; ', ' / '),
+      gap: fc.constantFrom('', ' '),
+    })
+    .map(
+      ({ ns, lat, latFrac, ew, lon, lonFrac, sep, join, gap }) =>
+        `${ns}${gap}${lat}${sep}${latFrac}${join}${ew}${gap}${lon}${sep}${lonFrac}`
     ),
 
   'degrees-hemisphere': fc
@@ -66,9 +86,22 @@ const FRAGMENTS = {
       deg: fc.integer({ min: 0, max: 179 }),
       frac: fc.integer({ min: 1, max: 99999999 }),
       sep: decimalSeparator,
-      hemi: hemisphere,
+      sign: degreeSign,
+      hemi: fc.constantFrom(
+        ...'NSEWO',
+        'Nord',
+        'Sud',
+        'Est',
+        'Ouest',
+        'North',
+        'South',
+        'East',
+        'West'
+      ),
     })
-    .map(({ deg, frac, sep, hemi }) => `${deg}${sep}${frac}°${hemi}`),
+    .map(
+      ({ deg, frac, sep, sign, hemi }) => `${deg}${sep}${frac}${sign}${hemi}`
+    ),
 
   'decimal-pair': fc
     .record({
@@ -243,7 +276,9 @@ describe('coordinateDetector - Property: any text gives a well-formed verdict', 
         should(PATTERN_IDS).containEql(result.patternId);
         should(result.match).be.a.String();
         should(result.match.length).be.within(1, 80);
-        should(text.normalize('NFKC').includes(result.match)).be.true();
+        should(
+          text.replace(/[º˚]/g, '°').normalize('NFKC').includes(result.match)
+        ).be.true();
       }),
       { numRuns: 300 }
     );
