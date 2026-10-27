@@ -11,6 +11,7 @@ describe('bot_cascade_check - massif-to-entrance sensitivity invariant', () => {
   const entranceIds = [];
   const caveIds = [];
   let originalBoss;
+  let startedAt;
 
   const check = async () => {
     const { rows } = await CommonService.query(
@@ -51,6 +52,7 @@ describe('bot_cascade_check - massif-to-entrance sensitivity invariant', () => {
   };
 
   before(() => {
+    startedAt = new Date();
     originalBoss = sails.enrichmentBoss;
     sails.enrichmentBoss = { send: sinon.stub().resolves() };
   });
@@ -68,16 +70,27 @@ describe('bot_cascade_check - massif-to-entrance sensitivity invariant', () => {
       await TName.destroy({ cave: caveIds });
       await TCave.destroy({ id: caveIds });
     }
+    // The CSV import also records recent changes for the rows it creates
+    if (entranceIds.length || caveIds.length) {
+      await TLastChange.destroy({
+        entityId: [...entranceIds, ...caveIds],
+        dateChange: { '>=': startedAt },
+      });
+    }
     if (massifIds.length) await TMassif.destroy({ id: massifIds });
     entranceIds.length = 0;
     caveIds.length = 0;
     massifIds.length = 0;
   });
 
-  it('reports no violation on the baseline fixtures', async () => {
+  // The test database has no trigger filling point_geom, so no fixture entrance
+  // joins a massif: this proves the function runs and returns empty lists.
+  it('runs on the baseline fixtures and returns empty lists', async () => {
     const result = await check();
     should(Number(result.violation_count)).equal(0);
     should(result.violation_ids).deepEqual([]);
+    should(Number(result.override_count)).equal(0);
+    should(result.override_ids).deepEqual([]);
   });
 
   it('reports an unlocked non-sensitive entrance inside a sensitive massif as a violation, with its id', async () => {

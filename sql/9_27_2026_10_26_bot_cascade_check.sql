@@ -50,8 +50,8 @@ LANGUAGE sql STABLE AS $$
   overrides AS (SELECT id FROM exposed WHERE is_sensitive_locked = true)
   SELECT
     (SELECT count(*) FROM violations),
-    COALESCE(ARRAY(SELECT id FROM violations ORDER BY id LIMIT 100), '{}'::integer[]),
+    ARRAY(SELECT id FROM violations ORDER BY id LIMIT 100),
     (SELECT count(*) FROM overrides),
-    COALESCE(ARRAY(SELECT id FROM overrides ORDER BY id LIMIT 100), '{}'::integer[]);
+    ARRAY(SELECT id FROM overrides ORDER BY id LIMIT 100);
 $$;
 ALTER FUNCTION bot_cascade_check() OWNER TO gc_owner;
