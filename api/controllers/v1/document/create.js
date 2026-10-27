@@ -36,6 +36,19 @@ module.exports = async (req, res) => {
     );
   }
 
+  const identifierOffsetError = DocumentService.applyIdentifierPdfPageOffset(
+    documentData,
+    req.body.identifierPdfPageOffset
+  );
+  if (identifierOffsetError) return res.badRequest(identifierOffsetError);
+
+  const files = req.files?.files ?? [];
+  const newFilesOffsets = DocumentService.getNewFilesPdfPageOffsets(
+    req.body.newFilesMetadata,
+    files
+  );
+  if (newFilesOffsets.error) return res.badRequest(newFilesOffsets.error);
+
   const cleanedData = {
     ...documentData,
     author: req.token.id,
@@ -48,12 +61,18 @@ module.exports = async (req, res) => {
     descriptionData
   );
   const errorFiles = [];
-  if (req.files && req.files.files) {
-    const { files } = req.files;
+  if (files.length > 0) {
     try {
       await Promise.all(
-        files.map(async (file) => {
-          await FileService.document.create(file, createdDocument.id);
+        files.map(async (file, index) => {
+          await FileService.document.create(
+            file,
+            createdDocument.id,
+            false,
+            true,
+            null,
+            newFilesOffsets.offsets[index] ?? null
+          );
         })
       );
     } catch (err) {

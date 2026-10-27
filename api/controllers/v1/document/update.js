@@ -59,18 +59,41 @@ module.exports = async (req, res) => {
     if (parentError) return res.badRequest(parentError);
   }
 
+  // PDF page offsets (#1936), validated before any upload
+  const identifierOffsetError = DocumentService.applyIdentifierPdfPageOffset(
+    documentDataForValidation,
+    req.body.identifierPdfPageOffset,
+    document
+  );
+  if (identifierOffsetError) return res.badRequest(identifierOffsetError);
+
+  const files = req.files?.files ?? [];
+  const newFilesOffsets = DocumentService.getNewFilesPdfPageOffsets(
+    req.body.newFilesMetadata,
+    files
+  );
+  if (newFilesOffsets.error) return res.badRequest(newFilesOffsets.error);
+
+  const modifiedFilesResult = await DocumentService.getModifiedFilesFromClient(
+    document.id,
+    req.body.modifiedFiles
+  );
+  if (modifiedFilesResult.error)
+    return res.badRequest(modifiedFilesResult.error);
+
   // Add new files
   const newFiles = [];
-  if (req.files && req.files.files) {
-    const { files } = req.files;
+  if (files.length > 0) {
     try {
       await Promise.all(
-        files.map(async (file) => {
+        files.map(async (file, index) => {
           const createdFile = await FileService.document.create(
             file,
             req.param('id'),
             true,
-            false
+            false,
+            null,
+            newFilesOffsets.offsets[index] ?? null
           );
           newFiles.push(createdFile);
         })
@@ -105,9 +128,7 @@ module.exports = async (req, res) => {
     authorId
   );
 
-  const modifiedFiles = DocumentService.getChangedFileFromClient(
-    req.body.modifiedFiles ?? []
-  );
+  const { modifiedFiles } = modifiedFilesResult;
 
   const deletedFiles = DocumentService.getChangedFileFromClient(
     req.body.deletedFiles ?? []

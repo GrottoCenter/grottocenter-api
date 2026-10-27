@@ -40,6 +40,15 @@ module.exports = async (req, res) => {
     }
   }
 
+  // PDF page offset of the identifier (#1936): same rules as the multipart
+  // update, including the clearing of an offset whose identifier changes.
+  const identifierOffsetError = DocumentService.applyIdentifierPdfPageOffset(
+    scalarData,
+    scalarData.identifierPdfPageOffset,
+    currentDocument
+  );
+  if (identifierOffsetError) return res.badRequest(identifierOffsetError);
+
   // Reject cyclic parent assignments before touching any data.
   // scalarData.parent may be a raw ID or an object with an id property.
   const rawParent = scalarData.parent;

@@ -13,10 +13,23 @@ const {
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
 const isValidId = require('../utils/isValidId');
+const {
+  parsePdfPageOffset,
+  isPdfUrl,
+  isPdfFileName,
+  isPdfFileFormat,
+} = require('../utils/pdfPageOffset');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
   item != null && typeof item === 'object' ? (item.id ?? item) : item;
+
+// The identifier type as a trimmed code: t_identifier_type.code is a bpchar(5),
+// read back blank-padded ('url  '), and clients send it bare or as an object.
+const toIdentifierTypeCode = (identifierType) => {
+  const code = normalizeToId(identifierType);
+  return code == null ? null : String(code).trim();
+};
 
 // Normalize an m2m member to the string form used to compare it with a primary
 // key read back from the database.
@@ -141,6 +154,186 @@ module.exports = {
       id: e.id,
       fileName: e.fileName,
     })),
+
+  /**
+   * Resolve the identifier PDF page offset of a document create or update
+   * (#1936) and write it into `documentData`, next to the identifier it
+   * applies to:
+   *
+   *   - an integer is kept, provided the resulting identifier is a PDF URL;
+   *   - null (or '' from a multipart body) clears the offset;
+   *   - an omitted offset leaves the stored one unchanged, except when the
+   *     identifier or its type changes: the old offset described another PDF,
+   *     so it is cleared.
+   *
+   * The identifier and its type are taken from `documentData` when sent, from
+   * `currentDocument` otherwise.
+   *
+   * @param {object} documentData - getConvertedDataFromClient() output, or the
+   *   scalar payload of update-with-new-entities; mutated
+   * @param {*} rawOffset - the offset as sent by the client
+   * @param {object|null} [currentDocument] - the TDocument row, null on creation
+   * @returns {string|null} an error message for a 400, or null
+   */
+  applyIdentifierPdfPageOffset(
+    documentData,
+    rawOffset,
+    currentDocument = null
+  ) {
+    /* eslint-disable no-param-reassign */
+    const { value, error } = parsePdfPageOffset(
+      rawOffset,
+      'identifierPdfPageOffset'
+    );
+    if (error) return error;
+
+    const isIdentifierSent = documentData.identifier !== undefined;
+    const isTypeSent = documentData.identifierType !== undefined;
+    const identifier = isIdentifierSent
+      ? documentData.identifier
+      : currentDocument?.identifier;
+    const identifierType = toIdentifierTypeCode(
+      isTypeSent ? documentData.identifierType : currentDocument?.identifierType
+    );
+
+    if (typeof value === 'number') {
+      if (identifierType !== 'url' || !isPdfUrl(identifier)) {
+        return 'identifierPdfPageOffset can only be set on a document whose identifier is a PDF URL.';
+      }
+      documentData.identifierPdfPageOffset = value;
+      return null;
+    }
+    if (value === null) {
+      documentData.identifierPdfPageOffset = null;
+      return null;
+    }
+
+    const hasIdentifierChanged =
+      currentDocument != null &&
+      ((isIdentifierSent &&
+        (documentData.identifier ?? null) !==
+          (currentDocument.identifier ?? null)) ||
+        (isTypeSent &&
+          identifierType !==
+            toIdentifierTypeCode(currentDocument.identifierType)));
+    if (hasIdentifierChanged) documentData.identifierPdfPageOffset = null;
+    else delete documentData.identifierPdfPageOffset;
+    return null;
+    /* eslint-enable no-param-reassign */
+  },
+
+  /**
+   * Read the PDF page offsets of newly uploaded files from
+   * `newFilesMetadata` (#1936). `newFilesMetadata[i]` describes the i-th
+   * binary of the multipart `files` field, so the offsets come back aligned
+   * with `files`, whatever order the uploads later complete in. A file
+   * without metadata gets undefined.
+   *
+   * @param {*} rawMetadata - req.body.newFilesMetadata
+   * @param {Array} files - the multer files, in request order
+   * @returns {{ offsets: Array<number|null|undefined> }|{ error: string }}
+   */
+  getNewFilesPdfPageOffsets(rawMetadata, files = []) {
+    const offsets = files.map(() => undefined);
+    if (rawMetadata === undefined || rawMetadata === null) return { offsets };
+    if (typeof rawMetadata !== 'object') {
+      return { error: 'newFilesMetadata must be a list of objects.' };
+    }
+
+    // Object.entries skips the holes of a sparse array, which is what a
+    // multipart body carrying only newFilesMetadata[2] parses into.
+    for (const [key, metadata] of Object.entries(rawMetadata)) {
+      const index = Number(key);
+      if (!Number.isInteger(index) || index < 0 || index >= files.length) {
+        return {
+          error: `newFilesMetadata[${key}] does not match any of the ${files.length} uploaded file(s).`,
+        };
+      }
+      if (
+        metadata === null ||
+        typeof metadata !== 'object' ||
+        Array.isArray(metadata)
+      ) {
+        return { error: `newFilesMetadata[${key}] must be an object.` };
+      }
+      const field = `newFilesMetadata[${index}][pdfPageOffset]`;
+      const { value, error } = parsePdfPageOffset(
+        metadata.pdfPageOffset,
+        field
+      );
+      if (error) return { error };
+      const fileName = files[index].originalname;
+      if (typeof value === 'number' && !isPdfFileName(fileName)) {
+        return {
+          error: `${field} can only be set on a PDF file, and "${fileName}" is not one.`,
+        };
+      }
+      offsets[index] = value;
+    }
+    return { offsets };
+  },
+
+  /**
+   * Validate the existing files a document update modifies, before anything is
+   * uploaded or stored: each must belong to the document, and a PDF page
+   * offset can only be set on a PDF (#1936).
+   *
+   * An entry carries the file id and the fields to change. An omitted
+   * `fileName` or `pdfPageOffset` is left unchanged; an empty `pdfPageOffset`
+   * clears it.
+   *
+   * @param {number|string} documentId
+   * @param {*} rawModifiedFiles - req.body.modifiedFiles
+   * @returns {Promise<{ modifiedFiles: Array<object> }|{ error: string }>}
+   */
+  async getModifiedFilesFromClient(documentId, rawModifiedFiles) {
+    if (rawModifiedFiles === undefined || rawModifiedFiles === null) {
+      return { modifiedFiles: [] };
+    }
+    if (typeof rawModifiedFiles !== 'object') {
+      return { error: 'modifiedFiles must be a list of objects.' };
+    }
+
+    const entries = Object.values(rawModifiedFiles);
+    const modifiedFiles = [];
+    for (const [index, entry] of entries.entries()) {
+      const id = Number(entry?.id);
+      if (!isValidId(id)) {
+        return { error: `modifiedFiles[${index}] must have a valid file id.` };
+      }
+      const field = `modifiedFiles[${index}][pdfPageOffset]`;
+      const { value, error } = parsePdfPageOffset(entry.pdfPageOffset, field);
+      if (error) return { error };
+      modifiedFiles.push({
+        id,
+        fileName: entry.fileName,
+        ...(value !== undefined && { pdfPageOffset: value }),
+      });
+    }
+    if (modifiedFiles.length === 0) return { modifiedFiles };
+
+    const storedFiles = await TFile.find({
+      id: modifiedFiles.map((f) => f.id),
+    }).populate('fileFormat');
+    const storedById = new Map(storedFiles.map((f) => [f.id, f]));
+    for (const file of modifiedFiles) {
+      const stored = storedById.get(file.id);
+      if (!stored || String(stored.document) !== String(documentId)) {
+        return {
+          error: `The file ${file.id} does not belong to the document ${documentId}.`,
+        };
+      }
+      if (
+        typeof file.pdfPageOffset === 'number' &&
+        !isPdfFileFormat(stored.fileFormat)
+      ) {
+        return {
+          error: `A PDF page offset can only be set on a PDF file, and "${stored.fileName}" is not one.`,
+        };
+      }
+    }
+    return { modifiedFiles };
+  },
 
   // Extract everything from the request body except id and dateInscription
   // Used when creating or editing an existing document

@@ -165,6 +165,8 @@ module.exports = {
      * @param {*} idDocument
      * @param {*} fetchResult
      * @param {*} isValidated
+     * @param {*} connection
+     * @param {number|null} pdfPageOffset - PDF page offset of a PDF file (#1936)
      * @throws {FileError}
      * @returns
      */
@@ -174,7 +176,8 @@ module.exports = {
       idDocument,
       fetchResult = false,
       isValidated = true,
-      connection = null
+      connection = null,
+      pdfPageOffset = null
     ) {
       const name = file.originalname;
       const pathName = generateName(name);
@@ -239,6 +242,7 @@ module.exports = {
         thumbnailSmall: thumbnailPaths.small,
         thumbnailMedium: thumbnailPaths.medium,
         thumbnailLarge: thumbnailPaths.large,
+        pdfPageOffset,
       };
       let createQuery = TFile.create(param);
       if (connection) {
@@ -295,10 +299,18 @@ module.exports = {
       );
     },
 
+    // An omitted field is left unchanged; a null pdfPageOffset clears it.
     async update(file, connection = null) {
-      let query = TFile.updateOne(file.id).set({
-        fileName: file.fileName,
-      });
+      const values = {
+        ...(file.fileName !== undefined && { fileName: file.fileName }),
+        ...(file.pdfPageOffset !== undefined && {
+          pdfPageOffset: file.pdfPageOffset,
+        }),
+      };
+      let query =
+        Object.keys(values).length > 0
+          ? TFile.updateOne(file.id).set(values)
+          : TFile.findOne(file.id);
       if (connection) {
         query = query.usingConnection(connection);
       }
