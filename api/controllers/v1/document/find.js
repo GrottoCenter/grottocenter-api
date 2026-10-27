@@ -9,8 +9,9 @@ const {
 const readBoolParam = require('../../../utils/readBoolParam');
 
 async function getModifiedDocumentData(documentId) {
-  const { id, modifiedDocJson } = await TDocument.findOne(documentId);
-  if (modifiedDocJson === null) return null;
+  const current = await TDocument.findOne(documentId);
+  if (!current || current.modifiedDocJson === null) return null;
+  const { id, modifiedDocJson } = current;
 
   const {
     // reviewerId,
@@ -26,6 +27,10 @@ async function getModifiedDocumentData(documentId) {
     documentData
   );
   populatedDoc.descriptions = [descriptionData];
+  // An omitted offset leaves the stored one unchanged; null is an explicit clear
+  if (populatedDoc.identifierPdfPageOffset === undefined) {
+    populatedDoc.identifierPdfPageOffset = current.identifierPdfPageOffset;
+  }
 
   // Files retrieval
   const filesCriterias = {
@@ -47,7 +52,22 @@ async function getModifiedDocumentData(documentId) {
   populatedDoc.files = await TFile.find(filesCriterias);
   populatedDoc.newFiles = newFiles;
   populatedDoc.deletedFiles = deletedFiles;
-  populatedDoc.modifiedFiles = modifiedFiles;
+  // A modification only carries the fields it changes: show them over the
+  // stored file, so the preview reads like the file once validated.
+  const modifiedFilesStored =
+    modifiedFiles?.length > 0
+      ? await TFile.find({
+          id: modifiedFiles.map((file) => file.id),
+          document: id,
+        })
+      : [];
+  const storedById = new Map(
+    modifiedFilesStored.map((file) => [String(file.id), file])
+  );
+  populatedDoc.modifiedFiles = modifiedFiles?.map((file) => ({
+    ...storedById.get(String(file.id)),
+    ...file,
+  }));
 
   return populatedDoc;
 }

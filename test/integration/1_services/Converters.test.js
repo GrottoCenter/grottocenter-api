@@ -458,6 +458,47 @@ describe('Converters Service', () => {
       );
       should(result.parent.identifierType).equal('url');
     });
+
+    it("should expose the parent's PDF page offsets without copying them", () => {
+      const result = converters.toDocument({
+        id: 123,
+        pages: '29-35',
+        identifierPdfPageOffset: null,
+        parent: {
+          id: 456,
+          identifier: 'https://example.org/scialet01.pdf',
+          identifierType: { id: 'url  ' },
+          identifierPdfPageOffset: 1,
+          files: [{ id: 101, fileName: 'scialet01.pdf', pdfPageOffset: 2 }],
+        },
+      });
+      should(result.pages).equal('29-35');
+      should(result.identifierPdfPageOffset).be.null();
+      should(result.parent.identifierPdfPageOffset).equal(1);
+      should(result.parent.files[0].pdfPageOffset).equal(2);
+    });
+  });
+
+  describe('PDF page offsets', () => {
+    it('should keep a zero offset on a document and a file', () => {
+      const result = converters.toDocument({
+        id: 123,
+        identifierPdfPageOffset: 0,
+        files: [{ id: 101, fileName: 'a.pdf', pdfPageOffset: 0 }],
+      });
+      should(result.identifierPdfPageOffset).equal(0);
+      should(result.files[0].pdfPageOffset).equal(0);
+    });
+
+    it('should render a missing offset as null', () => {
+      should(
+        converters.toDocument({ id: 123 }).identifierPdfPageOffset
+      ).be.null();
+      should(converters.toFile({ id: 101 }).pdfPageOffset).be.null();
+      should(
+        converters.toParentDocument({ id: 456 }).identifierPdfPageOffset
+      ).be.null();
+    });
   });
 
   describe('toEntrance()', () => {

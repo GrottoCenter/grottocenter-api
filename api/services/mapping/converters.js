@@ -258,6 +258,7 @@ const c = {
     ...c.toSimpleDocument(source),
     identifier: source.identifier ?? undefined,
     identifierType: source.identifierType?.id?.trim(),
+    identifierPdfPageOffset: source.identifierPdfPageOffset ?? null,
   }),
 
   // An ancestor in a citation's parent chain, kept far lighter than a document:
@@ -314,6 +315,7 @@ const c = {
       importSource: source.nameDbImport?.trim() ?? source.importSource,
       identifierType: source.identifierType?.id?.trim(),
       identifier: source.identifier ?? undefined,
+      identifierPdfPageOffset: source.identifierPdfPageOffset ?? null,
 
       dateInscription: source.dateInscription,
       dateReviewed: source.dateReviewed,
@@ -608,6 +610,7 @@ const c = {
       isValidated: source.isValidated,
       fileName: source.fileName,
       completePath: FileService.document.getUrl(source.path),
+      pdfPageOffset: source.pdfPageOffset ?? null,
       thumbnails: hasThumbnails
         ? {
             small: source.thumbnailSmall
