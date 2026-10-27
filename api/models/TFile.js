@@ -83,5 +83,13 @@ module.exports = {
       columnName: 'thumbnail_large',
       maxLength: 1000,
     },
+
+    // PDF position = printed page number + offset, for a PDF file. Null when
+    // no offset is configured; 0 is a configured offset.
+    pdfPageOffset: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'pdf_page_offset',
+    },
   },
 };

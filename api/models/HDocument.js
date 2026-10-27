@@ -94,6 +94,14 @@ module.exports = {
       model: 'TIdentifierType',
     },
 
+    // PDF position = printed page number + offset, for the PDF URL stored in
+    // identifier. Null when no offset is configured; 0 is a configured offset.
+    identifierPdfPageOffset: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'identifier_pdf_page_offset',
+    },
+
     refBbs: {
       type: 'string',
       allowNull: true,
