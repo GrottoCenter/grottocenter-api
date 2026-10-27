@@ -13,6 +13,7 @@ const entranceRow = (id) => ({
   region: 'FR-38',
   country: 'FR',
   discoveryYear: 1963,
+  dangerCo2: false,
   dangerFlooding: false,
   dangerRockfall: true,
   dangerPollution: false,
