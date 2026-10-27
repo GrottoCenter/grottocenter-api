@@ -16,6 +16,12 @@
  * bookkeeping columns, and t_location / t_comment text. Free text is limited to
  * t_description, already cleared by the caller.
  *
+ * This module does not decide which entities are published. Sensitive
+ * entrances are filtered out before projection, in v_bot_page (#1759), because
+ * `isSensitive` is never part of the output: every entity handed to project()
+ * must already be publishable, and an unfiltered sensitive entrance would be
+ * published with its locality.
+ *
  * Pure: loads without Sails.
  */
 
@@ -64,6 +70,7 @@ const SPEC = {
       region: SCALAR,
       country: SCALAR,
       discoveryYear: SCALAR,
+      dangerCo2: SCALAR,
       dangerFlooding: SCALAR,
       dangerRockfall: SCALAR,
       dangerPollution: SCALAR,
@@ -185,11 +192,16 @@ const getFields = (entityType, level) => {
  * @throws {RangeError} unknown (entityType, level)
  * @throws {TypeError} row is not a plain object, or a scalar key holds an object
  */
-const project = (entityType, level, row) => {
+const describeType = (value) => (Array.isArray(value) ? 'array' : typeof value);
+
+// `path` locates the row in error messages, e.g. cave.entrances[7].descriptions[0]
+const build = (entityType, level, row, path) => {
   const fields = getFields(entityType, level);
   if (!isPlainObject(row)) {
     throw new TypeError(
-      `Cannot project a ${entityType}: expected a plain object`
+      `Cannot project ${path} (${entityType}): expected a plain object, got ${describeType(
+        row
+      )}`
     );
   }
 
@@ -201,7 +213,7 @@ const project = (entityType, level, row) => {
     if (childSpec === SCALAR) {
       if (!isScalar(value)) {
         throw new TypeError(
-          `Field "${key}" of ${entityType} must be a scalar, got ${typeof value}`
+          `Field "${path}.${key}" must be a scalar, got ${describeType(value)}`
         );
       }
       output[key] = value;
@@ -212,12 +224,17 @@ const project = (entityType, level, row) => {
     if (value === null) {
       output[key] = null;
     } else if (Array.isArray(value)) {
-      output[key] = value.map((item) => project(childType, childLevel, item));
+      output[key] = value.map((item, i) =>
+        build(childType, childLevel, item, `${path}.${key}[${i}]`)
+      );
     } else {
-      output[key] = project(childType, childLevel, value);
+      output[key] = build(childType, childLevel, value, `${path}.${key}`);
     }
   });
   return output;
 };
+
+const project = (entityType, level, row) =>
+  build(entityType, level, row, entityType);
 
 module.exports = { WHITELIST, project };

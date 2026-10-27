@@ -31,6 +31,7 @@ const EXPECTED = {
       'city',
       'country',
       'county',
+      'dangerCo2',
       'dangerFlooding',
       'dangerPollution',
       'dangerRockfall',
@@ -243,6 +244,22 @@ describe('botSurfaceWhitelist - project', () => {
       project('cave', 'top', { id: 1, name: { fr: 'a', secret: 'b' } })
     ).throw(TypeError);
     should(() => project('cave', 'top', { id: [1] })).throw(TypeError);
+  });
+
+  it('names the path of the offending field in the error', () => {
+    const row = {
+      id: 1,
+      entrances: [{ id: 2 }, { id: 3, descriptions: [{ title: { fr: 'x' } }] }],
+    };
+    should(() => project('cave', 'top', row)).throw(
+      'Field "cave.entrances[1].descriptions[0].title" must be a scalar, got object'
+    );
+    should(() => project('cave', 'top', { id: [1] })).throw(
+      'Field "cave.id" must be a scalar, got array'
+    );
+    should(() => project('cave', 'top', { entrances: [{ id: 2 }, 'x'] })).throw(
+      /cave\.entrances\[1\] \(entrance\).*got string/
+    );
   });
 
   it('does not alter the row it is given', () => {
