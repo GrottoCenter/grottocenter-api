@@ -8,6 +8,8 @@ Notes on the pages published for indexing bots (tracking issue: #1889).
 
 That is safe only while the massif-to-entrance propagation has been fully applied (`MassifService.propagateSensitivityToEntrances`, called by `setSensitivity`, and `MassifService.isPointInSensitiveMassif` for new entrances). Both skip locked entrances.
 
+Two ordinary API paths bypass both and can break the invariant (tracked in #1944): `PUT /api/v1/entrances/:id` moving an entrance into a sensitive massif, and `PUT /api/v1/massifs/:id` enlarging the polygon of an already-sensitive massif. Until #1944 is fixed, either one makes the nightly pipeline stop.
+
 `bot_cascade_check()` (`sql/9_27_2026_10_26_bot_cascade_check.sql`) asserts it and returns one row:
 
 | Column                             | Meaning                                                                                                                |
@@ -17,4 +19,4 @@ That is safe only while the massif-to-entrance propagation has been fully applie
 
 The nightly pipeline runs it first and stops before publishing when `violation_count > 0`.
 
-A violation is fixed by finding why the flag is wrong (a bulk write that moved coordinates, an import that bypassed `EntranceService.createEntrance`), not by patching the check.
+A violation is fixed by finding why the flag is wrong (a bulk write that moved coordinates, an import that bypassed `EntranceService.createEntrance`, an entrance moved or a sensitive polygon enlarged through the update endpoints above), not by patching the check.
