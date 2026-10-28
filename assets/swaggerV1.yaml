@@ -1574,6 +1574,33 @@ paths:
               id:
                 type: string
                 enum: ['DOI', 'ISBN', 'ISSN', 'URL']
+        - name: identifierPdfPageOffset
+          in: query
+          description: >-
+            Signed offset from a printed page number to its position in the PDF
+            the identifier points to: `PDF position = printed page number +
+            offset`, positions starting at 1 (printed page 29 at PDF position 30
+            gives `1`). Only for an identifier of type `url`. An integer between
+            -2147483647 and 2147483647, sent as an integer string in
+            multipart/form-data; 0 is a configured offset. Omitted or empty: no offset.
+          schema:
+            type: integer
+            minimum: -2147483647
+            maximum: 2147483647
+            nullable: true
+        - name: newFilesMetadata
+          in: query
+          description: >-
+            Metadata of the uploaded files: `newFilesMetadata[i]` describes the
+            i-th binary of `files`, whatever order the uploads complete in. In
+            multipart/form-data, send `newFilesMetadata[i][pdfPageOffset]`.
+            Entries may be left out for files without metadata.
+            `pdfPageOffset` follows the convention of
+            `identifierPdfPageOffset` and is only allowed for a PDF file.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewFileMetadata'
         - name: library
           in: query
           description: Place (= Organization) where the document can be consulted.
@@ -1673,6 +1700,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
+        400:
+          description: >-
+            Invalid request, e.g. a malformed, fractional or out-of-range PDF
+            page offset, an offset for an identifier that is not a URL or for a
+            file that is not a PDF, or `newFilesMetadata` for a file that was
+            not uploaded. Nothing is created in that case.
         403:
           description: You are not authorized to create a document.
 
@@ -1861,6 +1894,16 @@ paths:
         **Language field**: the document language is set via `documentMainLanguage.id`
         (or the legacy `mainLanguage` field). It cannot be cleared via `'[]'`;
         omit the field to leave the language untouched.
+
+
+        **PDF page offsets** (`identifierPdfPageOffset`,
+        `newFilesMetadata[i][pdfPageOffset]`, `modifiedFiles[i][pdfPageOffset]`):
+        omit an offset to leave it unchanged, send an empty value to clear it.
+        Changing the identifier or its type without sending
+        `identifierPdfPageOffset` clears the identifier offset. Like the other
+        fields, the offsets are applied once the modification is validated by a
+        moderator; the offset of a newly uploaded file is stored with the file,
+        which is only published on validation.
       parameters:
         - name: id
           in: path
@@ -1868,6 +1911,64 @@ paths:
           required: true
           schema:
             type: string
+        - name: identifierPdfPageOffset
+          in: query
+          description: >-
+            Signed offset from a printed page number to its position in the PDF
+            the identifier points to: `PDF position = printed page number +
+            offset`, positions starting at 1 (printed page 29 at PDF position 30
+            gives `1`). Only for an identifier of type `url`. An integer between
+            -2147483647 and 2147483647, sent as an integer string in
+            multipart/form-data; 0 is a configured offset.
+          schema:
+            type: integer
+            minimum: -2147483647
+            maximum: 2147483647
+            nullable: true
+        - name: newFilesMetadata
+          in: query
+          description: >-
+            Metadata of the files uploaded with this update:
+            `newFilesMetadata[i]` describes the i-th binary of `files`, counting
+            only the newly uploaded files. See POST /documents.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewFileMetadata'
+        - name: modifiedFiles
+          in: query
+          description: >-
+            Existing files of the document to rename or whose PDF page offset
+            changes, e.g. `modifiedFiles[0][id]=101`,
+            `modifiedFiles[0][fileName]=bulletin.pdf`,
+            `modifiedFiles[0][pdfPageOffset]=0`. Every file must belong to the
+            document; `pdfPageOffset` is only allowed for a PDF file.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                fileName:
+                  type: string
+                pdfPageOffset:
+                  type: integer
+                  minimum: -2147483647
+                  maximum: 2147483647
+                  nullable: true
+        - name: deletedFiles
+          in: query
+          description: >-
+            Existing files of the document to delete, e.g.
+            `deletedFiles[0][id]=102`. Every file must belong to the document.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
         - name: authorsOrganization
           in: query
           description: Organization(s) (grotto/club) id(s) that authored the document.
@@ -1885,6 +1986,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
+        400:
+          description: >-
+            Invalid request, e.g. a malformed, fractional or out-of-range PDF
+            page offset, an offset for an identifier that is not a URL or for a
+            file that is not a PDF, `newFilesMetadata` for a file that was not
+            uploaded, or a modified or deleted file that does not belong to the
+            document. Nothing is uploaded or submitted in that case.
         403:
           description: You are not authorized to update a document.
 
@@ -1935,6 +2043,17 @@ paths:
                     `subjects`, `languages`, `massifs`, `isoRegions`,
                     `countries`): omit to keep existing, send `[]` to clear,
                     or send an array of ids to replace.
+                    `identifierPdfPageOffset` follows the rules of
+                    `PUT /documents/{id}`: an integer (or integer string)
+                    between -2147483647 and 2147483647 for a `url` identifier,
+                    `null` to clear it, omitted to keep it unless the
+                    identifier or its type changes.
+                  properties:
+                    identifierPdfPageOffset:
+                      type: integer
+                      minimum: -2147483647
+                      maximum: 2147483647
+                      nullable: true
                 newAuthors:
                   type: array
                   description: >-
@@ -1988,7 +2107,9 @@ paths:
             ids per field, for example
             `These linked entities do not exist: authors: 23871.` An id that is
             numeric but outside PostgreSQL's 32-bit integer range, or not a whole
-            number, is reported the same way. Also returned — as a retryable
+            number, is reported the same way. Also returned for an invalid
+            `identifierPdfPageOffset` (malformed, fractional, out of range, or
+            for an identifier that is not a URL). Also returned — as a retryable
             error — when a linked entity is deleted while the update is being
             saved; nothing is written in that case.
         '401':
@@ -9392,6 +9513,12 @@ components:
           type: integer
         identifier:
           type: string
+        identifierPdfPageOffset:
+          type: integer
+          nullable: true
+          description: >-
+            Offset of the PDF the identifier points to: `PDF position = printed
+            page number + offset`. Null when no offset is configured.
         identifierType:
           $ref: '#/components/schemas/Document-identifierType'
         isValidated:
@@ -9556,9 +9683,17 @@ components:
         identifierType:
           type: string
           description: Identifier type code, e.g. "url", "issn", "isbn", "doi".
+        identifierPdfPageOffset:
+          type: integer
+          nullable: true
+          description: >-
+            The parent's own offset for the PDF its identifier points to (`PDF
+            position = printed page number + offset`). A client opening the
+            child's printed pages there applies this offset, or the
+            `pdfPageOffset` of the parent file it opens instead, never both.
         files:
           type: array
-          description: The parent's validated files.
+          description: The parent's validated files, with their `pdfPageOffset`.
           items:
             $ref: '#/components/schemas/File'
         dateInscription:
@@ -9910,6 +10045,17 @@ components:
         riggings:
           $ref: '#/components/schemas/Rigging'
 
+    NewFileMetadata:
+      type: object
+      properties:
+        pdfPageOffset:
+          type: integer
+          minimum: -2147483647
+          maximum: 2147483647
+          nullable: true
+          description: >-
+            `PDF position = printed page number + offset`, for a PDF file only.
+            Omitted or empty: no offset.
     File:
       type: object
       properties:
@@ -9924,6 +10070,12 @@ components:
         completePath:
           type: string
           description: Full public URL to the original file in Azure Blob Storage.
+        pdfPageOffset:
+          type: integer
+          nullable: true
+          description: >-
+            For a PDF, `PDF position = printed page number + offset`. Null when
+            no offset is configured.
         thumbnails:
           type: object
           nullable: true

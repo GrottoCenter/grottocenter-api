@@ -59,18 +59,44 @@ module.exports = async (req, res) => {
     if (parentError) return res.badRequest(parentError);
   }
 
+  // PDF page offsets and file changes are checked before any upload (#1936)
+  const identifierOffset = DocumentService.resolveIdentifierPdfPageOffset(
+    req.body.identifierPdfPageOffset,
+    documentDataForValidation,
+    document
+  );
+  if (identifierOffset.error) return res.badRequest(identifierOffset.error);
+  if (identifierOffset.value !== undefined)
+    documentDataForValidation.identifierPdfPageOffset = identifierOffset.value;
+
+  const uploadedFiles = req.files?.files ?? [];
+  const newFileOffsets = await DocumentService.readNewFileOffsets(
+    req.body.newFilesMetadata,
+    uploadedFiles
+  );
+  if (newFileOffsets.error) return res.badRequest(newFileOffsets.error);
+
+  const changedFiles = await DocumentService.readChangedFiles(
+    document.id,
+    req.body.modifiedFiles ?? [],
+    req.body.deletedFiles ?? []
+  );
+  if (changedFiles.error) return res.badRequest(changedFiles.error);
+  const { modifiedFiles, deletedFiles } = changedFiles;
+
   // Add new files
   const newFiles = [];
-  if (req.files && req.files.files) {
-    const { files } = req.files;
+  if (uploadedFiles.length > 0) {
     try {
       await Promise.all(
-        files.map(async (file) => {
+        uploadedFiles.map(async (file, index) => {
           const createdFile = await FileService.document.create(
             file,
             req.param('id'),
             true,
-            false
+            false,
+            null,
+            newFileOffsets.offsets[index]
           );
           newFiles.push(createdFile);
         })
@@ -103,14 +129,6 @@ module.exports = async (req, res) => {
   const descriptionData = DocumentService.getDescriptionDataFromClient(
     req.body,
     authorId
-  );
-
-  const modifiedFiles = DocumentService.getChangedFileFromClient(
-    req.body.modifiedFiles ?? []
-  );
-
-  const deletedFiles = DocumentService.getChangedFileFromClient(
-    req.body.deletedFiles ?? []
   );
 
   const updatedDocument = await DocumentService.updateDocument({

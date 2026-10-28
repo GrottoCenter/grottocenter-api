@@ -165,6 +165,8 @@ module.exports = {
      * @param {*} idDocument
      * @param {*} fetchResult
      * @param {*} isValidated
+     * @param {*} connection
+     * @param {number|null} pdfPageOffset checked by the caller (#1936)
      * @throws {FileError}
      * @returns
      */
@@ -174,7 +176,8 @@ module.exports = {
       idDocument,
       fetchResult = false,
       isValidated = true,
-      connection = null
+      connection = null,
+      pdfPageOffset = null
     ) {
       const name = file.originalname;
       const pathName = generateName(name);
@@ -239,6 +242,7 @@ module.exports = {
         thumbnailSmall: thumbnailPaths.small,
         thumbnailMedium: thumbnailPaths.medium,
         thumbnailLarge: thumbnailPaths.large,
+        pdfPageOffset,
       };
       let createQuery = TFile.create(param);
       if (connection) {
@@ -295,9 +299,13 @@ module.exports = {
       );
     },
 
+    // An undefined pdfPageOffset leaves the stored offset unchanged (#1936).
     async update(file, connection = null) {
       let query = TFile.updateOne(file.id).set({
         fileName: file.fileName,
+        ...(file.pdfPageOffset !== undefined && {
+          pdfPageOffset: file.pdfPageOffset,
+        }),
       });
       if (connection) {
         query = query.usingConnection(connection);

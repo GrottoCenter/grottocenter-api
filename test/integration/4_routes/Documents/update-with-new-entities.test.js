@@ -402,4 +402,82 @@ describe('Document update-with-new-entities', () => {
       });
     });
   });
+  describe('Identifier PDF page offset (#1936)', () => {
+    let docId;
+
+    const send = (document) =>
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/documents/${docId}/new-entities`)
+        .send({ document, newAuthors: [], newDescriptions: [] })
+        .set('Authorization', userToken)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json');
+
+    const storedOffset = async () =>
+      (await TDocument.findOne(docId)).identifierPdfPageOffset;
+
+    beforeEach(async () => {
+      const doc = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: true,
+        identifier: 'https://example.org/bulletin.pdf',
+        identifierType: 'url',
+        identifierPdfPageOffset: 3,
+      }).fetch();
+      docId = doc.id;
+    });
+
+    afterEach(async () => {
+      await TDocument.destroy({ id: docId });
+    });
+
+    it('should set positive, negative and zero offsets', async () => {
+      await send({ identifierPdfPageOffset: 1 }).expect(200);
+      should(await storedOffset()).equal(1);
+      await send({ identifierPdfPageOffset: '-126' }).expect(200);
+      should(await storedOffset()).equal(-126);
+      await send({ identifierPdfPageOffset: 0 }).expect(200);
+      should(await storedOffset()).equal(0);
+    });
+
+    it('should clear the offset with null', async () => {
+      await send({ identifierPdfPageOffset: null }).expect(200);
+      should(await storedOffset()).be.null();
+    });
+
+    it('should leave the offset unchanged when it is omitted', async () => {
+      await send({ pages: '12-14' }).expect(200);
+      should(await storedOffset()).equal(3);
+    });
+
+    it('should clear the offset when the URL changes without one', async () => {
+      await send({ identifier: 'https://example.org/other.pdf' }).expect(200);
+      should(await storedOffset()).be.null();
+    });
+
+    it('should keep a replacement offset sent with a new URL', async () => {
+      await send({
+        identifier: 'https://example.org/other.pdf',
+        identifierType: 'url',
+        identifierPdfPageOffset: 5,
+      }).expect(200);
+      should(await storedOffset()).equal(5);
+    });
+
+    it('should return 400 for an offset on a non-URL identifier', async () => {
+      await send({
+        identifier: '1234-5678',
+        identifierType: 'issn',
+        identifierPdfPageOffset: 1,
+      }).expect(400);
+      should(await storedOffset()).equal(3);
+    });
+
+    it('should return 400 for a fractional offset', async () => {
+      await send({ identifierPdfPageOffset: 1.5 }).expect(400);
+      should(await storedOffset()).equal(3);
+    });
+  });
 });

@@ -1013,7 +1013,7 @@ ALTER TABLE h_document DROP CONSTRAINT IF EXISTS h_document_pkey;
 ALTER TABLE h_document ADD CONSTRAINT h_document_pkey PRIMARY KEY (id, date_reviewed);
 ${forTestDatabase(
   fs.readFileSync(
-    path.join(__dirname, '../sql/5_02_2025_11_19_update_document_trigger.sql'),
+    path.join(__dirname, '../sql/9_27_2026_10_26_pdf_page_offset.sql'),
     'utf8'
   )
 )}

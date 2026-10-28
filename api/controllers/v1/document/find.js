@@ -9,7 +9,8 @@ const {
 const readBoolParam = require('../../../utils/readBoolParam');
 
 async function getModifiedDocumentData(documentId) {
-  const { id, modifiedDocJson } = await TDocument.findOne(documentId);
+  const { id, modifiedDocJson, identifierPdfPageOffset } =
+    await TDocument.findOne(documentId);
   if (modifiedDocJson === null) return null;
 
   const {
@@ -26,6 +27,10 @@ async function getModifiedDocumentData(documentId) {
     documentData
   );
   populatedDoc.descriptions = [descriptionData];
+  // An offset the modification does not change keeps its stored value; an
+  // explicit clear is stored as null and shown as such (#1936).
+  if (documentData.identifierPdfPageOffset === undefined)
+    populatedDoc.identifierPdfPageOffset = identifierPdfPageOffset;
 
   // Files retrieval
   const filesCriterias = {
@@ -47,7 +52,17 @@ async function getModifiedDocumentData(documentId) {
   populatedDoc.files = await TFile.find(filesCriterias);
   populatedDoc.newFiles = newFiles;
   populatedDoc.deletedFiles = deletedFiles;
-  populatedDoc.modifiedFiles = modifiedFiles;
+  // The pending change only holds what it modifies: complete it with the
+  // stored file, so an omitted pdfPageOffset shows its current value (#1936).
+  const storedModifiedFiles =
+    modifiedFiles?.length > 0
+      ? await TFile.find({ id: modifiedFiles.map((f) => f.id), document: id })
+      : [];
+  const storedById = new Map(storedModifiedFiles.map((f) => [f.id, f]));
+  populatedDoc.modifiedFiles = modifiedFiles?.map((f) => ({
+    ...storedById.get(Number(f.id)),
+    ...f,
+  }));
 
   return populatedDoc;
 }
