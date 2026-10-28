@@ -20,3 +20,15 @@ Two ordinary API paths bypass both and can break the invariant (tracked in #1944
 The nightly pipeline runs it first and stops before publishing when `violation_count > 0`.
 
 A violation is fixed by finding why the flag is wrong (a bulk write that moved coordinates, an import that bypassed `EntranceService.createEntrance`, an entrance moved or a sensitive polygon enlarged through the update endpoints above), not by patching the check.
+
+## Tables
+
+`sql/9_28_2026_10_28_bot_foundation.sql` creates the tables the bot pages decide with. They hold decisions, not content.
+
+| Table             | Holds                                                                                                                                                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `t_bot_admission` | `(entity_type, entity_id, bot_admitted_at)`. A row is inserted the first time a record qualifies and is never updated or deleted, so a page does not leave and re-enter search results when someone edits it.               |
+| `t_bot_config`    | One row of thresholds: `min_age_days` (30) and, for the cave content rule, `min_text_chars` (500), `min_depth_m` (300), `min_length_m` (3000), `max_boilerplate_caves` (3). Changing stage is an `UPDATE`, not a migration. |
+| `t_bot_text_scan` | The coordinate detector's verdict per free text (`t_description`, `t_name`, `t_document`): hash, pattern version, match, family and excerpt. The excerpt is for moderators and never published.                             |
+
+Production does not run migrations on deploy: apply the file by hand. It is idempotent and never resets `t_bot_config`.
