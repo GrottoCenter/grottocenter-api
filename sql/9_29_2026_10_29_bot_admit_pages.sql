@@ -54,7 +54,9 @@ DECLARE
   cutoff timestamp;
   n bigint;
 BEGIN
-  SELECT * INTO cfg FROM t_bot_config WHERE id = 1;
+  -- STRICT: a missing configuration row must stop the pipeline, not read as
+  -- "nothing qualifies" and report zero admissions every night.
+  SELECT * INTO STRICT cfg FROM t_bot_config WHERE id = 1;
   cutoff := LOCALTIMESTAMP - make_interval(days => cfg.min_age_days);
 
   INSERT INTO t_bot_admission (entity_type, entity_id)
