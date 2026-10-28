@@ -119,10 +119,21 @@ describe('bot surface foundation tables', () => {
       ).be.rejectedWith(/duplicate key/);
     });
 
-    it('refuses a source table that is not scanned', async () => {
-      await should(
-        insert(['t_location', 900000001, 'abc', 1, false, null, null])
-      ).be.rejectedWith(/t_bot_text_scan_source_table_check/);
+    it('accepts a name verdict', async () => {
+      await insert(['t_name', 900000005, 'abc', 1, false, null, null]);
+      const { rows } = await query(
+        'SELECT source_table FROM t_bot_text_scan WHERE source_id = 900000005'
+      );
+      should(rows[0].source_table).equal('t_name');
+    });
+
+    it('refuses a source table the bot pages never render', async () => {
+      for (const table of ['t_location', 't_comment', 't_document']) {
+        // eslint-disable-next-line no-await-in-loop
+        await should(
+          insert([table, 900000001, 'abc', 1, false, null, null])
+        ).be.rejectedWith(/t_bot_text_scan_source_table_check/);
+      }
     });
 
     it('refuses a pattern id or excerpt on a clean verdict', async () => {

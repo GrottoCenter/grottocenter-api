@@ -11,12 +11,26 @@
 --                    qualifies and is never updated or deleted, so a page does
 --                    not leave and re-enter search results every time someone
 --                    edits it. Written by bot_admit_pages() (nightly pipeline).
+--                    Sticky against edits only: the age and content rules are
+--                    judged once, but a record that is later soft-deleted,
+--                    merged (redirect_to) or put in a sensitive massif still
+--                    leaves the surface, because v_bot_page re-checks those
+--                    gates every time it is read. Admission is necessary, not
+--                    sufficient.
 --   t_bot_config     one row of thresholds, so changing the content-rule stage
 --                    is a data change, not a migration.
 --   t_bot_text_scan  the verdict of the coordinate detector (#1761) for each
 --                    free text, in a table of its own: writing flag columns on
 --                    the text tables would fire their history, change-log and
 --                    search-reindexing triggers for data nobody edited.
+--                    It holds exactly the free texts the bot pages publish:
+--                    t_description (body_hash covers the title and the body,
+--                    md5(coalesce(title, '') || E'\n' || coalesce(body, ''))),
+--                    which also carries document titles, and t_name (body_hash
+--                    is md5(name)). t_location, t_comment, t_history and
+--                    t_rigging are never rendered, so they are not scanned. A
+--                    change that starts publishing another text must widen the
+--                    source_table check below first, in a new migration.
 --
 -- Nothing reads them yet. v_bot_page and bot_admit_pages() follow.
 --
@@ -70,7 +84,7 @@ CREATE TABLE IF NOT EXISTS t_bot_text_scan (
   scanned_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (source_table, source_id),
   CONSTRAINT t_bot_text_scan_source_table_check
-    CHECK (source_table IN ('t_description', 't_name', 't_document')),
+    CHECK (source_table IN ('t_description', 't_name')),
   CONSTRAINT t_bot_text_scan_matched_check
     CHECK (matched OR (pattern_id IS NULL AND match_excerpt IS NULL))
 );
