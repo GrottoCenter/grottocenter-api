@@ -189,6 +189,24 @@ module.exports = {
   },
 
   /**
+   * Whether a polygon differs from the one stored for the massif. A polygon
+   * resent unchanged by a client is not a change.
+   *
+   * @param {number|string} massifId
+   * @param {string} wktPolygon polygon as WKT, without SRID (4326 is assumed)
+   * @returns {Promise<boolean>} true when the massif has no polygon yet
+   */
+  async hasPolygonChanged(massifId, wktPolygon) {
+    const { rows } = await CommonService.query(
+      `SELECT geog_polygon IS NULL
+              OR NOT ST_Equals(geog_polygon::geometry, ST_SetSRID(ST_GeomFromText($2), 4326)) AS changed
+       FROM t_massif WHERE id = $1`,
+      [massifId, wktPolygon]
+    );
+    return rows[0]?.changed ?? false;
+  },
+
+  /**
    * Validate a polygon's geometry and area constraints.
    * Checks basic validity (ST_IsValid), antimeridian span, geographic
    * computability (ST_Area on geography), and maximum area limit.
@@ -470,7 +488,7 @@ module.exports = {
       }
       await updateQuery;
       sails.log.info(
-        `Massif ${massifId} marked sensitive: converted non-sensitive entrances [${entranceIds.join(
+        `Massif ${massifId}: converted non-sensitive entrances [${entranceIds.join(
           ', '
         )}] to sensitive.`
       );

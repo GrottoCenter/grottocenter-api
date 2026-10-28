@@ -6528,7 +6528,7 @@ paths:
     put:
       tags:
         - massifs
-      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically. When the polygon of a sensitive massif is replaced, the non-sensitive, unlocked entrances it now contains become sensitive.
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically. When the polygon of a sensitive massif is changed (a polygon sent again unchanged is ignored), the non-sensitive, unlocked entrances it now contains become sensitive.
       parameters:
         - name: id
           in: path

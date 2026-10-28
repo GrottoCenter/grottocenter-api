@@ -84,17 +84,30 @@ module.exports = async (req, res) => {
     }
   }
 
-  // Enlarging the polygon of a sensitive massif can enclose public entrances:
+  // Replacing the polygon of a sensitive massif can enclose public entrances:
   // they become sensitive in the same transaction, as when the massif is marked.
-  if (cleanedData.geogPolygon && rawMassif.isSensitive) {
-    await sails.getDatastore().transaction(async (db) => {
+  // A polygon resent unchanged is not a change: an entrance an administrator
+  // unmarked on purpose must not be re-marked by the next unrelated edit.
+  const polygonChanged =
+    Boolean(cleanedData.geogPolygon) &&
+    rawMassif.isSensitive &&
+    (await MassifService.hasPolygonChanged(massifId, cleanedData.geogPolygon));
+  if (polygonChanged) {
+    const markedIds = await sails.getDatastore().transaction(async (db) => {
       await TMassif.updateOne(massifId).set(cleanedData).usingConnection(db);
-      await MassifService.propagateSensitivityToEntrances(
+      return MassifService.propagateSensitivityToEntrances(
         massifId,
         req.token.id,
         db
       );
     });
+    if (markedIds.length > 0) {
+      sails.log.info(
+        `Massif ${massifId} polygon updated: entrances [${markedIds.join(
+          ', '
+        )}] marked sensitive.`
+      );
+    }
   } else {
     await TMassif.updateOne(massifId).set(cleanedData);
   }

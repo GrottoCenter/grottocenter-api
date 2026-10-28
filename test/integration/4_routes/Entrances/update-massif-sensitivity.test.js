@@ -106,7 +106,10 @@ describe('Entrance update - sensitivity inherited from the massif', () => {
 
     await put(adminToken, entrance.id, { ...INSIDE, isSensitiveLocked: true });
 
-    should((await TEntrance.findOne(entrance.id)).isSensitive).be.false();
+    const updated = await TEntrance.findOne(entrance.id);
+    should(updated.isSensitive).be.false();
+    should(updated.isSensitiveLocked).be.true();
+    should(updated.latitude).be.approximately(INSIDE.latitude, 0.0001);
   }).timeout(10000);
 
   it('does not mark an entrance moved into a non-sensitive massif', async () => {

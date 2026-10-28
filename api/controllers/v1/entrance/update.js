@@ -26,6 +26,13 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Validate name length
+  const nameText = req.param('name')?.text;
+  const nameError = validateNameLength(nameText);
+  if (nameError) {
+    return res.badRequest(nameError);
+  }
+
   const cleanedData = {
     reviewer: req.token.id,
     // dateReviewed will be updated automatically by the SQL historisation trigger
@@ -72,13 +79,13 @@ module.exports = async (req, res) => {
   }
 
   const isValidCoordinate = cleanedData.latitude && cleanedData.longitude;
+  const movedBy = (threshold) =>
+    isValidCoordinate &&
+    (Math.abs(currentEntrance.latitude - cleanedData.latitude) > threshold ||
+      Math.abs(currentEntrance.longitude - cleanedData.longitude) > threshold);
   // Update reverse geocoding if the position has changed
   let coordinatesChanged = false;
-  if (
-    isValidCoordinate &&
-    (Math.abs(currentEntrance.latitude - cleanedData.latitude) > 0.001 ||
-      Math.abs(currentEntrance.longitude - cleanedData.longitude) > 0.001)
-  ) {
+  if (movedBy(0.001)) {
     cleanedData.country = CountryResolverService.resolve(
       cleanedData.latitude,
       cleanedData.longitude
@@ -95,14 +102,8 @@ module.exports = async (req, res) => {
   // as a new entrance does. Whatever the request says about isSensitive: only
   // the lock exempts it. Tested on any move, however small, since the geocoding
   // threshold above is wider than a polygon edge.
-  const positionMoved =
-    isValidCoordinate &&
-    (Math.abs(currentEntrance.latitude - cleanedData.latitude) >
-      POSITION_EPSILON ||
-      Math.abs(currentEntrance.longitude - cleanedData.longitude) >
-        POSITION_EPSILON);
   if (
-    positionMoved &&
+    movedBy(POSITION_EPSILON) &&
     (await EntranceService.shouldInheritMassifSensitivity(
       {
         isSensitive: cleanedData.isSensitive ?? currentEntrance.isSensitive,
@@ -117,13 +118,6 @@ module.exports = async (req, res) => {
     sails.log.info(
       `Entrance ${entranceId} moved into a sensitive massif: marked sensitive.`
     );
-  }
-
-  // Validate name length
-  const nameText = req.param('name')?.text;
-  const nameError = validateNameLength(nameText);
-  if (nameError) {
-    return res.badRequest(nameError);
   }
 
   // Handle name manually
