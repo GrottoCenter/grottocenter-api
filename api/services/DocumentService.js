@@ -70,12 +70,20 @@ const parseFileId = (id) => {
   return isValidId(n) ? n : null;
 };
 
-const isPdfFileName = async (fileName) => {
+// Extensions of the file formats whose MIME type is PDF.
+const findPdfExtensions = async () => {
+  const formats = await TFileFormat.find().select(['extension', 'mimeType']);
+  return new Set(
+    formats
+      .filter((format) => format.mimeType?.trim() === PDF_MIME_TYPE)
+      .map((format) => format.extension)
+  );
+};
+
+const isPdfFileName = (fileName, pdfExtensions) => {
   const lastDot = fileName?.lastIndexOf('.') ?? -1;
   if (lastDot <= 0) return false;
-  const extension = fileName.slice(lastDot + 1).toLowerCase();
-  const format = await TFileFormat.findOne({ extension });
-  return format?.mimeType?.trim() === PDF_MIME_TYPE;
+  return pdfExtensions.has(fileName.slice(lastDot + 1).toLowerCase());
 };
 
 // Authorship is a many-to-many relation, which Waterline's count() cannot
@@ -243,6 +251,8 @@ module.exports = {
     if (!entries)
       return { error: 'newFilesMetadata must be a list of objects.' };
 
+    // Loaded on the first offset to check, then shared by all the entries.
+    let pdfExtensions = null;
     for (const [index, metadata] of entries) {
       // A hole in a sparse multipart list: no metadata for that file.
       // eslint-disable-next-line no-continue
@@ -260,7 +270,8 @@ module.exports = {
         return { error: invalidOffsetMessage(field) };
       if (offset !== null && offset !== undefined) {
         // eslint-disable-next-line no-await-in-loop
-        if (!(await isPdfFileName(files[index].originalname)))
+        pdfExtensions ??= await findPdfExtensions();
+        if (!isPdfFileName(files[index].originalname, pdfExtensions))
           return {
             error: `${field} is only allowed for a PDF file, not for "${files[index].originalname}".`,
           };
