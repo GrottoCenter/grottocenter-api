@@ -18,6 +18,8 @@ const LARGE = {
     ],
   ],
 };
+const LARGE_WKT =
+  'SRID=4326;POLYGON((150 -40, 152 -40, 152 -39, 150 -39, 150 -40))';
 const IN_RING = { latitude: -39.5, longitude: 151.5 };
 
 describe('Massif update - sensitivity propagated when the polygon grows', () => {
@@ -87,7 +89,7 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
     const { rows } = await CommonService.query(
       'SELECT * FROM bot_cascade_check()'
     );
-    should(Number(rows[0].violation_count)).equal(0);
+    should(rows[0].violation_ids).not.containEql(entrance.id);
   }).timeout(10000);
 
   it('leaves a locked entrance public', async () => {
@@ -111,6 +113,21 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
   it('does not mark an entrance that stays outside the new polygon', async () => {
     const massif = await createMassif(true);
     const entrance = await createEntrance({ latitude: -30, longitude: 100 });
+
+    await grow(massif.id);
+
+    should((await TEntrance.findOne(entrance.id)).isSensitive).be.false();
+  }).timeout(10000);
+
+  it('does not propagate when the same polygon is sent again', async () => {
+    const massif = await TMassif.create({
+      isSensitive: true,
+      author: 1,
+      geogPolygon: LARGE_WKT,
+    }).fetch();
+    massifIds.push(massif.id);
+    // An administrator unmarked this entrance on purpose
+    const entrance = await createEntrance();
 
     await grow(massif.id);
 

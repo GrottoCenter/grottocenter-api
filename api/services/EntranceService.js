@@ -290,9 +290,10 @@ module.exports = {
 
   /**
    * Whether an entrance moved to (latitude, longitude) must become sensitive
-   * because it now lies in a sensitive massif. Same rule as createEntrance: a
-   * locked entrance is exempt (an admin froze its sensitivity), and an
-   * entrance that is already sensitive needs nothing.
+   * because it now lies in a sensitive massif. The one rule shared by
+   * createEntrance and the entrance update: a locked entrance is exempt (an
+   * admin froze its sensitivity), and an entrance that is already sensitive
+   * needs nothing. A missing position never matches.
    *
    * @param {{ isSensitive: boolean, isSensitiveLocked: boolean }} entrance
    *   the sensitivity the entrance will have once the update is applied
@@ -325,22 +326,14 @@ module.exports = {
     // sensitivity is locked (an admin explicitly froze it, so it's exempt from
     // the massif's sensitivity — mirrors the mark-sensitive cascade skip).
     if (
-      !entranceData.isSensitiveLocked &&
-      entranceData.latitude !== null &&
-      entranceData.longitude !== null
+      await module.exports.shouldInheritMassifSensitivity(
+        entranceData,
+        entranceData.latitude,
+        entranceData.longitude
+      )
     ) {
-      /* eslint-disable no-param-reassign */
-      const isPointInSensitiveMassif =
-        await MassifService.isPointInSensitiveMassif(
-          entranceData.latitude,
-          entranceData.longitude
-        );
-      if (!entranceData.isSensitive && isPointInSensitiveMassif) {
-        autoMarkedSensitive = true;
-      }
-      entranceData.isSensitive =
-        entranceData.isSensitive || isPointInSensitiveMassif;
-      /* eslint-enable no-param-reassign */
+      autoMarkedSensitive = true;
+      entranceData.isSensitive = true; // eslint-disable-line no-param-reassign
     }
 
     const newEntranceId = await sails.getDatastore().transaction(async (db) => {
