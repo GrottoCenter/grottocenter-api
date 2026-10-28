@@ -8,6 +8,9 @@ const { toEntrance } = require('../../../services/mapping/converters');
 const { validateNameLength } = require('../../../utils/nameValidation');
 const readBoolParam = require('../../../utils/readBoolParam');
 
+// Below this change (about a centimetre) a coordinate is the same point
+const POSITION_EPSILON = 1e-7;
+
 module.exports = async (req, res) => {
   const boolError = readBoolParam.firstError(
     req,
@@ -86,6 +89,34 @@ module.exports = async (req, res) => {
     cleanedData.city = null;
     cleanedData.iso_3166_2 = null;
     coordinatesChanged = true;
+  }
+
+  // A moved entrance inherits the sensitivity of the massif it now lies in,
+  // as a new entrance does. Whatever the request says about isSensitive: only
+  // the lock exempts it. Tested on any move, however small, since the geocoding
+  // threshold above is wider than a polygon edge.
+  const positionMoved =
+    isValidCoordinate &&
+    (Math.abs(currentEntrance.latitude - cleanedData.latitude) >
+      POSITION_EPSILON ||
+      Math.abs(currentEntrance.longitude - cleanedData.longitude) >
+        POSITION_EPSILON);
+  if (
+    positionMoved &&
+    (await EntranceService.shouldInheritMassifSensitivity(
+      {
+        isSensitive: cleanedData.isSensitive ?? currentEntrance.isSensitive,
+        isSensitiveLocked:
+          cleanedData.isSensitiveLocked ?? currentEntrance.isSensitiveLocked,
+      },
+      cleanedData.latitude,
+      cleanedData.longitude
+    ))
+  ) {
+    cleanedData.isSensitive = true;
+    sails.log.info(
+      `Entrance ${entranceId} moved into a sensitive massif: marked sensitive.`
+    );
   }
 
   // Validate name length

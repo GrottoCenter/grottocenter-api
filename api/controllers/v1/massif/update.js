@@ -84,7 +84,20 @@ module.exports = async (req, res) => {
     }
   }
 
-  await TMassif.updateOne(massifId).set(cleanedData);
+  // Enlarging the polygon of a sensitive massif can enclose public entrances:
+  // they become sensitive in the same transaction, as when the massif is marked.
+  if (cleanedData.geogPolygon && rawMassif.isSensitive) {
+    await sails.getDatastore().transaction(async (db) => {
+      await TMassif.updateOne(massifId).set(cleanedData).usingConnection(db);
+      await MassifService.propagateSensitivityToEntrances(
+        massifId,
+        req.token.id,
+        db
+      );
+    });
+  } else {
+    await TMassif.updateOne(massifId).set(cleanedData);
+  }
 
   const updatedMassif = await MassifService.getPopulatedMassif(massifId);
   await NotificationService.notifySubscribers(

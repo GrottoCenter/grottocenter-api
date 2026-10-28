@@ -288,6 +288,23 @@ module.exports = {
     return TemporalNameResolver.mergeAndSort(HEntrances, nameChangeSnapshots);
   },
 
+  /**
+   * Whether an entrance moved to (latitude, longitude) must become sensitive
+   * because it now lies in a sensitive massif. Same rule as createEntrance: a
+   * locked entrance is exempt (an admin froze its sensitivity), and an
+   * entrance that is already sensitive needs nothing.
+   *
+   * @param {{ isSensitive: boolean, isSensitiveLocked: boolean }} entrance
+   *   the sensitivity the entrance will have once the update is applied
+   * @param {number} latitude
+   * @param {number} longitude
+   * @returns {Promise<boolean>}
+   */
+  shouldInheritMassifSensitivity: async (entrance, latitude, longitude) => {
+    if (entrance.isSensitive || entrance.isSensitiveLocked) return false;
+    return MassifService.isPointInSensitiveMassif(latitude, longitude);
+  },
+
   createEntrance: async (req, entranceData, nameDescLocData) => {
     // Synchronous country resolution (offline, no network dependency)
     // eslint-disable-next-line no-param-reassign
