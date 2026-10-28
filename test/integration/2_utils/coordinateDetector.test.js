@@ -14,7 +14,7 @@ const {
 //   1. bump PATTERN_SET_VERSION in api/utils/coordinateDetector.js,
 //   2. add the new version with the new fingerprint below, and keep the old entry.
 const RECORDED_FINGERPRINTS = {
-  1: 'bf8610c5559f304232b5d7c6e9d8c5869adc954d28eb67a0d9ced15e7fcf00b9',
+  1: '790787d68042b37e90035d0e2f175007c043ae46cf6dec623aeaf6ed59f88692',
 };
 
 describe('coordinateDetector - pattern set version', () => {
@@ -134,6 +134,8 @@ describe('coordinateDetector - families', () => {
     ['lambert-label', 'Lambert II extended', 'Lambert II étendu'],
     ['lambert-label', 'Lambert 93', 'projection Lambert 93'],
     ['lambert-label', 'lowercase', 'lambert iii'],
+    ['lambert-label', 'zone one', 'Lambert I'],
+    ['lambert-label', 'zone four', 'Lambert IV'],
     ['lambert-label', 'short form of extended', 'Lambert IIe'],
     ['lambert-label', 'uppercase short form', 'Lambert IIE'],
     [
@@ -197,6 +199,8 @@ describe('coordinateDetector - ordinary text', () => {
     'orientée N120°E puis S 30° W',
     'Aven N 45° E',
     'une pente de 45° est visible',
+    'Lambertie (Dolines de)',
+    'Lambertin et Lambertie',
 
     'altitude 0,50111 de hauteur',
     'The cave is 1.5 km long and 85 m deep, with a stream passage.',

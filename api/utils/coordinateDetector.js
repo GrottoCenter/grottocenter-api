@@ -70,7 +70,7 @@ const PATTERNS = Object.freeze(
       // Lambert II Centre, Lambert IIe, Lambert 93, Lambert zone III, Lambert 2 étendu.
       // A bare "Lambert 2" stays out: it is also a cave name.
       id: 'lambert-label',
-      re: /\blambert\s{0,3}(?:(?:I{1,3}|IV|93|zone)e?\b|[1-4]\s{0,3}(?:e|é|[eé]tendu)\b)/i,
+      re: /\blambert\s{0,3}(?:(?:I{2,3}|IV)e?\b|I\b|93\b|zone\b|[1-4]\s{0,3}(?:e|é|[eé]tendu)\b)/i,
     },
     {
       // 32T 340000 5105000, UTM 32 340000 5105000
