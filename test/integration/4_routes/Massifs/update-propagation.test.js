@@ -122,12 +122,7 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
   }).timeout(10000);
 
   it('does not propagate when the same polygon is sent again', async () => {
-    const massif = await TMassif.create({
-      isSensitive: true,
-      author: 1,
-      geogPolygon: LARGE_WKT,
-    }).fetch();
-    massifIds.push(massif.id);
+    const massif = await createMassif(true, LARGE_WKT);
     // An administrator unmarked this entrance on purpose
     const entrance = await createEntrance();
 
@@ -138,12 +133,7 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
 
   it('does not propagate when the client sends back the polygon it was served', async () => {
     // Drawn polygons are stored with about 15 digits; the API serves 9
-    const massif = await TMassif.create({
-      isSensitive: true,
-      author: 1,
-      geogPolygon: PRECISE_WKT,
-    }).fetch();
-    massifIds.push(massif.id);
+    const massif = await createMassif(true, PRECISE_WKT);
     const entrance = await createEntrance();
 
     const served = await supertest(sails.hooks.http.app)
