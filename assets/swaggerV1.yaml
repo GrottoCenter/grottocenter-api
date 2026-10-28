@@ -5457,7 +5457,7 @@ paths:
     put:
       tags:
         - entrances
-      description: Update an entrance. See the POST /entrances route explanation about the parameters you can use to update an entrance.
+      description: Update an entrance. See the POST /entrances route explanation about the parameters you can use to update an entrance. When the coordinates change and the new position lies in a sensitive massif, the entrance becomes sensitive (whatever isSensitive says), unless its sensitivity is locked.
       parameters:
         - name: id
           in: path
@@ -6528,7 +6528,7 @@ paths:
     put:
       tags:
         - massifs
-      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically.
+      description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically. When the polygon of a sensitive massif is replaced, the non-sensitive, unlocked entrances it now contains become sensitive.
       parameters:
         - name: id
           in: path
