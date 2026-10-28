@@ -20,6 +20,8 @@ const LARGE = {
 };
 const LARGE_WKT =
   'SRID=4326;POLYGON((150 -40, 152 -40, 152 -39, 150 -39, 150 -40))';
+const PRECISE_WKT =
+  'SRID=4326;POLYGON((150.123456789012345 -40.123456789012345, 152.123456789012345 -40.123456789012345, 152.123456789012345 -39.123456789012345, 150.123456789012345 -39.123456789012345, 150.123456789012345 -40.123456789012345))';
 const IN_RING = { latitude: -39.5, longitude: 151.5 };
 
 describe('Massif update - sensitivity propagated when the polygon grows', () => {
@@ -28,11 +30,11 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
   const entranceIds = [];
   const caveIds = [];
 
-  const createMassif = async (isSensitive) => {
+  const createMassif = async (isSensitive, geogPolygon = SMALL) => {
     const massif = await TMassif.create({
       isSensitive,
       author: 1,
-      geogPolygon: SMALL,
+      ...(geogPolygon && { geogPolygon }),
     }).fetch();
     massifIds.push(massif.id);
     return massif;
@@ -132,6 +134,42 @@ describe('Massif update - sensitivity propagated when the polygon grows', () => 
     await grow(massif.id);
 
     should((await TEntrance.findOne(entrance.id)).isSensitive).be.false();
+  }).timeout(10000);
+
+  it('does not propagate when the client sends back the polygon it was served', async () => {
+    // Drawn polygons are stored with about 15 digits; the API serves 9
+    const massif = await TMassif.create({
+      isSensitive: true,
+      author: 1,
+      geogPolygon: PRECISE_WKT,
+    }).fetch();
+    massifIds.push(massif.id);
+    const entrance = await createEntrance();
+
+    const served = await supertest(sails.hooks.http.app)
+      .get(`/api/v1/massifs/${massif.id}`)
+      .expect(200);
+    const polygon =
+      typeof served.body.geogPolygon === 'string'
+        ? JSON.parse(served.body.geogPolygon)
+        : served.body.geogPolygon;
+    await supertest(sails.hooks.http.app)
+      .put(`/api/v1/massifs/${massif.id}`)
+      .set('Authorization', userToken)
+      .set('Content-type', 'application/json')
+      .send({ geogPolygon: polygon })
+      .expect(200);
+
+    should((await TEntrance.findOne(entrance.id)).isSensitive).be.false();
+  }).timeout(10000);
+
+  it('propagates when a sensitive massif that had no polygon gets one', async () => {
+    const massif = await createMassif(true, null);
+    const entrance = await createEntrance();
+
+    await grow(massif.id);
+
+    should((await TEntrance.findOne(entrance.id)).isSensitive).be.true();
   }).timeout(10000);
 
   it('does not propagate when the update leaves the polygon alone', async () => {

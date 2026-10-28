@@ -190,7 +190,11 @@ module.exports = {
 
   /**
    * Whether a polygon differs from the one stored for the massif. A polygon
-   * resent unchanged by a client is not a change.
+   * resent by a client is not a change: the API serves polygons through
+   * ST_AsGeoJSON, which keeps 9 decimals, while a drawn polygon is stored with
+   * about 15, so an exact comparison would call every round trip a change. The
+   * tolerance is 1e-7 degrees (about a centimetre), the one the entrance
+   * update uses for a moved position.
    *
    * @param {number|string} massifId
    * @param {string} wktPolygon polygon as WKT, without SRID (4326 is assumed)
@@ -199,7 +203,7 @@ module.exports = {
   async hasPolygonChanged(massifId, wktPolygon) {
     const { rows } = await CommonService.query(
       `SELECT geog_polygon IS NULL
-              OR NOT ST_Equals(geog_polygon::geometry, ST_SetSRID(ST_GeomFromText($2), 4326)) AS changed
+              OR ST_HausdorffDistance(geog_polygon::geometry, ST_SetSRID(ST_GeomFromText($2), 4326)) > 1e-7 AS changed
        FROM t_massif WHERE id = $1`,
       [massifId, wktPolygon]
     );
