@@ -53,3 +53,13 @@ Production does not run migrations on deploy: apply the file by hand. It is idem
 - The thresholds are in `t_bot_config`.
 
 Admission is sticky, so a later edit that shrinks a text, or a record deleted afterwards, does not remove the row; `v_bot_page` re-checks deletion, merges and sensitivity.
+
+## Text scan
+
+`BotTextScanService.run()` is step 3 of the nightly pipeline. It runs the coordinate detector (`api/utils/coordinateDetector.js`) over every published free text, descriptions (title and body together) and names, and records one verdict per text in `t_bot_text_scan`. A text that holds a position is withheld from the pages until a moderator edits it; the page itself stays.
+
+- **Incremental.** A text is scanned when it has no verdict, when its hash differs from the verdict's (it was edited), or when the verdict was made at another pattern set version. Raising `PATTERN_SET_VERSION` therefore scans everything again. The hash is computed by the database, with the expression the admission function uses.
+- **No side effects.** It never writes to `t_description` or `t_name`, so their history, change-log and search triggers do not fire.
+- **Fails closed.** If the detector throws on a text, that text is recorded as matched with the pattern `error` and the run goes on. Any other failure rejects the call, so the pipeline stops before publishing.
+- **`t_bot_config.pattern_version`** moves to the current version only once every text has a verdict at that version. Until then the admission function and the view count no text, so a scan interrupted half way never lets an unscanned text through.
+- **Reporting.** The call returns, and logs, the number of texts scanned and quarantined per source, and the number of detector errors.
