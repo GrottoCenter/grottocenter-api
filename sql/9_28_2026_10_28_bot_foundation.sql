@@ -27,7 +27,7 @@
 --                    t_description (body_hash covers the title and the body,
 --                    md5(coalesce(title, '') || E'\n' || coalesce(body, ''))),
 --                    which also carries document titles, and t_name (body_hash
---                    is md5(name)). t_location, t_comment, t_history and
+--                    is md5(coalesce(name, ''))). t_location, t_comment, t_history and
 --                    t_rigging are never rendered, so they are not scanned. A
 --                    change that starts publishing another text must widen the
 --                    source_table check below first, in a new migration.
