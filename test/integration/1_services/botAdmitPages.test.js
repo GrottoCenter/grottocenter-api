@@ -9,6 +9,7 @@ const DAY = 24 * 3600;
 
 describe('bot_admit_pages - admission to the bot surface', () => {
   const created = {
+    document: [],
     cave: [],
     entrance: [],
     massif: [],
@@ -136,6 +137,7 @@ describe('bot_admit_pages - admission to the bot surface', () => {
     await TEntrance.destroy({ id: created.entrance });
     await TCave.destroy({ id: created.cave });
     await TMassif.destroy({ id: created.massif });
+    await TDocument.destroy({ id: created.document });
     await TGrotto.destroy({ id: created.grotto });
     Object.values(created).forEach((ids) => ids.splice(0));
   });
@@ -453,6 +455,23 @@ describe('bot_admit_pages - admission to the bot surface', () => {
     });
   });
 
+  describe('configuration', () => {
+    it('fails loudly when the configuration row is missing, instead of admitting nothing', async () => {
+      // One connection, so the DELETE is rolled back with the failed call
+      await should(
+        sails.getDatastore().transaction(async (db) => {
+          await CommonService.query('DELETE FROM t_bot_config', [], db);
+          await CommonService.query('SELECT * FROM bot_admit_pages()', [], db);
+        })
+      ).be.rejectedWith(/no rows/i);
+
+      const { rows } = await query(
+        'SELECT count(*)::int AS n FROM t_bot_config'
+      );
+      should(rows[0].n).equal(1);
+    });
+  });
+
   describe('stickiness', () => {
     it('keeps an admitted cave when its text later shrinks, and does not touch the admission time', async () => {
       const { cave } = await mkPublicCave();
@@ -588,11 +607,11 @@ describe('bot_admit_pages - admission to the bot surface', () => {
       license: 1,
       isValidated: true,
     }).fetch();
-    await setDates('t_document', doc.id, 90).catch(() => {});
+    created.document.push(doc.id);
+    await setDates('t_document', doc.id, 90);
 
     await run();
 
     should(await isAdmitted('document', doc.id)).be.false();
-    await TDocument.destroy({ id: doc.id });
   });
 });
