@@ -281,6 +281,31 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
       should((await verdictOf('t_description', target.id)).matched).be.true();
     });
 
+    it('takes back the quarantine of a text edited clean mid-scan', async () => {
+      const target = await mkDescription({ body: `Starts at ${POSITION}` });
+      let edited = false;
+      afterBatchOf('t_description', async () => {
+        if (edited) return;
+        edited = true;
+        await TDescription.update({ id: target.id }).set({
+          body: 'Now with no position at all',
+        });
+      });
+
+      const summary = await run();
+
+      sinon.restore();
+      should(summary.passes).equal(2);
+      should((await verdictOf('t_description', target.id)).matched).be.false();
+      const stored = await query(
+        `SELECT count(*) FILTER (WHERE matched)::int AS quarantined
+         FROM t_bot_text_scan WHERE source_table = 't_description'`
+      );
+      should(summary.quarantined.t_description).equal(
+        stored.rows[0].quarantined
+      );
+    });
+
     it('fails, leaving the version alone, when a text keeps changing under every pass', async () => {
       const target = await mkDescription({ body: 'Edit me' });
       await query('UPDATE t_bot_config SET pattern_version = 3');
