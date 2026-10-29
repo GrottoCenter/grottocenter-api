@@ -46,6 +46,7 @@ const EXPECTED = {
       'needCleanGear',
       'needStayOnTrail',
       'region',
+      'regionCode',
     ],
     nested: ['id', 'name'],
   },
