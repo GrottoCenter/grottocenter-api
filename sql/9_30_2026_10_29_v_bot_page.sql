@@ -12,17 +12,22 @@
 --
 --   entity_type, entity_id, language   what the page is, in the language of its
 --                                      main name
---   lastmod                            when the page last gained content: the
---                                      latest of the record's own dates, the
---                                      moment each embedded item was admitted,
---                                      the moment each description became old
---                                      enough to show, and the dates of the
---                                      names shown. It is a hint for the
---                                      sitemap, not a change detector: a
---                                      description or entrance that drops out
---                                      (deleted, quarantined, made sensitive)
---                                      cannot move it. Whoever decides what to
---                                      regenerate compares a hash of `page`.
+--   lastmod                            a hint for the sitemap: the latest of
+--                                      the record's own dates, the moment each
+--                                      embedded item was admitted, the moment
+--                                      each description became old enough to
+--                                      show, and the dates of the names shown.
+--                                      It does not see content that appears
+--                                      because its scan arrives late (a first
+--                                      scan, a rescan after a pattern version
+--                                      bump, a quarantine cleared): the scan
+--                                      date is left out on purpose, as a bump
+--                                      rescans every text and would move every
+--                                      page. Nor does it see content that drops
+--                                      out (deleted, quarantined, made
+--                                      sensitive); it can even go back.
+--                                      Whoever decides what to regenerate or
+--                                      withdraw compares a hash of `page`.
 --   page                               jsonb holding exactly the fields named in
 --                                      api/utils/botSurfaceWhitelist.js; a test
 --                                      compares the two. No coordinate of any
