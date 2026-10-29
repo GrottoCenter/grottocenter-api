@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 const massifPolygon = require('./FAKE_DATA');
 
@@ -285,6 +286,58 @@ describe('Massif features', () => {
             );
             return done();
           });
+      });
+    });
+
+    describe('Populate failure after creation (#1655)', () => {
+      let MassifService;
+      let createdMassifId;
+
+      before(() => {
+        // Resolve after the lift: a top-level require would be a stale copy.
+        // eslint-disable-next-line global-require
+        MassifService = require('../../../../api/services/MassifService');
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      after(async () => {
+        if (createdMassifId) {
+          await TName.destroy({ massif: createdMassifId });
+          await TMassif.destroyOne(createdMassifId);
+        }
+      });
+
+      it('should return 200 with the unpopulated massif when populating fails', async () => {
+        const populate = sinon
+          .stub(MassifService, 'getPopulatedMassif')
+          .rejects(new Error('connection reset'));
+        const logError = sinon.stub(sails.log, 'error');
+
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/massifs')
+          .send({
+            name: 'Populate Failure Massif',
+            descriptionAndNameLanguage: { id: 'fra' },
+            geogPolygon: massifPolygon.geoJsonSmall,
+          })
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdMassifId = res.body.id;
+
+        should(populate.calledOnce).be.true();
+        should(res.body.id).be.a.Number();
+        should(res.body.isDeleted).equal(false);
+        should(
+          logError.calledWithMatch(
+            `MassifController.create: failed to populate the created record ${createdMassifId},`
+          )
+        ).be.true();
+        should(await TMassif.findOne(createdMassifId)).be.ok();
       });
     });
   });

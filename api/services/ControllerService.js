@@ -55,6 +55,33 @@ const treatRange = (parameters, req, res, converter, found) => {
 };
 
 module.exports = {
+  /**
+   * Populate a record a create controller has just persisted. The creation
+   * already succeeded at this point, so a failed or empty populate must not
+   * turn into a 500: it is logged and the unpopulated record is returned, which
+   * the converters accept (associations stay as ids) (#1655).
+   *
+   * @param {Object} created the record returned by create().fetch()
+   * @param {Function} populate receives created.id, resolves the populated record
+   * @param {String} controllerMethod used to prefix the log line
+   * @return {Object} the populated record, or `created` when populating failed
+   */
+  populateCreated: async (created, populate, controllerMethod) => {
+    try {
+      const populated = await populate(created.id);
+      if (populated) return populated;
+      sails.log.error(
+        `${controllerMethod}: populating the created record ${created.id} returned nothing, answering with the unpopulated record`
+      );
+    } catch (error) {
+      sails.log.error(
+        `${controllerMethod}: failed to populate the created record ${created.id}, answering with the unpopulated record`,
+        error
+      );
+    }
+    return created;
+  },
+
   treat: (req, err, found, parameters, res) => {
     if (err) {
       return res.badRequest(`${parameters.controllerMethod} error: ${err}`);

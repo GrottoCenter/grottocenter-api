@@ -615,4 +615,61 @@ describe('ControllerService', () => {
       should(meta).have.property('hasCompleteViewRight');
     });
   });
+
+  describe('populateCreated()', () => {
+    const created = { id: 42, author: 1 };
+
+    beforeEach(() => {
+      sinon.stub(sails.log, 'error');
+    });
+
+    it('should return the populated record when populating succeeds', async () => {
+      const populated = { id: 42, author: { id: 1 } };
+      const populate = sinon.stub().resolves(populated);
+
+      const result = await ControllerService.populateCreated(
+        created,
+        populate,
+        'TestController.create'
+      );
+
+      should(result).equal(populated);
+      should(populate.calledOnceWith(42)).be.true();
+      should(sails.log.error.called).be.false();
+    });
+
+    it('should log and return the created record when populating throws', async () => {
+      const error = new Error('connection reset');
+      const populate = sinon.stub().rejects(error);
+
+      const result = await ControllerService.populateCreated(
+        created,
+        populate,
+        'TestController.create'
+      );
+
+      should(result).equal(created);
+      should(sails.log.error.calledOnce).be.true();
+      should(sails.log.error.firstCall.args[0]).match(
+        /^TestController\.create: .* 42/
+      );
+      should(sails.log.error.firstCall.args[1]).equal(error);
+    });
+
+    it('should log and return the created record when populating finds nothing', async () => {
+      const populate = sinon.stub().resolves(null);
+
+      const result = await ControllerService.populateCreated(
+        created,
+        populate,
+        'TestController.create'
+      );
+
+      should(result).equal(created);
+      should(sails.log.error.calledOnce).be.true();
+      should(sails.log.error.firstCall.args[0]).match(
+        /^TestController\.create: .* 42/
+      );
+    });
+  });
 });

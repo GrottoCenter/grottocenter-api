@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('SensorConfiguration features', () => {
@@ -226,6 +227,55 @@ describe('SensorConfiguration features', () => {
             createdIds.push(config.id);
             return done();
           });
+      });
+    });
+
+    describe('Populate failure after creation (#1655)', () => {
+      let SensorConfigurationService;
+      let createdId;
+
+      before(() => {
+        // Resolve after the lift: a top-level require would be a stale copy.
+        // eslint-disable-next-line global-require
+        SensorConfigurationService = require('../../../../api/services/SensorConfigurationService');
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      after(async () => {
+        if (createdId) {
+          await TSensorConfiguration.destroyOne({ id: createdId });
+        }
+      });
+
+      it('should return 200 with the unpopulated configuration when populating fails', async () => {
+        const populate = sinon
+          .stub(SensorConfigurationService, 'getPopulatedConfiguration')
+          .rejects(new Error('connection reset'));
+        const logError = sinon.stub(sails.log, 'error');
+
+        const res = await supertest(sails.hooks.http.app)
+          .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
+          .send({ quantityKind: VALID_QUANTITY_KIND, unit: VALID_UNIT })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdId = res.body.id;
+
+        should(populate.calledOnce).be.true();
+        should(res.body.id).be.a.Number();
+        should(res.body.device).equal(DEVICE_ID);
+        should(res.body.quantityKind).equal(VALID_QUANTITY_KIND);
+        should(res.body.unit).equal(VALID_UNIT);
+        should(
+          logError.calledWithMatch(
+            `SensorConfigurationController.create: failed to populate the created record ${createdId},`
+          )
+        ).be.true();
+        should(await TSensorConfiguration.findOne({ id: createdId })).be.ok();
       });
     });
   });
