@@ -87,14 +87,9 @@ module.exports = {
    * @param {number} [options.batchSize] rows read and written per round trip
    * @param {Function} [options.detect] detector, for tests
    * @param {number} [options.patternVersion] pattern set version, for tests
-   * @returns {Promise<{
-   *   patternVersion: number,
-   *   scanned: Object<string, number>,  distinct texts, whatever the passes
-   *   quarantined: Object<string, number>,  distinct texts withheld
-   *   errors: number,
-   *   passes: number,
-   *   durationMs: number
-   * }>}
+   * @returns {Promise<{ patternVersion: number, scanned: Object<string, number>, quarantined: Object<string, number>, errors: number, passes: number, durationMs: number }>}
+   *   `scanned` and `quarantined` count distinct texts per source: a text read
+   *   again in a later pass counts once, with its latest verdict.
    */
   async run(options = {}) {
     const startedAt = Date.now();
