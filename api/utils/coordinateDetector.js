@@ -68,9 +68,10 @@ const PATTERNS = Object.freeze(
     },
     {
       // Lambert II Centre, Lambert IIe, Lambert 93, Lambert zone III, Lambert 2 étendu.
+      // A Roman numeral needs a space before it, so a surname (Lamberti, Lambertie) is not a zone.
       // A bare "Lambert 2" stays out: it is also a cave name.
       id: 'lambert-label',
-      re: /\blambert\s{0,3}(?:(?:I{2,3}|IV)e?\b|I\b|93\b|zone\b|[1-4]\s{0,3}(?:e|é|[eé]tendu)\b)/i,
+      re: /\blambert(?:\s{1,3}(?:(?:I{2,3}|IV)e?|I)\b|\s{0,3}(?:93|zone)\b|\s{0,3}[1-4]\s{0,3}(?:e|é|[eé]tendu)\b)/i,
     },
     {
       // 32T 340000 5105000, UTM 32 340000 5105000

@@ -4,7 +4,7 @@
 -- #1759: admission of records to the bot surface
 -- =============================================================================
 --
--- bot_admit_pages() is step 2 of the nightly pipeline (#1760). It inserts a
+-- bot_admit_pages() is step 3 of the nightly pipeline (#1760), after the text scan. It inserts a
 -- row in t_bot_admission the first time a record qualifies, and never updates
 -- or deletes one. Admission is necessary, not sufficient: v_bot_page re-checks
 -- deletion, merges and sensitivity every time it is read.

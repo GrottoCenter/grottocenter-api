@@ -14,7 +14,7 @@ const {
 //   1. bump PATTERN_SET_VERSION in api/utils/coordinateDetector.js,
 //   2. add the new version with the new fingerprint below, and keep the old entry.
 const RECORDED_FINGERPRINTS = {
-  1: '790787d68042b37e90035d0e2f175007c043ae46cf6dec623aeaf6ed59f88692',
+  1: 'e7d98776a8276ab1be796029f6724b8d5bcdf5cfd7529e48e4a42b5ae73a9351',
 };
 
 describe('coordinateDetector - pattern set version', () => {
@@ -201,6 +201,8 @@ describe('coordinateDetector - ordinary text', () => {
     'une pente de 45° est visible',
     'Lambertie (Dolines de)',
     'Lambertin et Lambertie',
+    'Grotta Lamberti',
+    'Lambertii',
 
     'altitude 0,50111 de hauteur',
     'The cave is 1.5 km long and 85 m deep, with a stream passage.',

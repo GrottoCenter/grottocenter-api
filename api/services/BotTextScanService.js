@@ -1,7 +1,7 @@
 /**
  * BotTextScanService.js
  *
- * @description :: Step 3 of the nightly bot-surface pipeline. Runs the
+ * @description :: Step 2 of the nightly bot-surface pipeline, before admission. Runs the
  *   coordinate detector over every free text the bot pages publish
  *   (descriptions and names) and records the verdict in t_bot_text_scan, so
  *   that a text holding a position is withheld from the pages.
@@ -27,6 +27,11 @@
 const coordinateDetector = require('../utils/coordinateDetector');
 
 const DEFAULT_BATCH_SIZE = 1000;
+
+// A text created or edited while a pass runs is picked up by the next pass. A
+// handful of passes settles any realistic edit rate; if it does not settle, the
+// run fails rather than moving the version over texts without a verdict.
+const MAX_PASSES = 3;
 
 // The hash of a text is computed by the database, with the same expression the
 // admission function uses to check that a verdict covers the text as it is now.
@@ -57,6 +62,23 @@ const pendingFilter = (source, versionParam) => `
     OR s.body_hash <> ${source.hash}
   )`;
 
+const countPending = async (patternVersion) => {
+  let total = 0;
+  for (const source of SOURCES) {
+    // eslint-disable-next-line no-await-in-loop
+    const { rows } = await CommonService.query(
+      `SELECT count(*)::int AS n
+       FROM ${source.table} t
+       LEFT JOIN t_bot_text_scan s
+         ON s.source_table = '${source.table}' AND s.source_id = t.id
+       WHERE ${pendingFilter(source, '$1')}`,
+      [patternVersion]
+    );
+    total += rows[0].n;
+  }
+  return total;
+};
+
 module.exports = {
   /**
    * Scans every text that has no up-to-date verdict.
@@ -70,6 +92,7 @@ module.exports = {
    *   scanned: Object<string, number>,
    *   quarantined: Object<string, number>,
    *   errors: number,
+   *   passes: number,
    *   durationMs: number
    * }>}
    */
@@ -85,51 +108,56 @@ module.exports = {
       scanned: {},
       quarantined: {},
       errors: 0,
+      passes: 0,
       durationMs: 0,
     };
-
-    for (const source of SOURCES) {
+    SOURCES.forEach((source) => {
       summary.scanned[source.table] = 0;
       summary.quarantined[source.table] = 0;
-      let lastId = 0;
-      for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        const { rows } = await CommonService.query(
-          `SELECT t.id, ${source.columns}, ${source.hash} AS body_hash
+    });
+
+    for (let pass = 1; ; pass += 1) {
+      summary.passes = pass;
+      for (const source of SOURCES) {
+        let lastId = 0;
+        for (;;) {
+          // eslint-disable-next-line no-await-in-loop
+          const { rows } = await CommonService.query(
+            `SELECT t.id, ${source.columns}, ${source.hash} AS body_hash
            FROM ${source.table} t
            LEFT JOIN t_bot_text_scan s
              ON s.source_table = '${source.table}' AND s.source_id = t.id
            WHERE t.id > $1 AND ${pendingFilter(source, '$2')}
            ORDER BY t.id
            LIMIT $3`,
-          [lastId, patternVersion, batchSize]
-        );
-        if (rows.length === 0) break;
+            [lastId, patternVersion, batchSize]
+          );
+          if (rows.length === 0) break;
 
-        const verdicts = rows.map((row) => {
-          try {
-            const result = detect(source.textOf(row));
-            return result.matched
-              ? {
-                  row,
-                  matched: true,
-                  id: result.patternId,
-                  excerpt: result.match,
-                }
-              : { row, matched: false, id: null, excerpt: null };
-          } catch (error) {
-            summary.errors += 1;
-            sails.log.error(
-              `bot-text-scan: the detector failed on ${source.table} ${row.id}, withholding it`,
-              error
-            );
-            return { row, matched: true, id: 'error', excerpt: null };
-          }
-        });
+          const verdicts = rows.map((row) => {
+            try {
+              const result = detect(source.textOf(row));
+              return result.matched
+                ? {
+                    row,
+                    matched: true,
+                    id: result.patternId,
+                    excerpt: result.match,
+                  }
+                : { row, matched: false, id: null, excerpt: null };
+            } catch (error) {
+              summary.errors += 1;
+              sails.log.error(
+                `bot-text-scan: the detector failed on ${source.table} ${row.id}, withholding it`,
+                error
+              );
+              return { row, matched: true, id: 'error', excerpt: null };
+            }
+          });
 
-        // eslint-disable-next-line no-await-in-loop
-        await CommonService.query(
-          `INSERT INTO t_bot_text_scan
+          // eslint-disable-next-line no-await-in-loop
+          await CommonService.query(
+            `INSERT INTO t_bot_text_scan
              (source_table, source_id, body_hash, pattern_version, matched, pattern_id, match_excerpt, scanned_at)
            SELECT '${source.table}', v.id, v.body_hash, $1, v.matched, v.pattern_id, v.excerpt, now()
            FROM unnest($2::int[], $3::text[], $4::boolean[], $5::text[], $6::text[])
@@ -141,38 +169,31 @@ module.exports = {
              pattern_id = EXCLUDED.pattern_id,
              match_excerpt = EXCLUDED.match_excerpt,
              scanned_at = EXCLUDED.scanned_at`,
-          [
-            patternVersion,
-            verdicts.map((v) => v.row.id),
-            verdicts.map((v) => v.row.body_hash),
-            verdicts.map((v) => v.matched),
-            verdicts.map((v) => v.id),
-            verdicts.map((v) => v.excerpt),
-          ]
-        );
+            [
+              patternVersion,
+              verdicts.map((v) => v.row.id),
+              verdicts.map((v) => v.row.body_hash),
+              verdicts.map((v) => v.matched),
+              verdicts.map((v) => v.id),
+              verdicts.map((v) => v.excerpt),
+            ]
+          );
 
-        summary.scanned[source.table] += verdicts.length;
-        summary.quarantined[source.table] += verdicts.filter(
-          (v) => v.matched
-        ).length;
-        lastId = rows[rows.length - 1].id;
+          summary.scanned[source.table] += verdicts.length;
+          summary.quarantined[source.table] += verdicts.filter(
+            (v) => v.matched
+          ).length;
+          lastId = rows[rows.length - 1].id;
+        }
       }
-    }
 
-    // Every text must have a verdict at this version before the version moves
-    for (const source of SOURCES) {
+      // Every text must have a verdict at this version before the version moves
       // eslint-disable-next-line no-await-in-loop
-      const { rows } = await CommonService.query(
-        `SELECT count(*)::int AS n
-         FROM ${source.table} t
-         LEFT JOIN t_bot_text_scan s
-           ON s.source_table = '${source.table}' AND s.source_id = t.id
-         WHERE ${pendingFilter(source, '$1')}`,
-        [patternVersion]
-      );
-      if (rows[0].n > 0) {
+      const pending = await countPending(patternVersion);
+      if (pending === 0) break;
+      if (pass === MAX_PASSES) {
         throw new Error(
-          `bot-text-scan: ${rows[0].n} ${source.table} texts still have no verdict at version ${patternVersion}`
+          `bot-text-scan: ${pending} texts still have no verdict at version ${patternVersion} after ${MAX_PASSES} passes`
         );
       }
     }
@@ -191,7 +212,7 @@ module.exports = {
         summary.scanned
       )}, quarantined ${JSON.stringify(summary.quarantined)}, detector errors ${
         summary.errors
-      } in ${summary.durationMs} ms`
+      } in ${summary.passes} pass(es), ${summary.durationMs} ms`
     );
     return summary;
   },
