@@ -71,23 +71,38 @@ module.exports = async (req, res) => {
       NotificationService.NOTIFICATION_ENTITIES.ORGANIZATION
     );
 
+  // Set when a concurrent request flagged the row after the read above: that
+  // request notifies the subscribers, this one must not do it a second time.
+  let lostSoftDeleteRace = false;
   if (!organization.isDeleted) {
-    const redirectTo = parseInt(req.param('entityId'), 10);
-    if (!Number.isNaN(redirectTo)) {
-      organization.redirectTo = redirectTo;
-      await TGrotto.updateOne({ id: organizationId })
-        .set({ redirectTo })
-        .catch(() => {});
-    }
-    await TGrotto.destroyOne({ id: organizationId }); // Soft delete
+    // Soft delete only a row still live, and never through destroyOne: the
+    // t_grotto delete trigger turns a DELETE into a hard delete once the row is
+    // flagged, so a concurrent request that flagged it after the read above
+    // would make this one remove the organization for good (#1921). The
+    // request that loses the race leaves the row to the winner.
+    const softDeleted = await TGrotto.updateOne({
+      id: organizationId,
+      isDeleted: false,
+    }).set({ isDeleted: true });
     organization.isDeleted = true;
+    lostSoftDeleteRace = !softDeleted;
 
-    await RecentChangeService.setDeleteRestoreAuthor(
-      'delete',
-      'grotto',
-      organizationId,
-      req.token.id
-    );
+    if (softDeleted) {
+      const redirectTo = parseInt(req.param('entityId'), 10);
+      if (!Number.isNaN(redirectTo)) {
+        organization.redirectTo = redirectTo;
+        await TGrotto.updateOne({ id: organizationId })
+          .set({ redirectTo })
+          .catch(() => {});
+      }
+
+      await RecentChangeService.setDeleteRestoreAuthor(
+        'delete',
+        'grotto',
+        organizationId,
+        req.token.id
+      );
+    }
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);
@@ -192,9 +207,12 @@ module.exports = async (req, res) => {
     await TGrotto.destroyOne({ id: organizationId }); // Hard delete
   }
 
-  await NotificationService.dispatchSubscribersNotification(
-    pendingNotification
-  );
+  // A permanent delete still removed the row, whoever flagged it
+  if (deletePermanently || !lostSoftDeleteRace) {
+    await NotificationService.dispatchSubscribersNotification(
+      pendingNotification
+    );
+  }
 
   return ControllerService.treatAndConvert(
     req,
