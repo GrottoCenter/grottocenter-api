@@ -1695,7 +1695,10 @@ paths:
               format: binary
       responses:
         200:
-          description: Successful operation
+          description: >-
+            Successful operation. If the document is created but cannot be read
+            back with its associations, it is still returned, unpopulated:
+            associations such as `author` are ids instead of objects.
           content:
             application/json:
               schema:
@@ -6491,7 +6494,10 @@ paths:
               $ref: '#/components/schemas/Document'
       responses:
         '200':
-          description: Successful operation
+          description: >-
+            Successful operation. If the massif is created but cannot be read
+            back with its associations, it is still returned, unpopulated:
+            associations such as `author` are ids instead of objects.
           content:
             application/json:
               schema:
@@ -7856,7 +7862,10 @@ paths:
               $ref: '#/components/schemas/DeviceCreate'
       responses:
         '200':
-          description: Successful operation
+          description: >-
+            Successful operation. If the device is created but cannot be read
+            back with its associations, it is still returned, unpopulated:
+            associations such as `author` are ids instead of objects.
           content:
             application/json:
               schema:
@@ -8072,7 +8081,11 @@ paths:
               $ref: '#/components/schemas/SensorConfigurationCreate'
       responses:
         '200':
-          description: Successful operation
+          description: >-
+            Successful operation. If the sensor configuration is created but
+            cannot be read back with its associations, it is still returned,
+            unpopulated:
+            associations such as `author` are ids instead of objects.
           content:
             application/json:
               schema:

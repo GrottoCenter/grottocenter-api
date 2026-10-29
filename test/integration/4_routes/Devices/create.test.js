@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Device features', () => {
@@ -143,6 +144,49 @@ describe('Device features', () => {
             createdDeviceId = device.id;
             return done();
           });
+      });
+    });
+
+    describe('Populate failure after creation (#1655)', () => {
+      let DeviceService;
+      let createdDeviceId;
+
+      before(() => {
+        // Resolve after the lift: a top-level require would be a stale copy.
+        // eslint-disable-next-line global-require
+        DeviceService = require('../../../../api/services/DeviceService');
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      after(async () => {
+        if (createdDeviceId) {
+          await TDevice.destroyOne({ id: createdDeviceId });
+        }
+      });
+
+      it('should return 200 with the unpopulated device when populating fails', async () => {
+        const populate = sinon
+          .stub(DeviceService, 'getPopulatedDevice')
+          .rejects(new Error('connection reset'));
+        sinon.stub(sails.log, 'error');
+
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/devices')
+          .send({ name: 'Populate Failure Device' })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdDeviceId = res.body.id;
+
+        should(populate.calledOnce).be.true();
+        should(res.body.id).be.a.Number();
+        should(res.body.name).equal('Populate Failure Device');
+        should(res.body.author).be.a.Number();
+        should(await TDevice.findOne({ id: createdDeviceId })).be.ok();
       });
     });
   });

@@ -59,22 +59,12 @@ module.exports = async (req, res) => {
     return res.serverError('An error occurred while creating the device.');
   }
 
-  // Fetch populated device
-  // TODO: If this fails, the device is already created but the user gets a 500.
-  // This is consistent with all other create controllers in the project
-  // (document, massif, sensor-configuration, etc.) — see #1655 for platform-wide fix.
-  const populatedDevice = await DeviceService.getPopulatedDevice(
-    createdDevice.id
+  // Fetch populated device, falling back to the created record (#1655)
+  const populatedDevice = await ControllerService.populateCreated(
+    createdDevice,
+    DeviceService.getPopulatedDevice,
+    'DeviceController.create'
   );
-
-  if (!populatedDevice) {
-    sails.log.error(
-      `DeviceCreate: getPopulatedDevice returned null for just-created device ${createdDevice.id}`
-    );
-    return res.serverError(
-      'An error occurred while retrieving the created device.'
-    );
-  }
 
   return ControllerService.treatAndConvert(
     req,

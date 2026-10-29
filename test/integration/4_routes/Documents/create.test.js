@@ -1,5 +1,6 @@
 const should = require('should');
 const supertest = require('supertest');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Document create', () => {
@@ -147,6 +148,48 @@ describe('Document create', () => {
           .set('Content-type', 'application/json')
           .set('Accept', 'application/json')
           .expect(400);
+      });
+    });
+
+    describe('Populate failure after creation (#1655)', () => {
+      let DocumentService;
+
+      before(() => {
+        // Resolve after the lift: a top-level require would be a stale copy.
+        // eslint-disable-next-line global-require
+        DocumentService = require('../../../../api/services/DocumentService');
+      });
+
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      it('should return 200 with the unpopulated document when populating fails', async () => {
+        const populate = sinon
+          .stub(DocumentService, 'getPopulatedDocument')
+          .rejects(new Error('connection reset'));
+        sinon.stub(sails.log, 'error');
+
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'Document whose populate fails.',
+            documentMainLanguage: { id: 'fra' },
+            documentType: { id: 1 },
+            editor: { id: 2 },
+            isNewDocument: true,
+            title: 'Test Populate Failure',
+            titleAndDescriptionLanguage: { id: 'fra' },
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdDocIds.push(res.body.document.id);
+
+        should(populate.calledOnce).be.true();
+        should(res.body.document.id).be.a.Number();
+        should(await TDocument.findOne({ id: res.body.document.id })).be.ok();
       });
     });
   });

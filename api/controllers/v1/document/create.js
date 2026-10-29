@@ -84,7 +84,11 @@ module.exports = async (req, res) => {
     }
   }
 
-  const newDoc = await DocumentService.getPopulatedDocument(createdDocument.id);
+  const newDoc = await ControllerService.populateCreated(
+    createdDocument,
+    DocumentService.getPopulatedDocument,
+    'DocumentController.create'
+  );
 
   const out = {
     document: toDocument(newDoc),

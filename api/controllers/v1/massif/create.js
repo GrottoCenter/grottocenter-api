@@ -108,8 +108,10 @@ module.exports = async (req, res) => {
     return massif;
   });
 
-  const newMassifPopulated = await MassifService.getPopulatedMassif(
-    newMassif.id
+  const newMassifPopulated = await ControllerService.populateCreated(
+    newMassif,
+    MassifService.getPopulatedMassif,
+    'MassifController.create'
   );
 
   await RecentChangeService.setNameCreate(

@@ -87,11 +87,11 @@ module.exports = async (req, res) => {
   // 8. Create record
   const created = await TSensorConfiguration.create(data).fetch();
 
-  // 9. Fetch populated configuration
-  // TODO: If this fails, the config is already created but the user gets a 500.
-  // Consistent with all other create controllers — see #1655 for platform-wide fix.
-  const populated = await SensorConfigurationService.getPopulatedConfiguration(
-    created.id
+  // 9. Fetch populated configuration, falling back to the created record (#1655)
+  const populated = await ControllerService.populateCreated(
+    created,
+    SensorConfigurationService.getPopulatedConfiguration,
+    'SensorConfigurationController.create'
   );
 
   // 10. Return via ControllerService.treatAndConvert
