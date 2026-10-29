@@ -254,7 +254,7 @@ describe('SensorConfiguration features', () => {
         const populate = sinon
           .stub(SensorConfigurationService, 'getPopulatedConfiguration')
           .rejects(new Error('connection reset'));
-        sinon.stub(sails.log, 'error');
+        const logError = sinon.stub(sails.log, 'error');
 
         const res = await supertest(sails.hooks.http.app)
           .post(`/api/v1/devices/${DEVICE_ID}/configurations`)
@@ -270,6 +270,11 @@ describe('SensorConfiguration features', () => {
         should(res.body.device).equal(DEVICE_ID);
         should(res.body.quantityKind).equal(VALID_QUANTITY_KIND);
         should(res.body.unit).equal(VALID_UNIT);
+        should(
+          logError.calledWithMatch(
+            `SensorConfigurationController.create: failed to populate the created record ${createdId},`
+          )
+        ).be.true();
         should(await TSensorConfiguration.findOne({ id: createdId })).be.ok();
       });
     });

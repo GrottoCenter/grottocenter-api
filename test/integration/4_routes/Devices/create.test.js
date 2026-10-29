@@ -171,7 +171,7 @@ describe('Device features', () => {
         const populate = sinon
           .stub(DeviceService, 'getPopulatedDevice')
           .rejects(new Error('connection reset'));
-        sinon.stub(sails.log, 'error');
+        const logError = sinon.stub(sails.log, 'error');
 
         const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/devices')
@@ -186,6 +186,11 @@ describe('Device features', () => {
         should(res.body.id).be.a.Number();
         should(res.body.name).equal('Populate Failure Device');
         should(res.body.author).be.a.Number();
+        should(
+          logError.calledWithMatch(
+            `DeviceController.create: failed to populate the created record ${createdDeviceId},`
+          )
+        ).be.true();
         should(await TDevice.findOne({ id: createdDeviceId })).be.ok();
       });
     });

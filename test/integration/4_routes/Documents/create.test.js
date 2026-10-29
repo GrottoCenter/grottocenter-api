@@ -168,7 +168,7 @@ describe('Document create', () => {
         const populate = sinon
           .stub(DocumentService, 'getPopulatedDocument')
           .rejects(new Error('connection reset'));
-        sinon.stub(sails.log, 'error');
+        const logError = sinon.stub(sails.log, 'error');
 
         const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/documents')
@@ -189,6 +189,11 @@ describe('Document create', () => {
 
         should(populate.calledOnce).be.true();
         should(res.body.document.id).be.a.Number();
+        should(
+          logError.calledWithMatch(
+            `DocumentController.create: failed to populate the created record ${res.body.document.id},`
+          )
+        ).be.true();
         should(await TDocument.findOne({ id: res.body.document.id })).be.ok();
       });
     });

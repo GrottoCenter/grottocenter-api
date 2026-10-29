@@ -314,7 +314,7 @@ describe('Massif features', () => {
         const populate = sinon
           .stub(MassifService, 'getPopulatedMassif')
           .rejects(new Error('connection reset'));
-        sinon.stub(sails.log, 'error');
+        const logError = sinon.stub(sails.log, 'error');
 
         const res = await supertest(sails.hooks.http.app)
           .post('/api/v1/massifs')
@@ -332,6 +332,11 @@ describe('Massif features', () => {
         should(populate.calledOnce).be.true();
         should(res.body.id).be.a.Number();
         should(res.body.isDeleted).equal(false);
+        should(
+          logError.calledWithMatch(
+            `MassifController.create: failed to populate the created record ${createdMassifId},`
+          )
+        ).be.true();
         should(await TMassif.findOne(createdMassifId)).be.ok();
       });
     });
