@@ -175,6 +175,51 @@ describe('Entrance features', () => {
       ).equal(1);
     });
 
+    // The test database has no foreign keys: a name left on the removed cave
+    // does not fail the delete here, so the test looks for it (#1901)
+    const namesOf = (caveId, entranceId) =>
+      countRows(
+        'SELECT count(*) FROM t_name WHERE id_cave = $1 OR id_entrance = $2',
+        [caveId, entranceId]
+      );
+
+    const createCaveName = (caveId, extra = {}) =>
+      TName.create({
+        author: 1,
+        name: 'Concurrent cave',
+        cave: caveId,
+        language: 'eng',
+        isMain: true,
+        dateInscription: new Date(),
+        ...extra,
+      }).fetch();
+
+    it('should let only one of two overlapping plain permanent deletes succeed and leave no name on the cave (#1901)', async () => {
+      const { cave, entrance } = await createDeletedEntrance();
+      await createCaveName(cave.id);
+
+      const responses = await Promise.all([
+        deleteEntrance(entrance.id, 'isPermanent=1'),
+        deleteEntrance(entrance.id, 'isPermanent=1'),
+      ]);
+
+      should(responses.map((r) => r.status).sort()).eql([200, 404]);
+      should(await TEntrance.findOne(entrance.id)).be.undefined();
+      should(await TCave.findOne(cave.id)).be.undefined();
+      should(await namesOf(cave.id, entrance.id)).equal(0);
+    });
+
+    it('should remove a name that references both the entrance and its cave (#1901)', async () => {
+      const { cave, entrance } = await createDeletedEntrance();
+      const shared = await createCaveName(cave.id, { entrance: entrance.id });
+
+      await deleteEntrance(entrance.id, 'isPermanent=1').expect(200);
+
+      should(await TCave.findOne(cave.id)).be.undefined();
+      should(await TName.findOne(shared.id)).be.undefined();
+      should(await namesOf(cave.id, entrance.id)).equal(0);
+    });
+
     it('should run on its own connection when the pool has no other free one', async () => {
       const { cave, entrance } = await createDeletedEntrance();
       const target = await createTarget();
