@@ -22,14 +22,16 @@ const CommonService = require('../api/services/CommonService');
 const FIXTURE_ORDER = require('./fixtureOrder');
 
 /**
- * Drop tables that are not managed by Waterline but have FK references to
- * Waterline-managed tables. Without this, migrate:drop fails because it
- * cannot drop the referenced tables.
+ * Drop objects that are not managed by Waterline but depend on Waterline-managed
+ * tables (FK references, views). Without this, migrate:drop fails because it
+ * cannot drop the referenced tables. The views are created again after the
+ * fixtures, by the migrations in customSQL.
  */
 async function dropNonWaterlineTables(testUrl) {
   const client = new Client({ connectionString: testUrl });
   await client.connect();
   try {
+    await client.query('DROP VIEW IF EXISTS v_bot_page');
     await client.query('DROP TABLE IF EXISTS t_bibliographic_metadata');
     await client.query('DROP TYPE IF EXISTS e_metadata_status');
   } finally {
@@ -90,6 +92,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_CASCADE_CHECK_MIGRATION,
                 customSQL.BOT_FOUNDATION_MIGRATION,
                 customSQL.BOT_ADMIT_PAGES_MIGRATION,
+                customSQL.BOT_PAGE_VIEW_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))

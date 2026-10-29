@@ -64,3 +64,19 @@ Admission is sticky, so a later edit that shrinks a text, or a record deleted af
 - **`t_bot_config.pattern_version`** moves to the current version only once every text has a verdict at that version. Until then the admission function and the view count no text, so a scan interrupted half way never lets an unscanned text through.
 - **Texts edited during the scan.** The scan runs again over what was created or edited while it was going on, up to 3 passes. If texts are still pending after that, the call rejects and the version stays where it was.
 - **Reporting.** The call returns, and logs, the number of distinct texts scanned and quarantined per source (a text read again in a later pass counts once, with its latest verdict), the number of detector errors and the number of passes.
+
+## The page view
+
+`v_bot_page` (`sql/9_30_2026_10_29_v_bot_page.sql`) is the one source the pages, the sitemaps and the withdrawal worker read: anything absent from it is not published. This part defines the cave pages; massifs and organizations follow. Columns: `entity_type`, `entity_id`, `language` (of the main name), `lastmod` (the latest date among the cave, the descriptions shown and the nested items) and `page`, a jsonb document holding exactly the fields of `api/utils/botSurfaceWhitelist.js`. A test compares the two, at every level.
+
+Gates, all re-checked on every read:
+
+- **Cave:** live, admitted, a main name that passed the scan, and at least one embedded entrance. A cave whose entrances are all sensitive has none, so it has no page.
+- **Entrance:** live, not sensitive, admitted. A locked, non-sensitive entrance is shown. Its name is `null` when it has no main name that passed the scan.
+- **Description:** not deleted, at least `min_age_days` old, and covered by a clean `t_bot_text_scan` row at the current `pattern_version` for the text as it is now; otherwise it is left out and the page stays. Texts repeated on many caves are shown: they only stop counting for the content rule.
+- **Massif listed on a cave:** admitted, not sensitive, named, and holding an embedded entrance of the cave.
+- **Region:** the code of `t_iso3166_2` and its name; the geocoder's free text when the entrance has no code.
+
+The view does not re-derive sensitivity from the massif polygons, for the reasons in [Sensitivity invariant](#sensitivity-invariant).
+
+Read it by keyset, `WHERE entity_id > $1 ORDER BY entity_id LIMIT 1000`. It is a plain view, not a materialized one.

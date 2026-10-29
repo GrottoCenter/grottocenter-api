@@ -68,6 +68,7 @@ const SPEC = {
       city: SCALAR,
       county: SCALAR,
       region: SCALAR,
+      regionCode: SCALAR,
       country: SCALAR,
       discoveryYear: SCALAR,
       dangerCo2: SCALAR,
