@@ -33,10 +33,12 @@ describe('v_bot_page - the cave pages', () => {
     );
   };
 
-  const admit = (type, id) =>
+  // Admitted `daysAgo` days ago: the admission time feeds lastmod
+  const admit = (type, id, daysAgo = 60) =>
     query(
-      'INSERT INTO t_bot_admission (entity_type, entity_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [type, id]
+      `INSERT INTO t_bot_admission (entity_type, entity_id, bot_admitted_at)
+       VALUES ($1, $2, now() - make_interval(secs => $3)) ON CONFLICT DO NOTHING`,
+      [type, id, daysAgo * DAY]
     );
 
   // scan: 'clean' | 'matched' | 'none' | 'old-version' | 'stale-hash'
@@ -70,6 +72,7 @@ describe('v_bot_page - the cave pages', () => {
       ...owner,
     }).fetch();
     created.name.push(row.id);
+    await setDates('t_name', row.id, 100);
     await scanRow('t_name', row.id, scan);
     return row;
   };
@@ -100,19 +103,26 @@ describe('v_bot_page - the cave pages', () => {
     name = 'Gouffre Test',
     ageDays = 60,
     admitted = true,
+    admittedDaysAgo = 60,
     ...rest
   } = {}) => {
     const cave = await TCave.create({ author: 1, depth: 120, ...rest }).fetch();
     created.cave.push(cave.id);
     await setDates('t_cave', cave.id, ageDays);
     if (name) await mkName({ cave: cave.id }, name);
-    if (admitted) await admit('cave', cave.id);
+    if (admitted) await admit('cave', cave.id, admittedDaysAgo);
     return cave;
   };
 
   const mkEntrance = async (
     caveId,
-    { name = 'Entrée Test', admitted = true, ageDays = 60, ...rest } = {}
+    {
+      name = 'Entrée Test',
+      admitted = true,
+      admittedDaysAgo = 60,
+      ageDays = 60,
+      ...rest
+    } = {}
   ) => {
     const entrance = await TEntrance.create({
       author: 1,
@@ -125,7 +135,7 @@ describe('v_bot_page - the cave pages', () => {
     created.entrance.push(entrance.id);
     await setDates('t_entrance', entrance.id, ageDays);
     if (name) await mkName({ entrance: entrance.id }, name);
-    if (admitted) await admit('entrance', entrance.id);
+    if (admitted) await admit('entrance', entrance.id, admittedDaysAgo);
     return entrance;
   };
 
@@ -155,7 +165,10 @@ describe('v_bot_page - the cave pages', () => {
     return rows[0];
   };
 
+  let originalConfig;
+
   before(async () => {
+    originalConfig = (await query('SELECT * FROM t_bot_config')).rows[0];
     await query('UPDATE t_bot_config SET pattern_version = $1', [VERSION]);
     await query(
       'INSERT INTO t_iso3166_2 (iso, name) VALUES ($1, $2) ON CONFLICT DO NOTHING',
@@ -164,6 +177,11 @@ describe('v_bot_page - the cave pages', () => {
   });
 
   after(async () => {
+    // Leave the configuration as this suite found it
+    await query(
+      'UPDATE t_bot_config SET min_age_days = $1, pattern_version = $2',
+      [originalConfig.min_age_days, originalConfig.pattern_version]
+    );
     await query('DELETE FROM t_iso3166_2 WHERE iso = $1', [REGION.iso]);
   });
 
@@ -300,7 +318,9 @@ describe('v_bot_page - the cave pages', () => {
       ];
       rows.forEach(({ k }) => should(forbidden).not.containEql(k));
       const text = JSON.stringify((await page(cave.id)).page);
-      should(text).not.match(/-?\d{1,3}\.\d{4,}/);
+      // The timestamps of lastmod have fractional seconds: leave them out
+      const withoutDates = text.replace(/\d{4}-\d{2}-\d{2}T[\d:.]+/g, '');
+      should(withoutDates).not.match(/-?\d{1,3}\.\d{4,}/);
     });
   });
 
@@ -341,21 +361,6 @@ describe('v_bot_page - the cave pages', () => {
       should(await page(target.id)).not.be.undefined();
     });
 
-    it('keeps an admitted cave that was edited yesterday, with an updated lastmod', async () => {
-      const cave = await mkCave({ ageDays: 90 });
-      await mkEntrance(cave.id, { ageDays: 90 });
-      const before = (await page(cave.id)).lastmod;
-
-      await query(
-        "UPDATE t_cave SET date_reviewed = LOCALTIMESTAMP - interval '1 day' WHERE id = $1",
-        [cave.id]
-      );
-
-      const after = await page(cave.id);
-      should(after).not.be.undefined();
-      should(after.lastmod.getTime()).be.above(before.getTime());
-    });
-
     it('leaves out a cave without a main name that passed the scan, and keeps one named after a scan', async () => {
       const unnamed = await mkCave({ name: null });
       await mkEntrance(unnamed.id);
@@ -378,6 +383,39 @@ describe('v_bot_page - the cave pages', () => {
         // eslint-disable-next-line no-await-in-loop
         should(await page(cave.id)).be.undefined();
       }
+    });
+  });
+
+  describe('when a record has two main names', () => {
+    it('uses the one with the lowest id, and leaves the page out when that one is withheld', async () => {
+      const withheld = await mkCave({ name: null });
+      await mkEntrance(withheld.id);
+      await mkName({ cave: withheld.id }, 'First, quarantined', {
+        scan: 'matched',
+      });
+      await mkName({ cave: withheld.id }, 'Second, clean');
+      const fine = await mkCave({ name: null });
+      await mkEntrance(fine.id);
+      await mkName({ cave: fine.id }, 'First, clean');
+      await mkName({ cave: fine.id }, 'Second, quarantined', {
+        scan: 'matched',
+      });
+
+      should(await page(withheld.id)).be.undefined();
+      should((await page(fine.id)).page.name).equal('First, clean');
+    });
+
+    it('gives an entrance a null name when its lowest-id main name is withheld', async () => {
+      const cave = await mkCave();
+      const entrance = await mkEntrance(cave.id, { name: null });
+      await mkName({ entrance: entrance.id }, 'First, quarantined', {
+        scan: 'matched',
+      });
+      await mkName({ entrance: entrance.id }, 'Second, clean');
+
+      const { entrances } = (await page(cave.id)).page;
+
+      should(entrances[0].name).be.null();
     });
   });
 
@@ -586,32 +624,106 @@ describe('v_bot_page - the cave pages', () => {
   });
 
   describe('lastmod', () => {
-    it('is the latest date among the cave, the descriptions shown and the entrances', async () => {
+    // A cave 100 days old, an entrance 90 days old, everything admitted 60 days
+    // ago, names 100 days old: lastmod starts about 60 days back
+    const mkOldCave = async () => {
       const cave = await mkCave({ ageDays: 100 });
       const entrance = await mkEntrance(cave.id, { ageDays: 90 });
+      return { cave, entrance };
+    };
+    const daysAgo = (date) => (Date.now() - date.getTime()) / (DAY * 1000);
+
+    it('moves to the moment a description became old enough to show', async () => {
+      const { cave } = await mkOldCave();
       const description = await mkDescription(
         { cave: cave.id },
         { ageDays: 40 }
       );
       await mkDescription(
         { cave: cave.id },
-        { body: 'Newer but withheld', ageDays: 2 }
+        { body: 'Withheld, newer', ageDays: 2 }
       );
       const expected = (
-        await query('SELECT date_reviewed FROM t_description WHERE id = $1', [
-          description.id,
-        ])
-      ).rows[0].date_reviewed;
+        await query(
+          "SELECT date_reviewed + interval '30 days' AS visible FROM t_description WHERE id = $1",
+          [description.id]
+        )
+      ).rows[0].visible;
 
       const row = await page(cave.id);
 
       should(row.lastmod.getTime()).equal(expected.getTime());
+    });
+
+    it('moves to the admission time of an entrance admitted yesterday, whatever its own dates', async () => {
+      const { cave } = await mkOldCave();
+      await mkEntrance(cave.id, { ageDays: 90, admittedDaysAgo: 1 });
+
+      const row = await page(cave.id);
+
+      should(daysAgo(row.lastmod)).be.within(0.99, 1.01);
+    });
+
+    it('moves to the admission time of the cave itself when it was admitted yesterday', async () => {
+      const cave = await mkCave({ ageDays: 100, admittedDaysAgo: 1 });
+      await mkEntrance(cave.id, { ageDays: 90 });
+
+      const row = await page(cave.id);
+
+      should(daysAgo(row.lastmod)).be.within(0.99, 1.01);
+    });
+
+    it('moves to the admission time of a massif admitted yesterday that the page lists', async () => {
+      const { cave } = await mkOldCave();
+      await query(
+        'UPDATE t_entrance SET latitude = $2, longitude = $3 WHERE id_cave = $1',
+        [cave.id, INSIDE.latitude, INSIDE.longitude]
+      );
+      const massif = await mkMassif({ admitted: false });
+      await admit('massif', massif.id, 1);
+
+      const row = await page(cave.id);
+
+      should(row.page.massifs).have.length(1);
+      should(daysAgo(row.lastmod)).be.within(0.99, 1.01);
+    });
+
+    it('moves when a main name is edited', async () => {
+      const { cave } = await mkOldCave();
+      await query(
+        "UPDATE t_name SET date_reviewed = LOCALTIMESTAMP - interval '1 day' WHERE id_cave = $1",
+        [cave.id]
+      );
+
+      const row = await page(cave.id);
+
+      should(daysAgo(row.lastmod)).be.within(0.99, 1.01);
+    });
+
+    it('moves when the cave is edited, and an admitted cave stays', async () => {
+      const { cave } = await mkOldCave();
+      const before = (await page(cave.id)).lastmod;
+
+      await query(
+        "UPDATE t_cave SET date_reviewed = LOCALTIMESTAMP - interval '1 day' WHERE id = $1",
+        [cave.id]
+      );
+
+      const after = await page(cave.id);
+      should(after).not.be.undefined();
+      should(after.lastmod.getTime()).be.above(before.getTime());
+    });
+
+    it('is the same in the column and in the document', async () => {
+      const { cave } = await mkOldCave();
+      await mkDescription({ cave: cave.id }, { ageDays: 40 });
+
       const same = await query(
         "SELECT (page->>'lastmod')::timestamp = lastmod AS same FROM v_bot_page WHERE entity_id = $1",
         [cave.id]
       );
+
       should(same.rows[0].same).be.true();
-      should(entrance.id).be.a.Number();
     });
   });
 });

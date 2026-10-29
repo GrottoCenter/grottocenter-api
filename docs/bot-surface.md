@@ -67,7 +67,7 @@ Admission is sticky, so a later edit that shrinks a text, or a record deleted af
 
 ## The page view
 
-`v_bot_page` (`sql/9_30_2026_10_29_v_bot_page.sql`) is the one source the pages, the sitemaps and the withdrawal worker read: anything absent from it is not published. This part defines the cave pages; massifs and organizations follow. Columns: `entity_type`, `entity_id`, `language` (of the main name), `lastmod` (the latest date among the cave, the descriptions shown and the nested items) and `page`, a jsonb document holding exactly the fields of `api/utils/botSurfaceWhitelist.js`. A test compares the two, at every level.
+`v_bot_page` (`sql/9_30_2026_10_29_v_bot_page.sql`) is the one source the pages, the sitemaps and the withdrawal worker read: anything absent from it is not published. This part defines the cave pages; massifs and organizations follow. Columns: `entity_type`, `entity_id`, `language` (of the main name), `lastmod` (when the page last gained content, see below) and `page`, a jsonb document holding exactly the fields of `api/utils/botSurfaceWhitelist.js`. A test compares the two, at every level.
 
 Gates, all re-checked on every read:
 
@@ -76,6 +76,10 @@ Gates, all re-checked on every read:
 - **Description:** not deleted, at least `min_age_days` old, and covered by a clean `t_bot_text_scan` row at the current `pattern_version` for the text as it is now; otherwise it is left out and the page stays. Texts repeated on many caves are shown: they only stop counting for the content rule.
 - **Massif listed on a cave:** admitted, not sensitive, named, and holding an embedded entrance of the cave.
 - **Region:** the code of `t_iso3166_2` and its name; the geocoder's free text when the entrance has no code.
+
+- **Names:** the main name of a record is the one with the lowest id. If it did not pass the scan, the cave has no page, an entrance has a `null` name, and a massif is not listed; another main name is never substituted.
+
+**`lastmod` is a sitemap hint, not a change detector.** It is the latest of the record's own dates, the moment each embedded item was admitted, the moment each description became old enough to show (its date plus `min_age_days`), and the dates of the names shown, so a description that passes the age gate tonight or an entrance admitted tonight moves it even when their own dates are old. Removals cannot be seen from a plain view: a description that is deleted, quarantined or made stale, or an entrance that becomes sensitive, drops out of the page without moving `lastmod`, and it can even go back. Whatever decides which pages to regenerate or withdraw must compare a hash of `page` (for example `md5(page::text)`), never `lastmod`.
 
 The view does not re-derive sensitivity from the massif polygons, for the reasons in [Sensitivity invariant](#sensitivity-invariant).
 

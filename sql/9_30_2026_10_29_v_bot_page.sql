@@ -12,8 +12,17 @@
 --
 --   entity_type, entity_id, language   what the page is, in the language of its
 --                                      main name
---   lastmod                            the latest date among the record, the
---                                      descriptions shown and the nested items
+--   lastmod                            when the page last gained content: the
+--                                      latest of the record's own dates, the
+--                                      moment each embedded item was admitted,
+--                                      the moment each description became old
+--                                      enough to show, and the dates of the
+--                                      names shown. It is a hint for the
+--                                      sitemap, not a change detector: a
+--                                      description or entrance that drops out
+--                                      (deleted, quarantined, made sensitive)
+--                                      cannot move it. Whoever decides what to
+--                                      regenerate compares a hash of `page`.
 --   page                               jsonb holding exactly the fields named in
 --                                      api/utils/botSurfaceWhitelist.js; a test
 --                                      compares the two. No coordinate of any
@@ -54,9 +63,7 @@ SELECT
   'cave'::text AS entity_type,
   c.id AS entity_id,
   cn.id_language AS language,
-  GREATEST(
-    c.date_inscription, c.date_reviewed, cd.last_date, ce.last_date, cm.last_date
-  ) AS lastmod,
+  lm.lastmod AS lastmod,
   jsonb_build_object(
     'id', c.id,
     'name', cn.name,
@@ -65,9 +72,7 @@ SELECT
     'length', c.length,
     'temperature', c.temperature,
     'isDiving', c.is_diving,
-    'lastmod', GREATEST(
-      c.date_inscription, c.date_reviewed, cd.last_date, ce.last_date, cm.last_date
-    ),
+    'lastmod', lm.lastmod,
     'descriptions', COALESCE(cd.items, '[]'::jsonb),
     'massifs', COALESCE(cm.items, '[]'::jsonb),
     'entrances', ce.items
@@ -75,19 +80,23 @@ SELECT
 FROM t_cave c
 CROSS JOIN t_bot_config cfg
 JOIN t_bot_admission ca ON ca.entity_type = 'cave' AND ca.entity_id = c.id
--- Main name that passed the scan; no such name, no page
+-- The main name (the lowest id when there are several), and only if it passed
+-- the scan; no such name, no page
 JOIN LATERAL (
-  SELECT n.name, n.id_language
-  FROM t_name n
-  WHERE n.id_cave = c.id AND n.is_main AND n.is_deleted = false
-  AND EXISTS (
+  SELECT m.name, m.id_language, GREATEST(m.date_inscription, m.date_reviewed) AS changed
+  FROM (
+    SELECT n.id, n.name, n.id_language, n.date_inscription, n.date_reviewed
+    FROM t_name n
+    WHERE n.id_cave = c.id AND n.is_main AND n.is_deleted = false
+    ORDER BY n.id
+    LIMIT 1
+  ) m
+  WHERE EXISTS (
     SELECT 1 FROM t_bot_text_scan s
-    WHERE s.source_table = 't_name' AND s.source_id = n.id AND s.matched = false
+    WHERE s.source_table = 't_name' AND s.source_id = m.id AND s.matched = false
     AND s.pattern_version = cfg.pattern_version
-    AND s.body_hash = md5(COALESCE(n.name, ''))
+    AND s.body_hash = md5(COALESCE(m.name, ''))
   )
-  ORDER BY n.id
-  LIMIT 1
 ) cn ON true
 -- Embedded entrances; none, no page
 JOIN LATERAL (
@@ -116,22 +125,25 @@ JOIN LATERAL (
       )
       ORDER BY e.id
     ) AS items,
-    max(GREATEST(e.date_inscription, e.date_reviewed, ed.last_date)) AS last_date
+    max(GREATEST(e.date_inscription, e.date_reviewed, ea.bot_admitted_at::timestamp, en.changed, ed.last_date)) AS last_date
   FROM t_entrance e
   JOIN t_bot_admission ea ON ea.entity_type = 'entrance' AND ea.entity_id = e.id
   LEFT JOIN t_iso3166_2 iso ON iso.iso = e.iso_3166_2
   LEFT JOIN LATERAL (
-    SELECT n.name, n.id_language
-    FROM t_name n
-    WHERE n.id_entrance = e.id AND n.is_main AND n.is_deleted = false
-    AND EXISTS (
+    SELECT m.name, m.id_language, GREATEST(m.date_inscription, m.date_reviewed) AS changed
+    FROM (
+      SELECT n.id, n.name, n.id_language, n.date_inscription, n.date_reviewed
+      FROM t_name n
+      WHERE n.id_entrance = e.id AND n.is_main AND n.is_deleted = false
+      ORDER BY n.id
+      LIMIT 1
+    ) m
+    WHERE EXISTS (
       SELECT 1 FROM t_bot_text_scan s
-      WHERE s.source_table = 't_name' AND s.source_id = n.id AND s.matched = false
+      WHERE s.source_table = 't_name' AND s.source_id = m.id AND s.matched = false
       AND s.pattern_version = cfg.pattern_version
-      AND s.body_hash = md5(COALESCE(n.name, ''))
+      AND s.body_hash = md5(COALESCE(m.name, ''))
     )
-    ORDER BY n.id
-    LIMIT 1
   ) en ON true
   LEFT JOIN LATERAL (
     SELECT
@@ -139,7 +151,7 @@ JOIN LATERAL (
         jsonb_build_object('title', d.title, 'body', d.body, 'language', d.id_language)
         ORDER BY d.relevance DESC NULLS LAST, d.id
       ) AS items,
-      max(GREATEST(d.date_inscription, d.date_reviewed)) AS last_date
+      max(GREATEST(d.date_inscription, d.date_reviewed) + make_interval(days => cfg.min_age_days)) AS last_date
     FROM t_description d
     WHERE d.id_entrance = e.id AND d.is_deleted = false
     AND GREATEST(d.date_inscription, d.date_reviewed)
@@ -161,7 +173,7 @@ LEFT JOIN LATERAL (
       jsonb_build_object('title', d.title, 'body', d.body, 'language', d.id_language)
       ORDER BY d.relevance DESC NULLS LAST, d.id
     ) AS items,
-    max(GREATEST(d.date_inscription, d.date_reviewed)) AS last_date
+    max(GREATEST(d.date_inscription, d.date_reviewed) + make_interval(days => cfg.min_age_days)) AS last_date
   FROM t_description d
   WHERE d.id_cave = c.id AND d.is_deleted = false
   AND GREATEST(d.date_inscription, d.date_reviewed)
@@ -178,21 +190,24 @@ LEFT JOIN LATERAL (
 LEFT JOIN LATERAL (
   SELECT
     jsonb_agg(jsonb_build_object('id', m.id, 'name', mn.name) ORDER BY m.id) AS items,
-    max(GREATEST(m.date_inscription, m.date_reviewed)) AS last_date
+    max(GREATEST(m.date_inscription, m.date_reviewed, ma.bot_admitted_at::timestamp, mn.changed)) AS last_date
   FROM t_massif m
   JOIN t_bot_admission ma ON ma.entity_type = 'massif' AND ma.entity_id = m.id
   JOIN LATERAL (
-    SELECT n.name
-    FROM t_name n
-    WHERE n.id_massif = m.id AND n.is_main AND n.is_deleted = false
-    AND EXISTS (
+    SELECT x.name, GREATEST(x.date_inscription, x.date_reviewed) AS changed
+    FROM (
+      SELECT n.id, n.name, n.date_inscription, n.date_reviewed
+      FROM t_name n
+      WHERE n.id_massif = m.id AND n.is_main AND n.is_deleted = false
+      ORDER BY n.id
+      LIMIT 1
+    ) x
+    WHERE EXISTS (
       SELECT 1 FROM t_bot_text_scan s
-      WHERE s.source_table = 't_name' AND s.source_id = n.id AND s.matched = false
+      WHERE s.source_table = 't_name' AND s.source_id = x.id AND s.matched = false
       AND s.pattern_version = cfg.pattern_version
-      AND s.body_hash = md5(COALESCE(n.name, ''))
+      AND s.body_hash = md5(COALESCE(x.name, ''))
     )
-    ORDER BY n.id
-    LIMIT 1
   ) mn ON true
   WHERE m.is_deleted = false AND m.redirect_to IS NULL AND m.is_sensitive = false
   AND m.id IN (
@@ -205,5 +220,12 @@ LEFT JOIN LATERAL (
     AND e.is_sensitive = false
   )
 ) cm ON true
+-- Computed once, so the column and the document cannot disagree
+CROSS JOIN LATERAL (
+  SELECT GREATEST(
+    c.date_inscription, c.date_reviewed, ca.bot_admitted_at::timestamp,
+    cn.changed, cd.last_date, ce.last_date, cm.last_date
+  ) AS lastmod
+) lm
 WHERE c.is_deleted = false AND c.redirect_to IS NULL;
 ALTER VIEW v_bot_page OWNER TO gc_owner;
