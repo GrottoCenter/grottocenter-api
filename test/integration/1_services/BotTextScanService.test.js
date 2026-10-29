@@ -255,6 +255,32 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
       should(config.rows[0].pattern_version).equal(VERSION);
     });
 
+    it('counts a text edited mid-scan once, with its latest verdict', async () => {
+      const target = await mkDescription({ body: 'Clean at first' });
+      let edited = false;
+      afterBatchOf('t_description', async () => {
+        if (edited) return;
+        edited = true;
+        await TDescription.update({ id: target.id }).set({
+          body: `Now at ${POSITION}`,
+        });
+      });
+
+      const summary = await run();
+
+      sinon.restore();
+      should(summary.passes).equal(2);
+      const stored = await query(
+        `SELECT count(*)::int AS scanned, count(*) FILTER (WHERE matched)::int AS quarantined
+         FROM t_bot_text_scan WHERE source_table = 't_description'`
+      );
+      should(summary.scanned.t_description).equal(stored.rows[0].scanned);
+      should(summary.quarantined.t_description).equal(
+        stored.rows[0].quarantined
+      );
+      should((await verdictOf('t_description', target.id)).matched).be.true();
+    });
+
     it('fails, leaving the version alone, when a text keeps changing under every pass', async () => {
       const target = await mkDescription({ body: 'Edit me' });
       await query('UPDATE t_bot_config SET pattern_version = 3');
