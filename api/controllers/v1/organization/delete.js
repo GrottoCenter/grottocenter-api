@@ -72,22 +72,33 @@ module.exports = async (req, res) => {
     );
 
   if (!organization.isDeleted) {
-    const redirectTo = parseInt(req.param('entityId'), 10);
-    if (!Number.isNaN(redirectTo)) {
-      organization.redirectTo = redirectTo;
-      await TGrotto.updateOne({ id: organizationId })
-        .set({ redirectTo })
-        .catch(() => {});
-    }
-    await TGrotto.destroyOne({ id: organizationId }); // Soft delete
+    // Soft delete only a row still live, and never through destroyOne: the
+    // t_grotto delete trigger turns a DELETE into a hard delete once the row is
+    // flagged, so a concurrent request that flagged it after the read above
+    // would make this one remove the organization for good (#1921). The
+    // request that loses the race leaves the row to the winner.
+    const softDeleted = await TGrotto.updateOne({
+      id: organizationId,
+      isDeleted: false,
+    }).set({ isDeleted: true });
     organization.isDeleted = true;
 
-    await RecentChangeService.setDeleteRestoreAuthor(
-      'delete',
-      'grotto',
-      organizationId,
-      req.token.id
-    );
+    if (softDeleted) {
+      const redirectTo = parseInt(req.param('entityId'), 10);
+      if (!Number.isNaN(redirectTo)) {
+        organization.redirectTo = redirectTo;
+        await TGrotto.updateOne({ id: organizationId })
+          .set({ redirectTo })
+          .catch(() => {});
+      }
+
+      await RecentChangeService.setDeleteRestoreAuthor(
+        'delete',
+        'grotto',
+        organizationId,
+        req.token.id
+      );
+    }
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);
