@@ -89,8 +89,8 @@ module.exports = {
    * @param {number} [options.patternVersion] pattern set version, for tests
    * @returns {Promise<{
    *   patternVersion: number,
-   *   scanned: Object<string, number>,
-   *   quarantined: Object<string, number>,
+   *   scanned: Object<string, number>,  distinct texts, whatever the passes
+   *   quarantined: Object<string, number>,  distinct texts withheld
    *   errors: number,
    *   passes: number,
    *   durationMs: number
@@ -102,6 +102,11 @@ module.exports = {
     const detect = options.detect ?? coordinateDetector.detect;
     const patternVersion =
       options.patternVersion ?? coordinateDetector.PATTERN_SET_VERSION;
+
+    const {
+      rows: [{ started }],
+    } = await CommonService.query('SELECT clock_timestamp() AS started');
+    const runStartedAt = started;
 
     const summary = {
       patternVersion,
@@ -123,14 +128,15 @@ module.exports = {
         for (;;) {
           // eslint-disable-next-line no-await-in-loop
           const { rows } = await CommonService.query(
-            `SELECT t.id, ${source.columns}, ${source.hash} AS body_hash
+            `SELECT t.id, ${source.columns}, ${source.hash} AS body_hash,
+                  s.matched AS previous_matched, s.scanned_at >= $4 AS rescanned
            FROM ${source.table} t
            LEFT JOIN t_bot_text_scan s
              ON s.source_table = '${source.table}' AND s.source_id = t.id
            WHERE t.id > $1 AND ${pendingFilter(source, '$2')}
            ORDER BY t.id
            LIMIT $3`,
-            [lastId, patternVersion, batchSize]
+            [lastId, patternVersion, batchSize, runStartedAt]
           );
           if (rows.length === 0) break;
 
@@ -179,10 +185,15 @@ module.exports = {
             ]
           );
 
-          summary.scanned[source.table] += verdicts.length;
-          summary.quarantined[source.table] += verdicts.filter(
-            (v) => v.matched
-          ).length;
+          // Counts are of distinct texts: a text this run already wrote a
+          // verdict for (edited mid-scan, so read again) replaces its earlier
+          // verdict instead of adding to it.
+          verdicts.forEach((v) => {
+            if (!v.row.rescanned) summary.scanned[source.table] += 1;
+            summary.quarantined[source.table] +=
+              (v.matched ? 1 : 0) -
+              (v.row.previous_matched && v.row.rescanned ? 1 : 0);
+          });
           lastId = rows[rows.length - 1].id;
         }
       }

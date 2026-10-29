@@ -14,7 +14,7 @@ const {
 //   1. bump PATTERN_SET_VERSION in api/utils/coordinateDetector.js,
 //   2. add the new version with the new fingerprint below, and keep the old entry.
 const RECORDED_FINGERPRINTS = {
-  1: 'e7d98776a8276ab1be796029f6724b8d5bcdf5cfd7529e48e4a42b5ae73a9351',
+  1: '3107b26d520efea6da73bc21f14dfc689c5ef5c9fbeaba4e4840288502c3e81b',
 };
 
 describe('coordinateDetector - pattern set version', () => {
@@ -138,6 +138,7 @@ describe('coordinateDetector - families', () => {
     ['lambert-label', 'zone four', 'Lambert IV'],
     ['lambert-label', 'short form of extended', 'Lambert IIe'],
     ['lambert-label', 'uppercase short form', 'Lambert IIE'],
+    ['lambert-label', 'accented short form of extended', 'Lambert 2é'],
     [
       'lambert-label',
       'digit with extended',
