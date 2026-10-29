@@ -213,6 +213,67 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
     });
   });
 
+  describe('texts edited while the scan runs', () => {
+    // Wraps the queries: after a verdict batch for `table` is written, runs
+    // `afterWrite`, as a contributor would while the scan is going on
+    const afterBatchOf = (table, afterWrite) => {
+      const original = CommonService.query;
+      sinon
+        .stub(sails.services.commonservice, 'query')
+        .callsFake(async (sql, params) => {
+          const result = await original(sql, params);
+          if (
+            String(sql).includes('INSERT INTO t_bot_text_scan') &&
+            String(sql).includes(`'${table}'`)
+          ) {
+            await afterWrite();
+          }
+          return result;
+        });
+    };
+
+    it('picks up a text created after its batch went by, in a second pass', async () => {
+      await mkDescription({});
+      await mkName('Gouffre Berger');
+      // The descriptions are read first: this one arrives during the names pass
+      let added = false;
+      afterBatchOf('t_name', async () => {
+        if (added) return;
+        added = true;
+        await mkDescription({ body: 'Added mid-scan' });
+      });
+
+      const summary = await run();
+
+      sinon.restore();
+      should(summary.passes).equal(2);
+      const { rows } = await query(
+        "SELECT count(*)::int AS n FROM t_description d WHERE d.is_deleted = false AND NOT EXISTS (SELECT 1 FROM t_bot_text_scan s WHERE s.source_table = 't_description' AND s.source_id = d.id)"
+      );
+      should(rows[0].n).equal(0);
+      const config = await query('SELECT pattern_version FROM t_bot_config');
+      should(config.rows[0].pattern_version).equal(VERSION);
+    });
+
+    it('fails, leaving the version alone, when a text keeps changing under every pass', async () => {
+      const target = await mkDescription({ body: 'Edit me' });
+      await query('UPDATE t_bot_config SET pattern_version = 3');
+      let edits = 0;
+      afterBatchOf('t_description', async () => {
+        edits += 1;
+        await TDescription.update({ id: target.id }).set({
+          body: `Edit number ${edits}`,
+        });
+      });
+
+      await should(run()).be.rejectedWith(/after 3 passes/);
+
+      sinon.restore();
+      const config = await query('SELECT pattern_version FROM t_bot_config');
+      should(config.rows[0].pattern_version).equal(3);
+    });
+  });
+
   describe('fail closed', () => {
     it('quarantines a text on which the detector throws, and goes on', async () => {
       const bad = await mkDescription({ body: 'Boom' });
