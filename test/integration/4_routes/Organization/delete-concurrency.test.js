@@ -12,12 +12,15 @@ describe('Organization features', () => {
   describe('Delete - Concurrency', () => {
     let adminToken;
     let GrottoService;
+    let NotificationService;
 
     before(async () => {
       adminToken = await AuthTokenService.getRawBearerAdminToken();
       // Required here: the controllers use the modules Sails loaded on lift
       // eslint-disable-next-line global-require
       GrottoService = require('../../../../api/services/GrottoService');
+      // eslint-disable-next-line global-require
+      NotificationService = require('../../../../api/services/NotificationService');
     });
 
     afterEach(() => sinon.restore());
@@ -90,6 +93,48 @@ describe('Organization features', () => {
       const kept = await TGrotto.findOne(org.id);
       should(kept.isDeleted).be.true();
       should(kept.redirectTo).equal(first.id);
+    });
+
+    it('should not notify the subscribers again when a concurrent request already soft-deleted the organization', async () => {
+      const org = await TGrotto.create({ author: 1 }).fetch();
+      const staleSnapshot = await GrottoService.getPopulatedOrganization(
+        org.id
+      );
+      const dispatch = sinon
+        .stub(NotificationService, 'dispatchSubscribersNotification')
+        .resolves();
+
+      await deleteOrganization(org.id).expect(200);
+      should(dispatch.callCount).equal(1);
+
+      const stub = sinon.stub(GrottoService, 'getPopulatedOrganization');
+      stub.onFirstCall().resolves(staleSnapshot);
+      stub.callThrough();
+
+      await deleteOrganization(org.id).expect(200);
+      should(stub.callCount).be.above(0);
+      should(dispatch.callCount).equal(1);
+    });
+
+    it('should notify the subscribers of a permanent delete that lost the soft-delete race', async () => {
+      const org = await TGrotto.create({ author: 1 }).fetch();
+      const staleSnapshot = await GrottoService.getPopulatedOrganization(
+        org.id
+      );
+
+      await deleteOrganization(org.id).expect(200);
+
+      const dispatch = sinon
+        .stub(NotificationService, 'dispatchSubscribersNotification')
+        .resolves();
+      const stub = sinon.stub(GrottoService, 'getPopulatedOrganization');
+      stub.onFirstCall().resolves(staleSnapshot);
+      stub.callThrough();
+
+      await deleteOrganization(org.id, '?isPermanent=true').expect(200);
+      should(stub.callCount).be.above(0);
+      should(dispatch.callCount).equal(1);
+      should(await TGrotto.findOne(org.id)).be.undefined();
     });
 
     it('should keep the organization when two soft deletes overlap', async () => {

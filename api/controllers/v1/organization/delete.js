@@ -71,6 +71,9 @@ module.exports = async (req, res) => {
       NotificationService.NOTIFICATION_ENTITIES.ORGANIZATION
     );
 
+  // Set when a concurrent request flagged the row after the read above: that
+  // request notifies the subscribers, this one must not do it a second time.
+  let lostSoftDeleteRace = false;
   if (!organization.isDeleted) {
     // Soft delete only a row still live, and never through destroyOne: the
     // t_grotto delete trigger turns a DELETE into a hard delete once the row is
@@ -82,6 +85,7 @@ module.exports = async (req, res) => {
       isDeleted: false,
     }).set({ isDeleted: true });
     organization.isDeleted = true;
+    lostSoftDeleteRace = !softDeleted;
 
     if (softDeleted) {
       const redirectTo = parseInt(req.param('entityId'), 10);
@@ -203,9 +207,12 @@ module.exports = async (req, res) => {
     await TGrotto.destroyOne({ id: organizationId }); // Hard delete
   }
 
-  await NotificationService.dispatchSubscribersNotification(
-    pendingNotification
-  );
+  // A permanent delete still removed the row, whoever flagged it
+  if (deletePermanently || !lostSoftDeleteRace) {
+    await NotificationService.dispatchSubscribersNotification(
+      pendingNotification
+    );
+  }
 
   return ControllerService.treatAndConvert(
     req,
