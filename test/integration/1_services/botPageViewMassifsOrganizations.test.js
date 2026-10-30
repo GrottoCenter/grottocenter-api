@@ -246,6 +246,14 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
       )
     ).rows;
 
+  // histo_delete() turns the first DELETE of a live row into a soft delete: a
+  // second one removes it, so that nothing is left to the suites that follow
+  // (the organization list tests count the deleted organizations).
+  const purge = async (model, ids) => {
+    await model.destroy({ id: ids });
+    await model.destroy({ id: ids });
+  };
+
   let originalConfig;
 
   before(async () => {
@@ -272,12 +280,12 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
       'UPDATE t_bot_config SET min_age_days = 30, pattern_version = $1',
       [VERSION]
     );
-    await TDescription.destroy({ id: created.description });
-    await TName.destroy({ id: created.name });
-    await TEntrance.destroy({ id: created.entrance });
-    await TCave.destroy({ id: created.cave });
-    await TMassif.destroy({ id: created.massif });
-    await TGrotto.destroy({ id: created.organization });
+    await purge(TDescription, created.description);
+    await purge(TName, created.name);
+    await purge(TEntrance, created.entrance);
+    await purge(TCave, created.cave);
+    await purge(TMassif, created.massif);
+    await purge(TGrotto, created.organization);
     Object.values(created).forEach((ids) => ids.splice(0));
   });
 
