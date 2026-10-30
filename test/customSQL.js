@@ -1009,6 +1009,17 @@ const BOT_PAGE_VIEW_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after BOT_PAGE_VIEW_MIGRATION, whose v_bot_page it redefines
+const BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(
+      __dirname,
+      '../sql/9_31_2026_10_30_v_bot_page_massifs_organizations.sql'
+    ),
+    'utf8'
+  )
+);
+
 // Organization history, as production runs it: every t_grotto update copies
 // the old row into h_grotto. Waterline builds h_grotto with id alone as
 // primary key, so a second update of the same organization would collide:
@@ -1079,6 +1090,7 @@ module.exports = {
   BOT_FOUNDATION_MIGRATION,
   BOT_ADMIT_PAGES_MIGRATION,
   BOT_PAGE_VIEW_MIGRATION,
+  BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
 };
