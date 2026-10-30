@@ -31,6 +31,7 @@ async function dropNonWaterlineTables(testUrl) {
   const client = new Client({ connectionString: testUrl });
   await client.connect();
   try {
+    await client.query('DROP VIEW IF EXISTS v_bot_redirect');
     await client.query('DROP VIEW IF EXISTS v_bot_page');
     await client.query('DROP TABLE IF EXISTS t_bibliographic_metadata');
     await client.query('DROP TYPE IF EXISTS e_metadata_status');
@@ -93,6 +94,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_FOUNDATION_MIGRATION,
                 customSQL.BOT_ADMIT_PAGES_MIGRATION,
                 customSQL.BOT_PAGE_VIEW_MIGRATION,
+                customSQL.BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))
