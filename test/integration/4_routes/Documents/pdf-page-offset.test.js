@@ -603,4 +603,91 @@ describe('Document PDF page offsets (#1936)', () => {
       should((await TFile.findOne(parentFileId)).pdfPageOffset).equal(2);
     });
   });
+
+  // Production declares t_file_format.extension as bpchar(12), which pads
+  // 'pdf' to 'pdf         '. The test database, built by Waterline, uses text.
+  describe('with padded file-format extensions (#1955)', () => {
+    let originalType;
+
+    before(async () => {
+      const { rows } = await sails.sendNativeQuery(
+        `SELECT format_type(atttypid, atttypmod) AS type
+         FROM pg_attribute
+         WHERE attrelid = 't_file_format'::regclass AND attname = 'extension'`
+      );
+      originalType = rows[0].type;
+      await sails.sendNativeQuery(
+        'ALTER TABLE t_file_format ALTER COLUMN extension TYPE bpchar(12)'
+      );
+      const pdf = await TFileFormat.findOne(PDF_FORMAT);
+      should(pdf.extension).equal('pdf         ');
+    });
+
+    after(async () => {
+      await sails.sendNativeQuery(
+        `ALTER TABLE t_file_format ALTER COLUMN extension
+         TYPE ${originalType} USING rtrim(extension)`
+      );
+    });
+
+    ['0', '7', '-126'].forEach((offset) => {
+      it(`should accept a ${offset} offset on a PDF uploaded at creation`, async () => {
+        const res = await createRequest(userToken, `Padded offset ${offset}`)
+          .attach('files', Buffer.from('%PDF'), 'lpu339_anonyme.pdf')
+          .field('newFilesMetadata[0][pdfPageOffset]', offset)
+          .expect(200);
+        const { id } = res.body.document;
+        createdDocIds.push(id);
+        const [file] = await TFile.find({ document: id });
+        should(file.pdfPageOffset).equal(Number(offset));
+      });
+    });
+
+    it('should still reject an offset on a non-PDF uploaded at creation', async () => {
+      const title = 'Padded offset on a text file';
+      await createRequest(userToken, title)
+        .attach('files', Buffer.from('notes'), 'notes.txt')
+        .field('newFilesMetadata[0][pdfPageOffset]', '1')
+        .expect(400);
+      should(await countDocumentsTitled(title)).equal(0);
+    });
+
+    describe('PUT /api/v1/documents/:id', () => {
+      let documentId;
+
+      beforeEach(async () => {
+        const doc = await TDocument.create({
+          author: 1,
+          type: 17,
+          license: 1,
+          isValidated: true,
+          dateInscription: new Date(),
+        }).fetch();
+        documentId = doc.id;
+        createdDocIds.push(documentId);
+      });
+
+      ['0', '-3'].forEach((offset) => {
+        it(`should accept a ${offset} offset on a PDF uploaded with an update`, async () => {
+          await updateRequest(userToken, documentId)
+            .field('title', 'Updated')
+            .attach('files', Buffer.from('%PDF'), 'lpu339_anonyme.pdf')
+            .field('newFilesMetadata[0][pdfPageOffset]', offset)
+            .expect(200);
+          const { newFiles } = (await TDocument.findOne(documentId))
+            .modifiedDocJson;
+          should(newFiles[0].pdfPageOffset).equal(Number(offset));
+        });
+      });
+
+      it('should still reject an offset on a non-PDF uploaded with an update', async () => {
+        await updateRequest(userToken, documentId)
+          .field('title', 'Rejected')
+          .attach('files', Buffer.from('notes'), 'notes.txt')
+          .field('newFilesMetadata[0][pdfPageOffset]', '1')
+          .expect(400);
+        should(await TFile.count({ document: documentId })).equal(0);
+      });
+    });
+  });
 });
