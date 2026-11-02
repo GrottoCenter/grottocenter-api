@@ -932,11 +932,22 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
 
   describe('reading by keyset, one type at a time', () => {
     it('reads a cave, a massif and an organization that share an id, at every batch size', async () => {
-      const cave = await mkListedCave();
-      const massif = await mkMassif({ id: cave.id });
-      const organization = await mkOrganization({ id: cave.id });
-      should(massif.id).equal(cave.id);
-      should(organization.id).equal(cave.id);
+      // An id free in all three tables; explicit ids do not move the sequences
+      const {
+        rows: [{ id }],
+      } = await query(
+        `SELECT GREATEST(
+           (SELECT COALESCE(MAX(id), 0) FROM t_cave),
+           (SELECT COALESCE(MAX(id), 0) FROM t_massif),
+           (SELECT COALESCE(MAX(id), 0) FROM t_grotto)
+         ) + 1000 AS id`
+      );
+      const cave = await mkListedCave({ id });
+      const massif = await mkMassif({ id });
+      const organization = await mkOrganization({ id });
+      should(cave.id).equal(id);
+      should(massif.id).equal(id);
+      should(organization.id).equal(id);
 
       for (const batchSize of [1, 2, 1000]) {
         for (const type of ['cave', 'massif', 'organization']) {
@@ -954,7 +965,7 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
             ids.push(...rows.map((r) => r.entity_id));
             last = rows[rows.length - 1].entity_id;
           }
-          should(ids).containEql(cave.id, `${type}, batch of ${batchSize}`);
+          should(ids).containEql(id, `${type}, batch of ${batchSize}`);
           should(new Set(ids).size).equal(ids.length);
         }
       }

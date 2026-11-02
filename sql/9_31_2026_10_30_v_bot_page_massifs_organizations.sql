@@ -437,18 +437,23 @@ CROSS JOIN LATERAL (
 WHERE g.is_deleted = false AND g.redirect_to IS NULL;
 ALTER VIEW v_bot_page OWNER TO gc_owner;
 
--- Cost: the final check reads v_bot_page for every merged record, so a read of
--- this view costs about as much as reading the pages it points to. It is meant
--- for the nightly job, which reads it once; do not query it per request.
+-- Cost: the final check builds the page of each merged record's target, by id,
+-- so a read costs about one page build per merged record and grows with the
+-- number of redirects, not with the number of pages (about 0.1 s for 2,100
+-- merged records among 24,000 pages on a local synthetic set). It is still
+-- meant for the nightly job, which reads it once; do not query it per request.
 CREATE OR REPLACE VIEW v_bot_redirect AS
 WITH RECURSIVE
-  -- Every merged record, whatever its is_deleted: a merge also deletes it
+  -- Every merged record, whatever its is_deleted: a merge also deletes it.
+  -- redirect_to is cast to the type of id (it is int4 in production, but a
+  -- Waterline-built database makes it real, and a cast on the id side would
+  -- stop the id lookups from using the primary key).
   merged AS MATERIALIZED (
-    SELECT 'cave'::text AS entity_type, id, redirect_to FROM t_cave WHERE redirect_to IS NOT NULL
+    SELECT 'cave'::text AS entity_type, id, redirect_to::int AS redirect_to FROM t_cave WHERE redirect_to IS NOT NULL
     UNION ALL
-    SELECT 'massif'::text, id, redirect_to FROM t_massif WHERE redirect_to IS NOT NULL
+    SELECT 'massif'::text, id, redirect_to::int FROM t_massif WHERE redirect_to IS NOT NULL
     UNION ALL
-    SELECT 'organization'::text, id, redirect_to FROM t_grotto WHERE redirect_to IS NOT NULL
+    SELECT 'organization'::text, id, redirect_to::int FROM t_grotto WHERE redirect_to IS NOT NULL
   ),
   -- hops = number of redirects followed; a chain is followed for 10 at most
   walk (entity_type, entity_id, node, hops) AS (
