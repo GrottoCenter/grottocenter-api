@@ -10,8 +10,10 @@
 --
 -- v_bot_page: one row per published page. The pages, the sitemaps and the
 -- withdrawal worker all read it, so anything absent from it is not published.
--- It is a plain view: the nightly job reads it by keyset
--- (entity_id > $1 ORDER BY entity_id LIMIT 1000), not a materialized view.
+-- It is a plain view: the nightly job reads it by keyset, one type at a time
+-- (entity_type = $1 AND entity_id > $2 ORDER BY entity_id LIMIT 1000), not a
+-- materialized view. entity_id alone is not unique across the three types, and
+-- without a constant entity_type every batch evaluates every branch.
 --
 --   entity_type, entity_id, language   what the page is, in the language of its
 --                                      main name
@@ -399,7 +401,8 @@ SELECT
     'county', g.county,
     'region', COALESCE(iso.name, g.region),
     'country', g.id_country,
-    'url', g.url,
+    -- Free text typed by any user: only an http(s) address is published
+    'url', CASE WHEN g.url ~* '^https?://[^[:space:]]+$' THEN g.url END,
     'yearBirth', g.year_birth,
     'lastmod', lm.lastmod
   ) AS page
@@ -434,6 +437,9 @@ CROSS JOIN LATERAL (
 WHERE g.is_deleted = false AND g.redirect_to IS NULL;
 ALTER VIEW v_bot_page OWNER TO gc_owner;
 
+-- Cost: the final check reads v_bot_page for every merged record, so a read of
+-- this view costs about as much as reading the pages it points to. It is meant
+-- for the nightly job, which reads it once; do not query it per request.
 CREATE OR REPLACE VIEW v_bot_redirect AS
 WITH RECURSIVE
   -- Every merged record, whatever its is_deleted: a merge also deletes it
@@ -460,7 +466,12 @@ FROM walk w
 -- The end of the chain: a record with a page. A merged record never has one
 -- (redirect_to is set), so the walk's intermediate steps and a chain cut at 10
 -- redirects are left out by this test alone.
-WHERE EXISTS (
-  SELECT 1 FROM v_bot_page p WHERE p.entity_type = w.entity_type AND p.entity_id = w.node
-);
+-- One branch per type, each with a constant entity_type: the planner then
+-- reads only that type's branch of v_bot_page, by id, instead of the whole view.
+WHERE (w.entity_type = 'cave' AND EXISTS (
+        SELECT 1 FROM v_bot_page p WHERE p.entity_type = 'cave' AND p.entity_id = w.node))
+   OR (w.entity_type = 'massif' AND EXISTS (
+        SELECT 1 FROM v_bot_page p WHERE p.entity_type = 'massif' AND p.entity_id = w.node))
+   OR (w.entity_type = 'organization' AND EXISTS (
+        SELECT 1 FROM v_bot_page p WHERE p.entity_type = 'organization' AND p.entity_id = w.node));
 ALTER VIEW v_bot_redirect OWNER TO gc_owner;

@@ -76,7 +76,7 @@ Gates, all re-checked on every read:
 - **Description** (cave, entrance, massif; organizations have none): not deleted, at least `min_age_days` old, and covered by a clean `t_bot_text_scan` row at the current `pattern_version` for the text as it is now; otherwise it is left out and the page stays. Texts repeated on many caves are shown: they only stop counting for the content rule.
 - **Massif page:** live, admitted, not sensitive, a main name that passed the scan, and at least one listed cave. A massif with no published cave has no page (decision on #1759). `page` holds `id`, `name`, `language`, `lastmod`, `descriptions` and `caves`.
 - **Caves of a massif page:** `{id, name, depth, length}` of the caves that have a page in the view (admitted, live, named, an embedded entrance) and hold an embedded entrance (live, not sensitive, admitted) inside the massif polygon, deepest first (unknown depth last), then by id. **The list is capped at 100 caves. The cap is a proposal, not a decided rule**: it keeps a page and the batch that reads it bounded for a massif with thousands of caves, and the `LIMIT` in the migration is the one place to change. The cave pages still link to every massif they belong to. The lookup starts from the entrances, so the partial GiST index on public entrances applies, and no coordinate reaches `page`.
-- **Organization page:** live (not deleted, not merged), admitted, a main name that passed the scan. No sensitivity flag exists for organizations. `page` holds `id`, `name`, `language`, `city`, `county`, `region` (the `t_iso3166_2` name when the organization has a code, else the free text), `country`, `url`, `yearBirth` and `lastmod`. Never address, postal code, mail, custom message, cavers, coordinates or type.
+- **Organization page:** live (not deleted, not merged), admitted, a main name that passed the scan. No sensitivity flag exists for organizations. `page` holds `id`, `name`, `language`, `city`, `county`, `region` (the `t_iso3166_2` name when the organization has a code, else the free text), `country`, `url` (only an `http(s)` address, else `null`: the field is free text; #1766 renders it with `rel="nofollow ugc"`), `yearBirth` and `lastmod`. Never address, postal code, mail, custom message, cavers, coordinates or type.
 - **Massif listed on a cave:** admitted, not sensitive, named, and holding an embedded entrance of the cave.
 - **Region:** the code of `t_iso3166_2` and its name; the geocoder's free text when the entrance has no code.
 - **Names:** the main name of a record is the one with the lowest id. If it did not pass the scan, the cave has no page, an entrance has a `null` name, a massif is not listed on a cave, and a massif or an organization has no page; another main name is never substituted.
@@ -85,7 +85,7 @@ Gates, all re-checked on every read:
 
 The view does not re-derive sensitivity from the massif polygons, for the reasons in [Sensitivity invariant](#sensitivity-invariant).
 
-Read it by keyset, `WHERE entity_id > $1 ORDER BY entity_id LIMIT 1000`. It is a plain view, not a materialized one.
+Read it by keyset, one type at a time: `WHERE entity_type = $1 AND entity_id > $2 ORDER BY entity_id LIMIT 1000`. `entity_id` alone is not unique (cave 42, massif 42 and organization 42 can all exist), and a constant `entity_type` is what lets the planner skip the other branches. It is a plain view, not a materialized one.
 
 ## Redirects
 
@@ -93,5 +93,7 @@ Read it by keyset, `WHERE entity_id > $1 ORDER BY entity_id LIMIT 1000`. It is a
 
 1. the merged record has a `t_bot_admission` row: it was published, so crawlers may know its address; and
 2. the final target has a row in `v_bot_page` of the same type: the redirect leads to a page that exists.
+
+The view is meant for the nightly job, which reads it once: its final check reads `v_bot_page` for every merged record, so do not query it per request.
 
 The chain follows `redirect_to` through merged records and stops at the first record that is not merged. It is cut after 10 redirects, so a cycle or a self-redirect never reaches a target and yields no row. A merge also soft-deletes the source, so `is_deleted` is not looked at on the source or on the records along the chain: deleted **and** merged redirects, deleted alone does not (the page is gone). A source with a redirect never has a page in `v_bot_page`, so the two views do not overlap. Entrances are not covered: they have no page of their own.
