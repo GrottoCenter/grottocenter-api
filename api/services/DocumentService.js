@@ -70,13 +70,16 @@ const parseFileId = (id) => {
   return isValidId(n) ? n : null;
 };
 
-// Extensions of the file formats whose MIME type is PDF.
+// Extensions of the file formats whose MIME type is PDF, lowercased and
+// trimmed: in production t_file_format.extension is a bpchar(12), so 'pdf'
+// comes back padded as 'pdf         '.
 const findPdfExtensions = async () => {
   const formats = await TFileFormat.find().select(['extension', 'mimeType']);
   return new Set(
     formats
       .filter((format) => format.mimeType?.trim() === PDF_MIME_TYPE)
-      .map((format) => format.extension)
+      .map((format) => format.extension?.trim().toLowerCase())
+      .filter(Boolean)
   );
 };
 
