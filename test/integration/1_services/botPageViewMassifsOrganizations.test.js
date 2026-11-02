@@ -755,6 +755,26 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
         );
       });
 
+      it('publishes the url only when it is an http(s) address', async () => {
+        const urls = {
+          'https://example.org/club': 'https://example.org/club',
+          'http://example.org': 'http://example.org',
+          // eslint-disable-next-line no-script-url
+          'javascript:alert(1)': null,
+          'data:text/html,<b>x</b>': null,
+          'ftp://example.org/club': null,
+          'https://example.org/a b': null,
+          'example.org/club': null,
+        };
+        for (const [url, expected] of Object.entries(urls)) {
+          // eslint-disable-next-line no-await-in-loop
+          const organization = await mkOrganization({ url });
+          // eslint-disable-next-line no-await-in-loop
+          const row = await organizationPage(organization.id);
+          should(row.page.url).equal(expected, url);
+        }
+      });
+
       it('publishes none of the private fields, whatever the organization holds', async () => {
         const organization = await mkOrganization({
           address: '12 rue du Secret',
@@ -907,6 +927,37 @@ describe('v_bot_page - the massif and organization pages, v_bot_redirect', () =>
 
         should(same.rows[0].same).be.true();
       });
+    });
+  });
+
+  describe('reading by keyset, one type at a time', () => {
+    it('reads a cave, a massif and an organization that share an id, at every batch size', async () => {
+      const cave = await mkListedCave();
+      const massif = await mkMassif({ id: cave.id });
+      const organization = await mkOrganization({ id: cave.id });
+      should(massif.id).equal(cave.id);
+      should(organization.id).equal(cave.id);
+
+      for (const batchSize of [1, 2, 1000]) {
+        for (const type of ['cave', 'massif', 'organization']) {
+          const ids = [];
+          let last = 0;
+          for (;;) {
+            // eslint-disable-next-line no-await-in-loop
+            const { rows } = await query(
+              `SELECT entity_id FROM v_bot_page
+               WHERE entity_type = $1 AND entity_id > $2
+               ORDER BY entity_id LIMIT $3`,
+              [type, last, batchSize]
+            );
+            if (rows.length === 0) break;
+            ids.push(...rows.map((r) => r.entity_id));
+            last = rows[rows.length - 1].entity_id;
+          }
+          should(ids).containEql(cave.id, `${type}, batch of ${batchSize}`);
+          should(new Set(ids).size).equal(ids.length);
+        }
+      }
     });
   });
 
