@@ -17,7 +17,9 @@
  *      a merged record's old path holds a small page that points to the final
  *      target of its merge chain, with the target in the blob metadata
  *      `redirectto`. A redirect is a manifest row like a page (same type, the
- *      old record's id), so it is uploaded when its hash changes and deleted
+ *      old record's id) with `redirect_to` set to the target id, which is what
+ *      tells it from a content page (sitemaps list only the rows where it is
+ *      NULL), so it is uploaded when its hash changes and deleted
  *      when the redirect is no longer produced (the target left the view, the
  *      record was restored). The redirects of one type are read once, before
  *      its pages: they are the merged records, a few thousand rows of two
@@ -103,15 +105,23 @@ const manifestHashes = async (paths) => {
 
 const recordPublished = (page) =>
   query(
-    `INSERT INTO t_bot_page_manifest (path, entity_type, entity_id, content_hash, lastmod, published_at)
-     VALUES ($1, $2, $3, $4, $5, now())
+    `INSERT INTO t_bot_page_manifest (path, entity_type, entity_id, content_hash, lastmod, redirect_to, published_at)
+     VALUES ($1, $2, $3, $4, $5, $6, now())
      ON CONFLICT (path) DO UPDATE
        SET entity_type = EXCLUDED.entity_type,
            entity_id = EXCLUDED.entity_id,
            content_hash = EXCLUDED.content_hash,
            lastmod = EXCLUDED.lastmod,
+           redirect_to = EXCLUDED.redirect_to,
            published_at = EXCLUDED.published_at`,
-    [page.path, page.entityType, page.entityId, page.hash, page.lastmod]
+    [
+      page.path,
+      page.entityType,
+      page.entityId,
+      page.hash,
+      page.lastmod,
+      page.redirectTo ?? null,
+    ]
   );
 
 const forgetPublished = (path) =>
@@ -267,6 +277,7 @@ async function publish({
             html,
             hash: sha256(html),
             lastmod: null,
+            redirectTo: redirect.target_id,
             metadata: {
               redirectto: BotRenderService.redirectTarget(
                 entityType,
@@ -352,8 +363,8 @@ module.exports = {
    * @param {Function} [options.onBatch] called after each batch
    * @param {Map<string, string>} [options.languageTags] ISO 639-3 to 639-1;
    *   read from t_language when absent
-   * @param {Map<string, object>} [options.countryNames] t_country names by
-   *   language; read from t_country when absent
+   * @param {Map<string, string>} [options.countryNames] t_country.native_name by
+   *   ISO code; read from t_country when absent
    * @returns {Promise<{uploaded: number, unchanged: number, deleted: number,
    *   byType: object}>}
    * @throws an error with code E_BOT_PAGES_RUNNING when another run is in

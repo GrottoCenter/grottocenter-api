@@ -13,49 +13,16 @@ const TAGS = new Map([
   ['por', 'pt'],
   ['spa', 'es'],
   ['pol', 'pl'],
+  ['heb', 'he'],
+  ['ara', 'ar'],
 ]);
 
-// What loadCountryNames() reads from t_country (a subset)
+// What loadCountryNames() reads from t_country: native_name (a subset)
 const COUNTRIES = new Map([
-  [
-    'FR',
-    {
-      en: 'France',
-      fr: 'France',
-      es: 'Francia',
-      de: 'Frankreich',
-      it: 'Francia',
-      nl: 'Frankrijk',
-      ca: 'França',
-      bg: 'Франция',
-    },
-  ],
-  [
-    'PT',
-    {
-      en: 'Portugal',
-      fr: 'Portugal',
-      es: 'Portugal',
-      de: 'Portugal',
-      it: 'Portogallo',
-      nl: 'Portugal',
-      ca: 'Portugal',
-      bg: 'Португалия',
-    },
-  ],
-  [
-    'PL',
-    {
-      en: 'Poland',
-      fr: 'Pologne',
-      es: 'Polonia',
-      de: 'Polen',
-      it: 'Polonia',
-      nl: 'Polen',
-      ca: 'Polònia',
-      bg: 'Полша',
-    },
-  ],
+  ['FR', 'France'],
+  ['PT', 'Portugal'],
+  ['PL', 'Polska'],
+  ['ES', 'España'],
 ]);
 
 const description = (extra = {}) => ({
@@ -177,6 +144,7 @@ describe('Bot page templates', () => {
       baseUrl: BASE_URL,
       languageTags: TAGS,
       countryNames: COUNTRIES,
+      hubLinks: BotRenderService.NO_HUB_LINKS,
       ...options,
     });
 
@@ -597,40 +565,89 @@ describe('Bot page templates', () => {
         { language: 'por' }
       );
 
+    it('lays out a Hebrew or Arabic page right to left, and the others left to right', () => {
+      const cave = (language) =>
+        caveRow({ language, name: 'x', descriptions: [] }, { language });
+      should(render(cave('heb'))).containEql('<html lang="he" dir="rtl">');
+      should(render(cave('ara'))).containEql('<html lang="ar" dir="rtl">');
+      should(render(cave('fra'))).containEql('<html lang="fr">');
+      should(render(cave('fra'))).not.containEql('<html lang="fr" dir=');
+      // The labels are the language's own, so a page in Hebrew reads in Hebrew
+      should(render(cave('heb'))).not.containEql('<dt>Depth</dt>');
+    });
+
+    it('lets the browser pick the direction of a description in another language than the page', () => {
+      const html = render(
+        caveRow({
+          descriptions: [
+            description({ language: 'fra', title: 'Same' }),
+            description({ language: 'heb', title: 'Other' }),
+          ],
+        })
+      );
+      should(html).containEql('<section lang="he" dir="auto">');
+      should(html).containEql('<section>');
+    });
+
     it('gives a Polish cave English labels and the Polish tag', () => {
       const html = render(polishCave());
       should(html).containEql('<html lang="pl">');
       should(html).containEql('<dt>Depth</dt>');
       should(html).containEql('<dt>Length</dt>');
       should(html).containEql('<h2>Entrances</h2>');
-      should(html).containEql('<dt>Country</dt><dd>Poland</dd>');
+      should(html).containEql('<dt>Country</dt><dd>Polska</dd>');
       should(html).containEql('<h2>Massifs</h2>');
     });
 
-    it('gives a Portuguese cave Portuguese labels and the English name of the country', () => {
+    it('gives a Portuguese cave Portuguese labels and the native name of the country', () => {
       const html = render(portugueseCave());
       should(html).containEql('<html lang="pt">');
       should(html).containEql('<dt>Profundidade</dt>');
       should(html).containEql('<dt>Desenvolvimento</dt>');
       should(html).containEql('<h2>Entradas</h2>');
-      // t_country has no Portuguese column
       should(html).containEql('<dt>País</dt><dd>Portugal</dd>');
       should(html).not.containEql('Profondeur');
     });
 
-    it('names the country in the language of the page when t_country has the column', () => {
-      const withCountry = (language) =>
+    it('names the country by its native name, whatever the language of the page', () => {
+      const withCountry = (country, language) =>
         render(
           caveRow(
-            { entrances: [entrance(1, { country: 'FR', regionCode: null })] },
+            { entrances: [entrance(1, { country, regionCode: null })] },
             { language }
           )
         );
-      should(withCountry('fra')).containEql('<dd>France</dd>');
-      should(withCountry('spa')).containEql('<dd>Francia</dd>');
-      should(withCountry('eng')).containEql('<dd>France</dd>');
-      // Not a language t_country has: English
-      should(withCountry('pol')).containEql('<dd>France</dd>');
+      should(withCountry('ES', 'fra')).containEql('<dd>España</dd>');
+      should(withCountry('ES', 'eng')).containEql('<dd>España</dd>');
+      should(withCountry('ES', 'pol')).containEql('<dd>España</dd>');
+      should(withCountry('PL', 'fra')).containEql('<dd>Polska</dd>');
+    });
+
+    it('puts the location of the first entrance that has one in the meta description, not of the first with any fact', () => {
+      // Only flags on the first entrance, a location on the second
+      const html = render(
+        caveRow({
+          entrances: [
+            entrance(1, {
+              city: null,
+              county: null,
+              region: null,
+              regionCode: null,
+              country: null,
+              discoveryYear: null,
+              dangerFlooding: null,
+              dangerCo2: null,
+              hasBat: false,
+            }),
+            entrance(2, { city: 'Lans-en-Vercors', country: 'FR' }),
+          ],
+        })
+      );
+      const metaDescription = html.match(
+        /<meta name="description" content="([^"]*)">/
+      )[1];
+      should(metaDescription).containEql('Lans-en-Vercors');
+      should(metaDescription).containEql('France');
     });
 
     it('shows the code of a country t_country does not know', () => {
@@ -684,9 +701,11 @@ describe('Bot page templates', () => {
       ].map((title) => html.indexOf(`>${title}<`));
       should(order.every((i) => i > 0)).be.true();
       should([...order].sort((a, b) => a - b)).deepEqual(order);
-      should(html).containEql('<section lang="en">\n<h3>First in English');
-      should(html).containEql('<section lang="es">\n<h3>Texto');
-      should(html).containEql('<section lang="fr">\n<h3>Premier');
+      should(html).containEql(
+        '<section lang="en" dir="auto">\n<h3>First in English'
+      );
+      should(html).containEql('<section lang="es" dir="auto">\n<h3>Texto');
+      should(html).containEql('<section lang="fr" dir="auto">\n<h3>Premier');
       should(html).containEql('<section>\n<h3>Sans langue');
     });
   });
@@ -701,6 +720,31 @@ describe('Bot page templates', () => {
       should(nav).containEql('<li>Auvergne-Rhône-Alpes</li>');
       should(nav).containEql('<li>Berger (Aven du)</li>');
       should(nav).not.containEql('<a');
+    });
+
+    it('refuses to render without the hub links, rather than render a breadcrumb without them', () => {
+      const row = caveRow();
+      const options = {
+        baseUrl: BASE_URL,
+        languageTags: TAGS,
+        countryNames: COUNTRIES,
+      };
+      should(() => BotRenderService.render(row, options)).throw(TypeError, {
+        message: /hubLinks/,
+      });
+      // Each of the two functions is needed
+      [{}, { country: () => null }, { region: () => null }].forEach(
+        (hubLinks) =>
+          should(() =>
+            BotRenderService.render(row, { ...options, hubLinks })
+          ).throw(TypeError, { message: /needs hubLinks/ })
+      );
+      should(
+        BotRenderService.render(row, {
+          ...options,
+          hubLinks: BotRenderService.NO_HUB_LINKS,
+        })
+      ).containEql('<html');
     });
 
     it('links a crumb only when the hook returns the address of a published hub', () => {

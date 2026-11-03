@@ -99,6 +99,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_PAGE_VIEW_MIGRATION,
                 customSQL.BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
                 customSQL.BOT_PAGE_MANIFEST_MIGRATION,
+                customSQL.BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))

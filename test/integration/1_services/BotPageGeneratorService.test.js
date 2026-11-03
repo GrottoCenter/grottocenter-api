@@ -694,6 +694,40 @@ describe('BotPageGeneratorService', () => {
       should(summary.byType.cave.uploaded).equal(6);
     });
 
+    it('marks a redirect in the manifest with the id of its target, and a content page with none', async () => {
+      redirects = [redirect('cave', OLD, FIRST_ID + 1)];
+      await runWithRedirects();
+
+      const { rows } = await query(
+        `SELECT path, redirect_to FROM t_bot_page_manifest WHERE entity_type <> 'static' ORDER BY path`
+      );
+      const byPath = Object.fromEntries(
+        rows.map((r) => [r.path, r.redirect_to])
+      );
+      should(byPath[`caves/${OLD}.html`]).equal(FIRST_ID + 1);
+      should(byPath[`caves/${FIRST_ID + 1}.html`]).be.null();
+      should(
+        rows.filter((r) => r.redirect_to !== null).map((r) => r.path)
+      ).deepEqual([`caves/${OLD}.html`]);
+      const { rows: extras } = await query(
+        `SELECT redirect_to FROM t_bot_page_manifest WHERE entity_type = 'static'`
+      );
+      should(extras.every((r) => r.redirect_to === null)).be.true();
+    });
+
+    it('clears the mark when the redirect gives way to the page of the record', async () => {
+      redirects = [redirect('cave', FIRST_ID + 9, FIRST_ID + 1)];
+      await runWithRedirects();
+      redirects = [];
+      records.push(record('cave', FIRST_ID + 9));
+      await runWithRedirects();
+      const { rows } = await query(
+        'SELECT redirect_to FROM t_bot_page_manifest WHERE path = $1',
+        [`caves/${FIRST_ID + 9}.html`]
+      );
+      should(rows[0].redirect_to).be.null();
+    });
+
     it('records it in the manifest as a page of the old record, with the hash of the file', async () => {
       redirects = [redirect('massif', OLD, FIRST_ID + 1)];
       await runWithRedirects();

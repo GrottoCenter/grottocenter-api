@@ -1,8 +1,8 @@
 <%# Shared layout of every page published for bots (see BotRenderService).
     Locals: lang, title, siteUrl, body (trusted HTML from a page template);
-    optional: description, canonicalUrl, ogImage, jsonLd (a serialized JSON-LD document), robots, refreshUrl -%>
+    optional: dir ('rtl' for a right-to-left language), description, canonicalUrl, ogImage, jsonLd (a serialized JSON-LD document), robots, refreshUrl -%>
 <!DOCTYPE html>
-<html lang="<%= locals.lang %>">
+<html lang="<%= locals.lang %>"<% if (locals.dir === 'rtl') { %> dir="rtl"<% } %>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

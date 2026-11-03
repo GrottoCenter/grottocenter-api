@@ -80,21 +80,18 @@ module.exports = {
    *   required, what loadLanguageTags() returns (an empty Map keeps every
    *   3-letter code). Every caller that publishes or compares a page passes the
    *   same map, or its bytes would differ from the generator's.
-   * @param {Map<string, object>} options.countryNames
+   * @param {Map<string, string>} options.countryNames
    *   required, what loadCountryNames() returns (an empty Map shows the country
    *   code). Same reason as languageTags.
-   * @param {{country: Function, region: Function}} [options.hubLinks]
-   *   the breadcrumb's hook for the hub pages (#1935); default: no link
+   * @param {{country: Function, region: Function}} options.hubLinks
+   *   required, the breadcrumb's hook for the hub pages (#1935); pass
+   *   NO_HUB_LINKS until they exist. Same reason as languageTags: a caller that
+   *   forgot it would render pages without the links the generator wrote.
    * @returns {string} the HTML document
    */
   render(
     row,
-    {
-      baseUrl = publicBaseUrl(),
-      languageTags,
-      countryNames,
-      hubLinks = NO_HUB_LINKS,
-    } = {}
+    { baseUrl = publicBaseUrl(), languageTags, countryNames, hubLinks } = {}
   ) {
     if (!(languageTags instanceof Map)) {
       // Without them a page renders `fra` instead of `fr`: another hash for the
@@ -107,6 +104,16 @@ module.exports = {
       // Likewise: a page without them shows `FR` where the generator wrote `France`
       throw new TypeError(
         'BotRenderService.render needs countryNames (see loadCountryNames)'
+      );
+    }
+    if (
+      !hubLinks ||
+      typeof hubLinks.country !== 'function' ||
+      typeof hubLinks.region !== 'function'
+    ) {
+      // Likewise: the breadcrumb of a page rendered without them has no links
+      throw new TypeError(
+        'BotRenderService.render needs hubLinks ({ country, region }, NO_HUB_LINKS until the hubs exist)'
       );
     }
     const bodyTemplate = BODY_TEMPLATES[row.entity_type];
@@ -122,6 +129,7 @@ module.exports = {
     return layout(
       {
         lang: model.lang,
+        dir: model.dir,
         title: model.title,
         description: model.description,
         canonicalUrl: model.url,
@@ -182,31 +190,18 @@ module.exports = {
   },
 
   /**
-   * The names of the countries in the languages t_country holds, for render():
-   * ISO 3166-1 alpha-2 code -> `{ en, fr, es, de, it, nl, ca, bg }`, keyed by
-   * the BCP 47 tag of the language. Read once per run; needs Sails.
+   * The name of every country, for render(): ISO 3166-1 alpha-2 code ->
+   * t_country.native_name, the one name column kept (#1939). Read once per
+   * run; needs Sails.
    *
-   * @returns {Promise<Map<string, object>>}
+   * @returns {Promise<Map<string, string>>}
    */
   async loadCountryNames() {
     const { rows } = await CommonService.query(
-      `SELECT iso, en_name, fr_name, es_name, de_name, it_name, nl_name, ca_name, bg_name
-         FROM t_country`
+      'SELECT iso, native_name FROM t_country'
     );
     return new Map(
-      rows.map((row) => [
-        row.iso.trim().toUpperCase(),
-        {
-          en: row.en_name,
-          fr: row.fr_name,
-          es: row.es_name,
-          de: row.de_name,
-          it: row.it_name,
-          nl: row.nl_name,
-          ca: row.ca_name,
-          bg: row.bg_name,
-        },
-      ])
+      rows.map((row) => [row.iso.trim().toUpperCase(), row.native_name])
     );
   },
 
