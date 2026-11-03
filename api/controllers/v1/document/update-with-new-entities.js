@@ -29,6 +29,10 @@ module.exports = async (req, res) => {
     delete scalarData[field];
   }
 
+  // The point a document references is only changed through the point
+  // endpoints, which check the permissions and the conflict rule (#1733).
+  delete scalarData.point;
+
   const isArrNotEmpty = (value) => Array.isArray(value) && value.length > 0;
 
   if (isArrNotEmpty(newDescriptions)) {

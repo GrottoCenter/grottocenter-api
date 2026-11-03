@@ -2074,6 +2074,11 @@ paths:
         Note: unlike `PUT /documents/{id}` (which is `multipart/form-data`),
         this endpoint receives a JSON body, so a real empty array `[]` is used
         to clear a collection — the `'[]'` string sentinel is not needed here.
+
+
+        A `point` sent in `document` is ignored: the point a document
+        references is changed through `PUT` and `DELETE
+        /points/{pointId}/documents/{documentId}` only.
       security:
         - bearerAuth: []
       parameters:

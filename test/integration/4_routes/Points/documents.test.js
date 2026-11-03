@@ -84,6 +84,31 @@ describe('Point documents features', () => {
       ).expect(409);
     });
 
+    it('ignores the point sent to the generic document update', async () => {
+      await json(
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/documents/${photoId}/new-entities`)
+          .set('Authorization', userToken)
+          .send({
+            document: { point: null },
+            newAuthors: [],
+            newDescriptions: [],
+          })
+      ).expect(200);
+      await json(
+        supertest(sails.hooks.http.app)
+          .put(`/api/v1/documents/${photoId}/new-entities`)
+          .set('Authorization', userToken)
+          .send({
+            document: { point: otherPointId },
+            newAuthors: [],
+            newDescriptions: [],
+          })
+      ).expect(200);
+      const document = await TDocument.findOne({ id: photoId });
+      should(document.point).equal(pointId);
+    });
+
     it('shows the point on the document details', async () => {
       const res = await json(
         supertest(sails.hooks.http.app).get(`/api/v1/documents/${photoId}`)
