@@ -3,10 +3,8 @@ const should = require('should');
 const sinon = require('sinon');
 const { HtmlValidate } = require('html-validate/node');
 
-// What loadCountryNames() reads from t_country
-const COUNTRIES = new Map([
-  ['FR', { en: 'France', fr: 'France', es: 'Francia' }],
-]);
+// What loadCountryNames() reads from t_country: native_name
+const COUNTRIES = new Map([['FR', 'France']]);
 
 const BASE_URL = 'https://example.test/ui';
 // What loadLanguageTags() reads from t_language
@@ -30,6 +28,7 @@ describe('BotRenderService', () => {
     BotRenderService.render(row, {
       languageTags: TAGS,
       countryNames: COUNTRIES,
+      hubLinks: BotRenderService.NO_HUB_LINKS,
       ...options,
     });
 
@@ -208,8 +207,8 @@ describe('BotRenderService', () => {
           ],
         },
       });
-      should(html).containEql('<section lang="fr">\n<h3>Same</h3>');
-      should(html).containEql('<section lang="en">\n<h3>Other</h3>');
+      should(html).containEql('<section lang="fr" dir="auto">\n<h3>Same</h3>');
+      should(html).containEql('<section lang="en" dir="auto">\n<h3>Other</h3>');
       should(html).not.containEql('lang="eng"');
       should(html).not.containEql('lang="fra"');
     });
@@ -243,6 +242,7 @@ describe('BotRenderService', () => {
         BotRenderService.render(cave, {
           languageTags: new Map(),
           countryNames: COUNTRIES,
+          hubLinks: BotRenderService.NO_HUB_LINKS,
         })
       ).containEql('<html lang="fra">');
     });
@@ -260,9 +260,21 @@ describe('BotRenderService', () => {
       const html = BotRenderService.render(cave, {
         languageTags: TAGS,
         countryNames: new Map(),
+        hubLinks: BotRenderService.NO_HUB_LINKS,
       });
       should(html).containEql('<dd>FR</dd>');
       should(html).not.containEql('<dd>France</dd>');
+    });
+
+    it('reads the native name of each country from t_country', async () => {
+      const names = await BotRenderService.loadCountryNames();
+      should(names.get('ES')).equal('España');
+      should(names.get('FR')).equal('France');
+      should(names.size).be.above(0);
+      // One string per country, not a set of translations
+      should(
+        Array.from(names.values()).every((n) => typeof n === 'string')
+      ).be.true();
     });
 
     it('reads the 2-letter codes from t_language', async () => {

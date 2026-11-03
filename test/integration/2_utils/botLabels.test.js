@@ -123,9 +123,12 @@ describe('Bot page labels', () => {
               Object.entries(CODE_BY_LANGUAGE).map(([l, c]) => [c, l])
             ),
             countryNames: new Map(),
+            hubLinks: BotRenderService.NO_HUB_LINKS,
           }
         );
-        should(html).containEql(`<html lang="${lang}">`);
+        // Right-to-left languages are laid out as such
+        const dir = ['ar', 'he'].includes(lang) ? ' dir="rtl"' : '';
+        should(html).containEql(`<html lang="${lang}"${dir}>`);
         should(html).containEql(`<dt>${labels[lang].depth}</dt>`);
       });
     });

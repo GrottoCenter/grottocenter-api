@@ -1,6 +1,6 @@
 <%# Locals: descriptions (array of {title, body, lang}, from the page model), labels, level (the heading level of the block) -%>
 <% locals.descriptions.forEach((description) => { %>
-<section<% if (description.lang) { %> lang="<%= description.lang %>"<% } %>>
+<section<% if (description.lang) { %> lang="<%= description.lang %>" dir="auto"<% } %>>
 <% if (description.title) { %><h<%= locals.level %>><%= description.title %></h<%= locals.level %>>
 <% } %><% if (description.body) { %><p class="text"><%= description.body %></p>
 <% } %></section>

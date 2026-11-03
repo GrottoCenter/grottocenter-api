@@ -30,18 +30,6 @@ const TITLE_MAX = 60;
 const DESCRIPTION_MAX = 160;
 const DEFAULT_LANGUAGE = 'eng';
 const OG_IMAGE_PATH = '/og-image.png';
-// The t_country columns that exist, by BCP 47 tag; any other language: English
-const COUNTRY_COLUMNS = Object.freeze([
-  'en',
-  'fr',
-  'es',
-  'de',
-  'it',
-  'nl',
-  'ca',
-  'bg',
-]);
-
 /**
  * Hook for the country and region hubs (#1935), which do not exist yet: the
  * breadcrumb names the country and the region but links to neither. Once the
@@ -54,6 +42,10 @@ const NO_HUB_LINKS = Object.freeze({
   country: () => null,
   region: () => null,
 });
+
+// The languages written right to left, among the tags a record can carry: the
+// page is laid out right to left, labels and punctuation included
+const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur', 'yi']);
 
 // BCP 47 language tag of a record language, an ISO 639-3 code in the view:
 // the ISO 639-1 subtag when the language has one (`fra` -> `fr`), as BCP 47
@@ -106,12 +98,11 @@ const isKnown = (value) =>
 const positive = (value) =>
   typeof value === 'number' && value > 0 ? value : null;
 
-const countryNameOf = (code, tag, countryNames) => {
+// The name of a country is t_country.native_name, whatever the page language
+// (#1939 retires the translated columns); an unknown code is shown as is
+const countryNameOf = (code, countryNames) => {
   if (!isKnown(code)) return null;
-  const names = countryNames.get(String(code).toUpperCase());
-  if (!names) return String(code);
-  const column = COUNTRY_COLUMNS.includes(tag) ? tag : 'en';
-  return names[column] || names.en || String(code);
+  return countryNames.get(String(code).toUpperCase()) || String(code);
 };
 
 const firstDescriptionLanguage = (page) => {
@@ -148,7 +139,7 @@ const buildDescriptions = (descriptions, lang, tag) => {
 };
 
 const buildEntrance = (entrance, { lang, tag, labels, countryNames }) => {
-  const countryName = countryNameOf(entrance.country, lang, countryNames);
+  const countryName = countryNameOf(entrance.country, countryNames);
   const facts = [
     [labels.municipality, entrance.city],
     [labels.county, entrance.county],
@@ -182,7 +173,7 @@ const buildEntrance = (entrance, { lang, tag, labels, countryNames }) => {
   };
 };
 
-const buildBreadcrumb = (page, name, { lang, countryNames, hubLinks }) => {
+const buildBreadcrumb = (page, name, { countryNames, hubLinks }) => {
   const entrance = (page.entrances || []).find(
     (e) => isKnown(e.regionCode) && isKnown(e.country)
   );
@@ -190,7 +181,7 @@ const buildBreadcrumb = (page, name, { lang, countryNames, hubLinks }) => {
   const country = String(entrance.country).toUpperCase();
   return [
     {
-      text: countryNameOf(country, lang, countryNames),
+      text: countryNameOf(country, countryNames),
       url: hubLinks.country(country) || null,
     },
     {
@@ -213,14 +204,14 @@ const placeOf = (items) => items.filter(isKnown).join(', ');
  * @param {object} options
  * @param {string} options.baseUrl the SPA's address, `https://grottocenter.org/ui`
  * @param {Map<string,string>} options.languageTags ISO 639-3 -> 639-1
- * @param {Map<string,object>} options.countryNames ISO 3166-1 alpha-2 -> names
- *   by language tag (see BotRenderService.loadCountryNames)
+ * @param {Map<string,string>} options.countryNames ISO 3166-1 alpha-2 ->
+ *   t_country.native_name (see BotRenderService.loadCountryNames)
  * @param {{country: Function, region: Function}} [options.hubLinks] see NO_HUB_LINKS
  * @returns {object} the model
  */
 const buildPageModel = (
   row,
-  { baseUrl, languageTags, countryNames, hubLinks = NO_HUB_LINKS }
+  { baseUrl, languageTags, countryNames, hubLinks }
 ) => {
   const entityType = row.entity_type;
   const raw = row.page;
@@ -250,6 +241,7 @@ const buildPageModel = (
   const model = {
     entityType,
     lang,
+    dir: RTL_LANGUAGES.has(lang.split('-')[0]) ? 'rtl' : 'ltr',
     labels,
     url,
     siteUrl: baseUrl,
@@ -291,7 +283,10 @@ const buildPageModel = (
     ]
       .filter(Boolean)
       .map(([label, value]) => ({ label, value }));
-    const place = entrances.find((e) => e.facts.length > 0);
+    // The first entrance that has a location: one with only flags has none
+    const place = entrances.find((e) =>
+      [e.city, e.region, e.countryName].some(isKnown)
+    );
     const where = place
       ? placeOf([place.city, place.region, place.countryName])
       : '';
@@ -321,7 +316,7 @@ const buildPageModel = (
         : null,
     ]);
   } else {
-    const countryName = countryNameOf(page.country, lang, countryNames);
+    const countryName = countryNameOf(page.country, countryNames);
     Object.assign(model, {
       city: isKnown(page.city) ? page.city : null,
       county: isKnown(page.county) ? page.county : null,
