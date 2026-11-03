@@ -151,6 +151,12 @@ module.exports = {
       model: 'TCave',
     },
 
+    // The point this document references (#1733).
+    point: {
+      columnName: 'id_point',
+      model: 'TPoint',
+    },
+
     editor: {
       columnName: 'id_editor',
       model: 'TGrotto',

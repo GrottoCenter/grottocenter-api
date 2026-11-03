@@ -102,6 +102,8 @@ CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
 CREATE INDEX IF NOT EXISTS idx_t_document_type ON t_document(id_type);
 CREATE INDEX IF NOT EXISTS idx_t_document_author ON t_document(id_author);
 CREATE INDEX IF NOT EXISTS idx_t_document_is_deleted ON t_document(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_t_document_point ON t_document (id_point) WHERE id_point IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_t_point_reference_document ON t_point (id_reference_document) WHERE id_reference_document IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_file_document ON t_file(id_document);
 CREATE INDEX IF NOT EXISTS idx_t_history_cave ON t_history(id_cave) WHERE id_cave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_history_entrance ON t_history(id_entrance) WHERE id_entrance IS NOT NULL;

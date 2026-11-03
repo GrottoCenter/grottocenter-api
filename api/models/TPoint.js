@@ -66,6 +66,33 @@ module.exports = {
       model: 'TCave',
     },
 
+    // Relation A: the SVG plan the point is drawn on, and its position in that
+    // SVG's own viewBox units. Set together or not at all (#1733).
+    referenceDocument: {
+      columnName: 'id_reference_document',
+      model: 'TDocument',
+    },
+
+    x: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'x',
+      columnType: 'double precision',
+    },
+
+    y: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'y',
+      columnType: 'double precision',
+    },
+
+    // Relation B: the documents that reference the point (#1733).
+    documents: {
+      collection: 'TDocument',
+      via: 'point',
+    },
+
     observations: {
       collection: 'TObservation',
       via: 'point',
