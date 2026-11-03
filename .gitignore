@@ -134,6 +134,7 @@ build-info.json
 
 # Local file uploads (dev environment, replaces Azure Blob Storage)
 .local-uploads/
+.local-bot-pages/
 
 # Test database snapshot stamp
 test/.snapshot-stamp

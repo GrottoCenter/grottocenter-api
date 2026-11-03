@@ -99,6 +99,29 @@ module.exports.custom = {
 
   /** *************************************************************************
    *                                                                          *
+   * Static pages published for indexing bots (docs/bot-surface.md).          *
+   *                                                                          *
+   * publicBaseUrl: the SPA's own address; a page lives at                    *
+   *   <publicBaseUrl>/caves/123 (BOT_PAGES_PUBLIC_BASE_URL).                 *
+   * storage.driver: 'local' (dev, default) or 'azure' (BOT_PAGES_STORAGE).   *
+   *   local: pages are written under BOT_PAGES_LOCAL_DIR.                    *
+   *   azure: BOT_PAGES_AZURE_CONNECTION_STRING and BOT_PAGES_AZURE_CONTAINER *
+   *          (the static website container, `$web`); both are required.      *
+   *                                                                          *
+   ************************************************************************** */
+  botSurface: {
+    publicBaseUrl:
+      process.env.BOT_PAGES_PUBLIC_BASE_URL || 'https://grottocenter.org/ui',
+    storage: {
+      driver: process.env.BOT_PAGES_STORAGE || 'local',
+      localDir: process.env.BOT_PAGES_LOCAL_DIR || '.local-bot-pages',
+      azureConnectionString: process.env.BOT_PAGES_AZURE_CONNECTION_STRING,
+      azureContainer: process.env.BOT_PAGES_AZURE_CONTAINER,
+    },
+  },
+
+  /** *************************************************************************
+   *                                                                          *
    * Minimum delay (in seconds) between a failed coordinates snapshot load    *
    * and the next automatic attempt. invalidate() ignores it.                 *
    *                                                                          *

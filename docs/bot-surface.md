@@ -97,3 +97,51 @@ Read it by keyset, one type at a time: `WHERE entity_type = $1 AND entity_id > $
 The view is meant for the nightly job, which reads it once: its final check reads `v_bot_page` for every merged record, so do not query it per request.
 
 The chain follows `redirect_to` through merged records and stops at the first record that is not merged. It is cut after 10 redirects, so a cycle or a self-redirect never reaches a target and yields no row. A merge also soft-deletes the source, so `is_deleted` is not looked at on the source or on the records along the chain: deleted **and** merged redirects, deleted alone does not (the page is gone). A source with a redirect never has a page in `v_bot_page`, so the two views do not overlap. Entrances are not covered: they have no page of their own.
+
+## The page generator
+
+`BotPageGeneratorService.run({ adapter })` (`api/services/bot/BotPageGeneratorService.js`) is step 4 of the nightly pipeline. It publishes the pages of `v_bot_page` as static files and keeps `t_bot_page_manifest` equal to what is online. Scheduling is #1760; the page bodies are #1766; sitemaps are #1767.
+
+**Render.** `BotRenderService.render(row)` turns one view row into one HTML string with `ejs.render` and the templates under `views/bot/` (not `res.view`; the Sails view config and the email templates are untouched). The layout gives every page the doctype, `<html lang>` from the record, a title, the viewport, minimal inline CSS with no external asset, a header, a canonical link, `<meta name="generator" content="gc-static-pages">` (the audit recognises generated pages with it) and the licence footer: CC-BY-SA for texts, ODbL for data, in the wording of the SPA footer. `renderNotFound()` renders `404.html`, the only page with `noindex`. The generator, the withdrawal worker (#1886) and the audit (#1887) call the same function.
+
+> The bodies `views/bot/{cave,massif,organization}.ejs` are placeholders: a generic English rendering of the whitelisted fields. #1766 replaces them. An organization website is a link only if it is an `http(s)` address, with `rel="nofollow ugc"`. The render does not print `lastmod`, so a record whose only change is that hint renders the same bytes.
+
+**Paths.** `api/utils/botPagePaths.js` (pure) maps a page to its blob key and its public URL, and back (`fromKey`, `fromUrl`):
+
+| Type         | Blob key                 | Public URL                                      |
+| ------------ | ------------------------ | ----------------------------------------------- |
+| cave         | `caves/123.html`         | `https://grottocenter.org/ui/caves/123`         |
+| massif       | `massifs/123.html`       | `https://grottocenter.org/ui/massifs/123`       |
+| organization | `organizations/123.html` | `https://grottocenter.org/ui/organizations/123` |
+
+There is no name slug. The base URL is `sails.config.custom.botSurface.publicBaseUrl`. The sitemaps (#1767) and the edge Worker (#1933) use the same module.
+
+**Manifest.** `t_bot_page_manifest (path PRIMARY KEY, entity_type, entity_id, content_hash, lastmod, published_at)` (`sql/9_32_2026_11_02_bot_page_manifest.sql`, applied by hand in production): one row per published path. `content_hash` is the sha256 of the rendered HTML, the change detector; `lastmod` is the view's hint at the time of the upload. Static extras (`404.html`) have `entity_type = 'static'` and no `entity_id`.
+
+**A run.**
+
+1. For each type, one at a time, it reads the view by keyset (`entity_id > $cursor ORDER BY entity_id LIMIT 1000`), renders and hashes each row, and uploads only the pages whose hash differs from the manifest.
+2. In step with the view it deletes the manifest paths of the same id range that the batch no longer holds (a record that left the view). The manifest is never loaded whole: one batch of rows and `concurrency` rendered pages (4) are in memory at a time.
+3. It publishes the static extras, and deletes static paths it no longer produces.
+4. The manifest is written **after** each successful upload or delete. A delete is `adapter.delete` then the manifest row removal, and deleting a path that is already gone is not an error. So a crash at any point leaves the manifest consistent with what is online, and at worst a page is uploaded again. When a call fails, nothing new is started and the calls in flight finish first, so the manifest also matches the adapter when the run rejects.
+
+It returns `{ uploaded, unchanged, deleted, byType }`. A blob deleted by hand while its manifest row remains is not noticed (the hash still matches): the audit (#1887) compares the adapter with the manifest.
+
+**Storage adapters** (`api/services/bot/storage/`): one interface, `put(key, html)`, `delete(key)`, `list()`.
+
+- `LocalStorageAdapter`: a directory, for dev and tests. Writes through a temporary file and a rename, and refuses a key outside the root.
+- `AzureBlobStorageAdapter`: the `$web` container of an Azure Blob static website, through `@azure/storage-blob` (as `FileService`). It uploads with `Content-Type: text/html; charset=utf-8`. The edge Worker forwards the blob's ETag and Last-Modified; the Worker never caches these pages, so no CDN purge is needed.
+
+**Configuration** (`sails.config.custom.botSurface`, from the environment; nothing is hardcoded):
+
+| Variable                            | Meaning                                                            | Default                       |
+| ----------------------------------- | ------------------------------------------------------------------ | ----------------------------- |
+| `BOT_PAGES_PUBLIC_BASE_URL`         | The SPA's own address; pages live at `<base>/caves/123`            | `https://grottocenter.org/ui` |
+| `BOT_PAGES_STORAGE`                 | `local` or `azure`                                                 | `local`                       |
+| `BOT_PAGES_LOCAL_DIR`               | Directory for the `local` driver (gitignored default)              | `.local-bot-pages`            |
+| `BOT_PAGES_AZURE_CONNECTION_STRING` | Connection string of the storage account (`azure`; required)       | none                          |
+| `BOT_PAGES_AZURE_CONTAINER`         | Container name, the static website one, `$web` (`azure`; required) | none                          |
+
+`createStorageAdapter(sails.config.custom.botSurface.storage)` builds the adapter and throws when the driver is unknown or an Azure setting is missing.
+
+**Memory.** `BotPageGeneratorService.test.js` runs the generator over 10,000 synthetic caves of about 6 KB of description each and asserts that the live heap it retains (after a forced GC at each batch) stays under a fixed ceiling of 32 MB; the measurement is recorded in the PR.

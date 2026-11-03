@@ -1,0 +1,25 @@
+<%# PLACEHOLDER BODY: a generic rendering of the whitelisted fields. The real
+    page content is #1766, which replaces this file. Locals: page, lang, link(type, id), include helpers. -%>
+<% const page = locals.page; -%>
+<h1><%= page.name %></h1>
+<dl>
+<% if (page.depth != null) { %><dt>Depth</dt><dd><%= page.depth %> m</dd>
+<% } %><% if (page.length != null) { %><dt>Length</dt><dd><%= page.length %> m</dd>
+<% } %><% if (page.temperature != null) { %><dt>Temperature</dt><dd><%= page.temperature %> °C</dd>
+<% } %><% if (page.isDiving != null) { %><dt>Diving cave</dt><dd><%= page.isDiving ? 'yes' : 'no' %></dd>
+<% } %></dl>
+<%- include('_descriptions', { descriptions: page.descriptions || [], pageLanguage: locals.lang }) %>
+<% if ((page.massifs || []).length) { %><h2>Massifs</h2>
+<ul>
+<% page.massifs.forEach((massif) => { %><li><a href="<%= locals.link('massif', massif.id) %>"><%= massif.name %></a></li>
+<% }) %></ul>
+<% } %><% (page.entrances || []).forEach((entrance) => { %>
+<section>
+<h2><%= entrance.name || 'Entrance' %></h2>
+<dl>
+<% [['City', entrance.city], ['County', entrance.county], ['Region', entrance.region], ['Country', entrance.country], ['Discovery year', entrance.discoveryYear]].forEach(([label, value]) => { %><% if (value != null && value !== '') { %><dt><%= label %></dt><dd><%= value %></dd>
+<% } %><% }) %><% [['CO2 danger', entrance.dangerCo2], ['Flooding danger', entrance.dangerFlooding], ['Rockfall danger', entrance.dangerRockfall], ['Pollution danger', entrance.dangerPollution], ['Bats', entrance.hasBat], ['Clean gear needed', entrance.needCleanGear], ['Stay on the trail', entrance.needStayOnTrail], ['Rules', entrance.hasRules], ['Touristic', entrance.isTouristic]].forEach(([label, value]) => { %><% if (value != null) { %><dt><%= label %></dt><dd><%= value === true ? 'yes' : value === false ? 'no' : value %></dd>
+<% } %><% }) %></dl>
+<%- include('_descriptions', { descriptions: entrance.descriptions || [], pageLanguage: locals.lang }) %>
+</section>
+<% }) %>

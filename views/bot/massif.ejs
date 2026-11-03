@@ -1,0 +1,9 @@
+<%# PLACEHOLDER BODY, replaced by #1766. Locals: page, lang, link(type, id) -%>
+<% const page = locals.page; -%>
+<h1><%= page.name %></h1>
+<%- include('_descriptions', { descriptions: page.descriptions || [], pageLanguage: locals.lang }) %>
+<% if ((page.caves || []).length) { %><h2>Caves</h2>
+<ul>
+<% page.caves.forEach((cave) => { %><li><a href="<%= locals.link('cave', cave.id) %>"><%= cave.name %></a><% if (cave.depth != null) { %>, depth <%= cave.depth %> m<% } %><% if (cave.length != null) { %>, length <%= cave.length %> m<% } %></li>
+<% }) %></ul>
+<% } %>
