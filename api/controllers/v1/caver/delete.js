@@ -37,16 +37,8 @@ module.exports = async (req, res) => {
       message: `Invalid entityId: expected a numeric caver ID, got "${req.param('entityId')}".`,
     });
   }
-  let mergeIntoEntity;
   if (shouldMergeInto) {
-    mergeIntoEntity = await TCaver.findOne(mergeIntoId)
-      .populate('exploredEntrances')
-      .populate('groups')
-      .populate('subscribedToCountries')
-      .populate('subscribedToMassifs')
-      .populate('subscribedToRegions')
-      .populate('grottos')
-      .populate('documents');
+    const mergeIntoEntity = await TCaver.findOne(mergeIntoId);
     if (!mergeIntoEntity) {
       return res.badRequest({
         message: `Merge target caver of id ${mergeIntoId} not found.`,
@@ -82,13 +74,7 @@ module.exports = async (req, res) => {
   async function linkedEntitiesDeleteOrMerge(key, sourceIds = null) {
     if (shouldMergeInto) {
       const ids = sourceIds || (caver[key] || []).map((e) => e.id);
-      if (ids.length > 0) {
-        const existingIds = mergeIntoEntity[key].map((e) => e.id);
-        const idsToAdd = ids.filter((id) => !existingIds.includes(id));
-        if (idsToAdd.length > 0) {
-          await TCaver.addToCollection(mergeIntoId, key, idsToAdd);
-        }
-      }
+      await CaverService.mergeCollection(mergeIntoId, key, ids);
     }
     await TCaver.replaceCollection(caverId, key, []);
   }

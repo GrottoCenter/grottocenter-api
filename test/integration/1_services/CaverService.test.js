@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaverService = require('../../../api/services/CaverService');
 
@@ -193,6 +194,86 @@ describe('CaverService', () => {
       const newCaver = await CaverService.createNonUserCaver(undefined);
       createdCavers.push(newCaver);
       should(newCaver.nickname).equal('');
+    });
+  });
+
+  describe('mergeCollection()', () => {
+    let target;
+    let addStub;
+
+    const linkedEntranceIds = async () =>
+      (
+        await TCaver.findOne(target.id).populate('exploredEntrances')
+      ).exploredEntrances
+        .map((e) => e.id)
+        .sort((a, b) => a - b);
+
+    beforeEach(async () => {
+      target = await CaverService.createNonUserCaver({ name: 'MergeTarget' });
+      await TCaver.addToCollection(target.id, 'exploredEntrances', [4]);
+    });
+
+    afterEach(async () => {
+      if (addStub) addStub.restore();
+      addStub = null;
+      await TCaver.replaceCollection(target.id, 'exploredEntrances', []);
+      await TCaver.destroyOne({ id: target.id });
+    });
+
+    it('should link only the records the target does not have yet', async () => {
+      await CaverService.mergeCollection(
+        target.id,
+        'exploredEntrances',
+        [4, 5, 6]
+      );
+      should(await linkedEntranceIds()).eql([4, 5, 6]);
+    });
+
+    it('should do nothing when every record is already linked', async () => {
+      addStub = sinon.spy(TCaver, 'addToCollection');
+      await CaverService.mergeCollection(target.id, 'exploredEntrances', [4]);
+      should(addStub.callCount).equal(0);
+      should(await linkedEntranceIds()).eql([4]);
+    });
+
+    it('should still link the missing records when a concurrent request linked one first (#1922)', async () => {
+      const original = TCaver.addToCollection.bind(TCaver);
+      let raced = false;
+      addStub = sinon
+        .stub(TCaver, 'addToCollection')
+        .callsFake(async (id, key, ids) => {
+          if (!raced) {
+            // A concurrent merge links entrance 5 between the read of the
+            // target's links and this insert.
+            raced = true;
+            await original(id, key, [5]);
+            const error = new Error('Would violate uniqueness constraint');
+            error.code = 'E_UNIQUE';
+            throw error;
+          }
+          if (ids.includes(5)) {
+            const error = new Error('Would violate uniqueness constraint');
+            error.code = 'E_UNIQUE';
+            throw error;
+          }
+          return original(id, key, ids);
+        });
+
+      await CaverService.mergeCollection(
+        target.id,
+        'exploredEntrances',
+        [5, 6]
+      );
+      should(await linkedEntranceIds()).eql([4, 5, 6]);
+    });
+
+    it('should rethrow errors other than E_UNIQUE', async () => {
+      addStub = sinon
+        .stub(TCaver, 'addToCollection')
+        .rejects(Object.assign(new Error('boom'), { code: 'E_OTHER' }));
+      await should(
+        CaverService.mergeCollection(target.id, 'exploredEntrances', [5])
+      ).be.rejectedWith('boom');
     });
   });
 });
