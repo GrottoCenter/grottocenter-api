@@ -93,7 +93,7 @@ module.exports = {
   /**
    * @param {{entity_type: string, entity_id: number, language: string, page: object}} row
    *   a v_bot_page row
-   * @param {{baseUrl?: string, languageTags?: Map<string, string>}} [options]
+   * @param {{baseUrl?: string, languageTags: Map<string, string>}} options
    *   languageTags: required, what loadLanguageTags() returns (an empty Map
    *   keeps every 3-letter code). Every caller that publishes or compares a page
    *   passes the same map, or its bytes would differ from the generator's.
