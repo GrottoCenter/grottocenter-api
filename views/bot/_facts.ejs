@@ -1,0 +1,5 @@
+<%# Locals: facts (array of {label, value}) -%>
+<% if (locals.facts.length) { %><dl>
+<% locals.facts.forEach((fact) => { %><dt><%= fact.label %></dt><dd><%= fact.value %></dd>
+<% }) %></dl>
+<% } %>

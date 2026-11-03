@@ -94,6 +94,50 @@ describe('Bot storage adapters', () => {
       should(fs.existsSync(path.join(root, 'outside.html'))).be.false();
     });
 
+    describe('metadata', () => {
+      const sidecar = (key) =>
+        path.join(root, `${key}${LocalStorageAdapter.METADATA_SUFFIX}`);
+
+      it('keeps the metadata of a page next to it, and does not list it as a page', async () => {
+        await adapter.put('caves/1.html', 'x', {
+          metadata: { redirectto: 'https://example.test/ui/caves/2' },
+        });
+        should(
+          JSON.parse(fs.readFileSync(sidecar('caves/1.html'), 'utf8'))
+        ).deepEqual({
+          redirectto: 'https://example.test/ui/caves/2',
+        });
+        should(await collect(adapter.list())).deepEqual(['caves/1.html']);
+      });
+
+      it('drops the metadata when the page is put again without any', async () => {
+        await adapter.put('caves/1.html', 'x', {
+          metadata: { redirectto: 'u' },
+        });
+        await adapter.put('caves/1.html', 'y');
+        should(fs.existsSync(sidecar('caves/1.html'))).be.false();
+        await adapter.put('caves/1.html', 'z', { metadata: {} });
+        should(fs.existsSync(sidecar('caves/1.html'))).be.false();
+      });
+
+      it('replaces the metadata, and deletes it with the page', async () => {
+        await adapter.put('caves/1.html', 'x', {
+          metadata: { redirectto: 'a' },
+        });
+        await adapter.put('caves/1.html', 'x', {
+          metadata: { redirectto: 'b' },
+        });
+        should(
+          JSON.parse(fs.readFileSync(sidecar('caves/1.html'), 'utf8'))
+        ).deepEqual({
+          redirectto: 'b',
+        });
+        await adapter.delete('caves/1.html');
+        should(fs.existsSync(sidecar('caves/1.html'))).be.false();
+        should(await collect(adapter.list())).deepEqual([]);
+      });
+    });
+
     it('needs a directory', () => {
       should(() => new LocalStorageAdapter('')).throw();
     });
@@ -132,6 +176,27 @@ describe('Bot storage adapters', () => {
         { blobHTTPHeaders: { blobContentType: 'text/html; charset=utf-8' } }
       );
       should(Buffer.byteLength('<p>é</p>', 'utf8')).equal(9);
+    });
+
+    it('uploads the metadata of a page (redirectto) with it', async () => {
+      const container = makeContainer();
+      await new AzureBlobStorageAdapter(container).put('caves/1.html', 'x', {
+        metadata: { redirectto: 'https://example.test/ui/caves/2' },
+      });
+      sinon.assert.calledOnceWithExactly(container.blob.upload, 'x', 1, {
+        blobHTTPHeaders: { blobContentType: 'text/html; charset=utf-8' },
+        metadata: { redirectto: 'https://example.test/ui/caves/2' },
+      });
+    });
+
+    it('sends no metadata option when there is none, so an upload clears what the blob had', async () => {
+      const container = makeContainer();
+      const adapter = new AzureBlobStorageAdapter(container);
+      await adapter.put('caves/1.html', 'x', { metadata: {} });
+      await adapter.put('caves/1.html', 'x', {});
+      container.blob.upload
+        .getCalls()
+        .forEach((call) => should(call.args[2]).not.have.property('metadata'));
     });
 
     it('propagates an upload failure', async () => {

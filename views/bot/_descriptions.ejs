@@ -1,7 +1,7 @@
-<%# Locals: descriptions (array of {title, body, language}), pageLanguage (a BCP 47 tag), tag(code) -%>
-<% locals.descriptions.forEach((description) => { const lang = description.language ? locals.tag(description.language) : null; %>
-<section>
-<% if (description.title) { %><h3<% if (lang && lang !== locals.pageLanguage) { %> lang="<%= lang %>"<% } %>><%= description.title %></h3>
-<% } %><% if (description.body) { %><p class="text"<% if (lang && lang !== locals.pageLanguage) { %> lang="<%= lang %>"<% } %>><%= description.body %></p>
+<%# Locals: descriptions (array of {title, body, lang}, from the page model), labels, level (the heading level of the block) -%>
+<% locals.descriptions.forEach((description) => { %>
+<section<% if (description.lang) { %> lang="<%= description.lang %>"<% } %>>
+<% if (description.title) { %><h<%= locals.level %>><%= description.title %></h<%= locals.level %>>
+<% } %><% if (description.body) { %><p class="text"><%= description.body %></p>
 <% } %></section>
 <% }) %>

@@ -19,6 +19,7 @@ describe('BotPageGeneratorService', () => {
   let root;
   let adapter;
   let puts;
+  let putOptions;
   let deletes;
   let records;
 
@@ -73,10 +74,11 @@ describe('BotPageGeneratorService', () => {
 
   // Wraps the adapter to record what the generator asks of it
   const recordingAdapter = (inner, hooks = {}) => ({
-    async put(key, html) {
+    async put(key, html, options) {
       if (hooks.beforePut) await hooks.beforePut(key);
-      await inner.put(key, html);
+      await inner.put(key, html, options);
       puts.push(key);
+      putOptions[key] = options;
     },
     async delete(key) {
       if (hooks.beforeDelete) await hooks.beforeDelete(key);
@@ -89,6 +91,7 @@ describe('BotPageGeneratorService', () => {
   beforeEach(async () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'gc-bot-gen-'));
     puts = [];
+    putOptions = {};
     deletes = [];
     adapter = recordingAdapter(new LocalStorageAdapter(root));
     records = [
@@ -631,6 +634,335 @@ describe('BotPageGeneratorService', () => {
       await Generator.run({ adapter });
       should(await keys()).deepEqual(['404.html']);
       should(await manifestPaths()).deepEqual(['404.html']);
+    });
+  });
+
+  describe('redirect pages', () => {
+    const TARGET = (type, id) => `https://example.test/ui/${type}s/${id}`;
+    let redirects;
+    const readRedirects = async (entityType) =>
+      redirects
+        .filter((r) => r.entity_type === entityType)
+        .sort((a, b) => a.entity_id - b.entity_id)
+        .map(({ entity_id: id, target_id: target }) => ({
+          entity_id: id,
+          target_id: target,
+        }));
+    const redirect = (entityType, id, target) => ({
+      entity_type: entityType,
+      entity_id: id,
+      target_id: target,
+    });
+    const runWithRedirects = (options = {}) =>
+      run({ readRedirects, ...options });
+    const metadataOf = (key) => {
+      const file = path.join(
+        root,
+        `${key}${LocalStorageAdapter.METADATA_SUFFIX}`
+      );
+      return fs.existsSync(file)
+        ? JSON.parse(fs.readFileSync(file, 'utf8'))
+        : null;
+    };
+    const OLD = FIRST_ID + 50;
+
+    beforeEach(() => {
+      redirects = [];
+    });
+
+    it('publishes a page at the old path, pointing at the target, with the target as redirectto', async () => {
+      redirects = [redirect('cave', OLD, FIRST_ID + 1)];
+
+      const summary = await runWithRedirects();
+
+      const key = `caves/${OLD}.html`;
+      const html = fs.readFileSync(path.join(root, key), 'utf8');
+      should(html).containEql(
+        `<meta http-equiv="refresh" content="0; url=${TARGET('cave', FIRST_ID + 1)}">`
+      );
+      should(html).containEql(
+        `<link rel="canonical" href="${TARGET('cave', FIRST_ID + 1)}">`
+      );
+      should(html).containEql('<meta name="robots" content="noindex">');
+      should(putOptions[key]).deepEqual({
+        metadata: { redirectto: TARGET('cave', FIRST_ID + 1) },
+      });
+      should(metadataOf(key)).deepEqual({
+        redirectto: TARGET('cave', FIRST_ID + 1),
+      });
+      should(await keys()).deepEqual([...expectedKeys(), key].sort());
+      should(summary.byType.cave.uploaded).equal(6);
+    });
+
+    it('records it in the manifest as a page of the old record, with the hash of the file', async () => {
+      redirects = [redirect('massif', OLD, FIRST_ID + 1)];
+      await runWithRedirects();
+
+      const key = `massifs/${OLD}.html`;
+      const row = await manifestRow(key);
+      should(row.entity_type).equal('massif');
+      should(row.entity_id).equal(OLD);
+      should(row.content_hash).equal(
+        sha256(fs.readFileSync(path.join(root, key), 'utf8'))
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    it('does not publish it again when nothing changed', async () => {
+      redirects = [redirect('organization', OLD, FIRST_ID + 1)];
+      await runWithRedirects();
+      puts.length = 0;
+      deletes.length = 0;
+
+      const summary = await runWithRedirects();
+
+      should(puts).deepEqual([]);
+      should(deletes).deepEqual([]);
+      should(summary.uploaded).equal(0);
+    });
+
+    it('publishes it again, with the new redirectto, when the target changes', async () => {
+      redirects = [redirect('cave', OLD, FIRST_ID + 1)];
+      await runWithRedirects();
+      puts.length = 0;
+      redirects = [redirect('cave', OLD, FIRST_ID + 2)];
+
+      await runWithRedirects();
+
+      should(puts).deepEqual([`caves/${OLD}.html`]);
+      should(metadataOf(`caves/${OLD}.html`)).deepEqual({
+        redirectto: TARGET('cave', FIRST_ID + 2),
+      });
+      should(
+        fs.readFileSync(path.join(root, `caves/${OLD}.html`), 'utf8')
+      ).containEql(TARGET('cave', FIRST_ID + 2));
+    });
+
+    it('keeps the redirects of the three types apart when they share an id', async () => {
+      redirects = [
+        redirect('cave', OLD, FIRST_ID + 1),
+        redirect('massif', OLD, FIRST_ID + 1),
+        redirect('organization', OLD, FIRST_ID + 1),
+      ];
+      await runWithRedirects();
+      ['cave', 'massif', 'organization'].forEach((type) => {
+        const key = `${type === 'organization' ? 'organizations' : `${type}s`}/${OLD}.html`;
+        should(fs.readFileSync(path.join(root, key), 'utf8')).containEql(
+          TARGET(type, FIRST_ID + 1)
+        );
+      });
+    });
+
+    it('is deleted, with its metadata and its manifest row, when it is no longer produced, and nothing else is touched', async () => {
+      redirects = [
+        redirect('cave', OLD, FIRST_ID + 1),
+        redirect('cave', OLD + 1, FIRST_ID + 2),
+      ];
+      await runWithRedirects();
+      deletes.length = 0;
+      puts.length = 0;
+      redirects = [redirect('cave', OLD + 1, FIRST_ID + 2)];
+
+      await runWithRedirects();
+
+      should(deletes).deepEqual([`caves/${OLD}.html`]);
+      should(puts).deepEqual([]);
+      should(metadataOf(`caves/${OLD}.html`)).be.null();
+      should(await manifestRow(`caves/${OLD}.html`)).be.undefined();
+      should(await keys()).deepEqual(
+        [...expectedKeys(), `caves/${OLD + 1}.html`].sort()
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    it('is found wherever it sits among the batches, including after the last page of the view', async () => {
+      // Pages are FIRST_ID+1..+5; with a batch of 2 the batches end at +2 and +4
+      const ids = [
+        FIRST_ID + 3, // also a page of the view, inside a batch
+        FIRST_ID + 6, // after the last page of the type
+        FIRST_ID + 9000,
+      ];
+      redirects = ids.map((id) => redirect('cave', id, FIRST_ID + 1));
+      await runWithRedirects({ batchSize: 2 });
+      const present = ids.map((id) => `caves/${id}.html`);
+      // FIRST_ID+3 is a page of the view: the page wins
+      should(await keys()).deepEqual(
+        [...expectedKeys(), ...present.slice(1)].sort()
+      );
+      redirects = [];
+      await runWithRedirects({ batchSize: 2 });
+      should(await keys()).deepEqual(expectedKeys());
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    it('yields to a page: an id both in the view and in v_bot_redirect is published as the page', async () => {
+      redirects = [redirect('cave', FIRST_ID + 1, FIRST_ID + 2)];
+      await runWithRedirects();
+      const html = fs.readFileSync(
+        path.join(root, `caves/${FIRST_ID + 1}.html`),
+        'utf8'
+      );
+      should(html).not.containEql('http-equiv="refresh"');
+      should(metadataOf(`caves/${FIRST_ID + 1}.html`)).be.null();
+    });
+
+    it('is replaced by the page when the record comes back, and the redirectto is gone', async () => {
+      redirects = [redirect('cave', FIRST_ID + 9, FIRST_ID + 1)];
+      await runWithRedirects();
+      should(metadataOf(`caves/${FIRST_ID + 9}.html`)).not.be.null();
+
+      redirects = [];
+      records.push(record('cave', FIRST_ID + 9));
+      await runWithRedirects();
+
+      should(metadataOf(`caves/${FIRST_ID + 9}.html`)).be.null();
+      should(
+        fs.readFileSync(path.join(root, `caves/${FIRST_ID + 9}.html`), 'utf8')
+      ).not.containEql('http-equiv="refresh"');
+      should(putOptions[`caves/${FIRST_ID + 9}.html`]).be.undefined();
+    });
+
+    it('replaces the page of a record that is merged', async () => {
+      await runWithRedirects();
+      records = records.filter((r) => r.entity_id !== FIRST_ID + 2);
+      redirects = [redirect('cave', FIRST_ID + 2, FIRST_ID + 1)];
+
+      await runWithRedirects();
+
+      const key = `caves/${FIRST_ID + 2}.html`;
+      should(fs.readFileSync(path.join(root, key), 'utf8')).containEql(
+        'http-equiv="refresh"'
+      );
+      should(metadataOf(key)).deepEqual({
+        redirectto: TARGET('cave', FIRST_ID + 1),
+      });
+    });
+
+    it('leaves the manifest equal to the adapter when its upload fails, and finishes on the next run', async () => {
+      redirects = [
+        redirect('cave', OLD, FIRST_ID + 1),
+        redirect('cave', OLD + 1, FIRST_ID + 1),
+      ];
+      adapter = recordingAdapter(new LocalStorageAdapter(root), {
+        beforePut: (key) => {
+          if (key === `caves/${OLD}.html`) throw new Error('503');
+        },
+      });
+
+      await runWithRedirects({ concurrency: 1 }).should.be.rejectedWith('503');
+      should(await manifestPaths()).deepEqual(await keys());
+      should(await manifestRow(`caves/${OLD}.html`)).be.undefined();
+
+      adapter = recordingAdapter(new LocalStorageAdapter(root));
+      await runWithRedirects();
+      should(await keys()).deepEqual(
+        [...expectedKeys(), `caves/${OLD}.html`, `caves/${OLD + 1}.html`].sort()
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    it('leaves the manifest equal to the adapter when its delete fails: the row is kept, so the delete is retried', async () => {
+      redirects = [redirect('cave', OLD, FIRST_ID + 1)];
+      await runWithRedirects();
+      redirects = [];
+      adapter = recordingAdapter(new LocalStorageAdapter(root), {
+        beforeDelete: () => {
+          throw new Error('503');
+        },
+      });
+
+      await runWithRedirects().should.be.rejectedWith('503');
+      should(await manifestRow(`caves/${OLD}.html`)).not.be.undefined();
+      should(await manifestPaths()).deepEqual(await keys());
+
+      adapter = recordingAdapter(new LocalStorageAdapter(root));
+      await runWithRedirects();
+      should(await keys()).deepEqual(expectedKeys());
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+  });
+
+  describe('redirect pages from v_bot_redirect', () => {
+    const created = { organization: [], name: [] };
+    const purge = async (model, ids) => {
+      // histo_delete() makes the first DELETE of a live row a soft delete
+      await model.destroy({ id: ids });
+      await model.destroy({ id: ids });
+    };
+
+    afterEach(async () => {
+      await query('TRUNCATE t_bot_admission, t_bot_text_scan');
+      await query('UPDATE t_bot_config SET pattern_version = 0');
+      await purge(TName, created.name);
+      await purge(TGrotto, created.organization);
+      Object.values(created).forEach((ids) => ids.splice(0));
+    });
+
+    it('points the first record of a two-step merge chain at the final published target', async () => {
+      await query('UPDATE t_bot_config SET pattern_version = $1', [VERSION]);
+      const old = new Date(Date.now() - 100 * DAY * 1000);
+      const organization = async (extra = {}, name = null) => {
+        const row = await TGrotto.create({
+          author: 1,
+          city: 'Lyon',
+          dateInscription: old,
+          dateReviewed: old,
+          ...extra,
+        }).fetch();
+        created.organization.push(row.id);
+        if (name) {
+          const n = await TName.create({
+            author: 1,
+            name,
+            language: 'fra',
+            isMain: true,
+            grotto: row.id,
+            dateInscription: old,
+            dateReviewed: old,
+          }).fetch();
+          created.name.push(n.id);
+          await query(
+            `INSERT INTO t_bot_text_scan (source_table, source_id, body_hash, pattern_version, matched)
+             SELECT 't_name', id, md5(COALESCE(name, '')), $2, false FROM t_name WHERE id = $1`,
+            [n.id, VERSION]
+          );
+        }
+        await query(
+          `INSERT INTO t_bot_admission (entity_type, entity_id, bot_admitted_at)
+           VALUES ('organization', $1, now() - interval '60 days')`,
+          [row.id]
+        );
+        return row;
+      };
+      // C was merged into B, which was merged into A, the only one still published
+      const final = await organization({}, 'Club final');
+      const middle = await organization({
+        isDeleted: true,
+        redirectTo: final.id,
+      });
+      const first = await organization({
+        isDeleted: true,
+        redirectTo: middle.id,
+      });
+
+      await Generator.run({ adapter, baseUrl: 'https://example.test/ui' });
+
+      const finalUrl = `https://example.test/ui/organizations/${final.id}`;
+      const read = (id) =>
+        fs.readFileSync(path.join(root, `organizations/${id}.html`), 'utf8');
+      [first.id, middle.id].forEach((id) => {
+        const html = read(id);
+        should(html).containEql(
+          `<meta http-equiv="refresh" content="0; url=${finalUrl}">`
+        );
+        should(html).containEql(`<link rel="canonical" href="${finalUrl}">`);
+        should(html).not.containEql(`organizations/${middle.id}">`);
+        should(putOptions[`organizations/${id}.html`]).deepEqual({
+          metadata: { redirectto: finalUrl },
+        });
+      });
+      should(read(final.id)).not.containEql('http-equiv="refresh"');
+      should(await manifestPaths()).deepEqual(await keys());
     });
   });
 

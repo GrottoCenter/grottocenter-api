@@ -37,11 +37,15 @@ class AzureBlobStorageAdapter {
     );
   }
 
-  async put(key, html) {
+  // `metadata` (optional, a flat object of strings, e.g. { redirectto: url })
+  // becomes the blob's metadata. An upload replaces the blob's metadata as a
+  // whole, so a page uploaded without any drops the `redirectto` it had.
+  async put(key, html, { metadata } = {}) {
     await this.container
       .getBlockBlobClient(key)
       .upload(html, Buffer.byteLength(html, 'utf8'), {
         blobHTTPHeaders: { blobContentType: HTML_CONTENT_TYPE },
+        ...(metadata && Object.keys(metadata).length > 0 ? { metadata } : {}),
       });
   }
 

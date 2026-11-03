@@ -3,6 +3,11 @@ const should = require('should');
 const sinon = require('sinon');
 const { HtmlValidate } = require('html-validate/node');
 
+// What loadCountryNames() reads from t_country
+const COUNTRIES = new Map([
+  ['FR', { en: 'France', fr: 'France', es: 'Francia' }],
+]);
+
 const BASE_URL = 'https://example.test/ui';
 // What loadLanguageTags() reads from t_language
 const TAGS = new Map([
@@ -22,7 +27,11 @@ describe('BotRenderService', () => {
   });
 
   const render = (row, options = {}) =>
-    BotRenderService.render(row, { languageTags: TAGS, ...options });
+    BotRenderService.render(row, {
+      languageTags: TAGS,
+      countryNames: COUNTRIES,
+      ...options,
+    });
 
   const description = (extra = {}) => ({
     title: 'Access',
@@ -138,8 +147,12 @@ describe('BotRenderService', () => {
         should(html).containEql('ODbL');
         should(html).containEql('rel="license"');
         should(html).containEql('<title>');
-        // No external asset: no script, no stylesheet link, no image
-        should(html).not.match(/<script|<img|rel="stylesheet"/);
+        // No external asset: no stylesheet link, no image, and no script
+        // other than the JSON-LD block
+        should(html).not.match(/<img|rel="stylesheet"/);
+        should(html.match(/<script/g) || []).have.length(
+          html.includes('application/ld+json') ? 1 : 0
+        );
       }
     });
 
@@ -168,7 +181,19 @@ describe('BotRenderService', () => {
           language: null,
           page: { ...cave.page, language: null },
         })
-      ).containEql('<html lang="und">');
+      ).containEql('<html lang="fr">'); // the language of the first description
+      should(
+        render({
+          ...cave,
+          language: null,
+          page: {
+            ...cave.page,
+            language: null,
+            descriptions: [],
+            entrances: [],
+          },
+        })
+      ).containEql('<html lang="en">'); // no main name, no description: English
     });
 
     it('tags a description in another language than the page with its BCP 47 tag, and one in the same language not at all', () => {
@@ -183,8 +208,8 @@ describe('BotRenderService', () => {
           ],
         },
       });
-      should(html).containEql('<h3>Same</h3>');
-      should(html).containEql('<h3 lang="en">Other</h3>');
+      should(html).containEql('<section lang="fr">\n<h3>Same</h3>');
+      should(html).containEql('<section lang="en">\n<h3>Other</h3>');
       should(html).not.containEql('lang="eng"');
       should(html).not.containEql('lang="fra"');
     });
@@ -207,13 +232,37 @@ describe('BotRenderService', () => {
       should(() => BotRenderService.render(cave)).throw(TypeError, {
         message: /languageTags/,
       });
-      should(() => BotRenderService.render(cave, { languageTags: {} })).throw(
-        TypeError
-      );
+      should(() =>
+        BotRenderService.render(cave, {
+          languageTags: {},
+          countryNames: COUNTRIES,
+        })
+      ).throw(TypeError, { message: /languageTags/ });
       // An empty map is explicit: every 3-letter code is kept
       should(
-        BotRenderService.render(cave, { languageTags: new Map() })
+        BotRenderService.render(cave, {
+          languageTags: new Map(),
+          countryNames: COUNTRIES,
+        })
       ).containEql('<html lang="fra">');
+    });
+
+    it('refuses to render without the country names, rather than render the code where the generator wrote the name', () => {
+      const [cave] = rows();
+      should(() => BotRenderService.render(cave, { languageTags: TAGS })).throw(
+        TypeError,
+        { message: /countryNames/ }
+      );
+      should(() =>
+        BotRenderService.render(cave, { languageTags: TAGS, countryNames: {} })
+      ).throw(TypeError, { message: /countryNames/ });
+      // An empty map is explicit: the country shows as its code
+      const html = BotRenderService.render(cave, {
+        languageTags: TAGS,
+        countryNames: new Map(),
+      });
+      should(html).containEql('<dd>FR</dd>');
+      should(html).not.containEql('<dd>France</dd>');
     });
 
     it('reads the 2-letter codes from t_language', async () => {
@@ -262,7 +311,7 @@ describe('BotRenderService', () => {
         'Access',
       ].forEach((text) => should(html).containEql(text));
       // Unknown values are left out, not printed as null
-      should(html).not.containEql('Length');
+      should(html).not.containEql('Longueur');
       should(html).not.containEql('null');
       // A description in another language than the page says so
       should(html).containEql('lang="en');
@@ -278,7 +327,8 @@ describe('BotRenderService', () => {
         },
       });
       should(html).containEql('&lt;script&gt;alert(1)&lt;/script&gt;\nx');
-      should(html).not.match(/<script/);
+      // The only script element is the JSON-LD block
+      should(html.match(/<script/g)).have.length(1);
     });
   });
 
@@ -291,7 +341,7 @@ describe('BotRenderService', () => {
     });
 
     it('is left out when null', () => {
-      should(render(rows()[4])).not.containEql('Website');
+      should(render(rows()[4])).not.containEql('Site web');
     });
 
     it('is left out when it is not an http(s) address', () => {
@@ -307,7 +357,7 @@ describe('BotRenderService', () => {
           ...organization,
           page: { ...organization.page, url },
         });
-        should(html).not.containEql('Website');
+        should(html).not.containEql('Site web');
         should(html).not.containEql(url);
       });
     });

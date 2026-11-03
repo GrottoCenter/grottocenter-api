@@ -13,10 +13,19 @@
  *      never v_bot_page.lastmod, decides what changed: lastmod is a sitemap
  *      hint that can stay put when the content changes;
  *   2. uploads only the pages whose hash differs from t_bot_page_manifest;
- *   3. deletes the published paths of the same id range that the view no longer
- *      produces (a record that left the view; a merged record's path is
- *      replaced by a redirect page, #1766). The manifest is walked in step with
- *      the view, so no set of all the paths is ever held in memory.
+ *   3. publishes, for the same id range, the redirect pages of v_bot_redirect:
+ *      a merged record's old path holds a small page that points to the final
+ *      target of its merge chain, with the target in the blob metadata
+ *      `redirectto`. A redirect is a manifest row like a page (same type, the
+ *      old record's id), so it is uploaded when its hash changes and deleted
+ *      when the redirect is no longer produced (the target left the view, the
+ *      record was restored). The redirects of one type are read once, before
+ *      its pages: they are the merged records, a few thousand rows of two
+ *      integers, and v_bot_redirect is not meant to be read per batch;
+ *   4. deletes the published paths of the same id range that neither the view
+ *      nor v_bot_redirect produces (a record that left the view). The manifest
+ *      is walked in step with the view, so no set of all the paths is ever held
+ *      in memory.
  *
  * The manifest is written AFTER each successful upload or delete. A crash at
  * any point leaves it consistent with what is online: at worst a page is
@@ -36,6 +45,10 @@
  * entry, so no later run deletes it.
  *
  * Static extras published by the same run: 404.html (noindex).
+ *
+ * Redirects (#1766) and the "manifest after each upload" rule: a redirect page
+ * is put with its `redirectto` metadata, then its manifest row is written,
+ * exactly as for a page.
  */
 
 const crypto = require('crypto');
@@ -55,6 +68,17 @@ const query = (sql, params) => CommonService.query(sql, params);
 
 const sha256 = (html) =>
   crypto.createHash('sha256').update(html, 'utf8').digest('hex');
+
+const readRedirectRows = async (entityType) => {
+  const { rows } = await query(
+    `SELECT entity_id, target_id
+       FROM v_bot_redirect
+      WHERE entity_type = $1
+      ORDER BY entity_id`,
+    [entityType]
+  );
+  return rows;
+};
 
 const readViewBatch = async (entityType, afterId, limit) => {
   const { rows } = await query(
@@ -136,12 +160,17 @@ async function publish({
   batchSize,
   baseUrl,
   readBatch = readViewBatch,
+  readRedirects = readRedirectRows,
   onBatch = () => {},
   languageTags,
+  countryNames,
 }) {
   const renderOptions = {
     ...(baseUrl ? { baseUrl } : {}),
     languageTags: languageTags || (await BotRenderService.loadLanguageTags()),
+    countryNames: countryNames || (await BotRenderService.loadCountryNames()),
+    // The hubs (#1935) do not exist yet: the breadcrumb links to none
+    hubLinks: BotRenderService.NO_HUB_LINKS,
   };
   const summary = { uploaded: 0, unchanged: 0, deleted: 0, byType: {} };
 
@@ -150,7 +179,11 @@ async function publish({
       summary.unchanged += 1;
       return false;
     }
-    await adapter.put(page.path, page.html);
+    await adapter.put(
+      page.path,
+      page.html,
+      page.metadata ? { metadata: page.metadata } : undefined
+    );
     await recordPublished(page);
     summary.uploaded += 1;
     return true;
@@ -177,6 +210,7 @@ async function publish({
   const publishType = async (entityType) => {
     const stats = { uploaded: 0, unchanged: 0, deleted: 0 };
     let cursor = 0;
+    const redirects = await readRedirects(entityType);
     for (;;) {
       // eslint-disable-next-line no-await-in-loop
       const rows = await readBatch(entityType, cursor, batchSize);
@@ -184,10 +218,24 @@ async function publish({
       const upper = isLast ? MAX_ID : rows[rows.length - 1].entity_id;
       const before = { ...summary };
 
-      // eslint-disable-next-line no-await-in-loop
-      const known = await manifestHashes(
-        rows.map((row) => botPagePaths.toKey(entityType, row.entity_id))
+      // The redirects of this id range, minus an id the view also holds (the
+      // page wins; the two views do not overlap, but they are read apart)
+      const after = cursor;
+      const pageIds = new Set(rows.map((row) => row.entity_id));
+      const batchRedirects = redirects.filter(
+        (r) =>
+          r.entity_id > after &&
+          r.entity_id <= upper &&
+          !pageIds.has(r.entity_id)
       );
+
+      // eslint-disable-next-line no-await-in-loop
+      const known = await manifestHashes([
+        ...rows.map((row) => botPagePaths.toKey(entityType, row.entity_id)),
+        ...batchRedirects.map((r) =>
+          botPagePaths.toKey(entityType, r.entity_id)
+        ),
+      ]);
       // eslint-disable-next-line no-await-in-loop
       await mapLimit(rows, concurrency, async (row) => {
         const html = BotRenderService.render(row, renderOptions);
@@ -205,12 +253,45 @@ async function publish({
       });
 
       // eslint-disable-next-line no-await-in-loop
+      await mapLimit(batchRedirects, concurrency, async (redirect) => {
+        const html = BotRenderService.renderRedirect(
+          entityType,
+          redirect.target_id,
+          renderOptions
+        );
+        await publishIfChanged(
+          {
+            path: botPagePaths.toKey(entityType, redirect.entity_id),
+            entityType,
+            entityId: redirect.entity_id,
+            html,
+            hash: sha256(html),
+            lastmod: null,
+            metadata: {
+              redirectto: BotRenderService.redirectTarget(
+                entityType,
+                redirect.target_id,
+                renderOptions
+              ),
+            },
+          },
+          known
+        );
+      });
+
+      // eslint-disable-next-line no-await-in-loop
       await removeAll(
         `SELECT path FROM t_bot_page_manifest
             WHERE entity_type = $1 AND entity_id > $2 AND entity_id <= $3
               AND NOT (entity_id = ANY($4::int[]))
             ORDER BY entity_id LIMIT $5`,
-        [entityType, cursor, upper, rows.map((row) => row.entity_id), 1000]
+        [
+          entityType,
+          cursor,
+          upper,
+          [...pageIds, ...batchRedirects.map((r) => r.entity_id)],
+          1000,
+        ]
       );
 
       stats.uploaded += summary.uploaded - before.uploaded;
@@ -266,9 +347,13 @@ module.exports = {
    * @param {string} [options.baseUrl] public base URL (default: the config key)
    * @param {Function} [options.readBatch] (entityType, afterId, limit) => rows;
    *   defaults to v_bot_page, replaceable for a synthetic source
+   * @param {Function} [options.readRedirects] (entityType) => rows of
+   *   {entity_id, target_id}, sorted by entity_id; defaults to v_bot_redirect
    * @param {Function} [options.onBatch] called after each batch
    * @param {Map<string, string>} [options.languageTags] ISO 639-3 to 639-1;
    *   read from t_language when absent
+   * @param {Map<string, object>} [options.countryNames] t_country names by
+   *   language; read from t_country when absent
    * @returns {Promise<{uploaded: number, unchanged: number, deleted: number,
    *   byType: object}>}
    * @throws an error with code E_BOT_PAGES_RUNNING when another run is in
