@@ -144,7 +144,9 @@ module.exports = async (req, res) => {
       )
     : null;
 
-  await Promise.all([
+  // allSettled, not all: on failure, wait for the other collections before
+  // answering, so no write is still running when the response goes out.
+  const linkResults = await Promise.allSettled([
     linkedEntitiesDeleteOrMerge('exploredEntrances'),
     linkedEntitiesDeleteOrMerge('groups'),
     linkedEntitiesDeleteOrMerge('subscribedToCountries'),
@@ -158,6 +160,18 @@ module.exports = async (req, res) => {
       [caverId]
     ),
   ]);
+  const linkFailures = linkResults
+    .filter((r) => r.status === 'rejected')
+    .map((r) => r.reason);
+  const otherFailure = linkFailures.find((e) => e.code !== 'E_NOT_FOUND');
+  if (otherFailure) throw otherFailure;
+  if (linkFailures.length > 0) {
+    // The merge target was deleted or merged by a concurrent request after the
+    // existence check: keep the source caver and the links it still has.
+    const { message } = linkFailures[0];
+    sails.log.warn(`Caver ${caverId} merge aborted: ${message}`);
+    return res.conflict({ message });
+  }
 
   await TCaver.destroyOne({ id: caverId });
 

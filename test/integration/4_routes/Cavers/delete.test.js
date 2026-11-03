@@ -1,5 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
+const CaverService = require('../../../../api/services/CaverService');
 const AuthTokenService = require('../../AuthTokenService');
 
 describe('Caver features', () => {
@@ -72,6 +74,53 @@ describe('Caver features', () => {
         .set('Content-type', 'application/json')
         .set('Accept', 'application/json')
         .expect(400, done);
+    });
+
+    it('should keep the source and its links when the target disappears during the merge', async () => {
+      const source = await CaverService.createNonUserCaver({
+        name: 'VanishingMergeSource',
+      });
+      const target = await CaverService.createNonUserCaver({
+        name: 'VanishingMergeTarget',
+      });
+      await TCaver.addToCollection(source.id, 'exploredEntrances', [4, 5]);
+
+      // The controller's existence check sees the target; every later lookup
+      // behaves as if a concurrent request had deleted it in between.
+      const originalFindOne = TCaver.findOne.bind(TCaver);
+      let targetLookups = 0;
+      const findOneStub = sinon
+        .stub(TCaver, 'findOne')
+        .callsFake((criteria, ...rest) => {
+          if (criteria === target.id) {
+            targetLookups += 1;
+            if (targetLookups > 1) return { populate: async () => undefined };
+          }
+          return originalFindOne(criteria, ...rest);
+        });
+
+      try {
+        await supertest(sails.hooks.http.app)
+          .delete(`/api/v1/cavers/${source.id}?entityId=${target.id}`)
+          .set('Authorization', moderatorToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(409);
+      } finally {
+        findOneStub.restore();
+      }
+      should(targetLookups).be.above(1);
+
+      const sourceAfter = await TCaver.findOne(source.id).populate(
+        'exploredEntrances'
+      );
+      should(sourceAfter).not.be.undefined();
+      should(sourceAfter.exploredEntrances.map((e) => e.id)).containDeep([
+        4, 5,
+      ]);
+
+      await TCaver.replaceCollection(source.id, 'exploredEntrances', []);
+      await TCaver.destroy({ id: [source.id, target.id] });
     });
 
     it('should merge source caver data into target and delete source', async () => {

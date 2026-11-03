@@ -121,12 +121,21 @@ module.exports = {
    * The target's links are read just before the insert, and a link created
    * meanwhile by a concurrent request (double-submitted merge) is ignored
    * rather than surfacing as E_UNIQUE.
+   * @throws {Error} with code E_NOT_FOUND when the target no longer exists
+   * (deleted or merged by a concurrent request), so the caller keeps the
+   * source's links instead of clearing them.
    * @returns {Promise<void>}
    */
   mergeCollection: async (targetId, key, ids) => {
     if (!ids || ids.length === 0) return;
     const target = await TCaver.findOne(targetId).populate(key);
-    if (!target) return;
+    if (!target) {
+      const error = new Error(
+        `Merge target caver of id ${targetId} not found.`
+      );
+      error.code = 'E_NOT_FOUND';
+      throw error;
+    }
     const existingIds = new Set(target[key].map((e) => e.id));
     const idsToAdd = [...new Set(ids)].filter((id) => !existingIds.has(id));
     if (idsToAdd.length === 0) return;

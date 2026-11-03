@@ -267,6 +267,19 @@ describe('CaverService', () => {
       should(await linkedEntranceIds()).eql([4, 5, 6]);
     });
 
+    it('should throw E_NOT_FOUND when the target no longer exists', async () => {
+      const error = await CaverService.mergeCollection(
+        999999,
+        'exploredEntrances',
+        [5]
+      ).then(
+        () => null,
+        (e) => e
+      );
+      should(error).not.be.null();
+      should(error.code).equal('E_NOT_FOUND');
+    });
+
     it('should rethrow errors other than E_UNIQUE', async () => {
       addStub = sinon
         .stub(TCaver, 'addToCollection')
