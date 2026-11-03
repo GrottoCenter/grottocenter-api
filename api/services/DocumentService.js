@@ -14,6 +14,7 @@ const {
 } = require('../../config/constants/document');
 const isValidId = require('../utils/isValidId');
 const parsePdfPageOffset = require('../utils/parsePdfPageOffset');
+const { validateStringLengths } = require('../utils/stringLengthValidation');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
 const normalizeToId = (item) =>
@@ -184,6 +185,48 @@ module.exports = {
     title: body.title,
     language: body.titleAndDescriptionLanguage?.id ?? body.mainLanguage,
   }),
+
+  /**
+   * Check the length of the client-provided strings a document creation
+   * writes, so that an overlong value is answered with a 400 instead of the
+   * 500 Waterline's validation raises inside the transaction (#1903). The
+   * limits are read from the model definitions so they cannot drift apart.
+   * Errors are keyed by the request field name.
+   * @param {Object} documentData from getConvertedDataFromClient()
+   * @param {Object} descriptionData from getDescriptionDataFromClient()
+   * @returns {Array<{ field: string, message: string }>} empty when valid
+   */
+  validateFieldLengths: (documentData, descriptionData) => {
+    // Waterline moves `maxLength` under `validations` when it loads a model
+    const maxLengthOf = (model, attribute) =>
+      model.attributes[attribute].validations.maxLength;
+    return validateStringLengths({
+      title: {
+        value: descriptionData.title,
+        maxLength: maxLengthOf(TDescription, 'title'),
+      },
+      creatorComment: {
+        value: documentData.authorComment,
+        maxLength: maxLengthOf(TDocument, 'authorComment'),
+      },
+      identifier: {
+        value: documentData.identifier,
+        maxLength: maxLengthOf(TDocument, 'identifier'),
+      },
+      issue: {
+        value: documentData.issue,
+        maxLength: maxLengthOf(TDocument, 'issue'),
+      },
+      pages: {
+        value: documentData.pages,
+        maxLength: maxLengthOf(TDocument, 'pages'),
+      },
+      datePublication: {
+        value: documentData.datePublication,
+        maxLength: maxLengthOf(TDocument, 'datePublication'),
+      },
+    });
+  },
 
   getChangedFileFromClient: (fileObjectArray) =>
     fileObjectArray.map((e) => ({

@@ -1665,6 +1665,7 @@ paths:
           description: Title of the text as it is. In its absence, put a fictitious title between [].
           schema:
             type: string
+            maxLength: 300
         - name: titleAndDescriptionLanguage
           in: query
           description: Language used for the title and the description you are providing. List of languages supported by Grottocenter is available using the /languages route.
@@ -1707,8 +1708,12 @@ paths:
           description: >-
             Invalid request, e.g. a malformed, fractional or out-of-range PDF
             page offset, an offset for an identifier that is not a URL or for a
-            file that is not a PDF, or `newFilesMetadata` for a file that was
-            not uploaded. Nothing is created in that case.
+            file that is not a PDF, `newFilesMetadata` for a file that was
+            not uploaded, or a string longer than its column allows (`title`
+            and `creatorComment` 300, `identifier` 250, `issue` 100, `pages`
+            20, `datePublication` 10 characters). Nothing is created in that
+            case. A length error answers `{ message, errors }`, where `errors`
+            lists `{ field, message }` for each overlong field.
         403:
           description: You are not authorized to create a document.
 
