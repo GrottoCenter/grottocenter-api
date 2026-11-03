@@ -86,8 +86,6 @@ const langOf = (language, tags) => {
   return tags.get(code) || code;
 };
 
-const NO_TAGS = new Map();
-
 const layout = (data, baseUrl) =>
   renderTemplate('layout', { ...data, siteUrl: baseUrl });
 
@@ -96,12 +94,19 @@ module.exports = {
    * @param {{entity_type: string, entity_id: number, language: string, page: object}} row
    *   a v_bot_page row
    * @param {{baseUrl?: string, languageTags?: Map<string, string>}} [options]
-   *   languageTags: what loadLanguageTags() returns. Every caller that
-   *   publishes or compares a page passes it: without it the 3-letter code is
-   *   used and the page renders different bytes.
+   *   languageTags: required, what loadLanguageTags() returns (an empty Map
+   *   keeps every 3-letter code). Every caller that publishes or compares a page
+   *   passes the same map, or its bytes would differ from the generator's.
    * @returns {string} the HTML document
    */
-  render(row, { baseUrl = publicBaseUrl(), languageTags = NO_TAGS } = {}) {
+  render(row, { baseUrl = publicBaseUrl(), languageTags } = {}) {
+    if (!(languageTags instanceof Map)) {
+      // Without them a page renders `fra` instead of `fr`: another hash for the
+      // same record, which the withdrawal worker and the audit would read as a change
+      throw new TypeError(
+        'BotRenderService.render needs languageTags (see loadLanguageTags)'
+      );
+    }
     const bodyTemplate = BODY_TEMPLATES[row.entity_type];
     if (!bodyTemplate) {
       throw new RangeError(`Cannot render entity type ${row.entity_type}`);
