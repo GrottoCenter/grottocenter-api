@@ -18,10 +18,22 @@ module.exports = async (req, res) => {
     return res.badRequest(`Could not find duplicate with id ${id}.`);
   }
 
-  const { entrance, nameDescLoc } = entranceDuplicate.content;
+  // The parked content was frozen at import time and carries the import's
+  // creation dates: the entrance is only created now, so stamp it now (#1802).
+  const now = new Date();
+  const { entrance, nameDescLoc = {} } = entranceDuplicate.content;
+  const stamp = (data) => data && { ...data, dateInscription: now };
 
-  await EntranceService.createEntrance(req, entrance, nameDescLoc);
+  const created = await EntranceService.createEntrance(req, stamp(entrance), {
+    ...nameDescLoc,
+    name: stamp(nameDescLoc.name),
+    description: stamp(nameDescLoc.description),
+    location: stamp(nameDescLoc.location),
+  });
   await TEntranceDuplicate.destroyOne(id);
+  sails.log.info(
+    `Entrance duplicate ${id} → entrance ${created?.id} by caver ${req.token.id}`
+  );
 
   return res.ok();
 };
