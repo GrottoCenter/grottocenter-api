@@ -25,11 +25,15 @@ module.exports = async (req, res) => {
     reviewer: req.token.id,
   });
 
-  // Soft-delete the initial cave if it has no remaining entrances
-  const initialCave = await TCave.findOne(initialCaveId).populate('entrances');
-  if (initialCave.entrances.length === 0) {
-    await TCave.update(initialCaveId).set({ redirectTo: destinationCaveId });
-    await TCave.destroyOne({ id: initialCaveId }); // Soft delete
+  // Soft-delete the initial cave if it has no remaining entrances.
+  // An entrance without a cave (legacy orphan) has no initial cave to clean up.
+  if (initialCaveId) {
+    const initialCave =
+      await TCave.findOne(initialCaveId).populate('entrances');
+    if (initialCave && initialCave.entrances.length === 0) {
+      await TCave.update(initialCaveId).set({ redirectTo: destinationCaveId });
+      await TCave.destroyOne({ id: initialCaveId }); // Soft delete
+    }
   }
 
   // Return populated entrance

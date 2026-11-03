@@ -74,6 +74,39 @@ describe('Entrance features', () => {
       });
     });
 
+    describe('Move entrance without an initial cave', () => {
+      const entranceId = 12346;
+      const destinationCaveId = 54322;
+
+      before(async () => {
+        await TEntrance.create({
+          ...entranceCreationData,
+          id: entranceId,
+        });
+        await TCave.create({ id: destinationCaveId });
+      });
+
+      after(async () => {
+        await TEntrance.destroyOne(entranceId);
+        await TCave.destroyOne(destinationCaveId);
+      });
+
+      it('should return code 200 and move the entrance to the cave', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .patch(`/api/v1/entrances/${entranceId}/cave/${destinationCaveId}`)
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(res.body.cave.id).equal(destinationCaveId);
+
+        const entrance = await TEntrance.findOne(entranceId);
+        should(entrance.cave).equal(destinationCaveId);
+        const destinationCave = await TCave.findOne(destinationCaveId);
+        should(destinationCave.isDeleted).be.false();
+      });
+    });
+
     describe('Move entrance from one network to another one', () => {
       const entranceId = 12345;
       const otherEntrance1Id = 2345;
