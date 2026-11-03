@@ -51,6 +51,38 @@ describe('DocumentService', () => {
     });
   });
 
+  describe('validateFieldLengths()', () => {
+    it('should return no error for values within the model limits', () => {
+      const errors = DocumentService.validateFieldLengths(
+        { authorComment: 'c'.repeat(300), pages: '1-20', issue: null },
+        { title: 't'.repeat(300) }
+      );
+      should(errors).be.empty();
+    });
+
+    it('should report each overlong field under its request name', () => {
+      const errors = DocumentService.validateFieldLengths(
+        {
+          authorComment: 'c'.repeat(301),
+          identifier: 'i'.repeat(251),
+          issue: 'x'.repeat(101),
+          pages: 'p'.repeat(21),
+          datePublication: '2020-01-01T00',
+        },
+        { title: 't'.repeat(622) }
+      );
+      should(errors.map((e) => e.field)).eql([
+        'title',
+        'creatorComment',
+        'identifier',
+        'issue',
+        'pages',
+        'datePublication',
+      ]);
+      should(errors[0].message).match(/maximum length of 300 characters/);
+    });
+  });
+
   describe('getChangedFileFromClient()', () => {
     it('should map file objects', () => {
       const files = [

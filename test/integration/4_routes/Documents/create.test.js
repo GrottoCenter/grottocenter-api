@@ -151,6 +151,70 @@ describe('Document create', () => {
       });
     });
 
+    describe('Title over the maximum length (#1903)', () => {
+      it('should return 400 naming the title and its limit, and create nothing', async () => {
+        const title = 'a'.repeat(622);
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'a',
+            mainLanguage: 'fra',
+            type: 'Collection',
+            authorsOrganization: '[]',
+            subjects: '[]',
+            iso3166: '[]',
+            datePublication: '',
+            creatorComment: '',
+            title,
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+        should(res.body.errors).have.length(1);
+        should(res.body.errors[0].field).equal('title');
+        should(res.body.message)
+          .match(/title/)
+          .and.match(/300 characters/);
+        should(res.body.message).not.match(/-\d/);
+        const descriptions = await TDescription.find({ title });
+        should(descriptions).have.length(0);
+      });
+
+      it('should accept a title of exactly 300 characters', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'a',
+            mainLanguage: 'fra',
+            type: 'Collection',
+            title: 'b'.repeat(300),
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200);
+        createdDocIds.push(res.body.document.id);
+      });
+
+      it('should return 400 for an overlong creatorComment', async () => {
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/documents')
+          .send({
+            description: 'a',
+            mainLanguage: 'fra',
+            type: 'Collection',
+            title: 'Overlong comment',
+            creatorComment: 'c'.repeat(301),
+          })
+          .set('Authorization', userToken)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(400);
+        should(res.body.errors[0].field).equal('creatorComment');
+      });
+    });
+
     describe('Populate failure after creation (#1655)', () => {
       let DocumentService;
 

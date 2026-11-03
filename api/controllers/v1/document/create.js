@@ -25,6 +25,18 @@ module.exports = async (req, res) => {
     req.token.id
   );
 
+  // Overlong strings would fail Waterline's validation with a 500 (#1903)
+  const lengthErrors = DocumentService.validateFieldLengths(
+    documentData,
+    descriptionData
+  );
+  if (lengthErrors.length > 0) {
+    return res.badRequest({
+      message: lengthErrors.map((e) => e.message).join(' '),
+      errors: lengthErrors,
+    });
+  }
+
   // Validate that the issue field is only set for types that support it
   if (
     documentData.issue != null &&
