@@ -11656,7 +11656,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/PointReferencedDocument'
           nullable: true
-          description: The SVG plan the point is drawn on.
+          description: >-
+            The SVG plan the point is drawn on, or `null` when it has none or
+            the plan is soft-deleted (`x` and `y` are still returned).
         x:
           type: number
           nullable: true

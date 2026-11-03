@@ -133,7 +133,7 @@ module.exports = {
   },
 
   /**
-   * Get a point with its reference document (relation A) and the
+   * Get a point with its non-deleted reference document (relation A) and the
    * non-deleted documents that reference it (relation B).
    *
    * @param {number} pointId
@@ -154,7 +154,12 @@ module.exports = {
     const [referenceDocument, documents] = await Promise.all([
       point.referenceDocument
         ? populateSimpleDocument(
-            TDocument.findOne({ id: point.referenceDocument })
+            // A soft-deleted plan is redacted on GET /documents/:id: do not
+            // expose its descriptions and files through the point either.
+            TDocument.findOne({
+              id: point.referenceDocument,
+              isDeleted: false,
+            })
           )
         : null,
       populateSimpleDocument(

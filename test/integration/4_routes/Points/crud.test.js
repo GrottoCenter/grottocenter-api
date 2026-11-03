@@ -175,6 +175,43 @@ describe('Point features', () => {
         await TDocument.destroy({ id: [linked.id, deletedLinked.id] });
       }
     });
+
+    it('does not expose a soft-deleted reference plan', async () => {
+      const plan = await TDocument.create({
+        author: 1,
+        type: 13,
+        license: 1,
+      }).fetch();
+      try {
+        await TDescription.create({
+          author: 1,
+          document: plan.id,
+          language: 'fra',
+          title: 'Deleted plan',
+          body: 'Secret body',
+        });
+        const point = await createPoint({
+          referenceDocument: plan.id,
+          x: 1,
+          y: 2,
+        });
+        await TDocument.updateOne({ id: plan.id }).set({ isDeleted: true });
+
+        const res = await json(
+          supertest(sails.hooks.http.app).get(`/api/v1/points/${point.id}`)
+        ).expect(200);
+        should(res.body.referenceDocument).be.null();
+        should(JSON.stringify(res.body)).not.containEql('Secret body');
+      } finally {
+        await TPoint.update({ referenceDocument: plan.id }).set({
+          referenceDocument: null,
+          x: null,
+          y: null,
+        });
+        await TDescription.destroy({ document: plan.id });
+        await TDocument.destroy({ id: plan.id });
+      }
+    });
   });
 
   describe('GET /api/v1/points', () => {
