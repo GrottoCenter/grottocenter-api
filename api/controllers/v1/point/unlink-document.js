@@ -18,13 +18,15 @@ module.exports = async (req, res) => {
   }
 
   const documentId = Number(req.param('documentId'));
-  const document = await TDocument.findOne({ id: documentId });
-  if (!document || document.point !== pointId) {
+  // The expected point is part of the write: a stale request cannot clear an
+  // association made to another point in the meantime.
+  const updated = await TDocument.update({ id: documentId, point: pointId })
+    .set({ point: null })
+    .fetch();
+  if (updated.length === 0) {
     return res.notFound({
       message: `Document of id ${documentId} does not reference the point of id ${pointId}.`,
     });
   }
-
-  await TDocument.updateOne({ id: documentId }).set({ point: null });
   return res.ok();
 };

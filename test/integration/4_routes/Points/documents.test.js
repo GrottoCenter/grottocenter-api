@@ -84,6 +84,33 @@ describe('Point documents features', () => {
       ).expect(409);
     });
 
+    it('lets only one of two concurrent attachments to different points succeed', async () => {
+      const contested = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+      }).fetch();
+      try {
+        const attach = (id) =>
+          json(
+            supertest(sails.hooks.http.app)
+              .put(`/api/v1/points/${id}/documents/${contested.id}`)
+              .set('Authorization', userToken)
+          );
+        const responses = await Promise.all([
+          attach(pointId),
+          attach(otherPointId),
+        ]);
+        const statuses = responses.map((r) => r.status).sort();
+        should(statuses).deepEqual([204, 409]);
+        const winner = responses[0].status === 204 ? pointId : otherPointId;
+        const document = await TDocument.findOne({ id: contested.id });
+        should(document.point).equal(winner);
+      } finally {
+        await TDocument.destroy({ id: contested.id });
+      }
+    });
+
     it('ignores the point sent to the generic document update', async () => {
       await json(
         supertest(sails.hooks.http.app)
