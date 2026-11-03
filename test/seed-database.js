@@ -33,6 +33,9 @@ async function dropNonWaterlineTables(testUrl) {
   try {
     await client.query('DROP VIEW IF EXISTS v_bot_redirect');
     await client.query('DROP VIEW IF EXISTS v_bot_page');
+    // Not a model: it outlives migrate:drop, so a changed definition would
+    // never reach a persistent test database
+    await client.query('DROP TABLE IF EXISTS t_bot_page_manifest');
     await client.query('DROP TABLE IF EXISTS t_bibliographic_metadata');
     await client.query('DROP TYPE IF EXISTS e_metadata_status');
   } finally {
@@ -95,6 +98,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_ADMIT_PAGES_MIGRATION,
                 customSQL.BOT_PAGE_VIEW_MIGRATION,
                 customSQL.BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
+                customSQL.BOT_PAGE_MANIFEST_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))

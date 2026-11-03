@@ -1,0 +1,7 @@
+<%# PLACEHOLDER BODY, replaced by #1766. Locals: page, safeUrl (an http(s) address or null) -%>
+<% const page = locals.page; -%>
+<h1><%= page.name %></h1>
+<dl>
+<% [['City', page.city], ['County', page.county], ['Region', page.region], ['Country', page.country], ['Founded', page.yearBirth]].forEach(([label, value]) => { %><% if (value != null && value !== '') { %><dt><%= label %></dt><dd><%= value %></dd>
+<% } %><% }) %><% if (locals.safeUrl) { %><dt>Website</dt><dd><a href="<%= locals.safeUrl %>" rel="nofollow ugc"><%= locals.safeUrl %></a></dd>
+<% } %></dl>
