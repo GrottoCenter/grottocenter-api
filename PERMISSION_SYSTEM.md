@@ -12,6 +12,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 - **Description**: Non-authenticated users
 - **Permissions**:
   - View public cave/entrance/document/organisation/massif/person data
+  - View points and the points drawn on a document's SVG plan
   - Search through cave/entrance/document/organisation/massif/person/device data
   - View active legislation guidelines (list, single guideline by id, by geographic entity, and snapshots) — a
     soft-deleted guideline yields 404 by id, though its text stays readable through snapshots
@@ -40,6 +41,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Create devices and sensor configurations
     - Update own devices and sensor configurations
     - Import observation data (CSV/TSV)
+    - Create and edit points, including their position on an SVG plan
+    - Attach a document to a point
   - **Messaging**:
     - Send and receive private messages
     - View, archive, and unarchive own conversations only
@@ -77,7 +80,8 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Permanently delete author records (`type: AUTHOR`; deleting a `CAVER` account requires Administrator instead —
       see "Caver Deletion")
     - Update any user's comments
-    - Unlink documents from caves, entrances, and massifs
+    - Unlink documents from caves, entrances, massifs, and points
+    - Soft-delete points (no restore or permanent deletion route)
     - Update documents that have modifications pending moderator approval
     - Validate documents
     - Manage duplicates (documents and entrances)
@@ -109,6 +113,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
   - **Content Moderation** (deletion and restore only; validation, duplicates and the rest are Moderator-only):
     - Soft-delete/restore caves, entrances, documents, comments, descriptions, locations, riggings, histories,
       organisations, massifs, devices and sensor configurations
+    - Soft-delete points (no restore or permanent deletion route)
     - Soft-delete/restore legislation guidelines — the only guideline operation an Administrator gates, since updating
       and rolling back them is open to any authenticated user
     - View a soft-deleted legislation guideline by id — the only soft-deleted content an Administrator can read without
@@ -175,6 +180,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Soft delete devices/sensor configurations                     | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Restore devices/sensor configurations                         | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Permanently delete devices/sensor configurations              | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View points and the points on a document                      | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Create/update points, attach a document to a point            | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Soft delete points                                            | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Import observation data                                       | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Organization Management**                                   |
 | Join/leave own organizations                                  | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -313,6 +321,9 @@ cannot detach it either.
 ### Scientific Domain Access
 - **Devices**: Any authenticated user can create devices; update requires ownership or Moderator role; soft delete and restore require Moderator or Administrator; permanent delete requires Administrator
 - **Sensor Configurations**: Same permission model as devices — scoped under a device (nested resource)
+- **Points**: Wiki-style, like caves and entrances — any authenticated user can create a point, update any point
+  (label, cave, position on an SVG plan) and attach a document to it; reading is public. Detaching a document requires
+  Moderator; soft delete requires Moderator or Administrator. There is no restore or permanent delete route
 - **Observation Import**: Any authenticated user can import observation data via CSV/TSV. `v1/observation/import` is
   gated by `tokenAuth` alone — neither the controller nor `ObservationImportService` performs a role check, so a plain
   User can bulk-create observation entities (up to a 100 MB file). **This openness is intended**: observation upload is
