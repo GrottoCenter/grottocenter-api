@@ -23,6 +23,21 @@ describe('mapLimit', () => {
     should(peak).equal(3);
   });
 
+  it('rejects a limit that is not a positive integer, without calling the worker', async () => {
+    let calls = 0;
+    const worker = async () => {
+      calls += 1;
+    };
+    // eslint-disable-next-line no-restricted-syntax
+    for (const limit of [NaN, 0, -1, 1.5, '4', undefined, null, Infinity]) {
+      // eslint-disable-next-line no-await-in-loop
+      await mapLimit([1, 2], limit, worker).should.be.rejectedWith(RangeError, {
+        message: /positive integer limit/,
+      });
+    }
+    should(calls).equal(0);
+  });
+
   it('resolves on an empty list', async () => {
     await mapLimit([], 4, () => {
       throw new Error('never called');

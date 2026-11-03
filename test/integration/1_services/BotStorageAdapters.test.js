@@ -50,6 +50,13 @@ describe('Bot storage adapters', () => {
       should(fs.readFileSync(path.join(root, 'caves/1.html'), 'utf8')).equal(
         'two'
       );
+      // On disk, not through list(), which skips temporary files
+      should(fs.readdirSync(path.join(root, 'caves'))).deepEqual(['1.html']);
+    });
+
+    it('does not list a temporary file left by a write that was killed', async () => {
+      await adapter.put('caves/1.html', 'x');
+      fs.writeFileSync(path.join(root, 'caves/2.html.123.abc.part'), 'half');
       should(await collect(adapter.list())).deepEqual(['caves/1.html']);
     });
 

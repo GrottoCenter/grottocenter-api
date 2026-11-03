@@ -102,7 +102,7 @@ The chain follows `redirect_to` through merged records and stops at the first re
 
 `BotPageGeneratorService.run({ adapter })` (`api/services/bot/BotPageGeneratorService.js`) is step 4 of the nightly pipeline. It publishes the pages of `v_bot_page` as static files and keeps `t_bot_page_manifest` equal to what is online. Scheduling is #1760; the page bodies are #1766; sitemaps are #1767.
 
-**Render.** `BotRenderService.render(row)` turns one view row into one HTML string with `ejs.render` and the templates under `views/bot/` (not `res.view`; the Sails view config and the email templates are untouched). The layout gives every page the doctype, `<html lang>` from the record, a title, the viewport, minimal inline CSS with no external asset, a header, a canonical link, `<meta name="generator" content="gc-static-pages">` (the audit recognises generated pages with it) and the licence footer: CC-BY-SA for texts, ODbL for data, in the wording of the SPA footer. `renderNotFound()` renders `404.html`, the only page with `noindex`. The generator, the withdrawal worker (#1886) and the audit (#1887) call the same function.
+**Render.** `BotRenderService.render(row)` turns one view row into one HTML string with the templates under `views/bot/`, each read and compiled once per process with `ejs.compile` (not `res.view`; the Sails view config and the email templates are untouched). The layout gives every page the doctype, `<html lang>` from the record (a BCP 47 tag: the ISO 639-1 code from `t_language.part1` when the language has one, `fra` becomes `fr`, else the ISO 639-3 code; a description in another language gets its own `lang` the same way), a title, the viewport, minimal inline CSS with no external asset, a header, a canonical link, `<meta name="generator" content="gc-static-pages">` (the audit recognises generated pages with it) and the licence footer: CC-BY-SA for texts, ODbL for data, in the wording of the SPA footer. `renderNotFound()` renders `404.html`, the only page with `noindex`. The generator, the withdrawal worker (#1886) and the audit (#1887) call the same function, each passing `languageTags` from `BotRenderService.loadLanguageTags()`: without it the 3-letter code is used, and the page renders different bytes.
 
 > The bodies `views/bot/{cave,massif,organization}.ejs` are placeholders: a generic English rendering of the whitelisted fields. #1766 replaces them. An organization website is a link only if it is an `http(s)` address, with `rel="nofollow ugc"`. The render does not print `lastmod`, so a record whose only change is that hint renders the same bytes.
 
@@ -118,7 +118,7 @@ There is no name slug. The base URL is `sails.config.custom.botSurface.publicBas
 
 **Manifest.** `t_bot_page_manifest (path PRIMARY KEY, entity_type, entity_id, content_hash, lastmod, published_at)` (`sql/9_32_2026_11_02_bot_page_manifest.sql`, applied by hand in production): one row per published path. `content_hash` is the sha256 of the rendered HTML, the change detector; `lastmod` is the view's hint at the time of the upload. Static extras (`404.html`) have `entity_type = 'static'` and no `entity_id`.
 
-**A run.**
+**A run.** One at a time: `run()` takes a session-level advisory lock (key 1758) on a leased connection and rejects with code `E_BOT_PAGES_RUNNING` when another run holds it, before anything is read or published. Two overlapping runs could otherwise leave a page online with no manifest row, which no later run would delete. `concurrency` and `batchSize` must be positive integers; anything else is rejected up front.
 
 1. For each type, one at a time, it reads the view by keyset (`entity_id > $cursor ORDER BY entity_id LIMIT 1000`), renders and hashes each row, and uploads only the pages whose hash differs from the manifest.
 2. In step with the view it deletes the manifest paths of the same id range that the batch no longer holds (a record that left the view). The manifest is never loaded whole: one batch of rows and `concurrency` rendered pages (4) are in memory at a time.
@@ -129,7 +129,7 @@ It returns `{ uploaded, unchanged, deleted, byType }`. A blob deleted by hand wh
 
 **Storage adapters** (`api/services/bot/storage/`): one interface, `put(key, html)`, `delete(key)`, `list()`.
 
-- `LocalStorageAdapter`: a directory, for dev and tests. Writes through a temporary file and a rename, and refuses a key outside the root.
+- `LocalStorageAdapter`: a directory, for dev and tests. Writes through a temporary file (`*.part`) and a rename, and refuses a key outside the root. `list()` skips the temporary files a killed process can leave behind.
 - `AzureBlobStorageAdapter`: the `$web` container of an Azure Blob static website, through `@azure/storage-blob` (as `FileService`). It uploads with `Content-Type: text/html; charset=utf-8`. The edge Worker forwards the blob's ETag and Last-Modified; the Worker never caches these pages, so no CDN purge is needed.
 
 **Configuration** (`sails.config.custom.botSurface`, from the environment; nothing is hardcoded):

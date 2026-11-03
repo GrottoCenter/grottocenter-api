@@ -23,7 +23,7 @@
  * same bytes and is not published again.
  *
  * Pure with respect to the database: loads without Sails when the base URL is
- * passed.
+ * passed (loadLanguageTags is the one function that reads it).
  */
 
 const fs = require('fs');
@@ -34,13 +34,18 @@ const botPagePaths = require('../../utils/botPagePaths');
 const VIEWS_DIR = path.join(__dirname, '../../../views/bot');
 const DEFAULT_LANGUAGE = 'und';
 
-// ejs resolves includes from `filename`; `cache` compiles each template once.
+// Each template is read and compiled once per process; ejs resolves includes
+// from `filename` and caches them under it.
+const compiled = new Map();
 const renderTemplate = (name, data) => {
   const filename = path.join(VIEWS_DIR, `${name}.ejs`);
-  return ejs.render(fs.readFileSync(filename, 'utf8'), data, {
-    filename,
-    cache: true,
-  });
+  if (!compiled.has(filename)) {
+    compiled.set(
+      filename,
+      ejs.compile(fs.readFileSync(filename, 'utf8'), { filename, cache: true })
+    );
+  }
+  return compiled.get(filename)(data);
 };
 
 const BODY_TEMPLATES = {
@@ -68,11 +73,20 @@ const safeHttpUrl = (value) => {
   }
 };
 
-// BCP 47 language tag from the record language (an ISO 639-3 code in the view)
-const langOf = (language) =>
-  typeof language === 'string' && /^[A-Za-z]{2,3}$/.test(language)
-    ? language.toLowerCase()
-    : DEFAULT_LANGUAGE;
+// BCP 47 language tag of a record language, an ISO 639-3 code in the view:
+// the ISO 639-1 subtag when the language has one (`fra` -> `fr`), as BCP 47
+// requires, else the 3-letter code, which the IANA registry holds for the
+// languages without a 2-letter one. `tags` maps a 3-letter code to its 2-letter
+// one (t_language.part1, see loadLanguageTags).
+const langOf = (language, tags) => {
+  if (typeof language !== 'string' || !/^[A-Za-z]{2,3}$/.test(language)) {
+    return DEFAULT_LANGUAGE;
+  }
+  const code = language.toLowerCase();
+  return tags.get(code) || code;
+};
+
+const NO_TAGS = new Map();
 
 const layout = (data, baseUrl) =>
   renderTemplate('layout', { ...data, siteUrl: baseUrl });
@@ -81,19 +95,24 @@ module.exports = {
   /**
    * @param {{entity_type: string, entity_id: number, language: string, page: object}} row
    *   a v_bot_page row
-   * @param {{baseUrl?: string}} [options]
+   * @param {{baseUrl?: string, languageTags?: Map<string, string>}} [options]
+   *   languageTags: what loadLanguageTags() returns. Every caller that
+   *   publishes or compares a page passes it: without it the 3-letter code is
+   *   used and the page renders different bytes.
    * @returns {string} the HTML document
    */
-  render(row, { baseUrl = publicBaseUrl() } = {}) {
+  render(row, { baseUrl = publicBaseUrl(), languageTags = NO_TAGS } = {}) {
     const bodyTemplate = BODY_TEMPLATES[row.entity_type];
     if (!bodyTemplate) {
       throw new RangeError(`Cannot render entity type ${row.entity_type}`);
     }
     const { page } = row;
-    const lang = langOf(row.language || page.language);
+    const tag = (language) => langOf(language, languageTags);
+    const lang = tag(row.language || page.language);
     const body = renderTemplate(bodyTemplate, {
       page,
       lang,
+      tag,
       link: (type, id) => botPagePaths.toUrl(type, id, baseUrl),
       safeUrl: safeHttpUrl(page.url),
     });
@@ -109,6 +128,24 @@ module.exports = {
         body,
       },
       baseUrl
+    );
+  },
+
+  /**
+   * The ISO 639-1 subtag of every language that has one, keyed by its ISO 639-3
+   * code, for render(). Read once per run; needs Sails.
+   *
+   * @returns {Promise<Map<string, string>>}
+   */
+  async loadLanguageTags() {
+    const { rows } = await CommonService.query(
+      'SELECT id, part1 FROM t_language WHERE part1 IS NOT NULL'
+    );
+    return new Map(
+      rows.map((row) => [
+        row.id.trim().toLowerCase(),
+        row.part1.trim().toLowerCase(),
+      ])
     );
   },
 

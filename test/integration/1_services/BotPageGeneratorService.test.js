@@ -207,6 +207,90 @@ describe('BotPageGeneratorService', () => {
     it('refuses to run without an adapter', async () => {
       await Generator.run({ readBatch }).should.be.rejectedWith(/adapter/);
     });
+
+    it('refuses a concurrency or a batch size that is not a positive integer, before anything is published', async () => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const bad of [NaN, 0, 2.5, '4']) {
+        // eslint-disable-next-line no-await-in-loop
+        await run({ concurrency: bad }).should.be.rejectedWith(RangeError, {
+          message: /concurrency/,
+        });
+        // eslint-disable-next-line no-await-in-loop
+        await run({ batchSize: bad }).should.be.rejectedWith(RangeError, {
+          message: /batchSize/,
+        });
+      }
+      should(puts).be.empty();
+      should(await keys()).deepEqual([]);
+      should(await manifestPaths()).deepEqual([]);
+    });
+  });
+
+  describe('one run at a time', () => {
+    // Holds the generator lock on its own connection, as another run would
+    const holdingTheLock = (fn) =>
+      sails.getDatastore().leaseConnection(async (db) => {
+        await CommonService.query(
+          'SELECT pg_advisory_lock($1)',
+          [Generator.LOCK_KEY],
+          db
+        );
+        try {
+          return await fn();
+        } finally {
+          await CommonService.query(
+            'SELECT pg_advisory_unlock($1)',
+            [Generator.LOCK_KEY],
+            db
+          );
+        }
+      });
+
+    it('rejects a run while another holds the lock, and publishes nothing', async () => {
+      await holdingTheLock(async () => {
+        await run().should.be.rejectedWith({ code: 'E_BOT_PAGES_RUNNING' });
+      });
+      should(puts).be.empty();
+      should(await keys()).deepEqual([]);
+      should(await manifestPaths()).deepEqual([]);
+    });
+
+    it('rejects a run started while one is in progress, which still finishes', async () => {
+      let second;
+      await run({
+        batchSize: 2,
+        onBatch: async () => {
+          if (!second) second = run();
+        },
+      });
+      await second.should.be.rejectedWith({ code: 'E_BOT_PAGES_RUNNING' });
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    // A session-level lock is re-entrant on the session that holds it, so a
+    // lock left behind on a pooled connection would not stop the next run that
+    // happens to get the same connection: look at pg_locks instead
+    const lockHolders = async () =>
+      (
+        await query(
+          `SELECT count(*)::int AS n FROM pg_locks
+            WHERE locktype = 'advisory' AND objid = $1 AND granted`,
+          [Generator.LOCK_KEY]
+        )
+      ).rows[0].n;
+
+    it('releases the lock when a run ends, whether it succeeds or fails', async () => {
+      await run();
+      should(await lockHolders()).equal(0);
+      await run({
+        readBatch: async () => {
+          throw new Error('view down');
+        },
+      }).should.be.rejectedWith('view down');
+      should(await lockHolders()).equal(0);
+      await run();
+      should(await keys()).not.be.empty();
+    });
   });
 
   describe('a second run', () => {
@@ -531,6 +615,8 @@ describe('BotPageGeneratorService', () => {
       const html = fs.readFileSync(path.join(root, key), 'utf8');
       should(html).containEql('Spéléo Club Générateur');
       should(html).containEql('rel="nofollow ugc"');
+      // The language tags are read from t_language: fra is published as fr
+      should(html).containEql('<html lang="fr">');
       should(await manifestPaths()).deepEqual(await keys());
 
       // The organization leaves the view: its page goes
