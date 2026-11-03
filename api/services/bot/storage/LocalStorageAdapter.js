@@ -10,6 +10,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// A process killed between the write and the rename leaves one behind: list()
+// skips them, so the audit (#1887) does not report them as unknown pages.
+const TEMPORARY_SUFFIX = '.part';
+
 class LocalStorageAdapter {
   constructor(rootDir) {
     if (!rootDir) throw new Error('LocalStorageAdapter needs a directory');
@@ -35,7 +39,7 @@ class LocalStorageAdapter {
     // Rename, so a reader never sees a half-written page
     const temporary = `${target}.${process.pid}.${Math.random()
       .toString(36)
-      .slice(2)}.part`;
+      .slice(2)}${TEMPORARY_SUFFIX}`;
     try {
       await fs.promises.writeFile(temporary, html, 'utf8');
       await fs.promises.rename(temporary, target);
@@ -65,7 +69,7 @@ class LocalStorageAdapter {
         const key = prefix ? `${prefix}/${entry.name}` : entry.name;
         if (entry.isDirectory()) {
           yield* walk(path.join(directory, entry.name), key);
-        } else {
+        } else if (!entry.name.endsWith(TEMPORARY_SUFFIX)) {
           yield key;
         }
       }

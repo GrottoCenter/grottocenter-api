@@ -5,9 +5,17 @@
  * awaited (so each one finishes what it began) and the first error is thrown.
  * That is what keeps a publisher's bookkeeping consistent when it stops.
  *
+ * `limit` must be a positive integer: a NaN would start no call at all and
+ * resolve as if every item had been handled.
+ *
  * Pure: loads without Sails.
  */
 module.exports = async (items, limit, worker) => {
+  if (!Number.isInteger(limit) || limit < 1) {
+    throw new RangeError(
+      `mapLimit needs a positive integer limit, got ${limit}`
+    );
+  }
   let next = 0;
   let failure = null;
   let failed = false;

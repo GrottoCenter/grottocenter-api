@@ -1,7 +1,14 @@
+const fs = require('fs');
 const should = require('should');
+const sinon = require('sinon');
 const { HtmlValidate } = require('html-validate/node');
 
 const BASE_URL = 'https://example.test/ui';
+// What loadLanguageTags() reads from t_language
+const TAGS = new Map([
+  ['fra', 'fr'],
+  ['eng', 'en'],
+]);
 
 describe('BotRenderService', () => {
   let BotRenderService;
@@ -144,19 +151,66 @@ describe('BotRenderService', () => {
   });
 
   describe('the page of a record', () => {
-    it('declares the language of the record and falls back to und', () => {
+    it('declares the language of the record as a BCP 47 tag: the 2-letter code when there is one', () => {
       const [cave] = rows();
-      should(BotRenderService.render(cave)).containEql('<html lang="fra">');
-      should(BotRenderService.render({ ...cave, language: 'ENG' })).containEql(
-        '<html lang="eng">'
+      const render = (row) =>
+        BotRenderService.render(row, { languageTags: TAGS });
+      should(render(cave)).containEql('<html lang="fr">');
+      should(render({ ...cave, language: 'ENG' })).containEql(
+        '<html lang="en">'
+      );
+      // No 2-letter code: the 3-letter one is the registered tag
+      should(render({ ...cave, language: 'gsw' })).containEql(
+        '<html lang="gsw">'
       );
       should(
-        BotRenderService.render({
+        render({
           ...cave,
           language: null,
           page: { ...cave.page, language: null },
         })
       ).containEql('<html lang="und">');
+    });
+
+    it('tags a description in another language than the page with its BCP 47 tag, and one in the same language not at all', () => {
+      const [cave] = rows();
+      const html = BotRenderService.render(
+        {
+          ...cave,
+          page: {
+            ...cave.page,
+            descriptions: [
+              description({ title: 'Same', language: 'fra' }),
+              description({ title: 'Other', language: 'eng' }),
+            ],
+          },
+        },
+        { languageTags: TAGS }
+      );
+      should(html).containEql('<h3>Same</h3>');
+      should(html).containEql('<h3 lang="en">Other</h3>');
+      should(html).not.containEql('lang="eng"');
+      should(html).not.containEql('lang="fra"');
+    });
+
+    it('reads each template from disk once, not on every page', () => {
+      const [cave] = rows();
+      BotRenderService.render(cave);
+      const read = sinon.spy(fs, 'readFileSync');
+      try {
+        BotRenderService.render(cave);
+        BotRenderService.render({ ...cave, entity_id: 99 });
+        should(read.callCount).equal(0);
+      } finally {
+        read.restore();
+      }
+    });
+
+    it('reads the 2-letter codes from t_language', async () => {
+      const tags = await BotRenderService.loadLanguageTags();
+      should(tags.get('fra')).equal('fr');
+      should(tags.get('eng')).equal('en');
+      should(tags.get('bod')).equal('bo');
     });
 
     it('puts the name in the title and escapes it', () => {
@@ -201,7 +255,7 @@ describe('BotRenderService', () => {
       should(html).not.containEql('Length');
       should(html).not.containEql('null');
       // A description in another language than the page says so
-      should(html).containEql('lang="eng"');
+      should(html).containEql('lang="en');
     });
 
     it('renders a description on lines and escapes it', () => {
