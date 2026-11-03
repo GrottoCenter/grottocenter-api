@@ -1,5 +1,6 @@
 <%# Shared layout of every page published for bots (see BotRenderService).
-    Locals: lang, title, robots (optional), canonicalUrl (optional), siteUrl, body (trusted HTML from a page template) -%>
+    Locals: lang, title, siteUrl, body (trusted HTML from a page template);
+    optional: description, canonicalUrl, ogImage, jsonLd (a serialized JSON-LD document), robots, refreshUrl -%>
 <!DOCTYPE html>
 <html lang="<%= locals.lang %>">
 <head>
@@ -7,9 +8,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="generator" content="gc-static-pages">
 <% if (locals.robots) { %><meta name="robots" content="<%= locals.robots %>">
-<% } %><% if (locals.canonicalUrl) { %><link rel="canonical" href="<%= locals.canonicalUrl %>">
+<% } %><% if (locals.refreshUrl) { %><meta http-equiv="refresh" content="0; url=<%= locals.refreshUrl %>">
 <% } %><title><%= locals.title %></title>
-<style>
+<% if (locals.description) { %><meta name="description" content="<%= locals.description %>">
+<% } %><% if (locals.canonicalUrl) { %><link rel="canonical" href="<%= locals.canonicalUrl %>">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Grottocenter">
+<meta property="og:title" content="<%= locals.title %>">
+<% if (locals.description) { %><meta property="og:description" content="<%= locals.description %>">
+<% } %><meta property="og:url" content="<%= locals.canonicalUrl %>">
+<% if (locals.ogImage) { %><meta property="og:image" content="<%= locals.ogImage %>">
+<% } %><% } %><% if (locals.jsonLd) { %><script type="application/ld+json"><%- locals.jsonLd %></script>
+<% } %><style>
 body{margin:0;font-family:system-ui,sans-serif;line-height:1.5;color:#222;background:#fff}
 header,main,footer{max-width:50rem;margin:0 auto;padding:0.75rem 1rem}
 header{border-bottom:1px solid #ddd}
@@ -17,6 +27,9 @@ header a{font-weight:bold;color:inherit;text-decoration:none}
 footer{border-top:1px solid #ddd;font-size:0.85rem;color:#555}
 .text{white-space:pre-line}
 dt{font-weight:bold}
+.breadcrumb ol{list-style:none;margin:0;padding:0}
+.breadcrumb li{display:inline}
+.breadcrumb li+li::before{content:" \203A "}
 </style>
 </head>
 <body>

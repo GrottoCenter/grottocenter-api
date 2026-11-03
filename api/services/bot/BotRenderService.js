@@ -8,31 +8,34 @@
  * Uses ejs.render with the templates under views/bot/, not res.view: the Sails
  * view config and the email templates stay untouched.
  *
- * The layout (views/bot/layout.ejs) gives every page: the doctype, the language
- * of the record, a title, the viewport, minimal inline CSS and no external
- * asset, a header, the data licence footer (CC-BY-SA for texts, ODbL for data,
- * as in the SPA footer) and <meta name="generator" content="gc-static-pages">,
- * which the audit uses to recognise a generated page.
+ * The page is built in two steps. api/utils/botPageModel.js turns the row into
+ * a model (whitelist projection, language, labels, country names, title,
+ * description, breadcrumb); the templates (views/bot/{cave,massif,organization}.ejs
+ * inside views/bot/layout.ejs) and the JSON-LD (api/utils/botJsonLd.js) read
+ * that model and nothing else. The layout gives every page the doctype, the
+ * language, the title, the description, the canonical link, the OG tags, the
+ * JSON-LD block, minimal inline CSS and no external asset, a header, the data
+ * licence footer (CC-BY-SA for texts, ODbL for data, as in the SPA footer) and
+ * <meta name="generator" content="gc-static-pages">, which the audit uses to
+ * recognise a generated page.
  *
- * The page bodies (views/bot/{cave,massif,organization}.ejs) are PLACEHOLDERS:
- * a generic rendering of the whitelisted fields in English. The page content
- * is #1766, which replaces those templates; nothing else here needs to change.
- *
- * Output depends only on the row and the public base URL, and it does not
- * include `lastmod`, so a record whose only change is that hint renders the
- * same bytes and is not published again.
+ * Output depends only on the row, the public base URL, the language tags and
+ * the country names, and it does not include `lastmod`, so a record whose only
+ * change is that hint renders the same bytes and is not published again.
  *
  * Pure with respect to the database: loads without Sails when the base URL is
- * passed (loadLanguageTags is the one function that reads it).
+ * passed (loadLanguageTags and loadCountryNames are the two functions that read it).
  */
 
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
 const botPagePaths = require('../../utils/botPagePaths');
+const { buildPageModel, NO_HUB_LINKS } = require('../../utils/botPageModel');
+const { buildJsonLd, serializeForScript } = require('../../utils/botJsonLd');
 
 const VIEWS_DIR = path.join(__dirname, '../../../views/bot');
-const DEFAULT_LANGUAGE = 'und';
+const BRAND = 'Grottocenter';
 
 // Each template is read and compiled once per process; ejs resolves includes
 // from `filename` and caches them under it.
@@ -62,44 +65,37 @@ const publicBaseUrl = () =>
     sails.config.custom.botSurface.publicBaseUrl) ||
   botPagePaths.DEFAULT_PUBLIC_BASE_URL;
 
-// The free-text `url` of an organization: only an http(s) address is a link
-const safeHttpUrl = (value) => {
-  if (typeof value !== 'string') return null;
-  try {
-    const { protocol } = new URL(value);
-    return protocol === 'http:' || protocol === 'https:' ? value : null;
-  } catch (e) {
-    return null;
-  }
-};
-
-// BCP 47 language tag of a record language, an ISO 639-3 code in the view:
-// the ISO 639-1 subtag when the language has one (`fra` -> `fr`), as BCP 47
-// requires, else the 3-letter code, which the IANA registry holds for the
-// languages without a 2-letter one. `tags` maps a 3-letter code to its 2-letter
-// one (t_language.part1, see loadLanguageTags).
-const langOf = (language, tags) => {
-  if (typeof language !== 'string' || !/^[A-Za-z]{2,3}$/.test(language)) {
-    return DEFAULT_LANGUAGE;
-  }
-  const code = language.toLowerCase();
-  return tags.get(code) || code;
-};
-
 const layout = (data, baseUrl) =>
   renderTemplate('layout', { ...data, siteUrl: baseUrl });
 
 module.exports = {
+  NO_HUB_LINKS,
+
   /**
    * @param {{entity_type: string, entity_id: number, language: string, page: object}} row
    *   a v_bot_page row
-   * @param {{baseUrl?: string, languageTags: Map<string, string>}} options
-   *   languageTags: required, what loadLanguageTags() returns (an empty Map
-   *   keeps every 3-letter code). Every caller that publishes or compares a page
-   *   passes the same map, or its bytes would differ from the generator's.
+   * @param {object} options
+   * @param {string} [options.baseUrl] the SPA's address (default: the config key)
+   * @param {Map<string, string>} options.languageTags
+   *   required, what loadLanguageTags() returns (an empty Map keeps every
+   *   3-letter code). Every caller that publishes or compares a page passes the
+   *   same map, or its bytes would differ from the generator's.
+   * @param {Map<string, object>} options.countryNames
+   *   required, what loadCountryNames() returns (an empty Map shows the country
+   *   code). Same reason as languageTags.
+   * @param {{country: Function, region: Function}} [options.hubLinks]
+   *   the breadcrumb's hook for the hub pages (#1935); default: no link
    * @returns {string} the HTML document
    */
-  render(row, { baseUrl = publicBaseUrl(), languageTags } = {}) {
+  render(
+    row,
+    {
+      baseUrl = publicBaseUrl(),
+      languageTags,
+      countryNames,
+      hubLinks = NO_HUB_LINKS,
+    } = {}
+  ) {
     if (!(languageTags instanceof Map)) {
       // Without them a page renders `fra` instead of `fr`: another hash for the
       // same record, which the withdrawal worker and the audit would read as a change
@@ -107,33 +103,64 @@ module.exports = {
         'BotRenderService.render needs languageTags (see loadLanguageTags)'
       );
     }
+    if (!(countryNames instanceof Map)) {
+      // Likewise: a page without them shows `FR` where the generator wrote `France`
+      throw new TypeError(
+        'BotRenderService.render needs countryNames (see loadCountryNames)'
+      );
+    }
     const bodyTemplate = BODY_TEMPLATES[row.entity_type];
     if (!bodyTemplate) {
       throw new RangeError(`Cannot render entity type ${row.entity_type}`);
     }
-    const { page } = row;
-    const tag = (language) => langOf(language, languageTags);
-    const lang = tag(row.language || page.language);
-    const body = renderTemplate(bodyTemplate, {
-      page,
-      lang,
-      tag,
-      link: (type, id) => botPagePaths.toUrl(type, id, baseUrl),
-      safeUrl: safeHttpUrl(page.url),
+    const model = buildPageModel(row, {
+      baseUrl,
+      languageTags,
+      countryNames,
+      hubLinks,
     });
     return layout(
       {
-        lang,
-        title: `${page.name} - Grottocenter`,
-        canonicalUrl: botPagePaths.toUrl(
-          row.entity_type,
-          row.entity_id,
-          baseUrl
-        ),
-        body,
+        lang: model.lang,
+        title: model.title,
+        description: model.description,
+        canonicalUrl: model.url,
+        ogImage: model.ogImage,
+        jsonLd: serializeForScript(buildJsonLd(row.entity_type, model)),
+        body: renderTemplate(bodyTemplate, { model }),
       },
       baseUrl
     );
+  },
+
+  /**
+   * The page published at the old address of a merged record: it sends the
+   * visitor to the final target (meta refresh), names the target as its
+   * canonical, and asks not to be indexed. The edge Worker answers a crawler
+   * with a 301 to the same target when it has the blob's `redirectto`
+   * metadata, which the generator sets from redirectTarget().
+   *
+   * @param {'cave'|'massif'|'organization'} entityType
+   * @param {number} targetId the final target of the merge chain
+   */
+  renderRedirect(entityType, targetId, { baseUrl = publicBaseUrl() } = {}) {
+    const targetUrl = botPagePaths.toUrl(entityType, targetId, baseUrl);
+    return layout(
+      {
+        lang: 'en',
+        title: BRAND,
+        canonicalUrl: targetUrl,
+        robots: 'noindex',
+        refreshUrl: targetUrl,
+        body: renderTemplate('redirect', { targetUrl }),
+      },
+      baseUrl
+    );
+  },
+
+  /** The address a redirect page points to, also the `redirectto` metadata. */
+  redirectTarget(entityType, targetId, { baseUrl = publicBaseUrl() } = {}) {
+    return botPagePaths.toUrl(entityType, targetId, baseUrl);
   },
 
   /**
@@ -150,6 +177,35 @@ module.exports = {
       rows.map((row) => [
         row.id.trim().toLowerCase(),
         row.part1.trim().toLowerCase(),
+      ])
+    );
+  },
+
+  /**
+   * The names of the countries in the languages t_country holds, for render():
+   * ISO 3166-1 alpha-2 code -> `{ en, fr, es, de, it, nl, ca, bg }`, keyed by
+   * the BCP 47 tag of the language. Read once per run; needs Sails.
+   *
+   * @returns {Promise<Map<string, object>>}
+   */
+  async loadCountryNames() {
+    const { rows } = await CommonService.query(
+      `SELECT iso, en_name, fr_name, es_name, de_name, it_name, nl_name, ca_name, bg_name
+         FROM t_country`
+    );
+    return new Map(
+      rows.map((row) => [
+        row.iso.trim().toUpperCase(),
+        {
+          en: row.en_name,
+          fr: row.fr_name,
+          es: row.es_name,
+          de: row.de_name,
+          it: row.it_name,
+          nl: row.nl_name,
+          ca: row.ca_name,
+          bg: row.bg_name,
+        },
       ])
     );
   },

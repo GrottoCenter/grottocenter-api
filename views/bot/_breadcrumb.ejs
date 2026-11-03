@@ -1,0 +1,7 @@
+<%# Locals: breadcrumb (array of {text, url}); a crumb is a link only when it has a url -%>
+<% if (locals.breadcrumb.length) { %><nav class="breadcrumb">
+<ol>
+<% locals.breadcrumb.forEach((crumb) => { %><li><% if (crumb.url) { %><a href="<%= crumb.url %>"><%= crumb.text %></a><% } else { %><%= crumb.text %><% } %></li>
+<% }) %></ol>
+</nav>
+<% } %>

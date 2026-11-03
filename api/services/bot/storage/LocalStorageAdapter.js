@@ -2,8 +2,12 @@
  * Storage adapter writing the bot pages into a local directory (dev, tests).
  *
  * Adapter interface, shared with AzureBlobStorageAdapter:
- *   put(key, html)   write or replace one page
- *   delete(key)      remove one page; resolves when it is already gone
+ *   put(key, html, { metadata })
+ *                    write or replace one page; `metadata` is an optional flat
+ *                    object of strings (`redirectto` on a redirect page) that
+ *                    replaces the page's previous metadata, none when absent
+ *   delete(key)      remove one page and its metadata; resolves when it is
+ *                    already gone
  *   list()           async iterable of every key held
  */
 
@@ -13,6 +17,9 @@ const path = require('path');
 // A process killed between the write and the rename leaves one behind: list()
 // skips them, so the audit (#1887) does not report them as unknown pages.
 const TEMPORARY_SUFFIX = '.part';
+// The metadata of `caves/1.html` is kept in `caves/1.html.metadata.json`, which
+// list() does not report: it is not a page
+const METADATA_SUFFIX = '.metadata.json';
 
 class LocalStorageAdapter {
   constructor(rootDir) {
@@ -33,15 +40,13 @@ class LocalStorageAdapter {
     return target;
   }
 
-  async put(key, html) {
-    const target = this.resolve(key);
-    await fs.promises.mkdir(path.dirname(target), { recursive: true });
-    // Rename, so a reader never sees a half-written page
+  // Writes through a temporary file and a rename, so a reader never sees half a file
+  static async writeAtomically(target, content) {
     const temporary = `${target}.${process.pid}.${Math.random()
       .toString(36)
       .slice(2)}${TEMPORARY_SUFFIX}`;
     try {
-      await fs.promises.writeFile(temporary, html, 'utf8');
+      await fs.promises.writeFile(temporary, content, 'utf8');
       await fs.promises.rename(temporary, target);
     } catch (error) {
       await fs.promises.rm(temporary, { force: true });
@@ -49,8 +54,27 @@ class LocalStorageAdapter {
     }
   }
 
+  async put(key, html, { metadata } = {}) {
+    const target = this.resolve(key);
+    await fs.promises.mkdir(path.dirname(target), { recursive: true });
+    // The metadata first: a crash in between leaves the old page with the new
+    // metadata, and the manifest (written after) still holds the old hash, so
+    // the next run writes both again
+    if (metadata && Object.keys(metadata).length > 0) {
+      await LocalStorageAdapter.writeAtomically(
+        `${target}${METADATA_SUFFIX}`,
+        JSON.stringify(metadata)
+      );
+    } else {
+      await fs.promises.rm(`${target}${METADATA_SUFFIX}`, { force: true });
+    }
+    await LocalStorageAdapter.writeAtomically(target, html);
+  }
+
   async delete(key) {
-    await fs.promises.rm(this.resolve(key), { force: true });
+    const target = this.resolve(key);
+    await fs.promises.rm(target, { force: true });
+    await fs.promises.rm(`${target}${METADATA_SUFFIX}`, { force: true });
   }
 
   async *list() {
@@ -69,7 +93,10 @@ class LocalStorageAdapter {
         const key = prefix ? `${prefix}/${entry.name}` : entry.name;
         if (entry.isDirectory()) {
           yield* walk(path.join(directory, entry.name), key);
-        } else if (!entry.name.endsWith(TEMPORARY_SUFFIX)) {
+        } else if (
+          !entry.name.endsWith(TEMPORARY_SUFFIX) &&
+          !entry.name.endsWith(METADATA_SUFFIX)
+        ) {
           yield key;
         }
       }
@@ -77,5 +104,7 @@ class LocalStorageAdapter {
     yield* walk(this.root, '');
   }
 }
+
+LocalStorageAdapter.METADATA_SUFFIX = METADATA_SUFFIX;
 
 module.exports = LocalStorageAdapter;
