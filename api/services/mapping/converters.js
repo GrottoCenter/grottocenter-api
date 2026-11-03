@@ -374,6 +374,11 @@ const c = {
       entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
       cave: convertIfObject(source.cave, c.toSimpleCave),
       massifs: toList('massifs', source, c.toSimpleMassif),
+      // The point the document references (#1733), when populated
+      point:
+        source.point instanceof Object
+          ? (!source.point.isDeleted && c.toSimplePoint(source.point)) || null
+          : undefined,
 
       oldBBS: {
         pages: source.pagesBBSOld,
@@ -994,6 +999,47 @@ const c = {
     author: source.authorId
       ? { id: source.authorId, nickname: source.authorNickname }
       : convertIfObject(source.author, c.toSimpleCaver),
+  }),
+
+  // A point with its position on its reference SVG (relation A) and the
+  // documents that reference it (relation B), from PointService.getPopulatedPoint()
+  toPoint: (source) => ({
+    id: source.id,
+    label: source.label,
+    latitude: source.latitude ?? null,
+    longitude: source.longitude ?? null,
+    caveId: source.cave?.id ?? source.cave ?? null,
+    referenceDocument: convertIfObject(
+      source.referenceDocument,
+      c.toSimpleDocument
+    ),
+    x: source.x ?? null,
+    y: source.y ?? null,
+    documents: toList('documents', source, c.toSimpleDocument),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    isDeleted: source.isDeleted,
+  }),
+
+  // A point in a list, without its documents
+  toSimplePoint: (source) => ({
+    id: source.id,
+    label: source.label,
+    caveId: source.cave?.id ?? source.cave ?? null,
+    referenceDocumentId:
+      source.referenceDocument?.id ?? source.referenceDocument ?? null,
+    x: source.x ?? null,
+    y: source.y ?? null,
+  }),
+
+  // A marker to draw on an SVG plan, at x/y in the SVG's viewBox units
+  toPointMarker: (source) => ({
+    pointId: source.id,
+    label: source.label,
+    x: source.x,
+    y: source.y,
   }),
 
   toDeletedEntity: (source) => ({
