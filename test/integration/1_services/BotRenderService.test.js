@@ -21,6 +21,9 @@ describe('BotRenderService', () => {
     validator = new HtmlValidate({ extends: ['html-validate:recommended'] });
   });
 
+  const render = (row, options = {}) =>
+    BotRenderService.render(row, { languageTags: TAGS, ...options });
+
   const description = (extra = {}) => ({
     title: 'Access',
     body: 'First line\nSecond line',
@@ -113,9 +116,7 @@ describe('BotRenderService', () => {
   describe('every page', () => {
     it('is valid HTML, with the licence footer and the generator marker', async () => {
       const pages = [
-        ...rows().map((row) =>
-          BotRenderService.render(row, { baseUrl: BASE_URL })
-        ),
+        ...rows().map((row) => render(row, { baseUrl: BASE_URL })),
         BotRenderService.renderNotFound({ baseUrl: BASE_URL }),
       ];
       should(pages.length).equal(6);
@@ -153,8 +154,6 @@ describe('BotRenderService', () => {
   describe('the page of a record', () => {
     it('declares the language of the record as a BCP 47 tag: the 2-letter code when there is one', () => {
       const [cave] = rows();
-      const render = (row) =>
-        BotRenderService.render(row, { languageTags: TAGS });
       should(render(cave)).containEql('<html lang="fr">');
       should(render({ ...cave, language: 'ENG' })).containEql(
         '<html lang="en">'
@@ -174,19 +173,16 @@ describe('BotRenderService', () => {
 
     it('tags a description in another language than the page with its BCP 47 tag, and one in the same language not at all', () => {
       const [cave] = rows();
-      const html = BotRenderService.render(
-        {
-          ...cave,
-          page: {
-            ...cave.page,
-            descriptions: [
-              description({ title: 'Same', language: 'fra' }),
-              description({ title: 'Other', language: 'eng' }),
-            ],
-          },
+      const html = render({
+        ...cave,
+        page: {
+          ...cave.page,
+          descriptions: [
+            description({ title: 'Same', language: 'fra' }),
+            description({ title: 'Other', language: 'eng' }),
+          ],
         },
-        { languageTags: TAGS }
-      );
+      });
       should(html).containEql('<h3>Same</h3>');
       should(html).containEql('<h3 lang="en">Other</h3>');
       should(html).not.containEql('lang="eng"');
@@ -195,15 +191,29 @@ describe('BotRenderService', () => {
 
     it('reads each template from disk once, not on every page', () => {
       const [cave] = rows();
-      BotRenderService.render(cave);
+      render(cave);
       const read = sinon.spy(fs, 'readFileSync');
       try {
-        BotRenderService.render(cave);
-        BotRenderService.render({ ...cave, entity_id: 99 });
+        render(cave);
+        render({ ...cave, entity_id: 99 });
         should(read.callCount).equal(0);
       } finally {
         read.restore();
       }
+    });
+
+    it('refuses to render without the language tags, rather than render other bytes', () => {
+      const [cave] = rows();
+      should(() => BotRenderService.render(cave)).throw(TypeError, {
+        message: /languageTags/,
+      });
+      should(() => BotRenderService.render(cave, { languageTags: {} })).throw(
+        TypeError
+      );
+      // An empty map is explicit: every 3-letter code is kept
+      should(
+        BotRenderService.render(cave, { languageTags: new Map() })
+      ).containEql('<html lang="fra">');
     });
 
     it('reads the 2-letter codes from t_language', async () => {
@@ -214,7 +224,7 @@ describe('BotRenderService', () => {
     });
 
     it('puts the name in the title and escapes it', () => {
-      const html = BotRenderService.render(rows()[0]);
+      const html = render(rows()[0]);
       should(html).containEql(
         '<title>Gouffre &lt;Test&gt; &amp; Cie - Grottocenter</title>'
       );
@@ -223,25 +233,25 @@ describe('BotRenderService', () => {
 
     it('links to the public address of the page and of the related pages', () => {
       const [cave, , massif] = rows();
-      const caveHtml = BotRenderService.render(cave, { baseUrl: BASE_URL });
+      const caveHtml = render(cave, { baseUrl: BASE_URL });
       should(caveHtml).containEql(
         '<link rel="canonical" href="https://example.test/ui/caves/12">'
       );
       should(caveHtml).containEql('href="https://example.test/ui/massifs/3"');
 
-      const massifHtml = BotRenderService.render(massif, { baseUrl: BASE_URL });
+      const massifHtml = render(massif, { baseUrl: BASE_URL });
       should(massifHtml).containEql('href="https://example.test/ui/caves/12"');
       should(massifHtml).containEql('href="https://example.test/ui/caves/14"');
     });
 
     it('defaults to the configured public base URL', () => {
-      should(BotRenderService.render(rows()[1])).containEql(
+      should(render(rows()[1])).containEql(
         'href="https://grottocenter.org/ui/caves/13"'
       );
     });
 
     it('renders the fields of the page', () => {
-      const html = BotRenderService.render(rows()[0]);
+      const html = render(rows()[0]);
       [
         '250 m',
         '7 °C',
@@ -260,7 +270,7 @@ describe('BotRenderService', () => {
 
     it('renders a description on lines and escapes it', () => {
       const [cave] = rows();
-      const html = BotRenderService.render({
+      const html = render({
         ...cave,
         page: {
           ...cave.page,
@@ -274,14 +284,14 @@ describe('BotRenderService', () => {
 
   describe('the website of an organization', () => {
     it('is a link marked nofollow ugc', () => {
-      const html = BotRenderService.render(rows()[3]);
+      const html = render(rows()[3]);
       should(html).containEql(
         '<a href="https://example.org/club?a=1&amp;b=2" rel="nofollow ugc">'
       );
     });
 
     it('is left out when null', () => {
-      should(BotRenderService.render(rows()[4])).not.containEql('Website');
+      should(render(rows()[4])).not.containEql('Website');
     });
 
     it('is left out when it is not an http(s) address', () => {
@@ -293,7 +303,7 @@ describe('BotRenderService', () => {
         'ftp://example.org',
         'not a url',
       ].forEach((url) => {
-        const html = BotRenderService.render({
+        const html = render({
           ...organization,
           page: { ...organization.page, url },
         });
@@ -306,10 +316,10 @@ describe('BotRenderService', () => {
   describe('determinism', () => {
     it('renders the same bytes twice, and does not depend on lastmod', () => {
       const [cave] = rows();
-      const first = BotRenderService.render(cave);
-      should(BotRenderService.render(cave)).equal(first);
+      const first = render(cave);
+      should(render(cave)).equal(first);
       should(
-        BotRenderService.render({
+        render({
           ...cave,
           lastmod: new Date('2030-01-01'),
           page: { ...cave.page, lastmod: '2030-01-01T00:00:00Z' },
@@ -319,15 +329,15 @@ describe('BotRenderService', () => {
 
     it('changes when a field shown changes', () => {
       const [cave] = rows();
-      should(
-        BotRenderService.render({ ...cave, page: { ...cave.page, depth: 251 } })
-      ).not.equal(BotRenderService.render(cave));
+      should(render({ ...cave, page: { ...cave.page, depth: 251 } })).not.equal(
+        render(cave)
+      );
     });
   });
 
   it('refuses a type it has no page for', () => {
     should(() =>
-      BotRenderService.render({
+      render({
         entity_type: 'entrance',
         entity_id: 1,
         page: { name: 'x' },
@@ -343,9 +353,7 @@ describe('BotRenderService', () => {
     });
 
     it('is the only page that is noindex', () => {
-      rows().forEach((row) =>
-        should(BotRenderService.render(row)).not.containEql('noindex')
-      );
+      rows().forEach((row) => should(render(row)).not.containEql('noindex'));
     });
   });
 });

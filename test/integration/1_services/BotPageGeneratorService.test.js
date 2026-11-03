@@ -260,10 +260,17 @@ describe('BotPageGeneratorService', () => {
       await run({
         batchSize: 2,
         onBatch: async () => {
-          if (!second) second = run();
+          // The outcome is captured at once: the rejection comes while the
+          // first run is still going, and must not go unhandled until then
+          if (!second) {
+            second = run().then(
+              () => null,
+              (error) => error
+            );
+          }
         },
       });
-      await second.should.be.rejectedWith({ code: 'E_BOT_PAGES_RUNNING' });
+      should(await second).have.property('code', 'E_BOT_PAGES_RUNNING');
       should(await manifestPaths()).deepEqual(await keys());
     });
 
