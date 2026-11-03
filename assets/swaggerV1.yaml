@@ -1846,7 +1846,9 @@ paths:
         incoming redirects and country, entrance, ISO region, language, massif,
         subject and author links are moved to that document instead of being
         dropped; the legacy region links (`j_document_region`) are discarded
-        even then.
+        even then. Points positioned on the document lose their position
+        (`referenceDocument`, `x` and `y` are cleared), merge or not: their
+        coordinates only make sense on that SVG.
       security:
         - bearerAuth: []
       parameters:

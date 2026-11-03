@@ -269,6 +269,101 @@ describe('Document delete', () => {
     });
   });
 
+  describe('Permanent delete of a plan with points positioned on it', () => {
+    // The test database is built by Waterline, without foreign keys: install
+    // the one of sql/9_33_2026_11_03_point_svg_position.sql that a hard delete
+    // of a referenced plan would violate.
+    before(async () => {
+      await sails.sendNativeQuery(`
+        ALTER TABLE t_point DROP CONSTRAINT IF EXISTS t_point_reference_document_fk;
+        ALTER TABLE t_point
+          ADD CONSTRAINT t_point_reference_document_fk
+          FOREIGN KEY (id_reference_document) REFERENCES t_document(id) NOT VALID;
+      `);
+    });
+
+    after(async () => {
+      await sails.sendNativeQuery(
+        'ALTER TABLE t_point DROP CONSTRAINT IF EXISTS t_point_reference_document_fk'
+      );
+    });
+
+    // The plan is already soft-deleted, as in the other permanent delete
+    // tests: the test database has no histo_delete trigger turning the first
+    // DELETE into a soft delete.
+    const createPositionedPoints = async () => {
+      const plan = await TDocument.create({
+        author: 1,
+        type: 13,
+        license: 1,
+        isValidated: true,
+        isDeleted: true,
+      }).fetch();
+      const points = await Promise.all([
+        TPoint.create({
+          label: 'On the plan',
+          author: 1,
+          referenceDocument: plan.id,
+          x: 1,
+          y: 2,
+        }).fetch(),
+        TPoint.create({
+          label: 'Deleted, on the plan',
+          author: 1,
+          referenceDocument: plan.id,
+          x: 3,
+          y: 4,
+          isDeleted: true,
+        }).fetch(),
+      ]);
+      return { plan, pointIds: points.map((p) => p.id) };
+    };
+
+    const expectPositionsCleared = async (pointIds) => {
+      const points = await TPoint.find({ id: pointIds });
+      should(points).have.length(2);
+      points.forEach((point) => {
+        should(point).match({ referenceDocument: null, x: null, y: null });
+      });
+      await TPoint.destroy({ id: pointIds });
+    };
+
+    it('clears the positions of the points drawn on it', async () => {
+      const { plan, pointIds } = await createPositionedPoints();
+
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/documents/${plan.id}?isPermanent=true`)
+        .set('Authorization', adminToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TDocument.findOne(plan.id)).be.undefined();
+      await expectPositionsCleared(pointIds);
+    });
+
+    it('clears the positions when merging the plan into another document', async () => {
+      const { plan, pointIds } = await createPositionedPoints();
+      const target = await TDocument.create({
+        author: 1,
+        type: 13,
+        license: 1,
+        isValidated: true,
+      }).fetch();
+
+      await supertest(sails.hooks.http.app)
+        .delete(
+          `/api/v1/documents/${plan.id}?isPermanent=true&entityId=${target.id}`
+        )
+        .set('Authorization', adminToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      should(await TDocument.findOne(plan.id)).be.undefined();
+      await expectPositionsCleared(pointIds);
+      await TDocument.destroy({ id: target.id });
+    });
+  });
+
   deleteIsPermanentCases({
     getToken: () => adminToken,
 
