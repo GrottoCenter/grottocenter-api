@@ -72,5 +72,52 @@ describe('Document Duplicate features', () => {
       const deletedDup = await TDocumentDuplicate.findOne({ id: duplicate.id });
       should(deletedDup).be.undefined();
     });
+
+    it('should stamp the creation date at materialization, not at import', async () => {
+      const importDate = '2020-01-15T10:00:00.000Z';
+      const duplicate = await TDocumentDuplicate.create({
+        author: 1,
+        document: testDocumentId,
+        content: {
+          document: {
+            author: 1,
+            type: 1,
+            license: 1,
+            dateInscription: importDate,
+          },
+          description: {
+            author: 1,
+            title: 'Stale date doc',
+            language: 'eng',
+            dateInscription: importDate,
+          },
+        },
+        dateInscription: new Date(importDate),
+      });
+
+      const before = Date.now();
+      await supertest(sails.hooks.http.app)
+        .post(`/api/v1/documents/from-duplicate/${duplicate.id}`)
+        .set('Authorization', moderatorToken)
+        .set('Accept', 'application/json')
+        .expect(204);
+
+      const [createdDoc] = await TDocument.find().sort('id DESC').limit(1);
+      should(createdDoc).be.ok();
+      createdDocIds.push(createdDoc.id);
+      should(new Date(createdDoc.dateInscription).getTime()).be.aboveOrEqual(
+        before - 1000
+      );
+
+      const [description] = await TDescription.find({
+        document: createdDoc.id,
+      });
+      should(description).be.ok();
+      should(description.title).equal('Stale date doc');
+      should(new Date(description.dateInscription).getTime()).be.aboveOrEqual(
+        before - 1000
+      );
+      await TDescription.destroy({ document: createdDoc.id });
+    });
   });
 });
