@@ -409,6 +409,55 @@ describe('Point features', () => {
     });
   });
 
+  describe('Geometry of a point', () => {
+    // The stored point_geom, as { lng, lat }, or null
+    const readGeometry = async (pointId) => {
+      const { rows } = await sails.sendNativeQuery(
+        `SELECT ST_X(point_geom) AS lng, ST_Y(point_geom) AS lat
+         FROM t_point WHERE id = $1`,
+        [pointId]
+      );
+      return rows[0].lng === null ? null : rows[0];
+    };
+
+    const patch = (pointId, body) =>
+      json(
+        supertest(sails.hooks.http.app)
+          .patch(`/api/v1/points/${pointId}`)
+          .set('Authorization', userToken)
+          .send(body)
+      ).expect(200);
+
+    it('is set on creation, moved with the coordinates and cleared with them', async () => {
+      const res = await json(
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/points')
+          .set('Authorization', userToken)
+          .send({
+            label: 'Georeferenced',
+            underground: true,
+            latitude: 45.5,
+            longitude: 6.25,
+          })
+      ).expect(200);
+      const pointId = res.body.id;
+      createdPointIds.push(pointId);
+      should(await readGeometry(pointId)).eql({ lng: 6.25, lat: 45.5 });
+
+      await patch(pointId, { latitude: -12.5, longitude: 0 });
+      should(await readGeometry(pointId)).eql({ lng: 0, lat: -12.5 });
+
+      await patch(pointId, { latitude: null, longitude: null });
+      should(await readGeometry(pointId)).be.null();
+    });
+
+    it('is left unchanged by an update that does not touch the coordinates', async () => {
+      const point = await createPoint({ latitude: '10', longitude: '20' });
+      await patch(point.id, { label: 'Only the label' });
+      should(await readGeometry(point.id)).eql({ lng: 20, lat: 10 });
+    });
+  });
+
   describe('DELETE /api/v1/points/:id', () => {
     it('returns 403 for a regular user', async () => {
       const point = await createPoint();

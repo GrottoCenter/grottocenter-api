@@ -1049,6 +1049,14 @@ const BOT_HUB_MIGRATION = forTestDatabase(
   )
 );
 
+// t_point.point_geom kept in sync with latitude/longitude by a trigger
+const POINT_GEOM_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_34_2026_11_04_point_geom.sql'),
+    'utf8'
+  )
+);
+
 // Organization history, as production runs it: every t_grotto update copies
 // the old row into h_grotto. Waterline builds h_grotto with id alone as
 // primary key, so a second update of the same organization would collide:
@@ -1123,6 +1131,7 @@ module.exports = {
   BOT_PAGE_MANIFEST_MIGRATION,
   BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
   BOT_HUB_MIGRATION,
+  POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
 };

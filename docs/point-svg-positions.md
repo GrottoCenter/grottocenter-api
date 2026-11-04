@@ -54,3 +54,7 @@ point must state it.
 `latitude` and `longitude` are a complete pair or both `null`, finite and within
 ±90 / ±180, and required for a surface point. `PATCH` validates the point that
 results from the stored values and the fields sent.
+
+`t_point.point_geom` is derived from `latitude` and `longitude` by the
+`set_point_point_geom` trigger on every insert and update, as for entrances:
+`NULL` when the pair is `NULL`. The API never writes it.
