@@ -20,9 +20,11 @@
 --     where redirect_to IS NULL from v_bot_page; a redirect row has no
 --     v_bot_page row, and is checked against v_bot_redirect.
 --
--- Rows written before this column existed have redirect_to NULL, and the
--- generator rewrites a redirect row on its next run (its content hash is
--- compared, and the column is set with it).
+-- No redirect row predates this column: redirect pages ship in the same change
+-- (#1766), so every row already in the table is a content page or a static
+-- extra, and NULL is right for all of them. (The generator writes the column
+-- only with an upload, and skips a row whose content hash is unchanged, so it
+-- would not fix a stale redirect row by itself.)
 --
 -- Production does not run migrations on deploy: apply this file by hand, after
 -- sql/9_32_2026_11_02_bot_page_manifest.sql. Idempotent.
