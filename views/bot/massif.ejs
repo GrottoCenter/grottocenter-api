@@ -1,11 +1,11 @@
 <%# Massif page. Locals: model (see botPageModel.js); nothing else is available -%>
 <% const model = locals.model; const labels = model.labels; -%>
 <h1><%= model.name %></h1>
-<% if (model.facts.length) { %><%- include('_facts', { facts: model.facts }) -%><% } -%>
+<%- include('_figures', { figures: model.figures }) -%>
 <%- include('_hub-links', { heading: labels.regions, items: model.regions }) -%>
 <% if (model.descriptions.length) { %><h2><%= labels.descriptions %></h2>
 <%- include('_descriptions', { descriptions: model.descriptions, level: 3 }) -%>
-<% } %><% if (model.caves.length) { %><h2><%= labels.caves %></h2>
+<% } %><% if (model.caves.length) { %><h2><%= model.cavesHeading %></h2>
 <ul>
 <% model.caves.forEach((cave) => { %><li><a href="<%= cave.url %>"><%= cave.name %></a><% if (cave.depth !== null) { %>, <%= labels.depth %>: <%= cave.depth %> m<% } %><% if (cave.length !== null) { %>, <%= labels.length %>: <%= cave.length %> m<% } %></li>
 <% }) %></ul>

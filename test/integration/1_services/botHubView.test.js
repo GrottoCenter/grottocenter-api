@@ -509,14 +509,14 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       should((await hub('country', 'GB')).language).be.null();
     });
 
-    it('is the one of all the caves of the countries for the index', async () => {
+    it('is always English for the index, which is about every country, even when most caves are French', async () => {
       await mkPublishedCave({
         language: 'fra',
         country: 'GB',
         region: 'GB-CMN',
       });
       await mkPublishedCave({
-        language: 'eng',
+        language: 'fra',
         country: 'ES',
         region: 'ES-NA',
       });
@@ -528,6 +528,8 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       const [index] = await hubs('index');
       should(index.language).equal('eng');
       should(index.page.language).equal('eng');
+      // A country hub still follows its caves
+      should((await hub('country', 'GB')).language).equal('fra');
     });
   });
 
@@ -583,7 +585,9 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       const html = renderHub(await hub('country', 'FR'));
       should(html).containEql('<html lang="fr">');
       should(html).containEql('<h1>France</h1>');
-      should(html).containEql('<h2>Réseaux</h2>');
+      // The heading of the list is not the networks' word
+      should(html).containEql('<h2>Cavités</h2>');
+      should(html).not.containEql('<h2>Réseaux</h2>');
     });
 
     it('is English for a country whose caves are named in a language the front has no translation for', async () => {

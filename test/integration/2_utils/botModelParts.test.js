@@ -6,7 +6,9 @@ const {
   cleanRegionName,
   sortKey,
   byName,
-  figureFacts,
+  figureLines,
+  pluralText,
+  capitalize,
   buildTitle,
 } = require('../../../api/utils/botModelParts');
 
@@ -95,55 +97,129 @@ describe('botModelParts', () => {
     });
   });
 
-  describe('figureFacts', () => {
+  describe('figureLines', () => {
     const labels = {
-      cavesCount: 'caves',
-      networks: 'networks',
-      massifs: 'massifs',
-      divingCave: 'diving',
-      length: 'length',
+      figureCaves: '{count, plural, one {cave} other {caves}}',
+      figureNetworks: '{count, plural, one {network} other {networks}}',
+      figureMassif: 'massif',
+      figureMassifs: 'massifs',
+      figureDivingCaves:
+        '{count, plural, one {cave is diveable} other {caves are diveable}}',
+      figureTotalLength: 'cumulated length',
       avgDepth: 'avg depth',
       avgLength: 'avg length',
     };
 
-    it('lists the figures in a fixed order with their unit', () => {
+    it('words each figure as the SPA does: the number, then its text, in a fixed order', () => {
       should(
-        figureFacts(
+        figureLines(
           {
             avgLength: 5,
             avgDepth: 4,
             totalLength: 3,
             nbDivingCaves: 2,
-            nbMassifs: 1,
-            nbNetworks: 6,
+            nbMassifs: 3,
+            nbNetworks: 1,
             nbCaves: 7,
           },
-          labels
+          labels,
+          'en'
         )
       ).deepEqual([
-        { label: 'caves', value: '7' },
-        { label: 'networks', value: '6' },
-        { label: 'massifs', value: '1' },
-        { label: 'diving', value: '2' },
-        { label: 'length', value: '3 m' },
-        { label: 'avg depth', value: '4 m' },
-        { label: 'avg length', value: '5 m' },
+        { value: '7', text: 'caves' },
+        { value: '1', text: 'network' },
+        { value: '3', text: 'massifs' },
+        { value: '2', text: 'caves are diveable' },
+        { value: '3 m', text: 'cumulated length' },
+        { value: '4 m', text: 'avg depth' },
+        { value: '5 m', text: 'avg length' },
       ]);
+    });
+
+    it('uses the singular for 0 or 1 massif and the plural above, as the SPA does', () => {
+      const massifs = (nbMassifs) =>
+        figureLines({ nbCaves: 1, nbMassifs }, labels, 'en').find(
+          (line) => line.value === String(nbMassifs) && /massif/.test(line.text)
+        ).text;
+      should(massifs(0)).equal('massif');
+      should(massifs(1)).equal('massif');
+      should(massifs(2)).equal('massifs');
     });
 
     it('leaves out a figure that is null or missing, and keeps a count of 0', () => {
       should(
-        figureFacts({ nbCaves: 3, nbNetworks: 0, totalLength: null }, labels)
+        figureLines(
+          { nbCaves: 3, nbNetworks: 0, totalLength: null },
+          labels,
+          'en'
+        )
       ).deepEqual([
-        { label: 'caves', value: '3' },
-        { label: 'networks', value: '0' },
+        { value: '3', text: 'caves' },
+        { value: '0', text: 'networks' },
       ]);
     });
 
     it('prints nothing when the statistics count no cave: the view is stale, not the hub empty', () => {
-      should(figureFacts({ nbCaves: 0, nbNetworks: 0 }, labels)).deepEqual([]);
-      should(figureFacts(null, labels)).deepEqual([]);
-      should(figureFacts(undefined, labels)).deepEqual([]);
+      should(
+        figureLines({ nbCaves: 0, nbNetworks: 0 }, labels, 'en')
+      ).deepEqual([]);
+      should(figureLines(null, labels, 'en')).deepEqual([]);
+      should(figureLines(undefined, labels, 'en')).deepEqual([]);
+    });
+  });
+
+  describe('pluralText', () => {
+    const message = '{count, plural, one {cavité} other {cavités}}';
+
+    it('picks the branch of the plural rules of the language', () => {
+      should(pluralText(message, 1, 'fr')).equal('cavité');
+      should(pluralText(message, 0, 'fr')).equal('cavité'); // French: 0 is "one"
+      should(pluralText(message, 0, 'en')).equal('cavités');
+      should(pluralText(message, 2, 'fr')).equal('cavités');
+      should(pluralText(message, 1000, 'fr')).equal('cavités');
+    });
+
+    it('prefers an exact =n branch, falls back to other, and replaces #', () => {
+      const exact = '{count, plural, =0 {none} one {# cave} other {# caves}}';
+      should(pluralText(exact, 0, 'en')).equal('none');
+      should(pluralText(exact, 1, 'en')).equal('1 cave');
+      should(pluralText(exact, 7, 'en')).equal('7 caves');
+      // Arabic has a "few" category this message lacks: "other"
+      should(pluralText('{count, plural, one {a} other {b}}', 3, 'ar')).equal(
+        'b'
+      );
+    });
+
+    it('keeps a plain label, and one that is not a plural message, as it is', () => {
+      should(pluralText('tauchbare Höhlen', 8, 'de')).equal('tauchbare Höhlen');
+      should(pluralText('{count} caves', 8, 'en')).equal('{count} caves');
+    });
+
+    it('resolves every plural label of the 15 generated label files', () => {
+      const dir = path.join(ROOT, 'api/utils/botLabels');
+      fs.readdirSync(dir)
+        .filter((file) => /^[a-z]{2}\.json$/.test(file))
+        .forEach((file) => {
+          const lang = file.slice(0, 2);
+          const labels15 = JSON.parse(fs.readFileSync(path.join(dir, file)));
+          Object.values(labels15)
+            .filter((text) => text.startsWith('{count, plural'))
+            .forEach((text) =>
+              [0, 1, 2, 5, 21].forEach((n) =>
+                should(pluralText(text, n, lang)).not.match(/[{}]/)
+              )
+            );
+        });
+    });
+  });
+
+  describe('capitalize', () => {
+    it('upper-cases the first letter only, and leaves an empty or missing text', () => {
+      should(capitalize('cavités')).equal('Cavités');
+      should(capitalize('caves')).equal('Caves');
+      should(capitalize('洞窟')).equal('洞窟');
+      should(capitalize('')).equal('');
+      should(capitalize(null)).equal(null);
     });
   });
 

@@ -25,8 +25,11 @@
 --             'region' (key: the code of t_iso3166_2, FR-01)
 --   language  the dominant language of the main names of the hub's published
 --             caves (the most common v_bot_page.language, the lowest code on a
---             tie); NULL when none has one. The index uses all published caves.
---   lastmod   a hint for the sitemap: the latest lastmod of the hub's caves
+--             tie); NULL when none has one. The index, which is about every
+--             country, is always 'eng'.
+--   lastmod   the latest lastmod of the hub's caves. The generator does not
+--             publish it: a hub's manifest lastmod is the time of its upload,
+--             since its figures and its list change without its caves
 --   page      jsonb holding exactly the fields named in
 --             api/utils/botSurfaceWhitelist.js (hubIndex, hubCountry, hubRegion)
 --
@@ -261,10 +264,12 @@ UNION ALL
 SELECT
   'index'::text,
   'ALL'::text,
-  il.language,
+  -- The index is about every country: its language is fixed (English), not the
+  -- dominant one of all caves, which would make it French and could flip
+  'eng'::text AS language,
   x.lastmod,
   jsonb_build_object(
-    'language', il.language,
+    'language', 'eng',
     'lastmod', x.lastmod,
     'countries', x.items
   )
@@ -274,17 +279,5 @@ FROM (
   FROM hub h
   WHERE h.hub_type = 'country'
 ) x
-LEFT JOIN LATERAL (
-  SELECT l.language
-  FROM (
-    SELECT c.language::text AS language, count(*) AS n
-    FROM cave c
-    WHERE c.language IS NOT NULL
-    AND c.cave_id IN (SELECT m.cave_id FROM member m WHERE m.hub_type = 'country')
-    GROUP BY c.language::text
-  ) l
-  ORDER BY l.n DESC, l.language COLLATE "C"
-  LIMIT 1
-) il ON true
 WHERE x.items IS NOT NULL;
 ALTER VIEW v_bot_hub OWNER TO gc_owner;

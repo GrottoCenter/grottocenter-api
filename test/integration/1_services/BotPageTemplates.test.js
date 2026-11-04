@@ -428,12 +428,13 @@ describe('Bot page templates', () => {
 
     it('shows the figures of the SPA, a null one left out', () => {
       should(withExtras()).containEql(
-        '<dl>\n<dt>cavités</dt><dd>87</dd>\n<dt>Réseaux</dt><dd>5</dd>'
+        '<ul class="figures">\n<li><strong>87</strong> cavités (1 ou plusieurs entrées)</li>\n<li><strong>5</strong> réseaux'
       );
       const html = render(massifRow(), {
         massifExtras: new Map([[3, { figures: { nbCaves: 4 }, regions: [] }]]),
       });
-      should(html).containEql('<dd>4</dd>');
+      should(html).containEql('<li><strong>4</strong> cavités');
+      should(html).containEql('<h2>Cavités</h2>');
       should(html).not.containEql('Profondeur moyenne');
     });
 

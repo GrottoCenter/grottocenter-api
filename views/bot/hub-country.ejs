@@ -2,7 +2,7 @@
 <% const model = locals.model; const labels = model.labels; -%>
 <%- include('_breadcrumb', { breadcrumb: model.breadcrumb }) -%>
 <h1><%= model.name %></h1>
-<% if (model.facts.length) { %><%- include('_facts', { facts: model.facts }) -%><% } -%>
+<%- include('_figures', { figures: model.figures }) -%>
 <%- include('_hub-links', { heading: labels.regions, items: model.regions }) -%>
 <%- include('_hub-links', { heading: labels.massifs, items: model.massifs }) -%>
-<%- include('_hub-caves', { caves: model.caves, labels }) -%>
+<%- include('_hub-caves', { caves: model.caves, heading: model.cavesHeading, labels }) -%>

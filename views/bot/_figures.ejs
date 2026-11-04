@@ -1,0 +1,6 @@
+<%# The figures of a hub or a massif, as the SPA's statistics widget shows them:
+    the number, then its text. Locals: figures (array of {value, text}) -%>
+<% if (locals.figures.length) { %><ul class="figures">
+<% locals.figures.forEach((figure) => { %><li><strong><%= figure.value %></strong> <%= figure.text %></li>
+<% }) %></ul>
+<% } %>
