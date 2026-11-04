@@ -13,6 +13,7 @@ const TAGS = new Map([
   ['por', 'pt'],
   ['spa', 'es'],
   ['pol', 'pl'],
+  ['rus', 'ru'],
   ['heb', 'he'],
   ['ara', 'ar'],
 ]);
@@ -425,6 +426,21 @@ describe('Bot page templates', () => {
         hubLinks: publishedHubLinks(['FR'], ['FR-ARA', 'FR-01']),
         massifExtras: massifExtras(),
       });
+
+    it('words the figures of a Russian massif with the English plural of its English labels', () => {
+      const row = massifRow();
+      const html = render(
+        { ...row, language: 'rus', page: { ...row.page, language: 'rus' } },
+        {
+          massifExtras: new Map([
+            [3, { figures: { nbCaves: 21 }, regions: [] }],
+          ]),
+        }
+      );
+      should(html).containEql(
+        '<li><strong>21</strong> caves (1 or multiple entrances)</li>'
+      );
+    });
 
     it('shows the figures of the SPA, a null one left out', () => {
       should(withExtras()).containEql(

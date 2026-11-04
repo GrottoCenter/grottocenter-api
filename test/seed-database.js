@@ -104,6 +104,12 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_HUB_MIGRATION,
               ].join('\n')
             )
+              // Planner statistics, as production has them. A fresh database
+              // has none: the planner then takes every table for a big one,
+              // and the large bot views cross jit_above_cost, so each read pays
+              // seconds of JIT compilation for a few rows (production runs with
+              // jit off). A database cloned from the template keeps them.
+              .then(() => CommonService.query('ANALYZE'))
               .then(() => resolve(sails))
               .catch(reject);
           },

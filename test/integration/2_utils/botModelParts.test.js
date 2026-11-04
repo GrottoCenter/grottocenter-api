@@ -12,6 +12,8 @@ const {
   buildTitle,
 } = require('../../../api/utils/botModelParts');
 
+const { labelsFor, labelsLanguage } = require('../../../api/utils/botLabels');
+
 const ROOT = path.join(__dirname, '../../..');
 
 describe('botModelParts', () => {
@@ -202,14 +204,39 @@ describe('botModelParts', () => {
         .forEach((file) => {
           const lang = file.slice(0, 2);
           const labels15 = JSON.parse(fs.readFileSync(path.join(dir, file)));
+          // Any label with a brace, not only the ones in the expected form: a
+          // regenerated string in another ICU shape must not reach a page raw
           Object.values(labels15)
-            .filter((text) => text.startsWith('{count, plural'))
+            .filter((text) => text.includes('{') || text.includes('}'))
             .forEach((text) =>
               [0, 1, 2, 5, 21].forEach((n) =>
                 should(pluralText(text, n, lang)).not.match(/[{}]/)
               )
             );
         });
+    });
+  });
+
+  describe('the plural rules of the labels, not of the page', () => {
+    it('gives a Russian page, whose labels are English, the English plural: 21 caves', () => {
+      const lines = figureLines(
+        { nbCaves: 21, nbNetworks: 31 },
+        labelsFor('ru'),
+        labelsLanguage('ru')
+      );
+      should(labelsLanguage('ru')).equal('en');
+      should(lines[0]).deepEqual({
+        value: '21',
+        text: 'caves (1 or multiple entrances)',
+      });
+      should(lines[1].text).startWith('networks');
+      // Russian rules would have taken "one" for 21
+      should(new Intl.PluralRules('ru').select(21)).equal('one');
+    });
+
+    it('keeps the page language when the front translates it', () => {
+      should(labelsLanguage('fr')).equal('fr');
+      should(labelsLanguage('pl')).equal('en');
     });
   });
 

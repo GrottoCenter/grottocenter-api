@@ -148,7 +148,8 @@ const byName = (a, b) => {
  *
  * @param {object} figures what the whitelist lets through of `figures`
  * @param {object} labels the labels of the page language
- * @param {string} lang the BCP 47 tag of the page
+ * @param {string} lang the language the labels are in (labelsLanguage), whose
+ *   plural rules apply: not the page language when the labels fell back to English
  * @returns {Array<{value: string, text: string}>}
  */
 const figureLines = (figures, labels, lang) => {
