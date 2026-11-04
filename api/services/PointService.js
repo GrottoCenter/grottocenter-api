@@ -207,6 +207,43 @@ module.exports = {
   },
 
   /**
+   * Apply a partial update (PATCH) to a point. The point is locked, validated
+   * and written on one transaction connection: concurrent updates of the same
+   * point are serialized, and each one validates against the values the
+   * previous one stored. Validating against an unlocked read would let two
+   * valid updates combine into an invalid point, for instance a surface point
+   * without coordinates.
+   *
+   * @param {number} pointId
+   * @param {Object} params - as returned by readPointParams()
+   * @param {number} reviewerId
+   * @returns {Promise<{notFound: true}|{error: string}|{ok: true}>}
+   */
+  updatePoint: async (pointId, params, reviewerId) =>
+    sails.getDatastore().transaction(async (db) => {
+      await sails
+        .sendNativeQuery('SELECT id FROM t_point WHERE id = $1 FOR UPDATE', [
+          pointId,
+        ])
+        .usingConnection(db);
+      // Read after the lock: under READ COMMITTED, this statement sees the
+      // values committed by the update that held it.
+      const point = await TPoint.findOne({ id: pointId }).usingConnection(db);
+      if (!point || point.isDeleted) return { notFound: true };
+
+      const { error, data } = await module.exports.validatePointInput(
+        params,
+        point
+      );
+      if (error) return { error };
+
+      await TPoint.updateOne({ id: pointId })
+        .set({ ...data, reviewer: reviewerId, dateReviewed: new Date() })
+        .usingConnection(db);
+      return { ok: true };
+    }),
+
+  /**
    * Validate the coordinates of a position and the document it is on.
    *
    * @param {number} documentId

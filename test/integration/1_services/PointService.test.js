@@ -267,4 +267,109 @@ describe('PointService', () => {
       should(unknown).match({ status: 'notFound' });
     });
   });
+
+  describe('updatePoint', () => {
+    const createdPointIds = [];
+
+    // An underground point with coordinates: either update alone is valid,
+    // but together they leave a surface point without coordinates.
+    const createUndergroundPointWithCoordinates = async () => {
+      const point = await TPoint.create({
+        label: 'Concurrent point',
+        author: 1,
+        underground: true,
+        latitude: '45',
+        longitude: '6',
+      }).fetch();
+      createdPointIds.push(point.id);
+      return point;
+    };
+
+    // The location rules of a stored point
+    const shouldBeAValidLocation = (point) => {
+      should(point.latitude === null).equal(point.longitude === null);
+      if (point.underground === false) should(point.latitude).not.be.null();
+    };
+
+    after(async () => {
+      await TPoint.destroy({ id: createdPointIds });
+    });
+
+    it('validates against the values committed by an update that held the lock', async () => {
+      const point = await createUndergroundPointWithCoordinates();
+
+      let releaseLock;
+      const lockReleased = new Promise((resolve) => {
+        releaseLock = resolve;
+      });
+      let lockTaken;
+      const lockHeld = new Promise((resolve) => {
+        lockTaken = resolve;
+      });
+      // Another writer locks the point and clears its coordinates... A
+      // Waterline deferred only runs once awaited: Promise.resolve() starts it.
+      const otherWriter = Promise.resolve(
+        sails.getDatastore().transaction(async (db) => {
+          await sails
+            .sendNativeQuery(
+              'SELECT id FROM t_point WHERE id = $1 FOR UPDATE',
+              [point.id]
+            )
+            .usingConnection(db);
+          lockTaken();
+          await lockReleased;
+          await TPoint.updateOne({ id: point.id })
+            .set({ latitude: null, longitude: null })
+            .usingConnection(db);
+        })
+      );
+      await lockHeld;
+
+      // ...while this update, valid against the state it started from, waits.
+      const update = PointService.updatePoint(
+        point.id,
+        { underground: false },
+        1
+      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+      releaseLock();
+      await otherWriter;
+
+      const result = await update;
+      should(result).have.property('error');
+      const stored = await TPoint.findOne({ id: point.id });
+      should(stored.underground).equal(true);
+      shouldBeAValidLocation(stored);
+    });
+
+    it('never stores an invalid location under concurrent updates', async () => {
+      const points = await Promise.all(
+        Array.from({ length: 5 }, createUndergroundPointWithCoordinates)
+      );
+      await Promise.all(
+        points.map(async (point) => {
+          const results = await Promise.all([
+            PointService.updatePoint(point.id, { underground: false }, 1),
+            PointService.updatePoint(
+              point.id,
+              { latitude: null, longitude: null },
+              1
+            ),
+          ]);
+          should(results.filter((r) => r.ok)).have.length(1);
+          shouldBeAValidLocation(await TPoint.findOne({ id: point.id }));
+        })
+      );
+    });
+
+    it('answers not found for a deleted point', async () => {
+      const point = await createUndergroundPointWithCoordinates();
+      await TPoint.updateOne({ id: point.id }).set({ isDeleted: true });
+      should(
+        await PointService.updatePoint(point.id, { label: 'New' }, 1)
+      ).deepEqual({ notFound: true });
+    });
+  });
 });
