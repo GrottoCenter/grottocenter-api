@@ -130,12 +130,15 @@ const parseJsonLd = (html) => {
 
 describe('Bot page templates', () => {
   let BotRenderService;
+  let BotHubService;
   let validator;
 
   before(() => {
-    // Sails re-requires api/ when it lifts: require the service here
-    // eslint-disable-next-line global-require
+    // Sails re-requires api/ when it lifts: require the services here
+    /* eslint-disable global-require */
     BotRenderService = require('../../../api/services/bot/BotRenderService');
+    BotHubService = require('../../../api/services/bot/BotHubService');
+    /* eslint-enable global-require */
     validator = new HtmlValidate({ extends: ['html-validate:recommended'] });
   });
 
@@ -145,6 +148,7 @@ describe('Bot page templates', () => {
       languageTags: TAGS,
       countryNames: COUNTRIES,
       hubLinks: BotRenderService.NO_HUB_LINKS,
+      massifExtras: new Map(),
       ...options,
     });
 
@@ -169,9 +173,51 @@ describe('Bot page templates', () => {
     should(actual).equal(fs.readFileSync(file, 'utf8'));
   };
 
+  // The hubs that are published, as the generator derives the links
+  const publishedHubLinks = (countries, regions) =>
+    BotHubService.createHubLinks(
+      {
+        countries: new Set(countries),
+        regions: new Set(regions),
+        hasIndex: true,
+      },
+      BASE_URL
+    );
+
+  // What BotHubService.massifExtras returns for the massif of massifRow()
+  const massifExtras = () =>
+    new Map([
+      [
+        3,
+        {
+          figures: {
+            nbCaves: 87,
+            nbNetworks: 5,
+            nbDivingCaves: 2,
+            totalLength: 12000,
+            avgDepth: 50,
+            avgLength: 300,
+          },
+          regions: [
+            { code: 'FR-ARA', name: 'Auvergne-Rhône-Alpes' },
+            { code: 'FR-01', name: 'Ain' },
+            // No published hub: not linked, not named
+            { code: 'FR-38', name: 'Isère' },
+          ],
+        },
+      ],
+    ]);
+
   describe('snapshots of the markup, on a fixed fixture', () => {
     it('cave', () => expectSnapshot('cave', render(caveRow())));
-    it('massif', () => expectSnapshot('massif', render(massifRow())));
+    it('massif', () =>
+      expectSnapshot(
+        'massif',
+        render(massifRow(), {
+          hubLinks: publishedHubLinks(['FR'], ['FR-ARA', 'FR-01']),
+          massifExtras: massifExtras(),
+        })
+      ));
     it('organization', () =>
       expectSnapshot('organization', render(organizationRow())));
     it('redirect', () =>
@@ -370,6 +416,57 @@ describe('Bot page templates', () => {
           name: 'Vercors',
         },
       ]);
+    });
+  });
+
+  describe('what a massif page holds from the hubs', () => {
+    const withExtras = () =>
+      render(massifRow(), {
+        hubLinks: publishedHubLinks(['FR'], ['FR-ARA', 'FR-01']),
+        massifExtras: massifExtras(),
+      });
+
+    it('shows the figures of the SPA, a null one left out', () => {
+      should(withExtras()).containEql(
+        '<dl>\n<dt>cavités</dt><dd>87</dd>\n<dt>Réseaux</dt><dd>5</dd>'
+      );
+      const html = render(massifRow(), {
+        massifExtras: new Map([[3, { figures: { nbCaves: 4 }, regions: [] }]]),
+      });
+      should(html).containEql('<dd>4</dd>');
+      should(html).not.containEql('Profondeur moyenne');
+    });
+
+    it('links the regions that have a published hub, by name, and leaves out the others', () => {
+      const html = withExtras();
+      should(html).containEql('<h2>Régions</h2>');
+      should(html).containEql(
+        '<li><a href="https://example.test/ui/countries/FR/regions/01">Ain</a></li>'
+      );
+      should(html).containEql(
+        '<a href="https://example.test/ui/countries/FR/regions/ARA">Auvergne-Rhône-Alpes</a>'
+      );
+      should(html).not.containEql('Isère');
+      should(html.indexOf('>Ain</a>')).be.below(
+        html.indexOf('>Auvergne-Rhône-Alpes</a>')
+      );
+    });
+
+    it('has neither figures nor regions when the generator hands over none', () => {
+      const html = render(massifRow());
+      should(html).not.containEql('<dl>');
+      should(html).not.containEql('Régions');
+    });
+
+    it('refuses to render a massif without massifExtras, rather than render it without the figures', () => {
+      should(() =>
+        BotRenderService.render(massifRow(), {
+          baseUrl: BASE_URL,
+          languageTags: TAGS,
+          countryNames: COUNTRIES,
+          hubLinks: BotRenderService.NO_HUB_LINKS,
+        })
+      ).throw(TypeError, { message: /massifExtras/ });
     });
   });
 
@@ -732,12 +829,16 @@ describe('Bot page templates', () => {
       should(() => BotRenderService.render(row, options)).throw(TypeError, {
         message: /hubLinks/,
       });
-      // Each of the two functions is needed
-      [{}, { country: () => null }, { region: () => null }].forEach(
-        (hubLinks) =>
-          should(() =>
-            BotRenderService.render(row, { ...options, hubLinks })
-          ).throw(TypeError, { message: /needs hubLinks/ })
+      // Each of the three functions is needed
+      [
+        {},
+        { country: () => null, region: () => null },
+        { index: () => null, region: () => null },
+        { index: () => null, country: () => null },
+      ].forEach((hubLinks) =>
+        should(() =>
+          BotRenderService.render(row, { ...options, hubLinks })
+        ).throw(TypeError, { message: /needs hubLinks/ })
       );
       should(
         BotRenderService.render(row, {
@@ -750,6 +851,7 @@ describe('Bot page templates', () => {
     it('links a crumb only when the hook returns the address of a published hub', () => {
       const calls = [];
       const hubLinks = {
+        index: () => null,
         country: (iso) => {
           calls.push(['country', iso]);
           return `${BASE_URL}/countries/${iso}`;
@@ -776,6 +878,7 @@ describe('Bot page templates', () => {
       const nav = crumbs(
         render(caveRow(), {
           hubLinks: {
+            index: () => null,
             country: (iso) => `${BASE_URL}/countries/${iso}`,
             region: (iso) => `${BASE_URL}/countries/${iso}/regions/01`,
           },
@@ -786,6 +889,37 @@ describe('Bot page templates', () => {
       );
       // The cave is the page itself: never a link
       should(nav).containEql('<li>Berger (Aven du)</li>');
+    });
+
+    it('shows the region without its [bracketed alternatives] and its trailing asterisk, as the hub does', () => {
+      const html = render(
+        caveRow({
+          entrances: [
+            entrance(1, {
+              region: 'Carmarthenshire [Sir Gaerfyrddin GB-GFY]',
+              regionCode: 'GB-CMN',
+              country: 'GB',
+            }),
+            entrance(2, { region: 'Nafarroa*', regionCode: 'ES-NA' }),
+          ],
+        })
+      );
+      should(crumbs(html)).containEql('<li>Carmarthenshire</li>');
+      should(crumbs(html)).not.containEql('Gaerfyrddin');
+      const spanish = render(
+        caveRow({
+          entrances: [
+            entrance(2, {
+              region: 'Nafarroa*',
+              regionCode: 'ES-NA',
+              country: 'ES',
+            }),
+          ],
+        })
+      );
+      should(crumbs(spanish)).containEql('<li>Nafarroa</li>');
+      // The entrance's own facts are shown as stored
+      should(spanish).containEql('<dd>Nafarroa*</dd>');
     });
 
     it('is absent for a cave with no region code, and for massifs and organizations', () => {
@@ -814,6 +948,16 @@ describe('Bot page templates', () => {
       should(html).containEql('<meta name="robots" content="noindex">');
       should(html).containEql('<a href="https://example.test/ui/caves/42">');
       should(jsonLdBlocks(html)).have.length(0);
+    });
+
+    it('has no og:* tag: a page that is not indexed has nothing to preview', () => {
+      const html = BotRenderService.renderRedirect('cave', 42, {
+        baseUrl: BASE_URL,
+      });
+      should(html).not.match(/property="og:/);
+      should(html).not.containEql('og:');
+      // The content pages keep theirs
+      should(render(caveRow())).containEql('<meta property="og:url"');
     });
 
     it('gives the target address as the redirectto metadata', () => {

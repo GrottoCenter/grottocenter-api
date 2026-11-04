@@ -24,21 +24,41 @@
 const { project } = require('./botSurfaceWhitelist');
 const { labelsFor } = require('./botLabels');
 const botPagePaths = require('./botPagePaths');
+const {
+  TITLE_MAX,
+  DESCRIPTION_MAX,
+  langOf,
+  truncate,
+  buildTitle,
+  isKnown,
+  positive,
+  countryNameOf,
+  buildMetaDescription,
+  sentence,
+  cleanRegionName,
+  byName,
+  figureFacts,
+} = require('./botModelParts');
 
-const BRAND = 'Grottocenter';
-const TITLE_MAX = 60;
-const DESCRIPTION_MAX = 160;
 const DEFAULT_LANGUAGE = 'eng';
 const OG_IMAGE_PATH = '/og-image.png';
 /**
- * Hook for the country and region hubs (#1935), which do not exist yet: the
- * breadcrumb names the country and the region but links to neither. Once the
- * hubs are published, pass `hubLinks` to the renderer with functions that
- * return the SPA address of a hub that is published (for example
- * `/ui/countries/FR/regions/01`) and null for one that is not. A crumb is a
- * link only when its function returns an address.
+ * The links to the country and region hubs (#1935). `hubLinks` holds functions
+ * that return the SPA address of a hub that is published (for example
+ * `https://grottocenter.org/ui/countries/FR/regions/01`) and null for one that
+ * is not; a crumb or a list entry is a link only when its function returns an
+ * address:
+ *
+ *   index()                  the countries index
+ *   country(iso)             FR
+ *   region(iso, regionCode)  FR, FR-01
+ *
+ * The generator builds them from the published hubs of the run
+ * (BotHubService.createHubLinks), and every caller that renders a page passes
+ * the same ones. NO_HUB_LINKS is for a caller that has no hubs: no link.
  */
 const NO_HUB_LINKS = Object.freeze({
+  index: () => null,
   country: () => null,
   region: () => null,
 });
@@ -46,19 +66,6 @@ const NO_HUB_LINKS = Object.freeze({
 // The languages written right to left, among the tags a record can carry: the
 // page is laid out right to left, labels and punctuation included
 const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur', 'yi']);
-
-// BCP 47 language tag of a record language, an ISO 639-3 code in the view:
-// the ISO 639-1 subtag when the language has one (`fra` -> `fr`), as BCP 47
-// requires, else the 3-letter code, which the IANA registry holds for the
-// languages without a 2-letter one. `tags` maps a 3-letter code to its 2-letter
-// one (t_language.part1, see loadLanguageTags).
-const langOf = (language, tags) => {
-  if (typeof language !== 'string' || !/^[A-Za-z]{2,3}$/.test(language)) {
-    return null;
-  }
-  const code = language.toLowerCase();
-  return tags.get(code) || code;
-};
 
 // The free-text `url` of an organization: only an http(s) address is a link
 const safeHttpUrl = (value) => {
@@ -69,40 +76,6 @@ const safeHttpUrl = (value) => {
   } catch (e) {
     return null;
   }
-};
-
-// Cuts to `max` characters (code points, never half a surrogate pair)
-const truncate = (text, max) => {
-  const chars = Array.from(text);
-  if (chars.length <= max) return text;
-  return `${chars
-    .slice(0, max - 1)
-    .join('')
-    .trimEnd()}…`;
-};
-
-/**
- * `<name> - Grottocenter`, at most 60 characters: a longer name is cut and
- * ends with an ellipsis, and the brand suffix is kept.
- */
-const buildTitle = (name) => {
-  const suffix = ` - ${BRAND}`;
-  const trimmed = (name || '').trim();
-  if (trimmed === '') return BRAND;
-  return `${truncate(trimmed, TITLE_MAX - Array.from(suffix).length)}${suffix}`;
-};
-
-const isKnown = (value) =>
-  value !== null && value !== undefined && value !== '';
-// 0 means unknown for a depth or a length
-const positive = (value) =>
-  typeof value === 'number' && value > 0 ? value : null;
-
-// The name of a country is t_country.native_name, whatever the page language
-// (#1939 retires the translated columns); an unknown code is shown as is
-const countryNameOf = (code, countryNames) => {
-  if (!isKnown(code)) return null;
-  return countryNames.get(String(code).toUpperCase()) || String(code);
 };
 
 const firstDescriptionLanguage = (page) => {
@@ -185,17 +158,14 @@ const buildBreadcrumb = (page, name, { countryNames, hubLinks }) => {
       url: hubLinks.country(country) || null,
     },
     {
-      text: isKnown(entrance.region) ? entrance.region : entrance.regionCode,
+      text:
+        (isKnown(entrance.region) && cleanRegionName(entrance.region)) ||
+        entrance.regionCode,
       url: hubLinks.region(country, entrance.regionCode) || null,
     },
     { text: name, url: null },
   ];
 };
-
-const buildMetaDescription = (parts) =>
-  truncate(parts.filter(isKnown).join(' '), DESCRIPTION_MAX);
-
-const sentence = (text) => (isKnown(text) ? `${text}.` : null);
 
 const placeOf = (items) => items.filter(isKnown).join(', ');
 
@@ -206,12 +176,15 @@ const placeOf = (items) => items.filter(isKnown).join(', ');
  * @param {Map<string,string>} options.languageTags ISO 639-3 -> 639-1
  * @param {Map<string,string>} options.countryNames ISO 3166-1 alpha-2 ->
  *   t_country.native_name (see BotRenderService.loadCountryNames)
- * @param {{country: Function, region: Function}} [options.hubLinks] see NO_HUB_LINKS
+ * @param {{index: Function, country: Function, region: Function}} [options.hubLinks] see NO_HUB_LINKS
+ * @param {Map<number, object>} [options.massifExtras] by massif id, what the
+ *   massif page adds to the view's row: `{ figures, regions }` (see
+ *   BotHubService.massifExtras); a massif absent from the map has neither
  * @returns {object} the model
  */
 const buildPageModel = (
   row,
-  { baseUrl, languageTags, countryNames, hubLinks }
+  { baseUrl, languageTags, countryNames, hubLinks, massifExtras = new Map() }
 ) => {
   const entityType = row.entity_type;
   const raw = row.page;
@@ -307,6 +280,21 @@ const buildPageModel = (
       depth: positive(cave.depth),
       length: positive(cave.length),
     }));
+    // What the hubs add (#1935): the SPA's figures for the massif, and the
+    // published region hubs of the regions its caves are in
+    const extras = project(
+      'massifExtras',
+      'top',
+      massifExtras.get(row.entity_id) || {}
+    );
+    model.facts = figureFacts(extras.figures, labels);
+    model.regions = (extras.regions || [])
+      .map((region) => ({
+        text: cleanRegionName(region.name) || region.code,
+        url: hubLinks.region(region.code.split('-')[0], region.code) || null,
+      }))
+      .filter((region) => region.url !== null)
+      .sort(byName);
     model.description = buildMetaDescription([
       sentence(`${labels.massif}: ${name}`),
       model.caves.length > 0

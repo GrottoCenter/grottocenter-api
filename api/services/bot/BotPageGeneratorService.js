@@ -46,6 +46,13 @@
  * the row, then A removes the row, and the page stays online with no manifest
  * entry, so no later run deletes it.
  *
+ * Hubs (#1935): before anything else the run reads v_bot_hub once (about 870
+ * rows at most, BotHubService.loadHubs). Those rows decide which hubs the
+ * breadcrumbs and lists link to AND which hubs are published, after the
+ * records, with the SPA's figures. A manifest hub path the run does not
+ * produce is deleted (the hub stopped being published). Hub rows are manifest
+ * rows of entity_type 'hub', with hub_type and hub_key and no entity_id.
+ *
  * Static extras published by the same run: 404.html (noindex).
  *
  * Redirects (#1766) and the "manifest after each upload" rule: a redirect page
@@ -57,10 +64,12 @@ const crypto = require('crypto');
 const botPagePaths = require('../../utils/botPagePaths');
 const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
+const BotHubService = require('./BotHubService');
 
 const DEFAULT_BATCH_SIZE = 1000;
 const DEFAULT_CONCURRENCY = 4;
 const STATIC_TYPE = 'static';
+const HUB_TYPE = 'hub';
 const NOT_FOUND_PATH = '404.html';
 const MAX_ID = 2147483647;
 // Any key no other advisory lock uses (the search write lock uses 1871)
@@ -105,11 +114,13 @@ const manifestHashes = async (paths) => {
 
 const recordPublished = (page) =>
   query(
-    `INSERT INTO t_bot_page_manifest (path, entity_type, entity_id, content_hash, lastmod, redirect_to, published_at)
-     VALUES ($1, $2, $3, $4, $5, $6, now())
+    `INSERT INTO t_bot_page_manifest (path, entity_type, entity_id, hub_type, hub_key, content_hash, lastmod, redirect_to, published_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
      ON CONFLICT (path) DO UPDATE
        SET entity_type = EXCLUDED.entity_type,
            entity_id = EXCLUDED.entity_id,
+           hub_type = EXCLUDED.hub_type,
+           hub_key = EXCLUDED.hub_key,
            content_hash = EXCLUDED.content_hash,
            lastmod = EXCLUDED.lastmod,
            redirect_to = EXCLUDED.redirect_to,
@@ -118,6 +129,8 @@ const recordPublished = (page) =>
       page.path,
       page.entityType,
       page.entityId,
+      page.hubType ?? null,
+      page.hubKey ?? null,
       page.hash,
       page.lastmod,
       page.redirectTo ?? null,
@@ -174,13 +187,20 @@ async function publish({
   onBatch = () => {},
   languageTags,
   countryNames,
+  readHubs,
 }) {
+  // The published hubs, read once before any page is rendered: the same rows
+  // give the links of every page and the hubs this run publishes
+  const hubs = await BotHubService.loadHubs({
+    batchSize,
+    ...(readHubs ? { readBatch: readHubs } : {}),
+  });
+  const resolvedBaseUrl = baseUrl || BotRenderService.defaultBaseUrl();
   const renderOptions = {
-    ...(baseUrl ? { baseUrl } : {}),
+    baseUrl: resolvedBaseUrl,
     languageTags: languageTags || (await BotRenderService.loadLanguageTags()),
     countryNames: countryNames || (await BotRenderService.loadCountryNames()),
-    // The hubs (#1935) do not exist yet: the breadcrumb links to none
-    hubLinks: BotRenderService.NO_HUB_LINKS,
+    hubLinks: BotHubService.createHubLinks(hubs, resolvedBaseUrl),
   };
   const summary = { uploaded: 0, unchanged: 0, deleted: 0, byType: {} };
 
@@ -246,9 +266,22 @@ async function publish({
           botPagePaths.toKey(entityType, r.entity_id)
         ),
       ]);
+      // A massif page shows the SPA's figures and its regions (#1935)
+      const batchOptions =
+        entityType === 'massif'
+          ? {
+              ...renderOptions,
+              // eslint-disable-next-line no-await-in-loop
+              massifExtras: await BotHubService.massifExtras(
+                rows.map((row) => row.entity_id),
+                hubs,
+                { concurrency }
+              ),
+            }
+          : renderOptions;
       // eslint-disable-next-line no-await-in-loop
       await mapLimit(rows, concurrency, async (row) => {
-        const html = BotRenderService.render(row, renderOptions);
+        const html = BotRenderService.render(row, batchOptions);
         await publishIfChanged(
           {
             path: botPagePaths.toKey(entityType, row.entity_id),
@@ -316,12 +349,59 @@ async function publish({
     summary.byType[entityType] = stats;
   };
 
+  // The hubs: rendered from the rows read at the start, with the SPA's figures.
+  // A hub that is no longer published has no row, so its path is among the
+  // manifest's hub paths that this run does not produce, and is deleted. The
+  // hubs are few (about 870), so the manifest's hub rows are selected in one
+  // query, not walked by range.
+  const publishHubs = async () => {
+    const stats = { uploaded: 0, unchanged: 0, deleted: 0 };
+    const before = { ...summary };
+    const hubFigures = await BotHubService.loadFigures(hubs, { concurrency });
+    const pages = hubs.rows.map((row) => ({
+      row,
+      path: botPagePaths.toHubKey(row.hub_type, row.hub_key),
+    }));
+    const known = await manifestHashes(pages.map((page) => page.path));
+    await mapLimit(pages, concurrency, async ({ row, path }) => {
+      const html = BotRenderService.renderHub(row, {
+        ...renderOptions,
+        hubFigures,
+      });
+      await publishIfChanged(
+        {
+          path,
+          entityType: HUB_TYPE,
+          entityId: null,
+          hubType: row.hub_type,
+          hubKey: row.hub_key,
+          html,
+          hash: sha256(html),
+          lastmod: row.lastmod,
+        },
+        known
+      );
+    });
+    await removeAll(
+      `SELECT path FROM t_bot_page_manifest
+          WHERE entity_type = $1 AND NOT (path = ANY($2::text[]))
+          ORDER BY path LIMIT $3`,
+      [HUB_TYPE, pages.map((page) => page.path), 1000]
+    );
+    stats.uploaded = summary.uploaded - before.uploaded;
+    stats.unchanged = summary.unchanged - before.unchanged;
+    stats.deleted = summary.deleted - before.deleted;
+    summary.byType[HUB_TYPE] = stats;
+  };
+
   // Sequential: one type at a time, as the view is meant to be read
   // eslint-disable-next-line no-restricted-syntax
   for (const entityType of botPagePaths.ENTITY_TYPES) {
     // eslint-disable-next-line no-await-in-loop
     await publishType(entityType);
   }
+
+  await publishHubs();
 
   // Static extras
   const notFound = BotRenderService.renderNotFound(renderOptions);
@@ -360,6 +440,9 @@ module.exports = {
    *   defaults to v_bot_page, replaceable for a synthetic source
    * @param {Function} [options.readRedirects] (entityType) => rows of
    *   {entity_id, target_id}, sorted by entity_id; defaults to v_bot_redirect
+   * @param {Function} [options.readHubs] (hubType, afterKey, limit) => rows of
+   *   v_bot_hub, sorted by hub_key; defaults to v_bot_hub, replaceable for a
+   *   synthetic source
    * @param {Function} [options.onBatch] called after each batch
    * @param {Map<string, string>} [options.languageTags] ISO 639-3 to 639-1;
    *   read from t_language when absent

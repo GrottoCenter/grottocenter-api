@@ -110,6 +110,37 @@ const forOrganization = (model) =>
     url: model.website,
   });
 
+// A hub is a page that lists other pages: schema.org's CollectionPage with an
+// ItemList of what it links to. It names places by their names only: never a
+// position, a bounding box or a polygon.
+const hubItems = (model) => {
+  const entries = [
+    ...model.countries.map((c) => ({ name: c.text, url: c.url })),
+    ...model.regions.map((r) => ({ name: r.text, url: r.url })),
+    ...model.massifs.map((m) => ({ name: m.text, url: m.url })),
+    ...model.caves.map((c) => ({ name: c.name, url: c.url })),
+  ];
+  return entries.map((entry, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: entry.name,
+    url: entry.url,
+  }));
+};
+
+const forHub = (model) =>
+  defined({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': model.url,
+    name: model.name,
+    inLanguage: model.lang,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: hubItems(model),
+    },
+  });
+
 const BUILDERS = {
   cave: forCave,
   massif: forMassif,
@@ -123,4 +154,10 @@ const BUILDERS = {
  */
 const buildJsonLd = (entityType, model) => BUILDERS[entityType](model);
 
-module.exports = { buildJsonLd, serializeForScript };
+/**
+ * @param {object} model a hub page model (botHubModel.js)
+ * @returns {object} the JSON-LD document
+ */
+const buildHubJsonLd = (model) => forHub(model);
+
+module.exports = { buildJsonLd, buildHubJsonLd, serializeForScript };

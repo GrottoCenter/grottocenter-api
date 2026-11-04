@@ -1,0 +1,7 @@
+<%# Region hub (#1935). Locals: model (see botHubModel.js); nothing else is available -%>
+<% const model = locals.model; const labels = model.labels; -%>
+<%- include('_breadcrumb', { breadcrumb: model.breadcrumb }) -%>
+<h1><%= model.name %></h1>
+<% if (model.facts.length) { %><%- include('_facts', { facts: model.facts }) -%><% } -%>
+<%- include('_hub-links', { heading: labels.massifs, items: model.massifs }) -%>
+<%- include('_hub-caves', { caves: model.caves, labels }) -%>

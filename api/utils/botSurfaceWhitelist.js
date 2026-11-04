@@ -113,6 +113,66 @@ const SPEC = {
     nested: { id: SCALAR, name: SCALAR },
   },
 
+  // The hub pages (#1935). A hub is keyed by a string (FR, FR-01), not an id.
+  // Never published on a hub: coordinates, bounding boxes, polygons, a count or
+  // a ranking that names a sensitive or unpublished record. The caves and the
+  // massifs listed are published pages.
+  hubIndex: {
+    top: {
+      language: SCALAR,
+      lastmod: SCALAR,
+      countries: child('hubCountry', 'nested'),
+    },
+  },
+
+  hubCountry: {
+    top: {
+      code: SCALAR,
+      language: SCALAR,
+      lastmod: SCALAR,
+      regions: child('hubRegion', 'nested'),
+      massifs: child('massif', 'nested'),
+      caves: child('cave', 'nested'),
+    },
+    nested: { code: SCALAR },
+  },
+
+  hubRegion: {
+    top: {
+      code: SCALAR,
+      name: SCALAR,
+      country: SCALAR,
+      language: SCALAR,
+      lastmod: SCALAR,
+      massifs: child('massif', 'nested'),
+      caves: child('cave', 'nested'),
+    },
+    nested: { code: SCALAR, name: SCALAR },
+  },
+
+  // The SPA's own statistics of a hub or a massif (StatisticsCountryService
+  // and its siblings), which may count records that are not published
+  figures: {
+    top: {
+      nbCaves: SCALAR,
+      nbNetworks: SCALAR,
+      nbMassifs: SCALAR,
+      nbDivingCaves: SCALAR,
+      totalLength: SCALAR,
+      avgDepth: SCALAR,
+      avgLength: SCALAR,
+    },
+  },
+
+  // What a massif page adds to its v_bot_page row (#1935): not columns of the
+  // view, so not part of massif.top
+  massifExtras: {
+    top: {
+      figures: child('figures', 'top'),
+      regions: child('hubRegion', 'nested'),
+    },
+  },
+
   document: {
     top: {
       id: SCALAR,

@@ -1,0 +1,4 @@
+<%# Countries index (#1935). Locals: model (see botHubModel.js); nothing else is available -%>
+<% const model = locals.model; -%>
+<h1><%= model.name %></h1>
+<%- include('_hub-links', { heading: model.labels.countries, items: model.countries }) -%>

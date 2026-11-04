@@ -19,8 +19,14 @@
  * <meta name="generator" content="gc-static-pages">, which the audit uses to
  * recognise a generated page.
  *
- * Output depends only on the row, the public base URL, the language tags and
- * the country names, and it does not include `lastmod`, so a record whose only
+ * The hub pages (#1935) go through renderHub(): api/utils/botHubModel.js builds
+ * the model from a v_bot_hub row, views/bot/hub-{index,country,region}.ejs and
+ * the JSON-LD read it. A massif page also shows what the hubs add to it (the
+ * SPA's figures, the region hubs of its caves), handed over as `massifExtras`.
+ *
+ * Output depends only on the row, the public base URL, the language tags, the
+ * country names, the hub links (the hubs that are published) and, for a hub or
+ * a massif, the figures, and it does not include `lastmod`, so a record whose only
  * change is that hint renders the same bytes and is not published again.
  *
  * Pure with respect to the database: loads without Sails when the base URL is
@@ -32,7 +38,12 @@ const path = require('path');
 const ejs = require('ejs');
 const botPagePaths = require('../../utils/botPagePaths');
 const { buildPageModel, NO_HUB_LINKS } = require('../../utils/botPageModel');
-const { buildJsonLd, serializeForScript } = require('../../utils/botJsonLd');
+const { buildHubModel } = require('../../utils/botHubModel');
+const {
+  buildJsonLd,
+  buildHubJsonLd,
+  serializeForScript,
+} = require('../../utils/botJsonLd');
 
 const VIEWS_DIR = path.join(__dirname, '../../../views/bot');
 const BRAND = 'Grottocenter';
@@ -51,6 +62,12 @@ const renderTemplate = (name, data) => {
   return compiled.get(filename)(data);
 };
 
+const HUB_TEMPLATES = {
+  index: 'hub-index',
+  country: 'hub-country',
+  region: 'hub-region',
+};
+
 const BODY_TEMPLATES = {
   cave: 'cave',
   massif: 'massif',
@@ -65,11 +82,44 @@ const publicBaseUrl = () =>
     sails.config.custom.botSurface.publicBaseUrl) ||
   botPagePaths.DEFAULT_PUBLIC_BASE_URL;
 
+const assertHubLinks = (hubLinks) => {
+  if (
+    !hubLinks ||
+    typeof hubLinks.index !== 'function' ||
+    typeof hubLinks.country !== 'function' ||
+    typeof hubLinks.region !== 'function'
+  ) {
+    // Likewise: the breadcrumb of a page rendered without them has no links
+    throw new TypeError(
+      'BotRenderService.render needs hubLinks ({ index, country, region }, NO_HUB_LINKS when there are no hubs)'
+    );
+  }
+};
+
+const assertCommon = ({ languageTags, countryNames }, name) => {
+  if (!(languageTags instanceof Map)) {
+    // Without them a page renders `fra` instead of `fr`: another hash for the
+    // same record, which the withdrawal worker and the audit would read as a change
+    throw new TypeError(
+      `BotRenderService.${name} needs languageTags (see loadLanguageTags)`
+    );
+  }
+  if (!(countryNames instanceof Map)) {
+    // Likewise: a page without them shows `FR` where the generator wrote `France`
+    throw new TypeError(
+      `BotRenderService.${name} needs countryNames (see loadCountryNames)`
+    );
+  }
+};
+
 const layout = (data, baseUrl) =>
   renderTemplate('layout', { ...data, siteUrl: baseUrl });
 
 module.exports = {
   NO_HUB_LINKS,
+
+  /** The SPA's address the pages are published at (the config key, else the default). */
+  defaultBaseUrl: publicBaseUrl,
 
   /**
    * @param {{entity_type: string, entity_id: number, language: string, page: object}} row
@@ -83,37 +133,32 @@ module.exports = {
    * @param {Map<string, string>} options.countryNames
    *   required, what loadCountryNames() returns (an empty Map shows the country
    *   code). Same reason as languageTags.
-   * @param {{country: Function, region: Function}} options.hubLinks
-   *   required, the breadcrumb's hook for the hub pages (#1935); pass
-   *   NO_HUB_LINKS until they exist. Same reason as languageTags: a caller that
-   *   forgot it would render pages without the links the generator wrote.
+   * @param {{index: Function, country: Function, region: Function}} options.hubLinks
+   *   required, the links to the hub pages (#1935): each returns the SPA
+   *   address of a hub that is published, else null (see NO_HUB_LINKS in
+   *   botPageModel.js). Same reason as languageTags: a caller that forgot it
+   *   would render pages without the links the generator wrote.
+   * @param {Map<number, {figures: ?object, regions: object[]}>} [options.massifExtras]
+   *   required for a massif row, what BotHubService.massifExtras returns: the
+   *   SPA's figures for the massif and its regions. An empty Map shows neither.
    * @returns {string} the HTML document
    */
   render(
     row,
-    { baseUrl = publicBaseUrl(), languageTags, countryNames, hubLinks } = {}
+    {
+      baseUrl = publicBaseUrl(),
+      languageTags,
+      countryNames,
+      hubLinks,
+      massifExtras,
+    } = {}
   ) {
-    if (!(languageTags instanceof Map)) {
-      // Without them a page renders `fra` instead of `fr`: another hash for the
-      // same record, which the withdrawal worker and the audit would read as a change
+    assertCommon({ languageTags, countryNames }, 'render');
+    assertHubLinks(hubLinks);
+    if (row.entity_type === 'massif' && !(massifExtras instanceof Map)) {
+      // Likewise: a massif page without them lacks the figures the generator wrote
       throw new TypeError(
-        'BotRenderService.render needs languageTags (see loadLanguageTags)'
-      );
-    }
-    if (!(countryNames instanceof Map)) {
-      // Likewise: a page without them shows `FR` where the generator wrote `France`
-      throw new TypeError(
-        'BotRenderService.render needs countryNames (see loadCountryNames)'
-      );
-    }
-    if (
-      !hubLinks ||
-      typeof hubLinks.country !== 'function' ||
-      typeof hubLinks.region !== 'function'
-    ) {
-      // Likewise: the breadcrumb of a page rendered without them has no links
-      throw new TypeError(
-        'BotRenderService.render needs hubLinks ({ country, region }, NO_HUB_LINKS until the hubs exist)'
+        'BotRenderService.render needs massifExtras for a massif (see BotHubService.massifExtras)'
       );
     }
     const bodyTemplate = BODY_TEMPLATES[row.entity_type];
@@ -125,6 +170,7 @@ module.exports = {
       languageTags,
       countryNames,
       hubLinks,
+      massifExtras,
     });
     return layout(
       {
@@ -136,6 +182,57 @@ module.exports = {
         ogImage: model.ogImage,
         jsonLd: serializeForScript(buildJsonLd(row.entity_type, model)),
         body: renderTemplate(bodyTemplate, { model }),
+      },
+      baseUrl
+    );
+  },
+
+  /**
+   * @param {{hub_type: string, hub_key: string, language: ?string, page: object}} row
+   *   a v_bot_hub row
+   * @param {object} options baseUrl, languageTags, countryNames and hubLinks as
+   *   for render(); and hubFigures, a Map of the SPA's figures keyed
+   *   `<hub_type>:<hub_key>` (BotHubService.loadFigures), required
+   * @returns {string} the HTML document
+   */
+  renderHub(
+    row,
+    {
+      baseUrl = publicBaseUrl(),
+      languageTags,
+      countryNames,
+      hubLinks,
+      hubFigures,
+    } = {}
+  ) {
+    assertCommon({ languageTags, countryNames }, 'renderHub');
+    assertHubLinks(hubLinks);
+    if (!(hubFigures instanceof Map)) {
+      throw new TypeError(
+        'BotRenderService.renderHub needs hubFigures (see BotHubService.loadFigures)'
+      );
+    }
+    const template = HUB_TEMPLATES[row.hub_type];
+    if (!template) {
+      throw new RangeError(`Cannot render hub type ${row.hub_type}`);
+    }
+    const model = buildHubModel(row, {
+      baseUrl,
+      languageTags,
+      countryNames,
+      hubFigures,
+      hubLinks,
+    });
+    return layout(
+      {
+        lang: model.lang,
+        dir: model.dir,
+        title: model.title,
+        description: model.description,
+        canonicalUrl: model.url,
+        ogImage: model.ogImage,
+        jsonLd: serializeForScript(buildHubJsonLd(model)),
+        body: renderTemplate(template, { model }),
       },
       baseUrl
     );
@@ -158,6 +255,8 @@ module.exports = {
         lang: 'en',
         title: BRAND,
         canonicalUrl: targetUrl,
+        // No og:* tags: a page that is not indexed has nothing to preview
+        og: false,
         robots: 'noindex',
         refreshUrl: targetUrl,
         body: renderTemplate('redirect', { targetUrl }),
