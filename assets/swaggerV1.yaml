@@ -2508,6 +2508,37 @@ paths:
                     items:
                       $ref: '#/components/schemas/Document-subject'
 
+  '/documents/from-duplicate/{id}':
+    post:
+      tags:
+        - documents
+      description: >
+        Create a document from a duplicate parked during a CSV import, then delete
+        the duplicate. Use it when a moderator decides the parked row is not a
+        duplicate after all. The document and its description are created with
+        `dateInscription` set to the time of the request, not to the creation
+        date carried by the imported data. Moderators only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Id of the document duplicate to materialize.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The document was created and the duplicate deleted.
+        '400':
+          description: No document duplicate has this id.
+        '401':
+          description: Authentication required.
+        '403':
+          description: The caller is not a moderator.
+        '500':
+          description: The document could not be created.
+
   '/documents/check-rows':
     post:
       tags:
@@ -5510,6 +5541,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+
+  '/entrances/from-duplicate/{id}':
+    post:
+      tags:
+        - entrances
+      description: >
+        Create a entrance from a duplicate parked during a CSV import, then delete
+        the duplicate. Use it when a moderator decides the parked row is not a
+        duplicate after all. The entrance and its name, description and location are created with
+        `dateInscription` set to the time of the request, not to the creation
+        date carried by the imported data. Moderators only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Id of the entrance duplicate to materialize.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The entrance was created and the duplicate deleted.
+        '400':
+          description: No entrance duplicate has this id.
+        '401':
+          description: Authentication required.
+        '403':
+          description: The caller is not a moderator.
+        '500':
+          description: The entrance could not be created.
 
   '/entrances/check-rows':
     post:
