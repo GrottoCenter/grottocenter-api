@@ -49,12 +49,8 @@ describe('BotPageGeneratorService', () => {
       .sort((a, b) => a.entity_id - b.entity_id)
       .slice(0, limit);
 
-  // The rows v_bot_hub would return, read by keyset like the view
-  const readHubs = async (hubType, afterKey, limit) =>
-    hubRows
-      .filter((r) => r.hub_type === hubType && r.hub_key > afterKey)
-      .sort((a, b) => (a.hub_key < b.hub_key ? -1 : 1))
-      .slice(0, limit);
+  // The rows v_bot_hub would return, in one read like the generator does
+  const readHubs = async () => [...hubRows];
 
   const run = (options = {}) =>
     Generator.run({
@@ -1094,6 +1090,7 @@ describe('BotPageGeneratorService', () => {
     });
 
     it('records each hub in the manifest as a hub row: type, key, no id, the hash of the file, no redirect', async () => {
+      const startedAt = new Date();
       await run();
 
       const row = await manifestRow('countries/FR/regions/01.html');
@@ -1103,7 +1100,8 @@ describe('BotPageGeneratorService', () => {
       should(row.entity_id).be.null();
       should(row.redirect_to).be.null();
       should(row.content_hash).equal(sha256(readFile(row.path)));
-      should(row.lastmod.toISOString()).equal('2026-01-01T00:00:00.000Z');
+      // The time of the upload, not the latest lastmod of its caves
+      should(row.lastmod.getTime()).be.aboveOrEqual(startedAt.getTime());
       const index = await manifestRow('countries.html');
       should([index.hub_type, index.hub_key]).deepEqual(['index', 'ALL']);
       const { rows } = await query(
@@ -1130,6 +1128,40 @@ describe('BotPageGeneratorService', () => {
       ];
       await run();
       should(puts).deepEqual(['countries/FR/regions/01.html']);
+    });
+
+    it('moves the lastmod of a hub when its page changes, even when no cave of it did, and never moves it back', async () => {
+      await run();
+      const first = (await manifestRow('countries/FR/regions/01.html')).lastmod;
+
+      // Nothing changed: the row is kept as it was
+      await run();
+      should(
+        (await manifestRow('countries/FR/regions/01.html')).lastmod.getTime()
+      ).equal(first.getTime());
+
+      // The list changes and the caves' latest lastmod goes back
+      hubRows = [
+        INDEX(),
+        FRANCE(),
+        hubRow('region', 'FR-01', {
+          ...AIN().page,
+          caves: [cave(FIRST_ID + 1), cave(FIRST_ID + 2)],
+        }),
+      ].map((r) => ({ ...r, lastmod: new Date('2001-01-01T00:00:00Z') }));
+      await run();
+      const second = (await manifestRow('countries/FR/regions/01.html'))
+        .lastmod;
+      should(second.getTime()).be.above(first.getTime());
+    });
+
+    it('records the time of the upload as the lastmod of a massif page, and the view lastmod for a cave', async () => {
+      const startedAt = new Date();
+      await run();
+      const massif = await manifestRow(`massifs/${FIRST_ID + 1}.html`);
+      should(massif.lastmod.getTime()).be.aboveOrEqual(startedAt.getTime());
+      const caveRow = await manifestRow(`caves/${FIRST_ID + 1}.html`);
+      should(caveRow.lastmod.toISOString()).equal('2026-01-01T00:00:00.000Z');
     });
 
     it('does not upload a hub whose only change is lastmod', async () => {
@@ -1199,8 +1231,8 @@ describe('BotPageGeneratorService', () => {
       const firstRecords = calls.indexOf('records');
       should(calls.lastIndexOf('hubs')).be.below(firstRecords);
       should(calls.lastIndexOf('hubs')).be.below(firstPut);
-      // Three types of hub, each read until a short batch, no more
-      should(calls.filter((c) => c === 'hubs')).have.length(3);
+      // One read of all the hubs: each read of the view builds every cave
+      should(calls.filter((c) => c === 'hubs')).have.length(1);
     });
 
     it('survives a failed upload of a hub: the manifest equals the adapter, and the next run finishes', async () => {

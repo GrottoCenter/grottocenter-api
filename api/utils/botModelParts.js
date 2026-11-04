@@ -1,12 +1,53 @@
 /**
  * Pieces shared by the page models (botPageModel.js for the records,
  * botHubModel.js for the hubs): the title, the language tag, the meta
- * description, the facts of the figures, the clean name of a region.
+ * description, the figures, the clean name of a region, the wording of a count.
  *
  * Pure: loads without Sails.
  */
 
 const BRAND = 'Grottocenter';
+
+// `{count, plural, one {cave} other {caves}}`, the ICU form the front uses for
+// some of its strings; anything else is a plain text
+const PLURAL_MESSAGE =
+  /^\{count, plural,((?:\s*(?:=\d+|zero|one|two|few|many|other)\s*\{[^{}]*\})+)\s*\}$/;
+const PLURAL_BRANCH = /(=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}/g;
+
+/**
+ * The text of a label for a count: the branch of an ICU plural message that
+ * the language's plural rules pick (`=<n>` first, then the CLDR category, then
+ * `other`), `#` replaced by the count; a plain label as it is.
+ *
+ * @param {string} message a label of botLabels
+ * @param {number} count
+ * @param {string} lang the BCP 47 tag of the page
+ */
+const pluralText = (message, count, lang) => {
+  const match = PLURAL_MESSAGE.exec(message);
+  if (!match) return message;
+  const branches = new Map(
+    Array.from(match[1].matchAll(PLURAL_BRANCH), ([, key, text]) => [key, text])
+  );
+  let category = 'other';
+  try {
+    category = new Intl.PluralRules(lang).select(count);
+  } catch (e) {
+    // An unknown tag: the default rules
+  }
+  const text =
+    branches.get(`=${count}`) ??
+    branches.get(category) ??
+    branches.get('other');
+  return (text ?? message).replace(/#/g, String(count));
+};
+
+// The first letter in upper case, for a label used as a heading
+const capitalize = (text) =>
+  typeof text === 'string' && text !== ''
+    ? `${text.charAt(0).toUpperCase()}${text.slice(1)}`
+    : text;
+
 const TITLE_MAX = 60;
 const DESCRIPTION_MAX = 160;
 
@@ -98,31 +139,41 @@ const byName = (a, b) => {
 };
 
 /**
- * The figures of a hub or a massif as label/value pairs, in a fixed order;
- * a figure that is null (no data) is left out. None at all when the statistics
- * count no cave: the hub or the massif has published caves, so a count of 0 is a
- * view that has not been refreshed since, not a fact to print.
+ * The figures of a hub or a massif, in a fixed order, as the SPA's statistics
+ * widget shows them: the number, then the text of the front's string for it
+ * (`8` / `cavités permettent de faire de la plongée`). A figure that is null
+ * (no data) is left out. None at all when the statistics count no cave: the
+ * hub or the massif has published caves, so a count of 0 is a view that has
+ * not been refreshed since, not a fact to print.
  *
  * @param {object} figures what the whitelist lets through of `figures`
  * @param {object} labels the labels of the page language
+ * @param {string} lang the BCP 47 tag of the page
+ * @returns {Array<{value: string, text: string}>}
  */
-const figureFacts = (figures, labels) => {
+const figureLines = (figures, labels, lang) => {
   if (!figures || figures.nbCaves === 0) return [];
   const count = (label, value) =>
-    typeof value === 'number' ? [label, String(value)] : null;
+    typeof value === 'number'
+      ? { value: String(value), text: pluralText(label, value, lang) }
+      : null;
   const metres = (label, value) =>
-    typeof value === 'number' ? [label, `${value} m`] : null;
+    typeof value === 'number' ? { value: `${value} m`, text: label } : null;
   return [
-    count(labels.cavesCount, figures.nbCaves),
-    count(labels.networks, figures.nbNetworks),
-    count(labels.massifs, figures.nbMassifs),
-    count(labels.divingCave, figures.nbDivingCaves),
-    metres(labels.length, figures.totalLength),
+    count(labels.figureCaves, figures.nbCaves),
+    count(labels.figureNetworks, figures.nbNetworks),
+    // The SPA's choice: the singular up to 1, the plural above
+    typeof figures.nbMassifs === 'number'
+      ? count(
+          figures.nbMassifs > 1 ? labels.figureMassifs : labels.figureMassif,
+          figures.nbMassifs
+        )
+      : null,
+    count(labels.figureDivingCaves, figures.nbDivingCaves),
+    metres(labels.figureTotalLength, figures.totalLength),
     metres(labels.avgDepth, figures.avgDepth),
     metres(labels.avgLength, figures.avgLength),
-  ]
-    .filter(Boolean)
-    .map(([label, value]) => ({ label, value }));
+  ].filter(Boolean);
 };
 
 module.exports = {
@@ -140,5 +191,7 @@ module.exports = {
   cleanRegionName,
   sortKey,
   byName,
-  figureFacts,
+  figureLines,
+  pluralText,
+  capitalize,
 };

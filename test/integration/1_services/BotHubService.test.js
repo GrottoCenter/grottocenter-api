@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 
 const BASE_URL = 'https://example.test/ui';
@@ -230,53 +231,32 @@ describe('BotHubService', () => {
       page: { ...row.page, name: `Region ${i}` },
     }));
 
-    // The view's rows read by keyset, like v_bot_hub
-    const readBatch =
+    // The view's rows, in one read, in any order
+    const readAll =
       (calls = []) =>
-      async (hubType, afterKey, limit) => {
-        calls.push([hubType, afterKey, limit]);
-        return fixtureRows
-          .filter((r) => r.hub_type === hubType && r.hub_key > afterKey)
-          .sort((a, b) => (a.hub_key < b.hub_key ? -1 : 1))
-          .slice(0, limit);
+      async () => {
+        calls.push('read');
+        return [...fixtureRows].reverse();
       };
 
-    it('reads every hub of every type once, whatever the batch size', async () => {
-      for (const batchSize of [1, 2, 3, 100]) {
-        // eslint-disable-next-line no-await-in-loop
-        const hubs = await BotHubService.loadHubs({
-          readBatch: readBatch(),
-          batchSize,
-        });
-        should(hubs.rows.map((r) => `${r.hub_type}:${r.hub_key}`)).deepEqual([
-          'index:ALL',
-          'country:FR',
-          'country:GB',
-          'region:FR-01',
-          'region:FR-ARA',
-        ]);
-        should([...hubs.countries]).deepEqual(['FR', 'GB']);
-        should([...hubs.regions]).deepEqual(['FR-01', 'FR-ARA']);
-        should(hubs.hasIndex).be.true();
-      }
-    });
-
-    it('moves the cursor to the last key of the batch, one type at a time', async () => {
+    it('reads every hub in one read, and sorts them by type then key', async () => {
       const calls = [];
-      await BotHubService.loadHubs({
-        readBatch: readBatch(calls),
-        batchSize: 1,
-      });
-      should(calls.filter(([type]) => type === 'region')).deepEqual([
-        ['region', '', 1],
-        ['region', 'FR-01', 1],
-        ['region', 'FR-ARA', 1],
+      const hubs = await BotHubService.loadHubs({ readAll: readAll(calls) });
+      should(calls).deepEqual(['read']);
+      should(hubs.rows.map((r) => `${r.hub_type}:${r.hub_key}`)).deepEqual([
+        'index:ALL',
+        'country:FR',
+        'country:GB',
+        'region:FR-01',
+        'region:FR-ARA',
       ]);
-      should(calls.map(([type]) => type)).containEql('index');
+      should([...hubs.countries]).deepEqual(['FR', 'GB']);
+      should([...hubs.regions]).deepEqual(['FR-01', 'FR-ARA']);
+      should(hubs.hasIndex).be.true();
     });
 
     it('knows which regions list a massif', async () => {
-      const hubs = await BotHubService.loadHubs({ readBatch: readBatch() });
+      const hubs = await BotHubService.loadHubs({ readAll: readAll() });
       should(hubs.regionsOfMassif.get(3)).deepEqual([
         { code: 'FR-01', name: 'Region 3' },
         { code: 'FR-ARA', name: 'Region 4' },
@@ -285,6 +265,20 @@ describe('BotHubService', () => {
         { code: 'FR-ARA', name: 'Region 4' },
       ]);
       should(hubs.regionsOfMassif.has(5)).be.false();
+    });
+
+    it('reads the real view once, not once per type: each read builds every published cave', async () => {
+      const spy = sinon.spy(CommonService, 'query');
+      try {
+        await BotHubService.loadHubs();
+        const reads = spy
+          .getCalls()
+          .filter(({ args: [sql] }) => /FROM v_bot_hub/.test(sql));
+        should(reads).have.length(1);
+        should(reads[0].args[0]).not.match(/WHERE/);
+      } finally {
+        spy.restore();
+      }
     });
 
     it('has no index when the view has none, and reads the real view by default', async () => {

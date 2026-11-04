@@ -35,7 +35,8 @@ const {
   sentence,
   cleanRegionName,
   byName,
-  figureFacts,
+  figureLines,
+  capitalize,
 } = require('./botModelParts');
 
 const DEFAULT_LANGUAGE = 'eng';
@@ -92,7 +93,9 @@ const buildHubModel = (
     siteUrl: baseUrl,
     ogImage: new URL(OG_IMAGE_PATH, baseUrl).href,
     breadcrumb: [],
-    facts: [],
+    figures: [],
+    // The front's "Caves" reads "Réseaux" in French, like "Networks"
+    cavesHeading: capitalize(labels.cavesCount),
     countries: [],
     regions: [],
     massifs: [],
@@ -141,7 +144,7 @@ const buildHubModel = (
   } else if (hubType === 'country') {
     model.name = countryNameOf(page.code, countryNames);
     const figures = figuresOf('country', page.code);
-    model.facts = figureFacts(figures, labels);
+    model.figures = figureLines(figures, labels, lang);
     model.breadcrumb = [indexCrumb(), { text: model.name, url: null }];
     // A region is listed, and linked, only when its hub is published
     model.regions = (page.regions || [])
@@ -178,7 +181,7 @@ const buildHubModel = (
   } else {
     model.name = cleanRegionName(page.name) || page.code;
     const figures = figuresOf('region', page.code);
-    model.facts = figureFacts(figures, labels);
+    model.figures = figureLines(figures, labels, lang);
     const countryCode = page.country || page.code.split('-')[0];
     model.breadcrumb = [
       indexCrumb(),

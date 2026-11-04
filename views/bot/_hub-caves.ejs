@@ -1,5 +1,5 @@
-<%# Locals: caves (array of {name, url, depth, length}), labels -%>
-<% if (locals.caves.length) { %><h2><%= locals.labels.caves %></h2>
+<%# Locals: caves (array of {name, url, depth, length}), heading, labels -%>
+<% if (locals.caves.length) { %><h2><%= locals.heading %></h2>
 <ul>
 <% locals.caves.forEach((cave) => { %><li><a href="<%= cave.url %>"><%= cave.name %></a><% if (cave.depth !== null) { %>, <%= locals.labels.depth %>: <%= cave.depth %> m<% } %><% if (cave.length !== null) { %>, <%= locals.labels.length %>: <%= cave.length %> m<% } %></li>
 <% }) %></ul>

@@ -191,10 +191,9 @@ async function publish({
 }) {
   // The published hubs, read once before any page is rendered: the same rows
   // give the links of every page and the hubs this run publishes
-  const hubs = await BotHubService.loadHubs({
-    batchSize,
-    ...(readHubs ? { readBatch: readHubs } : {}),
-  });
+  const hubs = await BotHubService.loadHubs(
+    readHubs ? { readAll: readHubs } : {}
+  );
   const resolvedBaseUrl = baseUrl || BotRenderService.defaultBaseUrl();
   const renderOptions = {
     baseUrl: resolvedBaseUrl,
@@ -214,7 +213,13 @@ async function publish({
       page.html,
       page.metadata ? { metadata: page.metadata } : undefined
     );
-    await recordPublished(page);
+    // A hub or a massif page changes with the SPA figures and with its list
+    // of caves, which v_bot_page.lastmod does not see: its manifest lastmod
+    // (what the sitemaps publish) is the time of the upload, so it moves when
+    // the page does and never goes back
+    await recordPublished(
+      page.lastmodAtUpload ? { ...page, lastmod: new Date() } : page
+    );
     summary.uploaded += 1;
     return true;
   };
@@ -290,6 +295,7 @@ async function publish({
             html,
             hash: sha256(html),
             lastmod: row.lastmod,
+            lastmodAtUpload: entityType === 'massif',
           },
           known
         );
@@ -378,6 +384,7 @@ async function publish({
           html,
           hash: sha256(html),
           lastmod: row.lastmod,
+          lastmodAtUpload: true,
         },
         known
       );
@@ -440,9 +447,8 @@ module.exports = {
    *   defaults to v_bot_page, replaceable for a synthetic source
    * @param {Function} [options.readRedirects] (entityType) => rows of
    *   {entity_id, target_id}, sorted by entity_id; defaults to v_bot_redirect
-   * @param {Function} [options.readHubs] (hubType, afterKey, limit) => rows of
-   *   v_bot_hub, sorted by hub_key; defaults to v_bot_hub, replaceable for a
-   *   synthetic source
+   * @param {Function} [options.readHubs] () => every row of v_bot_hub;
+   *   defaults to one read of v_bot_hub, replaceable for a synthetic source
    * @param {Function} [options.onBatch] called after each batch
    * @param {Map<string, string>} [options.languageTags] ISO 639-3 to 639-1;
    *   read from t_language when absent

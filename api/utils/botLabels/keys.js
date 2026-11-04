@@ -23,14 +23,21 @@ const LABEL_KEYS = Object.freeze({
   entrance: 'Entrance',
   entrances: 'Entrances',
   massifs: 'Massifs',
-  caves: 'Caves',
-  // The plural noun, for "cavités: 12": the front's 'Caves' reads "Réseaux" in French, like 'Networks'
+  // The plural noun, for "cavités: 12" and (capitalized) the heading of a list
+  // of caves: the front's 'Caves' reads "Réseaux" in French, like 'Networks'
   cavesCount: 'caves',
   countries: 'Countries',
   regions: 'Regions',
-  networks: 'Networks',
   avgDepth: 'average depth',
   avgLength: 'average length',
+  // The figures of a hub or a massif, worded as the SPA's statistics widget
+  // words them (number first, then this text); some are ICU plural messages
+  figureCaves: 'cave_with_entrances',
+  figureNetworks: 'network_count',
+  figureDivingCaves: 'diveable_caves',
+  figureMassif: 'massif',
+  figureMassifs: 'massifs',
+  figureTotalLength: 'cumulated length',
   descriptions: 'Descriptions',
   municipality: 'addresstype.municipality',
   county: 'County',

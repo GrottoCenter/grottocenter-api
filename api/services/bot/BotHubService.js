@@ -36,8 +36,6 @@ const StatisticsCountryService = require('../StatisticsCountryService');
 const StatisticsRegionService = require('../StatisticsRegionService');
 const StatisticsMassifService = require('../StatisticsMassifService');
 
-const DEFAULT_BATCH_SIZE = 1000;
-
 const toInt = (value) =>
   value === null || value === undefined ? null : Number.parseInt(value, 10);
 
@@ -107,47 +105,48 @@ const massifFigures = async (id) => {
   return figures;
 };
 
-const readHubBatch = async (hubType, afterKey, limit) => {
+// Every hub in ONE read. The view's MATERIALIZED CTEs build every published
+// cave of v_bot_page before any WHERE on hub_type can prune, so a read per
+// type (or per keyset batch) would pay that again; the result is bounded (one
+// index, the countries and regions with a published cave: about 870 rows) and
+// held in memory by the generator anyway.
+const readAllHubs = async () => {
   const { rows } = await CommonService.query(
     `SELECT hub_type, hub_key, language, lastmod, page
        FROM v_bot_hub
-      WHERE hub_type = $1 AND hub_key > $2
-      ORDER BY hub_key
-      LIMIT $3`,
-    [hubType, afterKey, limit]
+      ORDER BY CASE hub_type WHEN 'index' THEN 0 WHEN 'country' THEN 1 ELSE 2 END,
+               hub_key COLLATE "C"`
   );
   return rows;
 };
 
+const HUB_TYPE_ORDER = new Map(
+  botPagePaths.HUB_TYPES.map((type, i) => [type, i])
+);
+
 module.exports = {
   /**
-   * Reads every published hub, one type at a time, by keyset on hub_key.
+   * Reads every published hub, in one read of v_bot_hub (see readAllHubs).
    *
    * @param {object} [options]
-   * @param {Function} [options.readBatch] (hubType, afterKey, limit) => rows
-   *   of v_bot_hub; replaceable for a synthetic source
-   * @param {number} [options.batchSize]
+   * @param {Function} [options.readAll] () => rows of v_bot_hub; replaceable
+   *   for a synthetic source
    * @returns {Promise<{rows: object[], countries: Set<string>,
    *   regions: Set<string>, hasIndex: boolean,
    *   regionsOfMassif: Map<number, {code: string, name: string}[]>}>}
    *   `rows` is sorted by type (index, country, region), then key
    */
-  async loadHubs({
-    readBatch = readHubBatch,
-    batchSize = DEFAULT_BATCH_SIZE,
-  } = {}) {
-    const rows = [];
-    // eslint-disable-next-line no-restricted-syntax
-    for (const hubType of botPagePaths.HUB_TYPES) {
-      let cursor = '';
-      for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        const batch = await readBatch(hubType, cursor, batchSize);
-        rows.push(...batch);
-        if (batch.length < batchSize) break;
-        cursor = batch[batch.length - 1].hub_key;
-      }
-    }
+  async loadHubs({ readAll = readAllHubs } = {}) {
+    // Sorted here too, so the order never depends on the source
+    const byKey = (a, b) => {
+      if (a.hub_key === b.hub_key) return 0;
+      return a.hub_key < b.hub_key ? -1 : 1;
+    };
+    const rows = [...(await readAll())].sort(
+      (a, b) =>
+        HUB_TYPE_ORDER.get(a.hub_type) - HUB_TYPE_ORDER.get(b.hub_type) ||
+        byKey(a, b)
+    );
     const keysOf = (type) =>
       new Set(rows.filter((r) => r.hub_type === type).map((r) => r.hub_key));
     const regionsOfMassif = new Map();

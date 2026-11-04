@@ -470,19 +470,34 @@ describe('Bot hub pages - templates', () => {
   });
 
   describe('the figures', () => {
-    it('are the ones handed over, converted to labelled facts in a fixed order, a null figure left out', () => {
+    it('are the ones handed over, worded as the SPA words them, in a fixed order, a null figure left out', () => {
       const html = render(countryRow());
       should(html).containEql(
-        '<dl>\n<dt>cavités</dt><dd>1234</dd>\n<dt>Réseaux</dt><dd>56</dd>\n<dt>Massifs</dt><dd>7</dd>\n<dt>Plongée possible</dt><dd>8</dd>\n<dt>Longueur</dt><dd>456789 m</dd>\n<dt>Profondeur moyenne</dt><dd>61 m</dd>\n<dt>Développement moyen</dt><dd>372 m</dd>\n</dl>'
+        [
+          '<ul class="figures">',
+          '<li><strong>1234</strong> cavités (1 ou plusieurs entrées)</li>',
+          '<li><strong>56</strong> réseaux (cavité avec plus d&#39;une entrée)</li>',
+          '<li><strong>7</strong> massifs</li>',
+          '<li><strong>8</strong> cavités permettent de faire de la plongée</li>',
+          '<li><strong>456789 m</strong> Développement cumulé</li>',
+          '<li><strong>61 m</strong> Profondeur moyenne</li>',
+          '<li><strong>372 m</strong> Développement moyen</li>',
+          '</ul>',
+        ].join('\n')
       );
+      // The list of caves is not titled with the networks' word
+      should(html).containEql('<h2>Cavités</h2>');
+      should(html).not.containEql('<h2>Réseaux</h2>');
       const region = render(regionRow());
-      should(region).containEql('<dt>cavités</dt><dd>321</dd>');
+      should(region).containEql(
+        '<li><strong>321</strong> cavités (1 ou plusieurs entrées)</li>'
+      );
       should(region).not.containEql('Profondeur moyenne');
     });
 
     it('show no list when the hub has no figures at all', () => {
       should(render(countryRow(), { hubFigures: new Map() })).not.containEql(
-        '<dl>'
+        'class="figures"'
       );
     });
   });

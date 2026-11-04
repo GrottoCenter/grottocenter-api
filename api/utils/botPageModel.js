@@ -37,7 +37,8 @@ const {
   sentence,
   cleanRegionName,
   byName,
-  figureFacts,
+  figureLines,
+  capitalize,
 } = require('./botModelParts');
 
 const DEFAULT_LANGUAGE = 'eng';
@@ -223,6 +224,9 @@ const buildPageModel = (
     ogImage: new URL(OG_IMAGE_PATH, baseUrl).href,
     descriptions: buildDescriptions(page.descriptions, lang, tag),
     breadcrumb: [],
+    figures: [],
+    // The front's "Caves" reads "Réseaux" in French, like "Networks"
+    cavesHeading: capitalize(labels.cavesCount),
   };
 
   if (entityType === 'cave') {
@@ -287,7 +291,7 @@ const buildPageModel = (
       'top',
       massifExtras.get(row.entity_id) || {}
     );
-    model.facts = figureFacts(extras.figures, labels);
+    model.figures = figureLines(extras.figures, labels, lang);
     model.regions = (extras.regions || [])
       .map((region) => ({
         text: cleanRegionName(region.name) || region.code,
@@ -299,7 +303,9 @@ const buildPageModel = (
       sentence(`${labels.massif}: ${name}`),
       model.caves.length > 0
         ? sentence(
-            `${labels.caves}: ${model.caves.map((c) => c.name).join(', ')}`
+            `${capitalize(labels.cavesCount)}: ${model.caves
+              .map((c) => c.name)
+              .join(', ')}`
           )
         : null,
     ]);
