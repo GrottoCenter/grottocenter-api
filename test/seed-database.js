@@ -31,6 +31,7 @@ async function dropNonWaterlineTables(testUrl) {
   const client = new Client({ connectionString: testUrl });
   await client.connect();
   try {
+    await client.query('DROP VIEW IF EXISTS v_bot_hub');
     await client.query('DROP VIEW IF EXISTS v_bot_redirect');
     await client.query('DROP VIEW IF EXISTS v_bot_page');
     // Not a model: it outlives migrate:drop, so a changed definition would
@@ -100,6 +101,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
                 customSQL.BOT_PAGE_MANIFEST_MIGRATION,
                 customSQL.BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
+                customSQL.BOT_HUB_MIGRATION,
               ].join('\n')
             )
               .then(() => resolve(sails))

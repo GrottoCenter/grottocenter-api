@@ -1,0 +1,6 @@
+<%# Locals: heading, items (array of {text, url, caves, cavesLabel}); nothing is rendered for an empty list -%>
+<% if (locals.items.length) { %><h2><%= locals.heading %></h2>
+<ul>
+<% locals.items.forEach((item) => { %><li><a href="<%= item.url %>"><%= item.text %></a><% if (item.caves) { %>, <%= item.cavesLabel %>: <%= item.caves %><% } %></li>
+<% }) %></ul>
+<% } %>

@@ -29,6 +29,7 @@ describe('BotRenderService', () => {
       languageTags: TAGS,
       countryNames: COUNTRIES,
       hubLinks: BotRenderService.NO_HUB_LINKS,
+      massifExtras: new Map(),
       ...options,
     });
 

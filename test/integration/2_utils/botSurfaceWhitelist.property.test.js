@@ -22,6 +22,9 @@ const extraKey = fc
 
 const NESTED_KEYS = [
   'caves',
+  'countries',
+  'figures',
+  'regions',
   'descriptions',
   'entrances',
   'license',

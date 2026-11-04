@@ -69,6 +69,27 @@ const EXPECTED = {
     ],
     nested: ['id', 'name'],
   },
+  hubIndex: { top: ['countries', 'language', 'lastmod'] },
+  hubCountry: {
+    top: ['caves', 'code', 'language', 'lastmod', 'massifs', 'regions'],
+    nested: ['code'],
+  },
+  hubRegion: {
+    top: ['caves', 'code', 'country', 'language', 'lastmod', 'massifs', 'name'],
+    nested: ['code', 'name'],
+  },
+  figures: {
+    top: [
+      'avgDepth',
+      'avgLength',
+      'nbCaves',
+      'nbDivingCaves',
+      'nbMassifs',
+      'nbNetworks',
+      'totalLength',
+    ],
+  },
+  massifExtras: { top: ['figures', 'regions'] },
   document: {
     top: [
       'datePublication',

@@ -92,4 +92,110 @@ describe('botPagePaths', () => {
       ].forEach((url) => should(botPagePaths.fromUrl(url)).be.null());
     });
   });
+
+  describe('the hubs', () => {
+    it('maps the index, a country and a region to their blob key and their address in the SPA', () => {
+      [
+        ['index', 'ALL', 'countries.html', 'countries'],
+        ['country', 'FR', 'countries/FR.html', 'countries/FR'],
+        [
+          'region',
+          'FR-01',
+          'countries/FR/regions/01.html',
+          'countries/FR/regions/01',
+        ],
+        [
+          'region',
+          'GB-CMN',
+          'countries/GB/regions/CMN.html',
+          'countries/GB/regions/CMN',
+        ],
+        [
+          'region',
+          'ES-A',
+          'countries/ES/regions/A.html',
+          'countries/ES/regions/A',
+        ],
+      ].forEach(([hubType, hubKey, key, tail]) => {
+        should(botPagePaths.toHubKey(hubType, hubKey)).equal(key);
+        should(botPagePaths.toHubUrl(hubType, hubKey)).equal(
+          `https://grottocenter.org/ui/${tail}`
+        );
+        should(botPagePaths.fromKey(key)).deepEqual({
+          entityType: 'hub',
+          hubType,
+          hubKey,
+        });
+        should(
+          botPagePaths.fromUrl(`https://grottocenter.org/ui/${tail}`)
+        ).deepEqual({ entityType: 'hub', hubType, hubKey });
+      });
+    });
+
+    it('uses the base URL given', () => {
+      should(
+        botPagePaths.toHubUrl('country', 'FR', 'https://example.test/x/')
+      ).equal('https://example.test/x/countries/FR');
+    });
+
+    it('rejects a hub that is not one: a lower-case code, a region for a country, an index key that is not ALL', () => {
+      [
+        ['country', 'fr'],
+        ['country', 'FRA'],
+        ['country', 'FR-01'],
+        ['region', 'FR'],
+        ['region', 'FR-0123'],
+        ['region', 'fr-01'],
+        ['region', 'FR-'],
+        ['index', 'FR'],
+        ['index', undefined],
+        ['municipality', 'FR'],
+        ['constructor', 'FR'],
+        ['country', null],
+      ].forEach(([hubType, hubKey]) => {
+        should(() => botPagePaths.toHubKey(hubType, hubKey)).throw(RangeError);
+        should(() => botPagePaths.toHubUrl(hubType, hubKey)).throw(RangeError);
+      });
+    });
+
+    it('returns null for an address or a key that is not exactly a hub', () => {
+      [
+        'countries/fr.html',
+        'countries/FR/.html',
+        'countries/FR.html/',
+        'countries/FR/regions.html',
+        'countries/FR/regions/.html',
+        'countries/FR/regions/0123.html',
+        'countries/FR/regions/01/extra.html',
+        'countries/FRA.html',
+        'countries/FR.htm',
+        'countries.htm',
+        'Countries.html',
+        'countries/constructor.html',
+      ].forEach((key) => should(botPagePaths.fromKey(key)).be.null());
+      [
+        'https://grottocenter.org/ui/countries/',
+        'https://grottocenter.org/ui/countries/FR/',
+        'https://grottocenter.org/ui/countries/FR?x=1',
+        'https://grottocenter.org/ui/countries/FR#x',
+        'https://grottocenter.org/ui/countries/FR.html',
+        'https://grottocenter.org/ui/countries/FR/regions',
+        'https://grottocenter.org/ui/countries/fr',
+        'https://other.test/ui/countries/FR',
+      ].forEach((url) => should(botPagePaths.fromUrl(url)).be.null());
+    });
+
+    it('does not collide with the pages of the records', () => {
+      should(botPagePaths.ENTITY_TYPES).deepEqual([
+        'cave',
+        'massif',
+        'organization',
+      ]);
+      should(botPagePaths.HUB_TYPES).deepEqual(['index', 'country', 'region']);
+      should(botPagePaths.fromKey('caves/1.html')).deepEqual({
+        entityType: 'cave',
+        id: 1,
+      });
+    });
+  });
 });

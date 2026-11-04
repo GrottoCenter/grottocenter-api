@@ -24,6 +24,13 @@ const LABEL_KEYS = Object.freeze({
   entrances: 'Entrances',
   massifs: 'Massifs',
   caves: 'Caves',
+  // The plural noun, for "cavités: 12": the front's 'Caves' reads "Réseaux" in French, like 'Networks'
+  cavesCount: 'caves',
+  countries: 'Countries',
+  regions: 'Regions',
+  networks: 'Networks',
+  avgDepth: 'average depth',
+  avgLength: 'average length',
   descriptions: 'Descriptions',
   municipality: 'addresstype.municipality',
   county: 'County',

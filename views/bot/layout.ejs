@@ -1,6 +1,6 @@
 <%# Shared layout of every page published for bots (see BotRenderService).
     Locals: lang, title, siteUrl, body (trusted HTML from a page template);
-    optional: dir ('rtl' for a right-to-left language), description, canonicalUrl, ogImage, jsonLd (a serialized JSON-LD document), robots, refreshUrl -%>
+    optional: dir ('rtl' for a right-to-left language), description, canonicalUrl, og (false: no og:* tags, with a canonicalUrl; a redirect page), ogImage, jsonLd (a serialized JSON-LD document), robots, refreshUrl -%>
 <!DOCTYPE html>
 <html lang="<%= locals.lang %>"<% if (locals.dir === 'rtl') { %> dir="rtl"<% } %>>
 <head>
@@ -12,13 +12,13 @@
 <% } %><title><%= locals.title %></title>
 <% if (locals.description) { %><meta name="description" content="<%= locals.description %>">
 <% } %><% if (locals.canonicalUrl) { %><link rel="canonical" href="<%= locals.canonicalUrl %>">
-<meta property="og:type" content="website">
+<% if (locals.og !== false) { %><meta property="og:type" content="website">
 <meta property="og:site_name" content="Grottocenter">
 <meta property="og:title" content="<%= locals.title %>">
 <% if (locals.description) { %><meta property="og:description" content="<%= locals.description %>">
 <% } %><meta property="og:url" content="<%= locals.canonicalUrl %>">
 <% if (locals.ogImage) { %><meta property="og:image" content="<%= locals.ogImage %>">
-<% } %><% } %><% if (locals.jsonLd) { %><script type="application/ld+json"><%- locals.jsonLd %></script>
+<% } %><% } %><% } %><% if (locals.jsonLd) { %><script type="application/ld+json"><%- locals.jsonLd %></script>
 <% } %><style>
 body{margin:0;font-family:system-ui,sans-serif;line-height:1.5;color:#222;background:#fff}
 header,main,footer{max-width:50rem;margin:0 auto;padding:0.75rem 1rem}

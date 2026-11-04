@@ -85,6 +85,8 @@ describe('Bot page labels', () => {
   it('lists the label ids the templates and the page model use, and every listed id is used', () => {
     const sources = [
       path.join(ROOT, 'api/utils/botPageModel.js'),
+      path.join(ROOT, 'api/utils/botHubModel.js'),
+      path.join(ROOT, 'api/utils/botModelParts.js'),
       ...fs
         .readdirSync(path.join(ROOT, 'views/bot'))
         .map((name) => path.join(ROOT, 'views/bot', name)),

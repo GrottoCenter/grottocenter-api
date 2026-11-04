@@ -22,6 +22,7 @@ describe('BotPageGeneratorService', () => {
   let putOptions;
   let deletes;
   let records;
+  let hubRows;
 
   const query = (sql, params) => CommonService.query(sql, params);
 
@@ -48,10 +49,18 @@ describe('BotPageGeneratorService', () => {
       .sort((a, b) => a.entity_id - b.entity_id)
       .slice(0, limit);
 
+  // The rows v_bot_hub would return, read by keyset like the view
+  const readHubs = async (hubType, afterKey, limit) =>
+    hubRows
+      .filter((r) => r.hub_type === hubType && r.hub_key > afterKey)
+      .sort((a, b) => (a.hub_key < b.hub_key ? -1 : 1))
+      .slice(0, limit);
+
   const run = (options = {}) =>
     Generator.run({
       adapter,
       readBatch,
+      readHubs,
       baseUrl: 'https://example.test/ui',
       ...options,
     });
@@ -64,9 +73,9 @@ describe('BotPageGeneratorService', () => {
   };
 
   const manifestPaths = async () =>
-    (
-      await query('SELECT path FROM t_bot_page_manifest ORDER BY path')
-    ).rows.map((r) => r.path);
+    (await query('SELECT path FROM t_bot_page_manifest')).rows
+      .map((r) => r.path)
+      .sort();
 
   const manifestRow = async (p) =>
     (await query('SELECT * FROM t_bot_page_manifest WHERE path = $1', [p]))
@@ -93,6 +102,7 @@ describe('BotPageGeneratorService', () => {
     puts = [];
     putOptions = {};
     deletes = [];
+    hubRows = [];
     adapter = recordingAdapter(new LocalStorageAdapter(root));
     records = [
       record('cave', FIRST_ID + 1),
@@ -997,6 +1007,346 @@ describe('BotPageGeneratorService', () => {
       });
       should(read(final.id)).not.containEql('http-equiv="refresh"');
       should(await manifestPaths()).deepEqual(await keys());
+    });
+  });
+
+  describe('hub pages', () => {
+    const hubRow = (hubType, hubKey, page = {}) => ({
+      hub_type: hubType,
+      hub_key: hubKey,
+      language: 'fra',
+      lastmod: new Date('2026-01-01T00:00:00Z'),
+      page: { language: 'fra', ...page },
+    });
+    const cave = (id) => ({ id, name: `cave ${id}`, depth: 10, length: 20 });
+    const FRANCE = () =>
+      hubRow('country', 'FR', {
+        code: 'FR',
+        regions: [{ code: 'FR-01', name: 'Ain' }],
+        massifs: [],
+        caves: [cave(FIRST_ID + 1)],
+      });
+    const AIN = () =>
+      hubRow('region', 'FR-01', {
+        code: 'FR-01',
+        name: 'Ain',
+        country: 'FR',
+        massifs: [{ id: FIRST_ID + 1, name: 'massif' }],
+        caves: [cave(FIRST_ID + 1)],
+      });
+    const INDEX = () => hubRow('index', 'ALL', { countries: [{ code: 'FR' }] });
+    const publishedHubs = () => [INDEX(), FRANCE(), AIN()];
+    const HUB_KEYS = [
+      'countries.html',
+      'countries/FR.html',
+      'countries/FR/regions/01.html',
+    ];
+
+    // A cave in France and in the Ain, as v_bot_page holds it
+    const caveInAin = (id) =>
+      record('cave', id, {
+        entrances: [
+          {
+            id: 1,
+            name: 'Entrance',
+            country: 'FR',
+            regionCode: 'FR-01',
+            region: 'Ain',
+            descriptions: [],
+          },
+        ],
+      });
+    const readFile = (key) => fs.readFileSync(path.join(root, key), 'utf8');
+    const crumbs = (key) =>
+      (readFile(key).match(/<nav class="breadcrumb">.*?<\/nav>/s) || [''])[0];
+
+    beforeEach(() => {
+      records = [caveInAin(FIRST_ID + 1), record('massif', FIRST_ID + 1)];
+      hubRows = publishedHubs();
+    });
+
+    it('publishes the countries index, the country and the region, at their own paths, after the records', async () => {
+      const summary = await run();
+
+      should(await keys()).deepEqual(
+        [
+          ...HUB_KEYS,
+          '404.html',
+          `caves/${FIRST_ID + 1}.html`,
+          `massifs/${FIRST_ID + 1}.html`,
+        ].sort()
+      );
+      should(summary.byType.hub).deepEqual({
+        uploaded: 3,
+        unchanged: 0,
+        deleted: 0,
+      });
+      should(summary.uploaded).equal(6);
+      // The hubs come after the records of the three types
+      const firstHub = puts.findIndex((key) => key.startsWith('countries'));
+      should(puts.slice(0, firstHub)).deepEqual([
+        `caves/${FIRST_ID + 1}.html`,
+        `massifs/${FIRST_ID + 1}.html`,
+      ]);
+      should(readFile('countries/FR.html')).containEql(
+        '<link rel="canonical" href="https://example.test/ui/countries/FR">'
+      );
+    });
+
+    it('records each hub in the manifest as a hub row: type, key, no id, the hash of the file, no redirect', async () => {
+      await run();
+
+      const row = await manifestRow('countries/FR/regions/01.html');
+      should(row.entity_type).equal('hub');
+      should(row.hub_type).equal('region');
+      should(row.hub_key).equal('FR-01');
+      should(row.entity_id).be.null();
+      should(row.redirect_to).be.null();
+      should(row.content_hash).equal(sha256(readFile(row.path)));
+      should(row.lastmod.toISOString()).equal('2026-01-01T00:00:00.000Z');
+      const index = await manifestRow('countries.html');
+      should([index.hub_type, index.hub_key]).deepEqual(['index', 'ALL']);
+      const { rows } = await query(
+        "SELECT path FROM t_bot_page_manifest WHERE entity_type = 'hub' ORDER BY path"
+      );
+      should(rows.map((r) => r.path).sort()).deepEqual([...HUB_KEYS].sort());
+    });
+
+    it('uploads nothing the second time, and only the hub that changed after a change', async () => {
+      await run();
+      puts.length = 0;
+
+      const again = await run();
+      should(puts).deepEqual([]);
+      should(again.byType.hub.unchanged).equal(3);
+
+      hubRows = [
+        INDEX(),
+        FRANCE(),
+        hubRow('region', 'FR-01', {
+          ...AIN().page,
+          caves: [cave(FIRST_ID + 1), cave(FIRST_ID + 2)],
+        }),
+      ];
+      await run();
+      should(puts).deepEqual(['countries/FR/regions/01.html']);
+    });
+
+    it('does not upload a hub whose only change is lastmod', async () => {
+      await run();
+      puts.length = 0;
+      hubRows = publishedHubs().map((r) => ({
+        ...r,
+        lastmod: new Date('2031-01-01T00:00:00Z'),
+      }));
+      await run();
+      should(puts).deepEqual([]);
+    });
+
+    it('deletes the file and the manifest row of a hub that is no longer published, and touches nothing else', async () => {
+      await run();
+      puts.length = 0;
+      hubRows = [INDEX(), FRANCE()];
+
+      const summary = await run();
+
+      should(deletes).deepEqual(['countries/FR/regions/01.html']);
+      should(summary.byType.hub.deleted).equal(1);
+      should(await keys()).deepEqual(
+        [
+          'countries.html',
+          'countries/FR.html',
+          '404.html',
+          `caves/${FIRST_ID + 1}.html`,
+          `massifs/${FIRST_ID + 1}.html`,
+        ].sort()
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+      should(await manifestRow('countries/FR/regions/01.html')).be.undefined();
+    });
+
+    it('deletes every hub when none is published, and the records keep their pages', async () => {
+      await run();
+      hubRows = [];
+      await run();
+      should(await keys()).deepEqual(
+        [
+          '404.html',
+          `caves/${FIRST_ID + 1}.html`,
+          `massifs/${FIRST_ID + 1}.html`,
+        ].sort()
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    it('reads the hubs once, before it renders or publishes a record', async () => {
+      const calls = [];
+      await Generator.run({
+        adapter: recordingAdapter(new LocalStorageAdapter(root), {
+          beforePut: async () => calls.push('put'),
+        }),
+        readBatch: async (...args) => {
+          calls.push('records');
+          return readBatch(...args);
+        },
+        readHubs: async (...args) => {
+          calls.push('hubs');
+          return readHubs(...args);
+        },
+        baseUrl: 'https://example.test/ui',
+      });
+      const firstPut = calls.indexOf('put');
+      const firstRecords = calls.indexOf('records');
+      should(calls.lastIndexOf('hubs')).be.below(firstRecords);
+      should(calls.lastIndexOf('hubs')).be.below(firstPut);
+      // Three types of hub, each read until a short batch, no more
+      should(calls.filter((c) => c === 'hubs')).have.length(3);
+    });
+
+    it('survives a failed upload of a hub: the manifest equals the adapter, and the next run finishes', async () => {
+      adapter = recordingAdapter(new LocalStorageAdapter(root), {
+        beforePut: async (key) => {
+          if (key === 'countries/FR.html')
+            throw new Error('storage unavailable');
+        },
+      });
+      await run({ concurrency: 1 }).should.be.rejectedWith(
+        'storage unavailable'
+      );
+      should(await manifestPaths()).deepEqual(await keys());
+      should(await manifestRow('countries/FR.html')).be.undefined();
+
+      adapter = recordingAdapter(new LocalStorageAdapter(root));
+      puts.length = 0;
+      await run();
+      should(puts).containEql('countries/FR.html');
+      should(await manifestPaths()).deepEqual(await keys());
+      should(await keys()).containEql('countries/FR.html');
+    });
+
+    it('survives a failed delete of a hub: the row is kept, so the delete is retried', async () => {
+      await run();
+      hubRows = [INDEX(), FRANCE()];
+      adapter = recordingAdapter(new LocalStorageAdapter(root), {
+        beforeDelete: async () => {
+          throw new Error('delete refused');
+        },
+      });
+      await run().should.be.rejectedWith('delete refused');
+      should(
+        await manifestRow('countries/FR/regions/01.html')
+      ).not.be.undefined();
+      should(await manifestPaths()).deepEqual(await keys());
+
+      adapter = recordingAdapter(new LocalStorageAdapter(root));
+      await run();
+      should(await keys()).not.containEql('countries/FR/regions/01.html');
+      should(await manifestPaths()).deepEqual(await keys());
+    });
+
+    describe('the breadcrumb of a cave page', () => {
+      it('links the country and the region exactly when their hubs are published', async () => {
+        await run();
+        const cavePath = `caves/${FIRST_ID + 1}.html`;
+        should(crumbs(cavePath)).containEql(
+          '<li><a href="https://example.test/ui/countries/FR">'
+        );
+        should(crumbs(cavePath)).containEql(
+          '<li><a href="https://example.test/ui/countries/FR/regions/01">Ain</a></li>'
+        );
+
+        // The region hub is withdrawn: the next run takes the link off the cave
+        hubRows = [INDEX(), FRANCE()];
+        await run();
+        should(crumbs(cavePath)).containEql(
+          '<a href="https://example.test/ui/countries/FR">'
+        );
+        should(crumbs(cavePath)).containEql('<li>Ain</li>');
+        should(crumbs(cavePath)).not.containEql('regions');
+
+        // No hub at all: no link
+        hubRows = [];
+        await run();
+        should(crumbs(cavePath)).not.containEql('<a');
+      });
+
+      it('never links to a hub that is not among the files the run published', async () => {
+        records = [
+          caveInAin(FIRST_ID + 1),
+          caveInAin(FIRST_ID + 2),
+          record('massif', FIRST_ID + 1),
+        ];
+        // The country hub and the index only
+        hubRows = [INDEX(), FRANCE()];
+        await run();
+        const published = new Set(await keys());
+        const links = [];
+        [...published].forEach((key) => {
+          [
+            ...readFile(key).matchAll(
+              /href="https:\/\/example\.test\/ui\/(countries[^"]*)"/g
+            ),
+          ].forEach((m) => links.push(m[1]));
+        });
+        should(links.length).be.above(2);
+        links.forEach((link) =>
+          should(published.has(`${link}.html`)).be.true(`${link} is dead`)
+        );
+      });
+
+      it('does not move when the order the hubs are read in changes: the bytes depend on the set', async () => {
+        await run();
+        const before = readFile(`caves/${FIRST_ID + 1}.html`);
+        puts.length = 0;
+        hubRows = [...publishedHubs()].reverse();
+        await run();
+        should(puts).deepEqual([]);
+        should(readFile(`caves/${FIRST_ID + 1}.html`)).equal(before);
+      });
+
+      it('changes only the cave pages that link to the hub that came or went', async () => {
+        records = [caveInAin(FIRST_ID + 1), record('cave', FIRST_ID + 2)];
+        await run();
+        puts.length = 0;
+        hubRows = [INDEX(), FRANCE()];
+        await run();
+        // The cave with a breadcrumb is rendered again, the other is not; the
+        // country hub, which listed the region, is too
+        should(puts.sort()).deepEqual([
+          `caves/${FIRST_ID + 1}.html`,
+          'countries/FR.html',
+        ]);
+      });
+    });
+
+    it('lists a massif in the regions of the hubs that carry it, and links only the published ones', async () => {
+      await run();
+      const massif = readFile(`massifs/${FIRST_ID + 1}.html`);
+      should(massif).containEql('<h2>Régions</h2>');
+      should(massif).containEql(
+        '<a href="https://example.test/ui/countries/FR/regions/01">Ain</a>'
+      );
+    });
+
+    it('renders the hub pages in the language of the hub', async () => {
+      hubRows = [
+        INDEX(),
+        AIN(),
+        {
+          ...FRANCE(),
+          language: 'pol',
+          page: { ...FRANCE().page, language: 'pol' },
+        },
+      ];
+      await run({
+        languageTags: new Map([
+          ['fra', 'fr'],
+          ['pol', 'pl'],
+        ]),
+      });
+      const html = readFile('countries/FR.html');
+      should(html).containEql('<html lang="pl">');
+      should(html).containEql('<h2>Regions</h2>');
     });
   });
 
