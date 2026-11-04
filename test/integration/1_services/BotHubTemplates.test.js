@@ -11,6 +11,7 @@ const TAGS = new Map([
   ['eng', 'en'],
   ['pol', 'pl'],
   ['ara', 'ar'],
+  ['rus', 'ru'],
 ]);
 // What loadCountryNames() reads from t_country: native_name (a subset)
 const COUNTRIES = new Map([
@@ -493,6 +494,23 @@ describe('Bot hub pages - templates', () => {
         '<li><strong>321</strong> cavités (1 ou plusieurs entrées)</li>'
       );
       should(region).not.containEql('Profondeur moyenne');
+    });
+
+    it('uses the plural rules of the labels, English for a Russian hub: 21 caves, not 21 cave', () => {
+      const html = render(
+        countryRow({ language: 'rus' }, { language: 'rus' }),
+        {
+          hubFigures: new Map([
+            ['country:FR', { nbCaves: 21, nbNetworks: 31, nbDivingCaves: 1 }],
+          ]),
+        }
+      );
+      should(html).containEql('<html lang="ru">');
+      should(html).containEql(
+        '<li><strong>21</strong> caves (1 or multiple entrances)</li>'
+      );
+      should(html).containEql('<li><strong>31</strong> networks');
+      should(html).containEql('<li><strong>1</strong> cave is diveable</li>');
     });
 
     it('show no list when the hub has no figures at all', () => {

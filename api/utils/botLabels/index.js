@@ -41,12 +41,29 @@ const LABELS = Object.freeze({
 });
 
 /**
+ * The language the labels of a page are in: the page language when the front
+ * has a translation for it, else English. The plural rules of a label are the
+ * ones of this language, not of the page: a Russian page has English labels,
+ * and "21 caves" in English.
+ *
  * @param {string} tag BCP 47 primary subtag of the page language ('pt', or a
  *   3-letter code for a language without a 2-letter one)
+ * @returns {string}
+ */
+const labelsLanguage = (tag) =>
+  Object.prototype.hasOwnProperty.call(LABELS, tag) ? tag : 'en';
+
+/**
+ * @param {string} tag BCP 47 primary subtag of the page language
  * @returns {Object<string,string>} the labels of that language, the English
  *   ones when the front has no translation for it
  */
-const labelsFor = (tag) =>
-  Object.prototype.hasOwnProperty.call(LABELS, tag) ? LABELS[tag] : LABELS.en;
+const labelsFor = (tag) => LABELS[labelsLanguage(tag)];
 
-module.exports = { labelsFor, LABEL_KEYS, FRONT_LANGUAGES, LABELS };
+module.exports = {
+  labelsFor,
+  labelsLanguage,
+  LABEL_KEYS,
+  FRONT_LANGUAGES,
+  LABELS,
+};
