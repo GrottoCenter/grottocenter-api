@@ -39,6 +39,7 @@ module.exports.policies = {
   'v1/auth/sign-up': true,
   'v1/auth/verify-email': true,
   'v1/auth/resend-verification-email': true,
+  'v1/auth/check': 'tokenAuth',
 
   // MFA
   'v1/mfa/enroll': ['mfaEnrollmentAuth'],

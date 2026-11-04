@@ -73,6 +73,7 @@ module.exports.routes = {
   'POST /api/v1/signup': 'v1/auth/sign-up',
   'GET /api/v1/verify-email': 'v1/auth/verify-email',
   'POST /api/v1/resend-verification-email': 'v1/auth/resend-verification-email',
+  'GET /api/v1/auth/check': 'v1/auth/check',
 
   // MFA
   'POST /api/v1/mfa/enroll': 'v1/mfa/enroll',
