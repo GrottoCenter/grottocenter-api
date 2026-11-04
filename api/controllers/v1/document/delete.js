@@ -86,15 +86,11 @@ module.exports = async (req, res) => {
   }
 
   if (deletePermanently) {
-    // Done first: t_point.id_reference_document references the document, so
-    // the final hard delete would fail on that foreign key once everything
-    // else is gone. A merge does not move the positions either: x and y are
-    // in the deleted SVG's own viewBox, meaningless on another document.
-    await TPoint.update({ referenceDocument: documentId }).set({
-      referenceDocument: null,
-      x: null,
-      y: null,
-    });
+    // Done first: j_point_document_position references the document, so the
+    // final hard delete would fail on that foreign key once everything else is
+    // gone. A merge does not move the positions either: x and y are in this
+    // document's reference frame, meaningless on another document.
+    await JPointDocumentPosition.destroy({ document: documentId });
 
     await TDocument.update({ redirectTo: documentId }).set({
       dateReviewed: new Date(), // Avoid a uniqueness error

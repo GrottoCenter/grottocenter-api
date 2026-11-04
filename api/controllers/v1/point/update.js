@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const PointService = require('../../../services/PointService');
 const { toPoint } = require('../../../services/mapping/converters');
 
+// PATCH: only the fields sent are changed; the resulting point is validated.
 module.exports = async (req, res) => {
   const pointId = Number(req.param('id'));
 
@@ -11,14 +12,8 @@ module.exports = async (req, res) => {
   }
 
   const { error, data } = await PointService.validatePointInput(
-    {
-      label: req.param('label'),
-      caveId: req.param('caveId'),
-      referenceDocumentId: req.param('referenceDocumentId'),
-      x: req.param('x'),
-      y: req.param('y'),
-    },
-    { isUpdate: true }
+    PointService.readPointParams(req),
+    point
   );
   if (error) return res.badRequest(error);
 

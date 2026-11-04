@@ -1001,20 +1001,15 @@ const c = {
       : convertIfObject(source.author, c.toSimpleCaver),
   }),
 
-  // A point with its position on its reference SVG (relation A) and the
-  // documents that reference it (relation B), from PointService.getPopulatedPoint()
+  // A point with a bounded summary of its positions (the complete collection
+  // is GET /points/:id/positions) and its attached documents, from
+  // PointService.getPopulatedPoint()
   toPoint: (source) => ({
-    id: source.id,
-    label: source.label,
-    latitude: source.latitude ?? null,
-    longitude: source.longitude ?? null,
-    caveId: source.cave?.id ?? source.cave ?? null,
-    referenceDocument: convertIfObject(
-      source.referenceDocument,
-      c.toSimpleDocument
-    ),
-    x: source.x ?? null,
-    y: source.y ?? null,
+    ...c.toSimplePoint(source),
+    positions: toList('positions', source, c.toPointPosition, {
+      filterDeleted: false,
+    }),
+    positionCount: source.positionCount ?? 0,
     documents: toList('documents', source, c.toSimpleDocument),
     author: convertIfObject(source.author, c.toSimpleCaver),
     reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
@@ -1023,18 +1018,35 @@ const c = {
     isDeleted: source.isDeleted,
   }),
 
-  // A point in a list, without its documents
+  // A point in a list, without its positions and documents. t_point stores
+  // the coordinates as numeric, read as strings: they are returned as numbers.
   toSimplePoint: (source) => ({
     id: source.id,
     label: source.label,
     caveId: source.cave?.id ?? source.cave ?? null,
-    referenceDocumentId:
-      source.referenceDocument?.id ?? source.referenceDocument ?? null,
-    x: source.x ?? null,
-    y: source.y ?? null,
+    underground: source.underground ?? null,
+    latitude:
+      source.latitude === null || source.latitude === undefined
+        ? null
+        : Number(source.latitude),
+    longitude:
+      source.longitude === null || source.longitude === undefined
+        ? null
+        : Number(source.longitude),
   }),
 
-  // A marker to draw on an SVG plan, at x/y in the SVG's viewBox units
+  // The position of a point on an SVG document, in the document's fixed
+  // reference frame (#1961)
+  toPointPosition: (source) => ({
+    pointId: source.point?.id ?? source.point,
+    documentId: source.document?.id ?? source.document,
+    x: source.x,
+    y: source.y,
+    dateInscription: source.dateInscription ?? null,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  // A marker to draw on an SVG document, at x/y in its reference frame
   toPointMarker: (source) => ({
     pointId: source.id,
     label: source.label,

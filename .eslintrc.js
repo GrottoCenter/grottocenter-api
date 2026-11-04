@@ -28,6 +28,7 @@ module.exports = {
     HName: 'readonly',
     JCaverCaveExplorer: 'readonly',
     JDocumentEntrance: 'readonly',
+    JPointDocumentPosition: 'readonly',
     JDocumentCaverAuthor: 'readonly',
     JDocumentGrottoAuthor: 'readonly',
     JDocumentLanguage: 'readonly',

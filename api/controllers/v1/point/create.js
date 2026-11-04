@@ -3,13 +3,9 @@ const PointService = require('../../../services/PointService');
 const { toPoint } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const { error, data } = await PointService.validatePointInput({
-    label: req.param('label'),
-    caveId: req.param('caveId'),
-    referenceDocumentId: req.param('referenceDocumentId'),
-    x: req.param('x'),
-    y: req.param('y'),
-  });
+  const { error, data } = await PointService.validatePointInput(
+    PointService.readPointParams(req)
+  );
   if (error) return res.badRequest(error);
 
   let createdPoint;

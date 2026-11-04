@@ -478,12 +478,15 @@ module.exports.routes = {
   'POST /api/v1/devices/:deviceId/configurations/:id/restore':
     'v1/sensor-configuration/restore',
 
-  // Point (#1733)
+  // Point (#1733, #1961)
   'GET /api/v1/points': 'v1/point/find-all',
   'GET /api/v1/points/:id': 'v1/point/find',
   'POST /api/v1/points': 'v1/point/create',
-  'PUT /api/v1/points/:id': 'v1/point/update',
+  'PATCH /api/v1/points/:id': 'v1/point/update',
   'DELETE /api/v1/points/:id': 'v1/point/delete',
+  'GET /api/v1/points/:id/positions': 'v1/point/find-positions',
+  'PUT /api/v1/points/:id/positions/:documentId': 'v1/point/put-position',
+  'DELETE /api/v1/points/:id/positions/:documentId': 'v1/point/delete-position',
   'PUT /api/v1/points/:pointId/documents/:documentId': 'v1/point/add-document',
   'DELETE /api/v1/points/:pointId/documents/:documentId':
     'v1/point/unlink-document',

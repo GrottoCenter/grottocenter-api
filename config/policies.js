@@ -302,6 +302,9 @@ module.exports.policies = {
   'v1/point/create': 'tokenAuth',
   'v1/point/update': ['validateId', 'tokenAuth'],
   'v1/point/delete': ['validateId', 'tokenAuth'],
+  'v1/point/find-positions': ['validateId'],
+  'v1/point/put-position': ['validateId', 'tokenAuth'],
+  'v1/point/delete-position': ['validateId', 'tokenAuth'],
   'v1/point/add-document': ['validateId', 'tokenAuth'],
   'v1/point/unlink-document': ['validateId', 'tokenAuth'],
 

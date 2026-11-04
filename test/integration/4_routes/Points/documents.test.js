@@ -178,27 +178,37 @@ describe('Point documents features', () => {
 
     before(async () => {
       const [marked, deletedMarked] = await Promise.all([
-        TPoint.create({
-          label: 'Marker',
-          author: 1,
-          referenceDocument: planId,
-          x: 5.5,
-          y: 6.5,
-        }).fetch(),
+        TPoint.create({ label: 'Marker', author: 1 }).fetch(),
         TPoint.create({
           label: 'Deleted marker',
           author: 1,
-          referenceDocument: planId,
-          x: 1,
-          y: 1,
           isDeleted: true,
         }).fetch(),
       ]);
       markedId = marked.id;
       deletedMarkedId = deletedMarked.id;
+      await JPointDocumentPosition.createEach([
+        {
+          point: markedId,
+          document: planId,
+          x: 5.5,
+          y: 6.5,
+          dateInscription: new Date(),
+        },
+        {
+          point: deletedMarkedId,
+          document: planId,
+          x: 1,
+          y: 1,
+          dateInscription: new Date(),
+        },
+      ]);
     });
 
     after(async () => {
+      await JPointDocumentPosition.destroy({
+        point: [markedId, deletedMarkedId],
+      });
       await TPoint.destroy({ id: [markedId, deletedMarkedId] });
     });
 

@@ -275,16 +275,17 @@ describe('Document delete', () => {
     // of a referenced plan would violate.
     before(async () => {
       await sails.sendNativeQuery(`
-        ALTER TABLE t_point DROP CONSTRAINT IF EXISTS t_point_reference_document_fk;
-        ALTER TABLE t_point
-          ADD CONSTRAINT t_point_reference_document_fk
-          FOREIGN KEY (id_reference_document) REFERENCES t_document(id) NOT VALID;
+        ALTER TABLE j_point_document_position
+          DROP CONSTRAINT IF EXISTS j_point_document_position_document_fk;
+        ALTER TABLE j_point_document_position
+          ADD CONSTRAINT j_point_document_position_document_fk
+          FOREIGN KEY (id_document) REFERENCES t_document(id) NOT VALID;
       `);
     });
 
     after(async () => {
       await sails.sendNativeQuery(
-        'ALTER TABLE t_point DROP CONSTRAINT IF EXISTS t_point_reference_document_fk'
+        'ALTER TABLE j_point_document_position DROP CONSTRAINT IF EXISTS j_point_document_position_document_fk'
       );
     });
 
@@ -292,57 +293,76 @@ describe('Document delete', () => {
     // tests: the test database has no histo_delete trigger turning the first
     // DELETE into a soft delete.
     const createPositionedPoints = async () => {
-      const plan = await TDocument.create({
-        author: 1,
-        type: 13,
-        license: 1,
-        isValidated: true,
-        isDeleted: true,
-      }).fetch();
+      const [plan, section] = await Promise.all(
+        [true, false].map((isDeleted) =>
+          TDocument.create({
+            author: 1,
+            type: 13,
+            license: 1,
+            isValidated: true,
+            isDeleted,
+          }).fetch()
+        )
+      );
       const points = await Promise.all([
-        TPoint.create({
-          label: 'On the plan',
-          author: 1,
-          referenceDocument: plan.id,
-          x: 1,
-          y: 2,
-        }).fetch(),
+        TPoint.create({ label: 'On the plan', author: 1 }).fetch(),
         TPoint.create({
           label: 'Deleted, on the plan',
           author: 1,
-          referenceDocument: plan.id,
-          x: 3,
-          y: 4,
           isDeleted: true,
         }).fetch(),
       ]);
-      return { plan, pointIds: points.map((p) => p.id) };
+      const pointIds = points.map((p) => p.id);
+      await JPointDocumentPosition.createEach([
+        ...pointIds.map((point, i) => ({
+          point,
+          document: plan.id,
+          x: i,
+          y: i,
+          dateInscription: new Date(),
+        })),
+        {
+          point: pointIds[0],
+          document: section.id,
+          x: 9,
+          y: 9,
+          dateInscription: new Date(),
+        },
+      ]);
+      return { plan, section, pointIds };
     };
 
-    const expectPositionsCleared = async (pointIds) => {
-      const points = await TPoint.find({ id: pointIds });
-      should(points).have.length(2);
-      points.forEach((point) => {
-        should(point).match({ referenceDocument: null, x: null, y: null });
-      });
+    const expectOnlyPlanPositionsRemoved = async ({
+      plan,
+      section,
+      pointIds,
+    }) => {
+      should(await TPoint.count({ id: pointIds })).equal(2);
+      should(await JPointDocumentPosition.count({ document: plan.id })).equal(
+        0
+      );
+      const kept = await JPointDocumentPosition.find({ point: pointIds });
+      should(kept.map((p) => p.document)).deepEqual([section.id]);
+      await JPointDocumentPosition.destroy({ point: pointIds });
       await TPoint.destroy({ id: pointIds });
+      await TDocument.destroy({ id: section.id });
     };
 
-    it('clears the positions of the points drawn on it', async () => {
-      const { plan, pointIds } = await createPositionedPoints();
+    it('removes the positions on it and keeps those on other documents', async () => {
+      const seeded = await createPositionedPoints();
 
       await supertest(sails.hooks.http.app)
-        .delete(`/api/v1/documents/${plan.id}?isPermanent=true`)
+        .delete(`/api/v1/documents/${seeded.plan.id}?isPermanent=true`)
         .set('Authorization', adminToken)
         .set('Accept', 'application/json')
         .expect(200);
 
-      should(await TDocument.findOne(plan.id)).be.undefined();
-      await expectPositionsCleared(pointIds);
+      should(await TDocument.findOne(seeded.plan.id)).be.undefined();
+      await expectOnlyPlanPositionsRemoved(seeded);
     });
 
-    it('clears the positions when merging the plan into another document', async () => {
-      const { plan, pointIds } = await createPositionedPoints();
+    it('removes the positions when merging the plan into another document', async () => {
+      const seeded = await createPositionedPoints();
       const target = await TDocument.create({
         author: 1,
         type: 13,
@@ -352,14 +372,17 @@ describe('Document delete', () => {
 
       await supertest(sails.hooks.http.app)
         .delete(
-          `/api/v1/documents/${plan.id}?isPermanent=true&entityId=${target.id}`
+          `/api/v1/documents/${seeded.plan.id}?isPermanent=true&entityId=${target.id}`
         )
         .set('Authorization', adminToken)
         .set('Accept', 'application/json')
         .expect(200);
 
-      should(await TDocument.findOne(plan.id)).be.undefined();
-      await expectPositionsCleared(pointIds);
+      should(await TDocument.findOne(seeded.plan.id)).be.undefined();
+      should(await JPointDocumentPosition.count({ document: target.id })).equal(
+        0
+      );
+      await expectOnlyPlanPositionsRemoved(seeded);
       await TDocument.destroy({ id: target.id });
     });
   });

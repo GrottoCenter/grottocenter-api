@@ -66,28 +66,22 @@ module.exports = {
       model: 'TCave',
     },
 
-    // Relation A: the SVG plan the point is drawn on, and its position in that
-    // SVG's own viewBox units. Set together or not at all (#1733).
-    referenceDocument: {
-      columnName: 'id_reference_document',
-      model: 'TDocument',
-    },
-
-    x: {
-      type: 'number',
+    // true underground, false at the surface, null when not classified yet:
+    // points created before #1961 are not inferred from their cave or their
+    // coordinates.
+    underground: {
+      type: 'boolean',
       allowNull: true,
-      columnName: 'x',
-      columnType: 'double precision',
+      columnName: 'is_underground',
     },
 
-    y: {
-      type: 'number',
-      allowNull: true,
-      columnName: 'y',
-      columnType: 'double precision',
+    // The SVG documents the point is drawn on, one position per document (#1961).
+    positions: {
+      collection: 'JPointDocumentPosition',
+      via: 'point',
     },
 
-    // Relation B: the documents that reference the point (#1733).
+    // The documents attached to the point (#1733), independent of positions.
     documents: {
       collection: 'TDocument',
       via: 'point',

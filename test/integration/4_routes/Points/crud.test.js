@@ -15,6 +15,7 @@ describe('Point features', () => {
     const point = await TPoint.create({
       label: 'Fixture point',
       author: 1,
+      underground: true,
       ...data,
     }).fetch();
     createdPointIds.push(point.id);
@@ -34,6 +35,7 @@ describe('Point features', () => {
 
   after(async () => {
     await TDocument.update({ point: createdPointIds }).set({ point: null });
+    await JPointDocumentPosition.destroy({ point: createdPointIds });
     await TPoint.destroy({ id: createdPointIds });
     await TDocument.destroy({ id: planDocumentId });
   });
@@ -56,66 +58,89 @@ describe('Point features', () => {
       ).expect(400);
     });
 
-    it('returns 400 when x and y come without referenceDocumentId', async () => {
+    it('returns 400 without an explicit underground value', async () => {
       await json(
         supertest(sails.hooks.http.app)
           .post('/api/v1/points')
           .set('Authorization', userToken)
-          .send({ label: 'P', x: 1, y: 2 })
+          .send({ label: 'P' })
       ).expect(400);
     });
 
-    it('returns 400 when the reference document is not a plan', async () => {
+    it('returns 400 for a surface point without coordinates', async () => {
       await json(
         supertest(sails.hooks.http.app)
           .post('/api/v1/points')
           .set('Authorization', userToken)
-          .send({ label: 'P', referenceDocumentId: 5, x: 1, y: 2 })
+          .send({ label: 'P', underground: false })
       ).expect(400);
     });
 
-    it('creates a point without a position', async () => {
+    it('returns 400 for an incomplete coordinate pair', async () => {
+      await json(
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/points')
+          .set('Authorization', userToken)
+          .send({ label: 'P', underground: true, latitude: 45 })
+      ).expect(400);
+    });
+
+    it('returns 400 for the former single-position fields', async () => {
+      await json(
+        supertest(sails.hooks.http.app)
+          .post('/api/v1/points')
+          .set('Authorization', userToken)
+          .send({
+            label: 'P',
+            underground: true,
+            referenceDocumentId: planDocumentId,
+            x: 1,
+            y: 2,
+          })
+      ).expect(400);
+    });
+
+    it('creates an underground point without coordinates', async () => {
       const res = await json(
         supertest(sails.hooks.http.app)
           .post('/api/v1/points')
           .set('Authorization', userToken)
-          .send({ label: '  Lac terminal  ', caveId: 1 })
+          .send({ label: '  Lac terminal  ', caveId: 1, underground: true })
       ).expect(200);
       createdPointIds.push(res.body.id);
       should(res.body).match({
         label: 'Lac terminal',
         caveId: 1,
-        referenceDocument: null,
-        x: null,
-        y: null,
+        underground: true,
+        latitude: null,
+        longitude: null,
+        positions: [],
+        positionCount: 0,
         documents: [],
         isDeleted: false,
       });
       should(res.body.author).have.property('nickname', 'User1');
     });
 
-    it('creates a point positioned on a plan', async () => {
+    it('creates a surface point at latitude 0 and longitude 0', async () => {
       const res = await json(
         supertest(sails.hooks.http.app)
           .post('/api/v1/points')
           .set('Authorization', userToken)
           .send({
-            label: 'Siphon',
-            referenceDocumentId: planDocumentId,
-            x: 120.5,
-            y: 48,
+            label: 'Resurgence',
+            underground: false,
+            latitude: 0,
+            longitude: 0,
           })
       ).expect(200);
       createdPointIds.push(res.body.id);
-      should(res.body).match({ label: 'Siphon', x: 120.5, y: 48 });
-      should(res.body.referenceDocument).have.property('id', planDocumentId);
+      should(res.body).match({ underground: false, latitude: 0, longitude: 0 });
 
       const stored = await TPoint.findOne({ id: res.body.id });
-      should(stored).match({
-        referenceDocument: planDocumentId,
-        x: 120.5,
-        y: 48,
-      });
+      should(stored.underground).equal(false);
+      should(Number(stored.latitude)).equal(0);
+      should(Number(stored.longitude)).equal(0);
     });
   });
 
@@ -143,11 +168,14 @@ describe('Point features', () => {
       should(res.body).have.property('isDeleted', true);
     });
 
-    it('returns the point with its position and its documents', async () => {
-      const point = await createPoint({
-        referenceDocument: planDocumentId,
+    it('returns the point with its positions and its documents', async () => {
+      const point = await createPoint();
+      await JPointDocumentPosition.create({
+        point: point.id,
+        document: planDocumentId,
         x: 10,
         y: 20,
+        dateInscription: new Date(),
       });
       const [linked, deletedLinked] = await Promise.all([
         TDocument.create({
@@ -168,47 +196,43 @@ describe('Point features', () => {
         const res = await json(
           supertest(sails.hooks.http.app).get(`/api/v1/points/${point.id}`)
         ).expect(200);
-        should(res.body).match({ id: point.id, x: 10, y: 20 });
-        should(res.body.referenceDocument).have.property('id', planDocumentId);
+        should(res.body).match({ id: point.id, positionCount: 1 });
+        should(res.body.positions).have.length(1);
+        should(res.body.positions[0]).match({
+          pointId: point.id,
+          documentId: planDocumentId,
+          x: 10,
+          y: 20,
+        });
         should(res.body.documents.map((d) => d.id)).deepEqual([linked.id]);
       } finally {
         await TDocument.destroy({ id: [linked.id, deletedLinked.id] });
       }
     });
 
-    it('does not expose a soft-deleted reference plan', async () => {
+    it('does not expose a position on a soft-deleted plan', async () => {
       const plan = await TDocument.create({
         author: 1,
         type: 13,
         license: 1,
+        isDeleted: true,
       }).fetch();
       try {
-        await TDescription.create({
-          author: 1,
+        const point = await createPoint();
+        await JPointDocumentPosition.create({
+          point: point.id,
           document: plan.id,
-          language: 'fra',
-          title: 'Deleted plan',
-          body: 'Secret body',
-        });
-        const point = await createPoint({
-          referenceDocument: plan.id,
           x: 1,
           y: 2,
+          dateInscription: new Date(),
         });
-        await TDocument.updateOne({ id: plan.id }).set({ isDeleted: true });
 
         const res = await json(
           supertest(sails.hooks.http.app).get(`/api/v1/points/${point.id}`)
         ).expect(200);
-        should(res.body.referenceDocument).be.null();
-        should(JSON.stringify(res.body)).not.containEql('Secret body');
+        should(res.body).match({ positions: [], positionCount: 0 });
       } finally {
-        await TPoint.update({ referenceDocument: plan.id }).set({
-          referenceDocument: null,
-          x: null,
-          y: null,
-        });
-        await TDescription.destroy({ document: plan.id });
+        await JPointDocumentPosition.destroy({ document: plan.id });
         await TDocument.destroy({ id: plan.id });
       }
     });
@@ -222,17 +246,50 @@ describe('Point features', () => {
       ]);
       const res = await json(
         supertest(sails.hooks.http.app).get('/api/v1/points?caveId=2')
-      ).expect(206); // paginated lists answer with a Content-Range
-      should(res.headers).have.property('content-range');
+      ).expect(200);
+      should(res.body).match({ page: 1, size: 50 });
       const ids = res.body.points.map((p) => p.id);
       should(ids).containEql(kept.id);
       should(ids).not.containEql(deleted.id);
       res.body.points.forEach((p) => should(p.caveId).equal(2));
     });
 
-    it('returns 400 for an invalid limit', async () => {
+    it('paginates with page and size, in a stable id order', async () => {
+      await Promise.all([1, 2, 3].map(() => createPoint({ cave: 3 })));
+      const get = (page) =>
+        json(
+          supertest(sails.hooks.http.app).get(
+            `/api/v1/points?caveId=3&page=${page}&size=2`
+          )
+        ).expect(200);
+
+      // Other test files may leave points on this cave: walk every page.
+      const first = await get(1);
+      should(first.body).match({ page: 1, size: 2 });
+      const { total } = first.body;
+      should(total).be.aboveOrEqual(3);
+      const ids = [...first.body.points.map((p) => p.id)];
+      for (let page = 2; ids.length < total; page += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const res = await get(page);
+        should(res.body.points.length).be.within(1, 2);
+        ids.push(...res.body.points.map((p) => p.id));
+      }
+      should(ids).deepEqual([...ids].sort((a, b) => a - b));
+      should(new Set(ids).size).equal(total);
+      const created = await TPoint.find({ cave: 3, isDeleted: false });
+      should(ids).containDeep(created.map((p) => p.id));
+    });
+
+    it('returns 400 for a size over 100', async () => {
       await json(
-        supertest(sails.hooks.http.app).get('/api/v1/points?limit=0')
+        supertest(sails.hooks.http.app).get('/api/v1/points?size=101')
+      ).expect(400);
+    });
+
+    it('returns 400 for page 0', async () => {
+      await json(
+        supertest(sails.hooks.http.app).get('/api/v1/points?page=0')
       ).expect(400);
     });
 
@@ -243,12 +300,12 @@ describe('Point features', () => {
     });
   });
 
-  describe('PUT /api/v1/points/:id', () => {
+  describe('PATCH /api/v1/points/:id', () => {
     it('returns 401 without a token', async () => {
       const point = await createPoint();
       await json(
         supertest(sails.hooks.http.app)
-          .put(`/api/v1/points/${point.id}`)
+          .patch(`/api/v1/points/${point.id}`)
           .send({ label: 'New' })
       ).expect(401);
     });
@@ -257,7 +314,7 @@ describe('Point features', () => {
       const point = await createPoint({ isDeleted: true });
       await json(
         supertest(sails.hooks.http.app)
-          .put(`/api/v1/points/${point.id}`)
+          .patch(`/api/v1/points/${point.id}`)
           .set('Authorization', userToken)
           .send({ label: 'New' })
       ).expect(404);
@@ -267,41 +324,88 @@ describe('Point features', () => {
       const point = await createPoint();
       await json(
         supertest(sails.hooks.http.app)
-          .put(`/api/v1/points/${point.id}`)
+          .patch(`/api/v1/points/${point.id}`)
           .set('Authorization', userToken)
           .send({})
       ).expect(400);
     });
 
-    it('moves the point on its plan', async () => {
+    it('changes the label and keeps the omitted fields', async () => {
       const point = await createPoint({
-        referenceDocument: planDocumentId,
-        x: 1,
-        y: 1,
+        cave: 1,
+        underground: false,
+        latitude: '45.5',
+        longitude: '6.25',
       });
       const res = await json(
         supertest(sails.hooks.http.app)
-          .put(`/api/v1/points/${point.id}`)
+          .patch(`/api/v1/points/${point.id}`)
           .set('Authorization', userToken)
-          .send({ referenceDocumentId: planDocumentId, x: 33.3, y: 44.4 })
+          .send({ label: 'Renamed' })
       ).expect(200);
-      should(res.body).match({ label: 'Fixture point', x: 33.3, y: 44.4 });
+      should(res.body).match({
+        label: 'Renamed',
+        caveId: 1,
+        underground: false,
+        latitude: 45.5,
+        longitude: 6.25,
+      });
       should(res.body.reviewer).have.property('nickname', 'User1');
     });
 
-    it('clears the position', async () => {
-      const point = await createPoint({
-        referenceDocument: planDocumentId,
+    it('stores underground false and a coordinate 0', async () => {
+      const point = await createPoint({ underground: null });
+      const res = await json(
+        supertest(sails.hooks.http.app)
+          .patch(`/api/v1/points/${point.id}`)
+          .set('Authorization', userToken)
+          .send({ underground: false, latitude: 0, longitude: 12 })
+      ).expect(200);
+      should(res.body).match({
+        underground: false,
+        latitude: 0,
+        longitude: 12,
+      });
+    });
+
+    it('returns 400 when the result would be a surface point without coordinates', async () => {
+      const point = await createPoint({ underground: true });
+      await json(
+        supertest(sails.hooks.http.app)
+          .patch(`/api/v1/points/${point.id}`)
+          .set('Authorization', userToken)
+          .send({ underground: false })
+      ).expect(400);
+      const stored = await TPoint.findOne({ id: point.id });
+      should(stored.underground).equal(true);
+    });
+
+    it('keeps the positions of the point', async () => {
+      const point = await createPoint();
+      await JPointDocumentPosition.create({
+        point: point.id,
+        document: planDocumentId,
         x: 1,
         y: 1,
+        dateInscription: new Date(),
       });
       const res = await json(
         supertest(sails.hooks.http.app)
+          .patch(`/api/v1/points/${point.id}`)
+          .set('Authorization', userToken)
+          .send({ label: 'Moved label' })
+      ).expect(200);
+      should(res.body.positionCount).equal(1);
+    });
+
+    it('is not routed as PUT any more', async () => {
+      const point = await createPoint();
+      await json(
+        supertest(sails.hooks.http.app)
           .put(`/api/v1/points/${point.id}`)
           .set('Authorization', userToken)
-          .send({ referenceDocumentId: null, x: null, y: null })
-      ).expect(200);
-      should(res.body).match({ referenceDocument: null, x: null, y: null });
+          .send({ label: 'New' })
+      ).expect(404);
     });
   });
 
