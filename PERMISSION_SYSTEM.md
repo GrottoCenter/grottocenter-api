@@ -12,7 +12,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 - **Description**: Non-authenticated users
 - **Permissions**:
   - View public cave/entrance/document/organisation/massif/person data
-  - View points and the points drawn on a document's SVG plan
+  - View points, their positions on SVG documents and the points positioned on a document
   - Search through cave/entrance/document/organisation/massif/person/device data
   - View active legislation guidelines (list, single guideline by id, by geographic entity, and snapshots) — a
     soft-deleted guideline yields 404 by id, though its text stays readable through snapshots
@@ -41,7 +41,7 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
     - Create devices and sensor configurations
     - Update own devices and sensor configurations
     - Import observation data (CSV/TSV)
-    - Create and edit points, including their position on an SVG plan
+    - Create and edit points, and set or remove their positions on SVG documents
     - Attach a document to a point
   - **Messaging**:
     - Send and receive private messages
@@ -180,8 +180,9 @@ Roles are **not hierarchical**; for instance, an Administrator does not automati
 | Soft delete devices/sensor configurations                     | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Restore devices/sensor configurations                         | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Permanently delete devices/sensor configurations              | ❌ | ❌ | ❌ | ❌ | ✅ |
-| View points and the points on a document                      | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create/update points, attach a document to a point            | ❌ | ✅ | ✅ | ✅ | ✅ |
+| View points, their positions and the points on a document     | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Create/update points, set/remove their positions              | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Attach a document to a point                                  | ❌ | ✅ | ✅ | ✅ | ✅ |
 | Soft delete points                                            | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Import observation data                                       | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Organization Management**                                   |
@@ -322,7 +323,8 @@ cannot detach it either.
 - **Devices**: Any authenticated user can create devices; update requires ownership or Moderator role; soft delete and restore require Moderator or Administrator; permanent delete requires Administrator
 - **Sensor Configurations**: Same permission model as devices — scoped under a device (nested resource)
 - **Points**: Wiki-style, like caves and entrances — any authenticated user can create a point, update any point
-  (label, cave, position on an SVG plan) and attach a document to it; reading is public. Detaching a document requires
+  (label, cave, underground flag, coordinates), set or remove its positions on SVG documents and attach a document to
+  it; reading is public. Detaching a document requires
   Moderator; soft delete requires Moderator or Administrator. There is no restore or permanent delete route
 - **Observation Import**: Any authenticated user can import observation data via CSV/TSV. `v1/observation/import` is
   gated by `tokenAuth` alone — neither the controller nor `ObservationImportService` performs a role check, so a plain
