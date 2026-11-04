@@ -112,4 +112,51 @@ module.exports = {
       subscribedToRegions: caver.subscribedToRegions,
     };
   },
+
+  /**
+   * @param {number} targetId id of the caver receiving the links
+   * @param {string} key name of a TCaver collection (e.g. 'documents')
+   * @param {Array} ids ids of the records to link to the target
+   * @description Link records to a caver, skipping links that already exist.
+   * The target's links are read just before the insert, and a link created
+   * meanwhile by a concurrent request (double-submitted merge) is ignored
+   * rather than surfacing as E_UNIQUE.
+   * @throws {Error} with code E_NOT_FOUND when the target no longer exists
+   * (deleted or merged by a concurrent request), so the caller keeps the
+   * source's links instead of clearing them.
+   * @returns {Promise<void>}
+   */
+  mergeCollection: async (targetId, key, ids) => {
+    if (!ids || ids.length === 0) return;
+    const target = await TCaver.findOne(targetId).populate(key);
+    if (!target) {
+      const error = new Error(
+        `Merge target caver of id ${targetId} not found.`
+      );
+      error.code = 'E_NOT_FOUND';
+      throw error;
+    }
+    const existingIds = new Set(target[key].map((e) => e.id));
+    const idsToAdd = [...new Set(ids)].filter((id) => !existingIds.has(id));
+    if (idsToAdd.length === 0) return;
+
+    try {
+      await TCaver.addToCollection(targetId, key, idsToAdd);
+    } catch (error) {
+      if (error.code !== 'E_UNIQUE') throw error;
+      // Another request linked some of these records in the meantime: add
+      // them one by one so the missing ones still get linked.
+      sails.log.warn(
+        `Caver ${targetId} merge: ${key} links already present, retrying one by one (${idsToAdd.join(', ')})`
+      );
+      for (const id of idsToAdd) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await TCaver.addToCollection(targetId, key, [id]);
+        } catch (innerError) {
+          if (innerError.code !== 'E_UNIQUE') throw innerError;
+        }
+      }
+    }
+  },
 };

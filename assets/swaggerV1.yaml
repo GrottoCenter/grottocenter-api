@@ -639,6 +639,51 @@ paths:
           description: 'You are not authorized to update a caver.'
         '404':
           description: 'Could not find caver with caverId.'
+    delete:
+      tags:
+        - cavers
+      description: >-
+        Permanently delete a caver (administrator) or an author (moderator).
+        With `entityId`, the caver's links (explored entrances, groups,
+        organizations, documents, subscriptions), authorship, notifications and
+        last changes are merged into that caver first; links the target
+        already has are skipped.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: entityId
+          in: query
+          required: false
+          description: Id of the caver to merge the deleted caver into.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The deleted caver, as it was before the deletion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Caver'
+        '400':
+          description: '`entityId` is not a number, or the merge target does not exist.'
+        '401':
+          description: Unauthorized — valid JWT required.
+        '403':
+          description: Not allowed to delete this caver or author.
+        '404':
+          description: Caver not found.
+        '409':
+          description: >-
+            The merge target was deleted or merged by another request during
+            the merge. The caver is not deleted and keeps the links that were
+            not transferred.
+        '500':
+          description: Internal server error.
 
   '/cavers/admins':
     get:
