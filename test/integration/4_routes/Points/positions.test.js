@@ -242,6 +242,68 @@ describe('Point positions features', () => {
       ]);
     });
 
+    it('describes the document of each position', async () => {
+      const description = await TDescription.create({
+        author: 1,
+        title: 'Plan of the main gallery',
+        body: 'Survey 2026',
+      }).fetch();
+      const plan = await createDocument({
+        type: 13,
+        descriptions: [description.id],
+      });
+      const svg = await TFile.create({
+        dateInscription: new Date(),
+        fileName: 'plan.svg',
+        document: plan.id,
+        fileFormat: 1,
+        path: `${Date.now()}-plan.svg`,
+        isValidated: true,
+      }).fetch();
+      await TFile.create({
+        dateInscription: new Date(),
+        fileName: 'plan-pending.svg',
+        document: plan.id,
+        fileFormat: 1,
+        path: `${Date.now()}-plan-pending.svg`,
+        isValidated: false,
+      });
+      const point = await createPoint();
+      const expectedDocument = {
+        id: plan.id,
+        type: 'Topographic Drawing',
+        title: 'Plan of the main gallery',
+      };
+
+      try {
+        const put = await putPosition(point.id, plan.id, {
+          x: 1,
+          y: 2,
+        }).expect(200);
+        should(put.body.document).match(expectedDocument);
+
+        const list = await json(
+          supertest(sails.hooks.http.app).get(
+            `/api/v1/points/${point.id}/positions`
+          )
+        ).expect(200);
+        const [position] = list.body.positions;
+        should(position.document).match(expectedDocument);
+        should(position.document.files.map((f) => f.id)).deepEqual([svg.id]);
+        should(position.document.files[0]).have.property(
+          'fileName',
+          'plan.svg'
+        );
+
+        const detail = await json(
+          supertest(sails.hooks.http.app).get(`/api/v1/points/${point.id}`)
+        ).expect(200);
+        should(detail.body.positions[0].document).match(expectedDocument);
+      } finally {
+        await TDescription.destroy({ id: description.id });
+      }
+    });
+
     it('returns 400 for an invalid size', async () => {
       const point = await createPoint();
       await json(

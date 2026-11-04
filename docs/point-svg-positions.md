@@ -13,6 +13,9 @@ and document.
 | `GET /api/v1/documents/:id/points`           | The markers to draw on one document         |
 
 `GET /api/v1/points/:id` returns the first 20 positions and `positionCount`.
+Each position carries a `document` summary (type, title, validated files),
+loaded for the whole page at once, so a client can list and open the plans
+without a request per position.
 
 Positions are separate from the documents **attached** to a point
 (`t_document.id_point`, `PUT /api/v1/points/:id/documents/:docId`): a photo can

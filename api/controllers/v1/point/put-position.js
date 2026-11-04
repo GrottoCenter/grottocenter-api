@@ -27,5 +27,8 @@ module.exports = async (req, res) => {
     documentId,
     data
   );
-  return res.ok(toPointPosition(position));
+  const [positionWithDocument] = await PointService.withDocumentSummaries([
+    position,
+  ]);
+  return res.ok(toPointPosition(positionWithDocument));
 };

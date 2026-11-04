@@ -11769,6 +11769,8 @@ components:
           type: integer
         documentId:
           type: integer
+        document:
+          $ref: '#/components/schemas/PointPositionDocument'
         x:
           type: number
         y:
@@ -11779,6 +11781,28 @@ components:
         dateReviewed:
           type: string
           nullable: true
+
+    PointPositionDocument:
+      type: object
+      description: >-
+        The document a position is on, loaded for the whole page in one batch:
+        enough to list it and open its SVG without a request per position.
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          nullable: true
+          description: Name of the document type, e.g. Topographic Drawing.
+        title:
+          type: string
+          nullable: true
+          description: Title of the document's main description.
+        files:
+          type: array
+          description: The validated files of the document, by id.
+          items:
+            $ref: '#/components/schemas/File'
 
     PointMarker:
       type: object

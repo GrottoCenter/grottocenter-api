@@ -338,7 +338,35 @@ module.exports = {
       liveDocumentIds.length === 0 ? [] : query,
       liveDocumentIds.length === 0 ? 0 : JPointDocumentPosition.count(where),
     ]);
-    return { positions, total };
+    return {
+      positions: await module.exports.withDocumentSummaries(positions),
+      total,
+    };
+  },
+
+  /**
+   * Replace the document id of each position with the document, populated
+   * with what a client needs to list and open it (type, title, validated
+   * files), in one query per relation for the whole page rather than one
+   * request per position.
+   *
+   * @param {Object[]} positions - positions whose `document` is an id
+   * @returns {Promise<Object[]>} the same positions, `document` populated
+   */
+  withDocumentSummaries: async (positions) => {
+    if (positions.length === 0) return positions;
+    const documents = await TDocument.find({
+      where: { id: positions.map((p) => p.document) },
+      select: ['id'],
+    })
+      .populate('type')
+      .populate('descriptions')
+      .populate('files', { where: { isValidated: true }, sort: 'id ASC' });
+    const documentById = new Map(documents.map((d) => [d.id, d]));
+    return positions.map((position) => ({
+      ...position,
+      document: documentById.get(position.document) ?? position.document,
+    }));
   },
 
   /**

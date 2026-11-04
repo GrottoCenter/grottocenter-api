@@ -1036,14 +1036,27 @@ const c = {
   }),
 
   // The position of a point on an SVG document, in the document's fixed
-  // reference frame (#1961)
+  // reference frame (#1961), with a summary of the document when it was
+  // loaded by PointService.withDocumentSummaries()
   toPointPosition: (source) => ({
     pointId: source.point?.id ?? source.point,
     documentId: source.document?.id ?? source.document,
+    document:
+      source.document instanceof Object
+        ? c.toPositionDocument(source.document)
+        : null,
     x: source.x,
     y: source.y,
     dateInscription: source.dateInscription ?? null,
     dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  // The document a position is on: enough to list it and open its SVG
+  toPositionDocument: (source) => ({
+    id: source.id,
+    type: source.type?.name ?? null,
+    title: c.toDocumentDescriptions(source.descriptions).title ?? null,
+    files: toList('files', source, c.toFile),
   }),
 
   // A marker to draw on an SVG document, at x/y in its reference frame
