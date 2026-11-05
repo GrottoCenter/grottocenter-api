@@ -207,43 +207,43 @@ describe('BotSitemapService', () => {
 
   const EXPECTED_URLS = {
     'https://example.test/ui/caves/9000001': {
-      shard: 'sitemaps/caves-180.xml.gz',
+      shard: 'sitemap-caves-180.xml.gz',
       lastmod: '2026-03-01T10:00:00.000000Z',
     },
     'https://example.test/ui/caves/9000002': {
-      shard: 'sitemaps/caves-180.xml.gz',
+      shard: 'sitemap-caves-180.xml.gz',
       lastmod: '2026-03-02T10:00:00.123456Z',
     },
     'https://example.test/ui/caves/9050007': {
-      shard: 'sitemaps/caves-181.xml.gz',
+      shard: 'sitemap-caves-181.xml.gz',
       lastmod: '2026-02-01T00:00:00.000000Z',
     },
     'https://example.test/ui/massifs/9000001': {
-      shard: 'sitemaps/massifs-180.xml.gz',
+      shard: 'sitemap-massifs-180.xml.gz',
       lastmod: '2026-04-01T00:00:00.000000Z',
     },
     'https://example.test/ui/organizations/9000001': {
-      shard: 'sitemaps/organizations-180.xml.gz',
+      shard: 'sitemap-organizations-180.xml.gz',
       lastmod: '2026-01-15T08:30:00.000000Z',
     },
     'https://example.test/ui/countries': {
-      shard: 'sitemaps/hubs.xml.gz',
+      shard: 'sitemap-hubs.xml.gz',
       lastmod: '2026-05-01T00:00:00.000000Z',
     },
     'https://example.test/ui/countries/BE': {
-      shard: 'sitemaps/hubs.xml.gz',
+      shard: 'sitemap-hubs.xml.gz',
       lastmod: '2026-05-04T00:00:00.000000Z',
     },
     'https://example.test/ui/countries/FR': {
-      shard: 'sitemaps/hubs.xml.gz',
+      shard: 'sitemap-hubs.xml.gz',
       lastmod: '2026-05-02T00:00:00.000000Z',
     },
     'https://example.test/ui/countries/BE/regions/BRU': {
-      shard: 'sitemaps/hubs.xml.gz',
+      shard: 'sitemap-hubs.xml.gz',
       lastmod: '2026-05-01T00:00:00.000000Z',
     },
     'https://example.test/ui/countries/FR/regions/01': {
-      shard: 'sitemaps/hubs.xml.gz',
+      shard: 'sitemap-hubs.xml.gz',
       lastmod: '2026-05-03T00:00:00.000000Z',
     },
   };
@@ -252,13 +252,14 @@ describe('BotSitemapService', () => {
     it('writes the index and one shard per type and id range, each valid', async () => {
       const summary = await run();
 
+      // Every file at the root of the site, next to the index
       should(await keys()).deepEqual([
+        'sitemap-caves-180.xml.gz',
+        'sitemap-caves-181.xml.gz',
+        'sitemap-hubs.xml.gz',
+        'sitemap-massifs-180.xml.gz',
+        'sitemap-organizations-180.xml.gz',
         'sitemap.xml',
-        'sitemaps/caves-180.xml.gz',
-        'sitemaps/caves-181.xml.gz',
-        'sitemaps/hubs.xml.gz',
-        'sitemaps/massifs-180.xml.gz',
-        'sitemaps/organizations-180.xml.gz',
       ]);
       should(summary).deepEqual({
         uploaded: 6,
@@ -269,30 +270,31 @@ describe('BotSitemapService', () => {
       });
     });
 
-    it('lists every shard in the index, with its latest lastmod', async () => {
+    it('lists every shard in the index, with the time it was uploaded as its lastmod', async () => {
+      const startedAt = new Date().toISOString();
       await run();
-      should(readIndex()).deepEqual([
-        {
-          loc: 'https://example.test/sitemaps/caves-180.xml.gz',
-          lastmod: '2026-03-02T10:00:00.123456Z',
-        },
-        {
-          loc: 'https://example.test/sitemaps/caves-181.xml.gz',
-          lastmod: '2026-02-01T00:00:00.000000Z',
-        },
-        {
-          loc: 'https://example.test/sitemaps/massifs-180.xml.gz',
-          lastmod: '2026-04-01T00:00:00.000000Z',
-        },
-        {
-          loc: 'https://example.test/sitemaps/organizations-180.xml.gz',
-          lastmod: '2026-01-15T08:30:00.000000Z',
-        },
-        {
-          loc: 'https://example.test/sitemaps/hubs.xml.gz',
-          lastmod: '2026-05-04T00:00:00.000000Z',
-        },
+      const index = readIndex();
+      should(index.map((entry) => entry.loc)).deepEqual([
+        'https://example.test/sitemap-caves-180.xml.gz',
+        'https://example.test/sitemap-caves-181.xml.gz',
+        'https://example.test/sitemap-massifs-180.xml.gz',
+        'https://example.test/sitemap-organizations-180.xml.gz',
+        'https://example.test/sitemap-hubs.xml.gz',
       ]);
+      // One run, one time: later than every entry of the fixture
+      const [first] = index;
+      should(first.lastmod >= startedAt.replace(/\.\d+Z$/, '')).be.true();
+      index.forEach((entry) => should(entry.lastmod).equal(first.lastmod));
+    });
+
+    it('takes the latest entry as the lastmod of a shard when it is later than the run', async () => {
+      await query(
+        `UPDATE t_bot_page_manifest SET lastmod = '2099-01-01T00:00:00Z' WHERE path = $1`,
+        [`caves/${SECOND_RANGE + 7}.html`]
+      );
+      await run();
+      should(readIndex()[1].lastmod).equal('2099-01-01T00:00:00.000000Z');
+      should(readIndex()[0].lastmod < '2099').be.true();
     });
 
     it('lists exactly the content pages of the manifest, each with its lastmod', async () => {
@@ -325,7 +327,7 @@ describe('BotSitemapService', () => {
 
     it('sorts the hubs by hub type, then by key', async () => {
       await run();
-      should(readShard('sitemaps/hubs.xml.gz').map((e) => e.loc)).deepEqual([
+      should(readShard('sitemap-hubs.xml.gz').map((e) => e.loc)).deepEqual([
         'https://example.test/ui/countries',
         'https://example.test/ui/countries/BE',
         'https://example.test/ui/countries/FR',
@@ -336,17 +338,17 @@ describe('BotSitemapService', () => {
 
     it('sorts the records of a shard by id', async () => {
       await run();
-      should(
-        readShard('sitemaps/caves-180.xml.gz').map((e) => e.loc)
-      ).deepEqual([
-        'https://example.test/ui/caves/9000001',
-        'https://example.test/ui/caves/9000002',
-      ]);
+      should(readShard('sitemap-caves-180.xml.gz').map((e) => e.loc)).deepEqual(
+        [
+          'https://example.test/ui/caves/9000001',
+          'https://example.test/ui/caves/9000002',
+        ]
+      );
     });
 
     it('uploads the shards gzipped as application/gzip and the index as XML', async () => {
       await run();
-      should(putOptions['sitemaps/caves-180.xml.gz']).deepEqual({
+      should(putOptions['sitemap-caves-180.xml.gz']).deepEqual({
         contentType: 'application/gzip',
         isBuffer: true,
       });
@@ -363,21 +365,25 @@ describe('BotSitemapService', () => {
 
     it('keeps each file in the manifest as a static row with its hash and latest lastmod', async () => {
       await run();
-      const shard = await manifestRow('sitemaps/caves-180.xml.gz');
+      const shard = await manifestRow('sitemap-caves-180.xml.gz');
       should(shard.entity_type).equal('static');
       should(shard.entity_id).be.null();
       should(shard.content_hash).match(/^[0-9a-f]{64}$/);
-      should(shard.lastmod.toISOString()).equal('2026-03-02T10:00:00.123Z');
-      should((await manifestRow('sitemap.xml')).lastmod.toISOString()).equal(
-        '2026-05-04T00:00:00.000Z'
+      // The time the file was uploaded, which the index publishes
+      const index = readIndex();
+      should(`${shard.lastmod.toISOString().slice(0, 23)}`).equal(
+        index[0].lastmod.slice(0, 23)
       );
+      should(
+        (await manifestRow('sitemap.xml')).lastmod.toISOString().slice(0, 23)
+      ).equal(index[0].lastmod.slice(0, 23));
     });
 
     it('gives the same files when the manifest is read one row at a time', async () => {
       await run();
       const expected = readAll();
       await query(
-        `DELETE FROM t_bot_page_manifest WHERE path = 'sitemap.xml' OR path LIKE 'sitemaps/%'`
+        `DELETE FROM t_bot_page_manifest WHERE path = 'sitemap.xml' OR path LIKE 'sitemap-%.xml.gz'`
       );
       puts = [];
       await run({ batchSize: 1 });
@@ -388,7 +394,7 @@ describe('BotSitemapService', () => {
     it('serves the files at the site origin unless told otherwise', async () => {
       await run({ siteUrl: 'https://files.example.test/' });
       should(readIndex()[0].loc).equal(
-        'https://files.example.test/sitemaps/caves-180.xml.gz'
+        'https://files.example.test/sitemap-caves-180.xml.gz'
       );
     });
 
@@ -406,11 +412,11 @@ describe('BotSitemapService', () => {
          VALUES ('caves/9100000.html', 'cave', 9100000, 'hash', '2026-01-01Z')`
       );
       await run();
-      const shard = readShard('sitemaps/caves-181.xml.gz');
+      const shard = readShard('sitemap-caves-181.xml.gz');
       should(shard).have.length(50000);
       should(shard[0].loc).equal('https://example.test/ui/caves/9050000');
       should(shard[49999].loc).equal('https://example.test/ui/caves/9099999');
-      should(readShard('sitemaps/caves-182.xml.gz')).deepEqual([
+      should(readShard('sitemap-caves-182.xml.gz')).deepEqual([
         {
           loc: 'https://example.test/ui/caves/9100000',
           lastmod: '2026-01-01T00:00:00.000000Z',
@@ -433,16 +439,16 @@ describe('BotSitemapService', () => {
         should(after[loc]).deepEqual(entry);
       });
       should(after['https://example.test/ui/caves/9049999'].shard).equal(
-        'sitemaps/caves-180.xml.gz'
+        'sitemap-caves-180.xml.gz'
       );
       // Only the shard that changed, and the index whose lastmod moved
-      should(puts).deepEqual(['sitemaps/caves-180.xml.gz', 'sitemap.xml']);
+      should(puts).deepEqual(['sitemap-caves-180.xml.gz', 'sitemap.xml']);
     });
 
     it('uploads nothing when nothing changed, and keeps the index lastmod', async () => {
       await run();
       const before = readIndex();
-      const published = await manifestRow('sitemaps/caves-181.xml.gz');
+      const published = await manifestRow('sitemap-caves-181.xml.gz');
       puts = [];
 
       const summary = await run();
@@ -452,20 +458,51 @@ describe('BotSitemapService', () => {
       should(summary.unchanged).equal(6);
       should(readIndex()).deepEqual(before);
       should(
-        (await manifestRow('sitemaps/caves-181.xml.gz')).published_at
+        (await manifestRow('sitemap-caves-181.xml.gz')).published_at
       ).deepEqual(published.published_at);
     });
 
-    it('uploads a shard again when only a lastmod changed', async () => {
+    it('uploads a shard again when only a lastmod changed, and moves its date in the index', async () => {
       await run();
+      const before = readIndex();
       await query(
         `UPDATE t_bot_page_manifest SET lastmod = '2026-06-01Z' WHERE path = $1`,
         [`caves/${SECOND_RANGE + 7}.html`]
       );
       puts = [];
       await run();
-      should(puts).deepEqual(['sitemaps/caves-181.xml.gz', 'sitemap.xml']);
-      should(readIndex()[1].lastmod).equal('2026-06-01T00:00:00.000000Z');
+      should(puts).deepEqual(['sitemap-caves-181.xml.gz', 'sitemap.xml']);
+      const after = readIndex();
+      should(after[1].lastmod > before[1].lastmod).be.true();
+      // The other shards keep their date
+      [0, 2, 3, 4].forEach((i) =>
+        should(after[i].lastmod).equal(before[i].lastmod)
+      );
+    });
+
+    it('moves the date of a shard forward when a URL leaves it, even one that was not its newest', async () => {
+      // Two URLs in the first cave range: drop the older one
+      await run();
+      should(readShard('sitemap-caves-180.xml.gz').length).be.above(1);
+      const before = readIndex();
+      const { rows } = await query(
+        `SELECT path FROM t_bot_page_manifest
+          WHERE entity_type = 'cave' AND redirect_to IS NULL
+            AND entity_id >= $1 AND entity_id < $2
+          ORDER BY lastmod LIMIT 1`,
+        [FIRST_RANGE, FIRST_RANGE + 50000]
+      );
+      await query('DELETE FROM t_bot_page_manifest WHERE path = $1', [
+        rows[0].path,
+      ]);
+      puts = [];
+      await run();
+      should(puts).deepEqual(['sitemap-caves-180.xml.gz', 'sitemap.xml']);
+      const after = readIndex();
+      should(after[0].lastmod > before[0].lastmod).be.true();
+      [1, 2, 3, 4].forEach((i) =>
+        should(after[i].lastmod).equal(before[i].lastmod)
+      );
     });
 
     it('deletes a shard that became empty, after the index stops listing it', async () => {
@@ -477,12 +514,12 @@ describe('BotSitemapService', () => {
 
       const summary = await run();
       should(puts).deepEqual(['sitemap.xml']);
-      should(deletes).deepEqual(['sitemaps/caves-181.xml.gz']);
+      should(deletes).deepEqual(['sitemap-caves-181.xml.gz']);
       should(summary.deleted).equal(1);
-      should(await keys()).not.containEql('sitemaps/caves-181.xml.gz');
-      should(await manifestRow('sitemaps/caves-181.xml.gz')).be.undefined();
+      should(await keys()).not.containEql('sitemap-caves-181.xml.gz');
+      should(await manifestRow('sitemap-caves-181.xml.gz')).be.undefined();
       should(readIndex().map((e) => e.loc)).not.containEql(
-        'https://example.test/sitemaps/caves-181.xml.gz'
+        'https://example.test/sitemap-caves-181.xml.gz'
       );
     });
 
@@ -495,11 +532,11 @@ describe('BotSitemapService', () => {
       await run();
       should(deletes[0]).equal('sitemap.xml');
       should(deletes.slice(1).sort()).deepEqual([
-        'sitemaps/caves-180.xml.gz',
-        'sitemaps/caves-181.xml.gz',
-        'sitemaps/hubs.xml.gz',
-        'sitemaps/massifs-180.xml.gz',
-        'sitemaps/organizations-180.xml.gz',
+        'sitemap-caves-180.xml.gz',
+        'sitemap-caves-181.xml.gz',
+        'sitemap-hubs.xml.gz',
+        'sitemap-massifs-180.xml.gz',
+        'sitemap-organizations-180.xml.gz',
       ]);
       should(await keys()).deepEqual([]);
       should(
@@ -513,9 +550,9 @@ describe('BotSitemapService', () => {
       await run();
       await run({ entityTypes: ['cave'] });
       should(await keys()).deepEqual([
+        'sitemap-caves-180.xml.gz',
+        'sitemap-caves-181.xml.gz',
         'sitemap.xml',
-        'sitemaps/caves-180.xml.gz',
-        'sitemaps/caves-181.xml.gz',
       ]);
       should(readIndex()).have.length(2);
     });
@@ -598,7 +635,7 @@ describe('BotSitemapService', () => {
       should(deletes).containEql('caves/9000001.html');
       before.forEach((key) => should(deletes).not.containEql(key));
       should(await manifestRow('sitemap.xml')).be.ok();
-      should(await manifestRow('sitemaps/hubs.xml.gz')).be.ok();
+      should(await manifestRow('sitemap-hubs.xml.gz')).be.ok();
     });
   });
 });

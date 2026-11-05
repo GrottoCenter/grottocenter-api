@@ -48,14 +48,14 @@ describe('Bot storage adapters', () => {
       const bytes = Buffer.from([
         0x1f, 0x8b, 0x08, 0x00, 0xff, 0xfe, 0x00, 0x80,
       ]);
-      await adapter.put('sitemaps/caves-0.xml.gz', bytes, {
+      await adapter.put('sitemap-caves-0.xml.gz', bytes, {
         contentType: 'application/gzip',
       });
       should(
-        fs.readFileSync(path.join(root, 'sitemaps/caves-0.xml.gz'))
+        fs.readFileSync(path.join(root, 'sitemap-caves-0.xml.gz'))
       ).deepEqual(bytes);
       should(await collect(adapter.list())).deepEqual([
-        'sitemaps/caves-0.xml.gz',
+        'sitemap-caves-0.xml.gz',
       ]);
     });
 
@@ -197,7 +197,7 @@ describe('Bot storage adapters', () => {
       const container = makeContainer();
       const bytes = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0xc3, 0xa9]);
       await new AzureBlobStorageAdapter(container).put(
-        'sitemaps/caves-0.xml.gz',
+        'sitemap-caves-0.xml.gz',
         bytes,
         { contentType: 'application/gzip' }
       );

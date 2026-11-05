@@ -18,12 +18,12 @@ describe('botSitemap', () => {
 
   describe('shardPath', () => {
     it('names a shard by the plural of its type and its range', () => {
-      should(botSitemap.shardPath('cave', 0)).equal('sitemaps/caves-0.xml.gz');
+      should(botSitemap.shardPath('cave', 0)).equal('sitemap-caves-0.xml.gz');
       should(botSitemap.shardPath('massif', 3)).equal(
-        'sitemaps/massifs-3.xml.gz'
+        'sitemap-massifs-3.xml.gz'
       );
       should(botSitemap.shardPath('organization', 12)).equal(
-        'sitemaps/organizations-12.xml.gz'
+        'sitemap-organizations-12.xml.gz'
       );
     });
 
@@ -57,14 +57,14 @@ describe('botSitemap', () => {
       should(
         botSitemap.sitemapIndexXml([
           {
-            loc: 'https://x.test/sitemaps/caves-0.xml.gz',
+            loc: 'https://x.test/sitemap-caves-0.xml.gz',
             lastmod: '2026-01-01',
           },
         ])
       ).equal(
         '<?xml version="1.0" encoding="UTF-8"?>\n' +
           '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-          '<sitemap><loc>https://x.test/sitemaps/caves-0.xml.gz</loc><lastmod>2026-01-01</lastmod></sitemap>\n' +
+          '<sitemap><loc>https://x.test/sitemap-caves-0.xml.gz</loc><lastmod>2026-01-01</lastmod></sitemap>\n' +
           '</sitemapindex>\n'
       );
     });

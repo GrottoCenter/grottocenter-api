@@ -7,10 +7,12 @@
  *   the same storage adapter:
  *
  *   sitemap.xml                         the index, one <sitemap> per shard,
- *                                       <lastmod> = the shard's latest lastmod
- *   sitemaps/<plural>-<k>.xml.gz        the records of one type with an id in
+ *                                       <lastmod> = when that shard last changed
+ *   sitemap-<plural>-<k>.xml.gz         the records of one type with an id in
  *                                       [k*50000, (k+1)*50000) (botSitemap.shardKey)
- *   sitemaps/hubs.xml.gz                every hub, by hub type then key
+ *   sitemap-hubs.xml.gz                 every hub, by hub type then key
+ *
+ * All at the root of the site (see botSitemap.js for why).
  *
  * Listed: the manifest rows of a content page, redirect_to IS NULL, of the
  * types asked for. Left out: redirect pages (noindex) and the static extras
@@ -20,8 +22,16 @@
  *
  * Change detection: each file's XML (before gzip, whose bytes may change with
  * the zlib version) is hashed (sha256) and the hash kept in the manifest as a
- * static row of that path, with the file's latest lastmod. A file whose hash
- * did not change is not uploaded again.
+ * static row of that path. A file whose hash did not change is not uploaded
+ * again.
+ *
+ * The <lastmod> of a shard in the index is when the FILE last changed, kept in
+ * the manifest row of the shard: the time of the run that uploaded it (or its
+ * latest entry, if later), and the stored value while its hash is unchanged.
+ * The latest lastmod of its entries would miss a URL leaving the shard (the
+ * file changes, the date does not, or goes back), and crawlers reading the
+ * index would not fetch the shard again. An unchanged night keeps every date,
+ * so the index is unchanged too.
  *
  * Order, so a crawler never reads an index that names a missing shard: the
  * shards are uploaded first, then the index, then the shards that are no
@@ -56,7 +66,9 @@ const SHARD_CONTENT_TYPE = 'application/gzip';
 
 // The manifest's lastmod as a W3C datetime, exact to the microsecond. One
 // fixed format, so the strings sort like the instants they name
-const LASTMOD_SQL = `to_char(lastmod AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+const lastmodSql = (expression) =>
+  `to_char(${expression} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+const LASTMOD_SQL = lastmodSql('lastmod');
 
 const query = (sql, params) => CommonService.query(sql, params);
 
@@ -93,13 +105,29 @@ const readHubRows = async () => {
   return rows;
 };
 
+// path -> { hash, lastmod } of the sitemap files already published
 const readPublishedFiles = async () => {
   const { rows } = await query(
-    `SELECT path, content_hash FROM t_bot_page_manifest
+    `SELECT path, content_hash, ${LASTMOD_SQL} AS lastmod
+       FROM t_bot_page_manifest
       WHERE entity_type = $1 AND (path = $2 OR path LIKE $3)`,
-    [STATIC_TYPE, botSitemap.INDEX_PATH, `${botSitemap.SHARD_DIRECTORY}/%`]
+    [STATIC_TYPE, botSitemap.INDEX_PATH, botSitemap.SHARD_PATH_PATTERN]
   );
-  return new Map(rows.map((row) => [row.path, row.content_hash]));
+  return new Map(
+    rows.map((row) => [
+      row.path,
+      { hash: row.content_hash, lastmod: row.lastmod },
+    ])
+  );
+};
+
+// The time of this run, in the format of LASTMOD_SQL, so it compares with the
+// entries' lastmod as strings
+const readNow = async () => {
+  const {
+    rows: [{ now }],
+  } = await query(`SELECT ${lastmodSql('now()')} AS now`);
+  return now;
 };
 
 const recordPublished = ({ path, hash, lastmod }) =>
@@ -144,6 +172,7 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
     ''
   );
   const known = await readPublishedFiles();
+  const runAt = await readNow();
   const summary = {
     uploaded: 0,
     unchanged: 0,
@@ -154,11 +183,14 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
   // The shards of this run, in order, for the index: { path, lastmod }
   const shards = [];
 
+  // Returns the lastmod of the file: the stored one when it is unchanged, the
+  // one given (the run's time for a shard) when it is uploaded
   const publishFile = async (path, xml, lastmod, contentType) => {
     const hash = sha256(xml);
-    if (known.get(path) === hash) {
+    const previous = known.get(path);
+    if (previous && previous.hash === hash) {
       summary.unchanged += 1;
-      return;
+      return previous.lastmod;
     }
     const body =
       contentType === SHARD_CONTENT_TYPE
@@ -167,6 +199,7 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
     await adapter.put(path, body, { contentType });
     await recordPublished({ path, hash, lastmod });
     summary.uploaded += 1;
+    return lastmod;
   };
 
   const publishShard = async (path, entries) => {
@@ -175,11 +208,12 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
         `bot sitemap ${path} would hold ${entries.length} URLs, over ${botSitemap.SHARD_SIZE}`
       );
     }
-    const lastmod = latest(entries.map((entry) => entry.lastmod));
-    await publishFile(
+    // When it changes now: this run, or its latest entry if that is later
+    const changedAt = latest([runAt, ...entries.map((entry) => entry.lastmod)]);
+    const lastmod = await publishFile(
       path,
       botSitemap.urlsetXml(entries),
-      lastmod,
+      changedAt,
       SHARD_CONTENT_TYPE
     );
     shards.push({ path, lastmod });
