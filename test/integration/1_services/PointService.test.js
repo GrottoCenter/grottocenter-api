@@ -364,6 +364,34 @@ describe('PointService', () => {
       );
     });
 
+    it('validates the cave on the transaction connection, even when every connection of the pool is held', async () => {
+      // As many concurrent updates as the pool has connections: each one
+      // holds a connection for its transaction, so a cave lookup on another
+      // connection would wait forever.
+      const poolSize = sails.getDatastore().manager.pool.options.max;
+      const points = await Promise.all(
+        Array.from({ length: poolSize }, createUndergroundPointWithCoordinates)
+      );
+      let timer;
+      const timeout = new Promise((resolve) => {
+        timer = setTimeout(() => resolve('timeout'), 5000);
+      });
+      const results = await Promise.race([
+        Promise.all(
+          points.map((point) =>
+            PointService.updatePoint(point.id, { caveId: 1 }, 1)
+          )
+        ),
+        timeout,
+      ]);
+      clearTimeout(timer);
+
+      should(results).not.equal('timeout');
+      should(results.every((r) => r.ok)).be.true();
+      const stored = await TPoint.find({ id: points.map((p) => p.id) });
+      should(stored.every((p) => p.cave === 1)).be.true();
+    });
+
     it('answers not found for a deleted point', async () => {
       const point = await createUndergroundPointWithCoordinates();
       await TPoint.updateOne({ id: point.id }).set({ isDeleted: true });

@@ -44,14 +44,17 @@ const validateLabel = (label) => {
 
 /**
  * Validate the cave of a point: null, or the id of an existing cave.
+ * @param {*} caveId
+ * @param {Object} [db] - the transaction connection to read the cave on
  * @returns {Promise<string|null>} an error message, or null when valid
  */
-const validateCave = async (caveId) => {
+const validateCave = async (caveId, db = null) => {
   if (caveId === null) return null;
   if (!isValidId(caveId)) {
     return 'caveId must be a positive integer or null.';
   }
-  const cave = await TCave.findOne({ id: caveId, isDeleted: false });
+  const query = TCave.findOne({ id: caveId, isDeleted: false });
+  const cave = await (db ? query.usingConnection(db) : query);
   if (!cave) return `Cave of id ${caveId} not found.`;
   return null;
 };
@@ -120,9 +123,12 @@ module.exports = {
    * @param {Object} params - { label, caveId, underground, latitude, longitude }
    *   plus any legacy position field the client sent
    * @param {Object} [currentPoint] - the stored point, for a partial update
+   * @param {Object} [db] - the transaction connection the caller holds, if
+   *   any: every lookup then runs on it rather than waiting for another
+   *   connection of the pool
    * @returns {Promise<{error: string}|{data: Object}>}
    */
-  validatePointInput: async (params, currentPoint = null) => {
+  validatePointInput: async (params, currentPoint = null, db = null) => {
     const isUpdate = currentPoint !== null;
     const { label, caveId, underground, latitude, longitude } = params;
 
@@ -152,7 +158,7 @@ module.exports = {
     }
 
     if (caveId !== undefined) {
-      const caveError = await validateCave(caveId);
+      const caveError = await validateCave(caveId, db);
       if (caveError) return { error: caveError };
       data.cave = caveId;
     }
@@ -214,6 +220,10 @@ module.exports = {
    * valid updates combine into an invalid point, for instance a surface point
    * without coordinates.
    *
+   * Every query of the transaction, validation included, runs on its
+   * connection: a lookup on another connection of the pool could wait for
+   * one while every connection is held by a transaction waiting for it.
+   *
    * @param {number} pointId
    * @param {Object} params - as returned by readPointParams()
    * @param {number} reviewerId
@@ -233,7 +243,8 @@ module.exports = {
 
       const { error, data } = await module.exports.validatePointInput(
         params,
-        point
+        point,
+        db
       );
       if (error) return { error };
 
