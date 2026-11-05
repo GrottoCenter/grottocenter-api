@@ -2,12 +2,17 @@
  * The sitemap files of the bot surface (#1767): their names, their shards and
  * their XML. Pure: loads without Sails.
  *
- *   sitemap.xml                    the index, one <sitemap> per shard
- *   sitemaps/caves-<k>.xml.gz      the caves with an id in [k*50000, (k+1)*50000)
- *   sitemaps/massifs-<k>.xml.gz    the same for the massifs
- *   sitemaps/organizations-<k>.xml.gz
- *   sitemaps/hubs.xml.gz           every hub (at most about 870), by hub type
- *                                  (index, country, region), then by key
+ *   sitemap.xml                       the index, one <sitemap> per shard
+ *   sitemap-caves-<k>.xml.gz          the caves with an id in [k*50000, (k+1)*50000)
+ *   sitemap-massifs-<k>.xml.gz        the same for the massifs
+ *   sitemap-organizations-<k>.xml.gz
+ *   sitemap-hubs.xml.gz               every hub (at most about 870), by hub type
+ *                                     (index, country, region), then by key
+ *
+ * Every file sits at the root of the site, next to sitemap.xml: the protocol
+ * scopes a sitemap to the URLs under its own directory, and the pages are
+ * under /ui/, so a file under /sitemaps/ could not list them for a strict
+ * crawler. A file at the root can list any URL of the host.
  *
  * A record shard is a fixed id range, so it never holds more than the
  * protocol's 50,000 URLs and a page never moves to another shard as others are
@@ -20,8 +25,12 @@ const SITEMAP_NAMESPACE = 'http://www.sitemaps.org/schemas/sitemap/0.9';
 // The protocol's limit of URLs per file, and the width of an id range
 const SHARD_SIZE = 50000;
 const INDEX_PATH = 'sitemap.xml';
-const SHARD_DIRECTORY = 'sitemaps';
-const HUB_SHARD_PATH = `${SHARD_DIRECTORY}/hubs.xml.gz`;
+const SHARD_PREFIX = 'sitemap-';
+const SHARD_SUFFIX = '.xml.gz';
+const HUB_SHARD_PATH = `${SHARD_PREFIX}hubs${SHARD_SUFFIX}`;
+// The manifest paths of the shards, as a LIKE pattern: none of the pages has
+// a path at the root that starts with "sitemap-"
+const SHARD_PATH_PATTERN = `${SHARD_PREFIX}%${SHARD_SUFFIX}`;
 const MAX_ID = 2147483647;
 
 const XML_ESCAPES = {
@@ -58,13 +67,13 @@ const shardKey = (entityType, id) => {
   return Math.floor(id / SHARD_SIZE);
 };
 
-/** `sitemaps/caves-0.xml.gz`. */
+/** `sitemap-caves-0.xml.gz`. */
 const shardPath = (entityType, k) => {
   assertType(entityType);
   if (!Number.isInteger(k) || k < 0) {
     throw new RangeError(`Invalid bot sitemap shard: ${k}`);
   }
-  return `${SHARD_DIRECTORY}/${botPagePaths.DIRECTORY_BY_TYPE[entityType]}-${k}.xml.gz`;
+  return `${SHARD_PREFIX}${botPagePaths.DIRECTORY_BY_TYPE[entityType]}-${k}${SHARD_SUFFIX}`;
 };
 
 const entryXml = (element, { loc, lastmod }) =>
@@ -95,7 +104,7 @@ module.exports = {
   SITEMAP_NAMESPACE,
   SHARD_SIZE,
   INDEX_PATH,
-  SHARD_DIRECTORY,
+  SHARD_PATH_PATTERN,
   HUB_SHARD_PATH,
   shardKey,
   shardPath,

@@ -54,7 +54,7 @@
  * rows of entity_type 'hub', with hub_type and hub_key and no entity_id.
  *
  * Static extras published by the same run: 404.html (noindex). The sitemap
- * files (sitemap.xml, sitemaps/*) are static rows of the manifest too, written
+ * files (sitemap.xml, sitemap-*.xml.gz) are static rows of the manifest too, written
  * by BotSitemapService (step 5, after this one): this run never deletes them.
  *
  * Redirects (#1766) and the "manifest after each upload" rule: a redirect page
@@ -441,7 +441,7 @@ async function publish({
       STATIC_TYPE,
       extras.map((e) => e.path),
       botSitemap.INDEX_PATH,
-      `${botSitemap.SHARD_DIRECTORY}/%`,
+      botSitemap.SHARD_PATH_PATTERN,
       1000,
     ]
   );

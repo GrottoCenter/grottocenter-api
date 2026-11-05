@@ -835,10 +835,12 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       FORBIDDEN_KEYS.forEach((key) =>
         should(text).not.containEql(`"${key.toLowerCase()}"`)
       );
-      // No number that looks like the position of the fixtures. Matched as a
-      // whole number: a lastmod such as "…:10.561Z" holds the digits "10.5"
-      should(text).not.match(/(?<![\d.])165\.5(?!\d)/);
-      should(text).not.match(/(?<![\d.])10\.5(?!\d)/);
+      // No number that looks like the position of the fixtures, as a whole
+      // number with any trailing zeros (a numeric(24, 20) column comes out as
+      // 10.50000000000000000000). A lastmod such as "…:10.561Z" holds the
+      // digits "10.5" followed by another digit, and is not one
+      should(text).not.match(/(?<![\d.])165\.50*(?!\d)/);
+      should(text).not.match(/(?<![\d.])10\.50*(?!\d)/);
     });
 
     it('has the latest lastmod of its caves', async () => {
