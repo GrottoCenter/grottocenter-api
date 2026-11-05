@@ -149,8 +149,9 @@ const byName = (a, b) => {
  * not been refreshed since, not a fact to print.
  *
  * @param {object} figures what the whitelist lets through of `figures`
- * @param {object} labels the labels of the page language (labelsFor), whose
- *   own language gives the plural rules
+ * @param {object} labels the labels of the page language exactly as labelsFor
+ *   returned them (not a copy): their own language gives the plural rules, and
+ *   anything else throws
  * @returns {Array<{value: string, text: string}>}
  */
 const figureLines = (figures, labels) => {

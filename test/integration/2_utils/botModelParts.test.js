@@ -100,17 +100,7 @@ describe('botModelParts', () => {
   });
 
   describe('figureLines', () => {
-    const labels = {
-      figureCaves: '{count, plural, one {cave} other {caves}}',
-      figureNetworks: '{count, plural, one {network} other {networks}}',
-      figureMassif: 'massif',
-      figureMassifs: 'massifs',
-      figureDivingCaves:
-        '{count, plural, one {cave is diveable} other {caves are diveable}}',
-      figureTotalLength: 'cumulated length',
-      avgDepth: 'avg depth',
-      avgLength: 'avg length',
-    };
+    const labels = labelsFor('en');
 
     it('words each figure as the SPA does: the number, then its text, in a fixed order', () => {
       should(
@@ -127,13 +117,13 @@ describe('botModelParts', () => {
           labels
         )
       ).deepEqual([
-        { value: '7', text: 'caves' },
-        { value: '1', text: 'network' },
+        { value: '7', text: 'caves (1 or multiple entrances)' },
+        { value: '1', text: 'network (cave of more than 1 entrance)' },
         { value: '3', text: 'massifs' },
         { value: '2', text: 'caves are diveable' },
         { value: '3 m', text: 'cumulated length' },
-        { value: '4 m', text: 'avg depth' },
-        { value: '5 m', text: 'avg length' },
+        { value: '4 m', text: 'average depth' },
+        { value: '5 m', text: 'average length' },
       ]);
     });
 
@@ -151,8 +141,8 @@ describe('botModelParts', () => {
       should(
         figureLines({ nbCaves: 3, nbNetworks: 0, totalLength: null }, labels)
       ).deepEqual([
-        { value: '3', text: 'caves' },
-        { value: '0', text: 'networks' },
+        { value: '3', text: 'caves (1 or multiple entrances)' },
+        { value: '0', text: 'networks (cave of more than 1 entrance)' },
       ]);
     });
 
@@ -230,10 +220,32 @@ describe('botModelParts', () => {
       should(languageOfLabels(labelsFor('he'))).equal('he');
     });
 
-    it('falls back to English for a language the front does not translate, and for labels it did not hand out', () => {
+    it('falls back to English for a language the front does not translate', () => {
       should(languageOfLabels(labelsFor('pl'))).equal('en');
       should(languageOfLabels(labelsFor('ru'))).equal('en');
-      should(languageOfLabels({ figureCaves: 'x' })).equal('en');
+    });
+
+    it('refuses labels labelsFor did not hand out, a copy included, rather than guess English', () => {
+      [{ figureCaves: 'x' }, { ...labelsFor('fr') }, {}, null].forEach(
+        (labels) =>
+          should(() => languageOfLabels(labels)).throw(TypeError, {
+            message: /labelsFor/,
+          })
+      );
+      should(() =>
+        figureLines({ nbCaves: 3 }, { ...labelsFor('fr'), extra: 'x' })
+      ).throw(TypeError);
+    });
+
+    it('gives French labels the French rules: 0 and 1 take the singular', () => {
+      const lines = figureLines(
+        { nbCaves: 1, nbDivingCaves: 0 },
+        labelsFor('fr')
+      );
+      should(lines).deepEqual([
+        { value: '1', text: 'cavité (1 ou plusieurs entrées)' },
+        { value: '0', text: 'cavité permet de faire de la plongée' },
+      ]);
     });
   });
 
