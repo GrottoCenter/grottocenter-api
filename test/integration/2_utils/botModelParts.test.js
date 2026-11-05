@@ -12,7 +12,7 @@ const {
   buildTitle,
 } = require('../../../api/utils/botModelParts');
 
-const { labelsFor, labelsLanguage } = require('../../../api/utils/botLabels');
+const { labelsFor, languageOfLabels } = require('../../../api/utils/botLabels');
 
 const ROOT = path.join(__dirname, '../../..');
 
@@ -124,8 +124,7 @@ describe('botModelParts', () => {
             nbNetworks: 1,
             nbCaves: 7,
           },
-          labels,
-          'en'
+          labels
         )
       ).deepEqual([
         { value: '7', text: 'caves' },
@@ -140,7 +139,7 @@ describe('botModelParts', () => {
 
     it('uses the singular for 0 or 1 massif and the plural above, as the SPA does', () => {
       const massifs = (nbMassifs) =>
-        figureLines({ nbCaves: 1, nbMassifs }, labels, 'en').find(
+        figureLines({ nbCaves: 1, nbMassifs }, labels).find(
           (line) => line.value === String(nbMassifs) && /massif/.test(line.text)
         ).text;
       should(massifs(0)).equal('massif');
@@ -150,11 +149,7 @@ describe('botModelParts', () => {
 
     it('leaves out a figure that is null or missing, and keeps a count of 0', () => {
       should(
-        figureLines(
-          { nbCaves: 3, nbNetworks: 0, totalLength: null },
-          labels,
-          'en'
-        )
+        figureLines({ nbCaves: 3, nbNetworks: 0, totalLength: null }, labels)
       ).deepEqual([
         { value: '3', text: 'caves' },
         { value: '0', text: 'networks' },
@@ -162,11 +157,9 @@ describe('botModelParts', () => {
     });
 
     it('prints nothing when the statistics count no cave: the view is stale, not the hub empty', () => {
-      should(
-        figureLines({ nbCaves: 0, nbNetworks: 0 }, labels, 'en')
-      ).deepEqual([]);
-      should(figureLines(null, labels, 'en')).deepEqual([]);
-      should(figureLines(undefined, labels, 'en')).deepEqual([]);
+      should(figureLines({ nbCaves: 0, nbNetworks: 0 }, labels)).deepEqual([]);
+      should(figureLines(null, labels)).deepEqual([]);
+      should(figureLines(undefined, labels)).deepEqual([]);
     });
   });
 
@@ -221,10 +214,8 @@ describe('botModelParts', () => {
     it('gives a Russian page, whose labels are English, the English plural: 21 caves', () => {
       const lines = figureLines(
         { nbCaves: 21, nbNetworks: 31 },
-        labelsFor('ru'),
-        labelsLanguage('ru')
+        labelsFor('ru')
       );
-      should(labelsLanguage('ru')).equal('en');
       should(lines[0]).deepEqual({
         value: '21',
         text: 'caves (1 or multiple entrances)',
@@ -234,9 +225,15 @@ describe('botModelParts', () => {
       should(new Intl.PluralRules('ru').select(21)).equal('one');
     });
 
-    it('keeps the page language when the front translates it', () => {
-      should(labelsLanguage('fr')).equal('fr');
-      should(labelsLanguage('pl')).equal('en');
+    it('takes the language from the labels themselves', () => {
+      should(languageOfLabels(labelsFor('fr'))).equal('fr');
+      should(languageOfLabels(labelsFor('he'))).equal('he');
+    });
+
+    it('falls back to English for a language the front does not translate, and for labels it did not hand out', () => {
+      should(languageOfLabels(labelsFor('pl'))).equal('en');
+      should(languageOfLabels(labelsFor('ru'))).equal('en');
+      should(languageOfLabels({ figureCaves: 'x' })).equal('en');
     });
   });
 

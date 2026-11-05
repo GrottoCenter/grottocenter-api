@@ -22,7 +22,7 @@
  */
 
 const { project } = require('./botSurfaceWhitelist');
-const { labelsFor, labelsLanguage } = require('./botLabels');
+const { labelsFor } = require('./botLabels');
 const botPagePaths = require('./botPagePaths');
 const {
   TITLE_MAX,
@@ -291,7 +291,7 @@ const buildPageModel = (
       'top',
       massifExtras.get(row.entity_id) || {}
     );
-    model.figures = figureLines(extras.figures, labels, labelsLanguage(lang));
+    model.figures = figureLines(extras.figures, labels);
     model.regions = (extras.regions || [])
       .map((region) => ({
         text: cleanRegionName(region.name) || region.code,

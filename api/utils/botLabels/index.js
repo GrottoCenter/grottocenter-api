@@ -40,29 +40,36 @@ const LABELS = Object.freeze({
   ro: Object.freeze(ro),
 });
 
-/**
- * The language the labels of a page are in: the page language when the front
- * has a translation for it, else English. The plural rules of a label are the
- * ones of this language, not of the page: a Russian page has English labels,
- * and "21 caves" in English.
- *
- * @param {string} tag BCP 47 primary subtag of the page language ('pt', or a
- *   3-letter code for a language without a 2-letter one)
- * @returns {string}
- */
 const labelsLanguage = (tag) =>
   Object.prototype.hasOwnProperty.call(LABELS, tag) ? tag : 'en';
 
 /**
- * @param {string} tag BCP 47 primary subtag of the page language
+ * @param {string} tag BCP 47 primary subtag of the page language ('pt', or a
+ *   3-letter code for a language without a 2-letter one)
  * @returns {Object<string,string>} the labels of that language, the English
  *   ones when the front has no translation for it
  */
 const labelsFor = (tag) => LABELS[labelsLanguage(tag)];
 
+const LANGUAGE_OF_LABELS = new Map(
+  Object.entries(LABELS).map(([language, labels]) => [labels, language])
+);
+
+/**
+ * The language a set of labels is in, so that the plural rules of a label are
+ * always the ones of its own text: a Russian page has English labels, and
+ * "21 caves" in English. Worked out from the labels themselves, so a caller
+ * cannot pass the page language by mistake; 'en' for labels that labelsFor did
+ * not return.
+ *
+ * @param {Object<string,string>} labels what labelsFor returned
+ * @returns {string}
+ */
+const languageOfLabels = (labels) => LANGUAGE_OF_LABELS.get(labels) || 'en';
+
 module.exports = {
   labelsFor,
-  labelsLanguage,
+  languageOfLabels,
   LABEL_KEYS,
   FRONT_LANGUAGES,
   LABELS,

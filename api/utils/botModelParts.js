@@ -6,6 +6,8 @@
  * Pure: loads without Sails.
  */
 
+const { languageOfLabels } = require('./botLabels');
+
 const BRAND = 'Grottocenter';
 
 // `{count, plural, one {cave} other {caves}}`, the ICU form the front uses for
@@ -147,12 +149,13 @@ const byName = (a, b) => {
  * not been refreshed since, not a fact to print.
  *
  * @param {object} figures what the whitelist lets through of `figures`
- * @param {object} labels the labels of the page language
- * @param {string} lang the language the labels are in (labelsLanguage), whose
- *   plural rules apply: not the page language when the labels fell back to English
+ * @param {object} labels the labels of the page language (labelsFor), whose
+ *   own language gives the plural rules
  * @returns {Array<{value: string, text: string}>}
  */
-const figureLines = (figures, labels, lang) => {
+const figureLines = (figures, labels) => {
+  // The plural rules of the language the labels are in, not of the page
+  const lang = languageOfLabels(labels);
   if (!figures || figures.nbCaves === 0) return [];
   const count = (label, value) =>
     typeof value === 'number'
