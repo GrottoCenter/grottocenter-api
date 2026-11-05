@@ -58,14 +58,23 @@ const LANGUAGE_OF_LABELS = new Map(
 /**
  * The language a set of labels is in, so that the plural rules of a label are
  * always the ones of its own text: a Russian page has English labels, and
- * "21 caves" in English. Worked out from the labels themselves, so a caller
- * cannot pass the page language by mistake; 'en' for labels that labelsFor did
- * not return.
+ * "21 caves" in English. Worked out from the labels themselves, by identity,
+ * so a caller cannot pass the page language by mistake.
  *
- * @param {Object<string,string>} labels what labelsFor returned
+ * @param {Object<string,string>} labels what labelsFor returned, unmodified
  * @returns {string}
+ * @throws {TypeError} for any other object (a copy, labels built by hand):
+ *   guessing its language would give French text English plural rules
  */
-const languageOfLabels = (labels) => LANGUAGE_OF_LABELS.get(labels) || 'en';
+const languageOfLabels = (labels) => {
+  const language = LANGUAGE_OF_LABELS.get(labels);
+  if (!language) {
+    throw new TypeError(
+      'languageOfLabels needs labels as labelsFor returned them, unmodified'
+    );
+  }
+  return language;
+};
 
 module.exports = {
   labelsFor,
