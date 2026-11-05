@@ -835,9 +835,10 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       FORBIDDEN_KEYS.forEach((key) =>
         should(text).not.containEql(`"${key.toLowerCase()}"`)
       );
-      // No number that looks like the position of the fixtures
-      should(text).not.containEql('165.5');
-      should(text).not.containEql('10.5');
+      // No number that looks like the position of the fixtures. Matched as a
+      // whole number: a lastmod such as "…:10.561Z" holds the digits "10.5"
+      should(text).not.match(/(?<![\d.])165\.5(?!\d)/);
+      should(text).not.match(/(?<![\d.])10\.5(?!\d)/);
     });
 
     it('has the latest lastmod of its caves', async () => {
