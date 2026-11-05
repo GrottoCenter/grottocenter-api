@@ -2,7 +2,9 @@
  * Storage adapter publishing the bot pages to an Azure Blob static website
  * (the `$web` container), through @azure/storage-blob as FileService does.
  *
- * Every page is uploaded with Content-Type `text/html; charset=utf-8`. The
+ * A page is uploaded with Content-Type `text/html; charset=utf-8` unless the
+ * caller names another (the sitemaps: `application/xml; charset=utf-8` for the
+ * index, `application/gzip` for a shard, whose body is a Buffer). The
  * blob's ETag and Last-Modified are forwarded by the edge Worker for
  * conditional requests, so no cache header is set here and no CDN purge is
  * needed: the Worker never caches these pages.
@@ -37,14 +39,16 @@ class AzureBlobStorageAdapter {
     );
   }
 
+  // `body` is a string (UTF-8) or a Buffer (bytes, sent as is).
   // `metadata` (optional, a flat object of strings, e.g. { redirectto: url })
   // becomes the blob's metadata. An upload replaces the blob's metadata as a
   // whole, so a page uploaded without any drops the `redirectto` it had.
-  async put(key, html, { metadata } = {}) {
+  // `contentType` (optional) defaults to HTML.
+  async put(key, body, { metadata, contentType = HTML_CONTENT_TYPE } = {}) {
     await this.container
       .getBlockBlobClient(key)
-      .upload(html, Buffer.byteLength(html, 'utf8'), {
-        blobHTTPHeaders: { blobContentType: HTML_CONTENT_TYPE },
+      .upload(body, Buffer.byteLength(body, 'utf8'), {
+        blobHTTPHeaders: { blobContentType: contentType },
         ...(metadata && Object.keys(metadata).length > 0 ? { metadata } : {}),
       });
   }

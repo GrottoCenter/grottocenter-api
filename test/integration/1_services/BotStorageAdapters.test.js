@@ -44,6 +44,21 @@ describe('Bot storage adapters', () => {
       );
     });
 
+    it('writes a Buffer body byte for byte (a gzip sitemap shard)', async () => {
+      const bytes = Buffer.from([
+        0x1f, 0x8b, 0x08, 0x00, 0xff, 0xfe, 0x00, 0x80,
+      ]);
+      await adapter.put('sitemaps/caves-0.xml.gz', bytes, {
+        contentType: 'application/gzip',
+      });
+      should(
+        fs.readFileSync(path.join(root, 'sitemaps/caves-0.xml.gz'))
+      ).deepEqual(bytes);
+      should(await collect(adapter.list())).deepEqual([
+        'sitemaps/caves-0.xml.gz',
+      ]);
+    });
+
     it('replaces a page and leaves no temporary file', async () => {
       await adapter.put('caves/1.html', 'one');
       await adapter.put('caves/1.html', 'two');
@@ -176,6 +191,19 @@ describe('Bot storage adapters', () => {
         { blobHTTPHeaders: { blobContentType: 'text/html; charset=utf-8' } }
       );
       should(Buffer.byteLength('<p>é</p>', 'utf8')).equal(9);
+    });
+
+    it('uploads a Buffer with its byte length and the content type it is given', async () => {
+      const container = makeContainer();
+      const bytes = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0xc3, 0xa9]);
+      await new AzureBlobStorageAdapter(container).put(
+        'sitemaps/caves-0.xml.gz',
+        bytes,
+        { contentType: 'application/gzip' }
+      );
+      sinon.assert.calledOnceWithExactly(container.blob.upload, bytes, 6, {
+        blobHTTPHeaders: { blobContentType: 'application/gzip' },
+      });
     });
 
     it('uploads the metadata of a page (redirectto) with it', async () => {

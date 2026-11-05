@@ -53,7 +53,9 @@
  * produce is deleted (the hub stopped being published). Hub rows are manifest
  * rows of entity_type 'hub', with hub_type and hub_key and no entity_id.
  *
- * Static extras published by the same run: 404.html (noindex).
+ * Static extras published by the same run: 404.html (noindex). The sitemap
+ * files (sitemap.xml, sitemaps/*) are static rows of the manifest too, written
+ * by BotSitemapService (step 5, after this one): this run never deletes them.
  *
  * Redirects (#1766) and the "manifest after each upload" rule: a redirect page
  * is put with its `redirectto` metadata, then its manifest row is written,
@@ -65,6 +67,7 @@ const botPagePaths = require('../../utils/botPagePaths');
 const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
 const BotHubService = require('./BotHubService');
+const botSitemap = require('../../utils/botSitemap');
 
 const DEFAULT_BATCH_SIZE = 1000;
 const DEFAULT_CONCURRENCY = 4;
@@ -141,8 +144,10 @@ const forgetPublished = (path) =>
   query('DELETE FROM t_bot_page_manifest WHERE path = $1', [path]);
 
 // Runs `fn` holding the generator lock, or rejects at once when another run
-// holds it. No transaction is held open while pages are uploaded.
-const withRunLock = (fn) =>
+// holds it. No transaction is held open while pages are uploaded. The sitemaps
+// (BotSitemapService) take the same lock: they read the manifest this run
+// writes.
+const withRunLock = (fn, name = 'bot-page-generator') =>
   sails.getDatastore().leaseConnection(async (db) => {
     const {
       rows: [{ locked }],
@@ -152,10 +157,9 @@ const withRunLock = (fn) =>
       db
     );
     if (!locked) {
-      throw Object.assign(
-        new Error('bot-page-generator: another run is in progress'),
-        { code: 'E_BOT_PAGES_RUNNING' }
-      );
+      throw Object.assign(new Error(`${name}: another run is in progress`), {
+        code: 'E_BOT_PAGES_RUNNING',
+      });
     }
     try {
       return await fn();
@@ -426,11 +430,20 @@ async function publish({
   await mapLimit(extras, concurrency, (page) =>
     publishIfChanged(page, knownExtras)
   );
+  // The sitemap files are static rows too, owned by BotSitemapService: never
+  // removed here
   await removeAll(
     `SELECT path FROM t_bot_page_manifest
         WHERE entity_type = $1 AND NOT (path = ANY($2::text[]))
-        ORDER BY path LIMIT $3`,
-    [STATIC_TYPE, extras.map((e) => e.path), 1000]
+          AND path <> $3 AND path NOT LIKE $4
+        ORDER BY path LIMIT $5`,
+    [
+      STATIC_TYPE,
+      extras.map((e) => e.path),
+      botSitemap.INDEX_PATH,
+      `${botSitemap.SHARD_DIRECTORY}/%`,
+      1000,
+    ]
   );
 
   return summary;
@@ -474,4 +487,5 @@ module.exports = {
 
   NOT_FOUND_PATH,
   LOCK_KEY,
+  withRunLock,
 };
