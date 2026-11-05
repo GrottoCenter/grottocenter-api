@@ -271,7 +271,7 @@ describe('Document delete', () => {
 
   describe('Permanent delete of a plan with points positioned on it', () => {
     // The test database is built by Waterline, without foreign keys: install
-    // the one of sql/9_33_2026_11_03_point_svg_position.sql that a hard delete
+    // the one of sql/9_35_2026_11_03_point_svg_position.sql that a hard delete
     // of a referenced plan would violate.
     before(async () => {
       await sails.sendNativeQuery(`

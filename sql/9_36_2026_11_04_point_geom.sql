@@ -11,7 +11,7 @@
 -- them on every INSERT and UPDATE, and NULL when the pair is incomplete.
 --
 -- Production does not run migrations on deploy: apply this file by hand, with
--- 9_33_2026_11_03_point_svg_position.sql, BEFORE deploying the API.
+-- 9_35_2026_11_03_point_svg_position.sql, BEFORE deploying the API.
 -- Idempotent.
 -- =============================================================================
 

@@ -1052,7 +1052,7 @@ const BOT_HUB_MIGRATION = forTestDatabase(
 // t_point.point_geom kept in sync with latitude/longitude by a trigger
 const POINT_GEOM_MIGRATION = forTestDatabase(
   fs.readFileSync(
-    path.join(__dirname, '../sql/9_34_2026_11_04_point_geom.sql'),
+    path.join(__dirname, '../sql/9_36_2026_11_04_point_geom.sql'),
     'utf8'
   )
 );
