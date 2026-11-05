@@ -122,8 +122,8 @@ const readPublishedFiles = async () => {
   );
 };
 
-// The time of this run, in the format of LASTMOD_SQL, so it compares with the
-// entries' lastmod as strings
+// The time of this run, in the format of LASTMOD_SQL, so a shard's date
+// compares as a string with the stored dates of the other shards (index lastmod)
 const readNow = async () => {
   const {
     rows: [{ now }],
