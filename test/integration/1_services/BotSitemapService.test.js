@@ -287,14 +287,34 @@ describe('BotSitemapService', () => {
       index.forEach((entry) => should(entry.lastmod).equal(first.lastmod));
     });
 
-    it('takes the latest entry as the lastmod of a shard when it is later than the run', async () => {
+    it('dates a shard with the run, never with a future-dated entry, so its date never goes back', async () => {
+      // A future-dated entry in the first cave range, which holds several
+      const { rows } = await query(
+        `SELECT path FROM t_bot_page_manifest
+          WHERE entity_type = 'cave' AND redirect_to IS NULL
+            AND entity_id >= $1 AND entity_id < $2
+          ORDER BY entity_id LIMIT 1`,
+        [FIRST_RANGE, FIRST_RANGE + 50000]
+      );
       await query(
         `UPDATE t_bot_page_manifest SET lastmod = '2099-01-01T00:00:00Z' WHERE path = $1`,
-        [`caves/${SECOND_RANGE + 7}.html`]
+        [rows[0].path]
       );
       await run();
-      should(readIndex()[1].lastmod).equal('2099-01-01T00:00:00.000000Z');
-      should(readIndex()[0].lastmod < '2099').be.true();
+      const first = readIndex()[0].lastmod;
+      should(first < '2099').be.true();
+      // The entry still carries its own date
+      should(
+        readShard('sitemap-caves-180.xml.gz').map((e) => e.lastmod)
+      ).containEql('2099-01-01T00:00:00.000000Z');
+
+      // The future-dated entry leaves the shard: the date moves forward
+      await query('DELETE FROM t_bot_page_manifest WHERE path = $1', [
+        rows[0].path,
+      ]);
+      await run();
+      should(readShard('sitemap-caves-180.xml.gz').length).be.above(0);
+      should(readIndex()[0].lastmod > first).be.true();
     });
 
     it('lists exactly the content pages of the manifest, each with its lastmod', async () => {
@@ -363,7 +383,7 @@ describe('BotSitemapService', () => {
       should(puts[puts.length - 1]).equal('sitemap.xml');
     });
 
-    it('keeps each file in the manifest as a static row with its hash and latest lastmod', async () => {
+    it('keeps each file in the manifest as a static row with its hash and the time it was uploaded', async () => {
       await run();
       const shard = await manifestRow('sitemap-caves-180.xml.gz');
       should(shard.entity_type).equal('static');

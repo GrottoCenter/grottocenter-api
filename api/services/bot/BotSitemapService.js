@@ -26,8 +26,9 @@
  * again.
  *
  * The <lastmod> of a shard in the index is when the FILE last changed, kept in
- * the manifest row of the shard: the time of the run that uploaded it (or its
- * latest entry, if later), and the stored value while its hash is unchanged.
+ * the manifest row of the shard: the time of the run that uploaded it, and the
+ * stored value while its hash is unchanged. Never an entry's date, which could
+ * lie in the future and make the shard's date go back later.
  * The latest lastmod of its entries would miss a URL leaving the shard (the
  * file changes, the date does not, or goes back), and crawlers reading the
  * index would not fetch the shard again. An unchanged night keeps every date,
@@ -208,12 +209,13 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
         `bot sitemap ${path} would hold ${entries.length} URLs, over ${botSitemap.SHARD_SIZE}`
       );
     }
-    // When it changes now: this run, or its latest entry if that is later
-    const changedAt = latest([runAt, ...entries.map((entry) => entry.lastmod)]);
+    // When it changes now: the time of this run, and nothing else. A date
+    // taken from an entry could lie in the future (a future-dated manifest
+    // row), and the shard's date would then go back once that entry left it
     const lastmod = await publishFile(
       path,
       botSitemap.urlsetXml(entries),
-      changedAt,
+      runAt,
       SHARD_CONTENT_TYPE
     );
     shards.push({ path, lastmod });
