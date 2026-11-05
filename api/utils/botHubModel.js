@@ -24,7 +24,7 @@
  */
 
 const { project } = require('./botSurfaceWhitelist');
-const { labelsFor, labelsLanguage } = require('./botLabels');
+const { labelsFor } = require('./botLabels');
 const botPagePaths = require('./botPagePaths');
 const {
   langOf,
@@ -144,7 +144,7 @@ const buildHubModel = (
   } else if (hubType === 'country') {
     model.name = countryNameOf(page.code, countryNames);
     const figures = figuresOf('country', page.code);
-    model.figures = figureLines(figures, labels, labelsLanguage(lang));
+    model.figures = figureLines(figures, labels);
     model.breadcrumb = [indexCrumb(), { text: model.name, url: null }];
     // A region is listed, and linked, only when its hub is published
     model.regions = (page.regions || [])
@@ -181,7 +181,7 @@ const buildHubModel = (
   } else {
     model.name = cleanRegionName(page.name) || page.code;
     const figures = figuresOf('region', page.code);
-    model.figures = figureLines(figures, labels, labelsLanguage(lang));
+    model.figures = figureLines(figures, labels);
     const countryCode = page.country || page.code.split('-')[0];
     model.breadcrumb = [
       indexCrumb(),
