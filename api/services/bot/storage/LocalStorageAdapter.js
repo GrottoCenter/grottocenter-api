@@ -2,10 +2,14 @@
  * Storage adapter writing the bot pages into a local directory (dev, tests).
  *
  * Adapter interface, shared with AzureBlobStorageAdapter:
- *   put(key, html, { metadata })
- *                    write or replace one page; `metadata` is an optional flat
- *                    object of strings (`redirectto` on a redirect page) that
- *                    replaces the page's previous metadata, none when absent
+ *   put(key, body, { metadata, contentType })
+ *                    write or replace one file; `body` is a string (written as
+ *                    UTF-8) or a Buffer (written as is: a gzip sitemap shard);
+ *                    `metadata` is an optional flat object of strings
+ *                    (`redirectto` on a redirect page) that replaces the
+ *                    file's previous metadata, none when absent; `contentType`
+ *                    is optional, HTML when absent (the local adapter has no
+ *                    content type to store and ignores it)
  *   delete(key)      remove one page and its metadata; resolves when it is
  *                    already gone
  *   list()           async iterable of every key held
@@ -46,6 +50,7 @@ class LocalStorageAdapter {
       .toString(36)
       .slice(2)}${TEMPORARY_SUFFIX}`;
     try {
+      // A Buffer is written as is; the encoding applies to a string only
       await fs.promises.writeFile(temporary, content, 'utf8');
       await fs.promises.rename(temporary, target);
     } catch (error) {
@@ -54,7 +59,7 @@ class LocalStorageAdapter {
     }
   }
 
-  async put(key, html, { metadata } = {}) {
+  async put(key, body, { metadata } = {}) {
     const target = this.resolve(key);
     await fs.promises.mkdir(path.dirname(target), { recursive: true });
     // The metadata first: a crash in between leaves the old page with the new
@@ -68,7 +73,7 @@ class LocalStorageAdapter {
     } else {
       await fs.promises.rm(`${target}${METADATA_SUFFIX}`, { force: true });
     }
-    await LocalStorageAdapter.writeAtomically(target, html);
+    await LocalStorageAdapter.writeAtomically(target, body);
   }
 
   async delete(key) {

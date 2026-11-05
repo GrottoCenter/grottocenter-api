@@ -177,6 +177,7 @@ const fromUrl = (url, baseUrl = DEFAULT_PUBLIC_BASE_URL) => {
 
 module.exports = {
   DEFAULT_PUBLIC_BASE_URL,
+  DIRECTORY_BY_TYPE,
   ENTITY_TYPES,
   HUB_TYPES,
   INDEX_HUB_KEY,
