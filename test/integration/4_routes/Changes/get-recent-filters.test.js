@@ -26,8 +26,10 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
   const ids = {};
   const lastChangeIds = [];
 
-  // Logs a change `minutesAgo` minutes ago; changes are spread out so that
-  // neither the cave/entrance deduplication nor the grouping merges them
+  // Logs a change `minutesAgo` minutes before a point one day ahead. Dating
+  // the changes in the future keeps them among the RECENT_CHANGES_LIMIT newest
+  // raw changes, whatever the tests that ran before logged. They are spread out
+  // so that neither the cave/entrance deduplication nor the grouping merges them
   const logChange = async (
     minutesAgo,
     { type, change = 'update', id, relatedType = null, relatedId = null },
@@ -36,7 +38,7 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     const { rows } = await CommonService.query(
       `INSERT INTO t_last_change
         (type_entity, type_change, date_change, id_entity, id_author, type_related_entity, id_related_entity, name)
-       VALUES ($1, $2, now() - make_interval(mins => $3), $4, $5, $6, $7, 'filter test')
+       VALUES ($1, $2, now() + interval '1 day' - make_interval(mins => $3), $4, $5, $6, $7, 'filter test')
        RETURNING id`,
       [type, change, minutesAgo, id, author, relatedType, relatedId]
     );
@@ -297,7 +299,7 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
       // every change logged above out of the unfiltered selection
       const { rows } = await CommonService.query(
         `INSERT INTO t_last_change (type_entity, type_change, date_change, id_entity, id_author, name)
-         SELECT 'grotto', 'update', now() - interval '1 minute', 800000 + n, $1, 'flood'
+         SELECT 'grotto', 'update', now() + interval '2 days', 800000 + n, $1, 'flood'
          FROM generate_series(1, $2::int) AS n
          RETURNING id`,
         [FLOOD_AUTHOR_ID, RecentChangeService.RECENT_CHANGES_LIMIT]
