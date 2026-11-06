@@ -1,6 +1,9 @@
 const CommonService = require('./CommonService');
 
 const GROUP_MAX_TIME_DIFF_S = 60 * 60 * 6; // 6 Hours
+// A cave change logged within this delay of a change of one of its entrances,
+// by the same author, duplicates it
+const CAVE_ENTRANCE_PAIR_MAX_DIFF_MS = 5000;
 
 // Dashboard only needs a short lookback; 7 days covers the typical review cycle
 // while keeping the query fast on the unpartitioned t_last_change table.
@@ -282,7 +285,11 @@ async function getRecent(filters = {}) {
   const { conditions, params } = buildFilterConditions(filters);
   // The t_last_change table is populated by trigger on the other main tables
   const query = `
-  SELECT tbl.*, author.nickname FROM t_last_change tbl
+  SELECT tbl.*, author.nickname,
+    CASE WHEN tbl.type_entity = 'entrance'
+      THEN (SELECT e.id_cave FROM t_entrance e WHERE e.id = tbl.id_entity)
+    END AS entrance_cave_id
+  FROM t_last_change tbl
   LEFT JOIN t_caver author ON tbl.id_author = author.id
   WHERE tbl.date_change > current_timestamp - interval '${RECENT_CHANGES_WINDOW_DAYS} days'
   ${conditions.map((c) => `AND ${c}`).join('\n  ')}
@@ -291,31 +298,24 @@ async function getRecent(filters = {}) {
   `;
   const rep = await CommonService.query(query, params);
 
-  // When creating/updating a entrance the associated cave is also created/updated (when not part of a network)
-  // As cave changes are duplicate we filter out them
-  const changes = rep.rows.filter((e, i, a) => {
-    if (e.type_entity !== 'cave') return true;
-
-    // Is the cave change is after the entrance change ?
-    if (
-      i < a.length - 2 &&
-      a[i + 1].date_change - e.date_change < 5000 &&
-      a[i + 1].id_author === e.id_author &&
-      a[i + 1].type_entity === 'entrance'
-    )
-      return false;
-
-    // Is the cave change is before the entrance change ?
-    if (
-      i > 0 &&
-      e.date_change - a[i - 1].date_change < 5000 &&
-      a[i - 1].id_author === e.id_author &&
-      a[i - 1].type_entity === 'entrance'
-    )
-      return false;
-
-    return true;
-  });
+  // When creating/updating an entrance the associated cave is also
+  // created/updated (when not part of a network). Such a cave change is a
+  // duplicate of the change of its own entrance, by the same author at nearly
+  // the same time, so it is left out. The pairing checks the entrance's cave
+  // rather than the rows next to it: a filter can remove the changes in between
+  // and make an unrelated entrance change adjacent.
+  const changes = rep.rows.filter(
+    (e, _, a) =>
+      e.type_entity !== 'cave' ||
+      !a.some(
+        (other) =>
+          other.type_entity === 'entrance' &&
+          other.entrance_cave_id === e.id_entity &&
+          other.id_author === e.id_author &&
+          Math.abs(other.date_change - e.date_change) <
+            CAVE_ENTRANCE_PAIR_MAX_DIFF_MS
+      )
+  );
 
   // 5% chance to also remove older changes
   if (Math.random() < 0.05) removeOlderChanges();

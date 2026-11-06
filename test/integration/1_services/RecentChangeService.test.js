@@ -27,6 +27,7 @@ describe('RecentChangeService', () => {
           nickname: 'user1',
           type_entity: 'entrance',
           id_entity: 1,
+          entrance_cave_id: 1,
           type_change: 'create',
           name: 'Entrance 1',
         },
@@ -92,6 +93,7 @@ describe('RecentChangeService', () => {
           nickname: 'user1',
           type_entity: 'entrance',
           id_entity: 1,
+          entrance_cave_id: 1,
           type_change: 'create',
           name: 'Entrance 1',
         },
@@ -120,6 +122,7 @@ describe('RecentChangeService', () => {
           nickname: 'user1',
           type_entity: 'entrance',
           id_entity: 1,
+          entrance_cave_id: 1,
           type_change: 'create',
           name: 'Entrance 1',
         },
@@ -157,6 +160,109 @@ describe('RecentChangeService', () => {
       should(changes).be.an.Array();
       should(changes.length).equal(1);
       should(changes[0].mainEntityType).equal('cave');
+    });
+
+    describe('cave and entrance deduplication', () => {
+      const change = (secondsAgo, props) => ({
+        date_change: new Date(
+          Date.UTC(2024, 0, 1, 12, 0, 0) - secondsAgo * 1000
+        ),
+        id_author: 1,
+        nickname: 'user1',
+        type_change: 'update',
+        name: 'name',
+        ...props,
+      });
+
+      const queryReturns = (rows) => {
+        stub = sinon.stub(CommonService, 'query').resolves({ rows });
+      };
+
+      it('keeps a cave change next to an entrance change of another cave', async () => {
+        // A filter removed the document logged between the two, so the
+        // entrance change of cave 1 is now right next to the change of cave 2
+        queryReturns([
+          change(0, {
+            type_entity: 'entrance',
+            id_entity: 10,
+            entrance_cave_id: 1,
+          }),
+          change(2, { type_entity: 'cave', id_entity: 2 }),
+        ]);
+        const changes = await RecentChangeService.getRecent({
+          countryId: 'FR',
+        });
+        should(changes.map((c) => c.mainEntityType).sort()).eql([
+          'cave',
+          'entrance',
+        ]);
+      });
+
+      it('drops a cave change paired with its entrance, logged before or after it', async () => {
+        queryReturns([
+          change(0, { type_entity: 'cave', id_entity: 1 }),
+          change(1, {
+            type_entity: 'entrance',
+            id_entity: 10,
+            entrance_cave_id: 1,
+          }),
+          change(10, {
+            type_entity: 'entrance',
+            id_entity: 20,
+            entrance_cave_id: 2,
+          }),
+          change(11, { type_entity: 'cave', id_entity: 2 }),
+        ]);
+        const changes = await RecentChangeService.getRecent();
+        should(changes.map((c) => c.mainEntityType)).eql([
+          'entrance',
+          'entrance',
+        ]);
+      });
+
+      it('drops a paired cave change even when other changes were logged in between', async () => {
+        queryReturns([
+          change(0, {
+            type_entity: 'entrance',
+            id_entity: 10,
+            entrance_cave_id: 1,
+          }),
+          change(1, { type_entity: 'document', id_entity: 5 }),
+          change(2, { type_entity: 'cave', id_entity: 1 }),
+        ]);
+        const changes = await RecentChangeService.getRecent();
+        should(changes.map((c) => c.mainEntityType).sort()).eql([
+          'document',
+          'entrance',
+        ]);
+      });
+
+      it('keeps a cave change paired by time with an entrance of another author', async () => {
+        queryReturns([
+          change(0, {
+            type_entity: 'entrance',
+            id_entity: 10,
+            entrance_cave_id: 1,
+            id_author: 2,
+          }),
+          change(1, { type_entity: 'cave', id_entity: 1 }),
+        ]);
+        const changes = await RecentChangeService.getRecent();
+        should(changes).have.length(2);
+      });
+
+      it('keeps a cave change 5 seconds or more away from its entrance change', async () => {
+        queryReturns([
+          change(0, {
+            type_entity: 'entrance',
+            id_entity: 10,
+            entrance_cave_id: 1,
+          }),
+          change(5, { type_entity: 'cave', id_entity: 1 }),
+        ]);
+        const changes = await RecentChangeService.getRecent();
+        should(changes).have.length(2);
+      });
     });
 
     it('should handle changes with related entities', async () => {
