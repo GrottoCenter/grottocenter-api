@@ -300,6 +300,30 @@ describe('Bot storage adapters', () => {
       should(adapter.container.containerName).equal('pages');
     });
 
+    it('refuses the local driver in production, where it would forget pages that stay online, and nowhere else', () => {
+      const local = { driver: 'local', localDir: os.tmpdir() };
+      should(() =>
+        storage.createStorageAdapter(local, { env: 'production' })
+      ).throw(/BOT_PAGES_STORAGE=azure/);
+      ['development', 'test', undefined].forEach((env) =>
+        should(storage.createStorageAdapter(local, { env })).be.instanceOf(
+          LocalStorageAdapter
+        )
+      );
+      // Azure is fine in production
+      should(
+        storage.createStorageAdapter(
+          {
+            driver: 'azure',
+            azureConnectionString:
+              'DefaultEndpointsProtocol=https;AccountName=acct;AccountKey=a2V5;EndpointSuffix=core.windows.net',
+            azureContainer: 'pages',
+          },
+          { env: 'production' }
+        )
+      ).be.instanceOf(AzureBlobStorageAdapter);
+    });
+
     it('refuses an unknown driver and an Azure driver without its settings', () => {
       should(() => storage.createStorageAdapter({ driver: 's3' })).throw(/s3/);
       should(() => storage.createStorageAdapter({})).throw();

@@ -1,4 +1,5 @@
 const should = require('should');
+const os = require('os');
 const sinon = require('sinon');
 
 describe('BotOutboxQueueService', () => {
@@ -87,6 +88,46 @@ describe('BotOutboxQueueService', () => {
         enabled: true,
       };
       await should(BotOutboxQueueService.start()).be.fulfilled();
+    });
+
+    it('fails to start with the local storage in production, so a forgotten BOT_PAGES_STORAGE does not forget pages that stay online', async () => {
+      const boss = fakeBoss();
+      sails.enrichmentBoss = boss;
+      sails.config.custom.botSurface = {
+        ...originalBotSurface,
+        enabled: true,
+        storage: { driver: 'local', localDir: os.tmpdir() },
+      };
+      const previous = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        await should(BotOutboxQueueService.start()).be.rejectedWith(
+          /BOT_PAGES_STORAGE=azure/
+        );
+      } finally {
+        process.env.NODE_ENV = previous;
+      }
+      should(boss.createQueue.called).be.false();
+      should(boss.work.called).be.false();
+    });
+
+    it('logs the storage driver when it starts', async () => {
+      const boss = fakeBoss();
+      sails.enrichmentBoss = boss;
+      sails.config.custom.botSurface = {
+        ...originalBotSurface,
+        enabled: true,
+        storage: { driver: 'local', localDir: os.tmpdir() },
+      };
+      const info = sinon.stub(sails.log, 'info');
+      try {
+        await BotOutboxQueueService.start();
+        should(info.getCalls().map((call) => call.args[0])).containEql(
+          'BotOutboxQueueService: started and listening for jobs (storage local)'
+        );
+      } finally {
+        info.restore();
+      }
     });
 
     it('fails, rather than failing every minute, when the storage is misconfigured', async () => {

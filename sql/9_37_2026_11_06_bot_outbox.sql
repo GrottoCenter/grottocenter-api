@@ -40,6 +40,13 @@
 -- v_bot_page: the only cost is that the page is withdrawn at night instead of
 -- within minutes.
 --
+-- The daily job is also listed in sql/1_cron.sql, where the other pg_cron jobs
+-- are. bot_outbox_trim() is not SECURITY DEFINER: it runs with the privileges of
+-- the user the job runs as, which therefore needs DELETE on t_bot_outbox. That
+-- is the user that schedules it (the owner of the other jobs, which inherits
+-- gc_owner, the owner of the table); check with
+-- `SELECT username FROM cron.job WHERE jobname = 'Trim bot outbox daily'`.
+--
 -- Production does not run migrations on deploy: apply this file by hand (the
 -- last part as the owner of the pg_cron jobs). Idempotent.
 -- =============================================================================

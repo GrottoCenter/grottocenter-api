@@ -111,12 +111,19 @@ const sentence = (text) => (isKnown(text) ? `${text}.` : null);
  * [Sir Gaerfyrddin GB-GFY]" -> "Carmarthenshire", "Nafarroa*" -> "Nafarroa").
  * The same rule is in sql/9_34_2026_11_04_v_bot_hub.sql, which gates the hubs
  * on it; a test compares the two. Null when nothing is left.
+ *
+ * The trailing run of asterisks and spaces goes as a whole, so the result never
+ * ends with an asterisk whatever the spacing around it ("* " and "a* *" give
+ * nothing and "a"), and cleaning twice changes nothing. The SQL strips
+ * `\s*\*+$` and trims, which gives the same on every name that table holds
+ * (none has an asterisk, or a space at either end, today); the two differ only
+ * on a name like "a* *", which no ISO name is.
  */
 const cleanRegionName = (name) => {
   if (typeof name !== 'string') return null;
   const cleaned = name
     .replace(/\s*\[[^\]]*\]/g, '')
-    .replace(/\s*\*+$/, '')
+    .replace(/[\s*]+$/, '')
     .trim();
   return cleaned === '' ? null : cleaned;
 };

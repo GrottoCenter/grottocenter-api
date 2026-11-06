@@ -46,6 +46,15 @@ SELECT cron.schedule_in_database(
     'grottoce'
 );
 
+-- The withdrawal worker (#1886) trims its own outbox every run; this keeps the
+-- table bounded when the worker is off. The job's user needs DELETE on
+-- t_bot_outbox (see sql/9_37_2026_11_06_bot_outbox.sql).
+SELECT cron.schedule_in_database(
+    'Trim bot outbox daily',
+    '30 4 * * *', -- every day at 4h30
+    $$ SELECT bot_outbox_trim(); $$, -- sql/9_37_2026_11_06_bot_outbox.sql
+    'grottoce'
+);
 
 -- To view all jobs: select * from cron.job;
 -- To remove a job: SELECT cron.unschedule('Refresh massif info view every 3 days');
