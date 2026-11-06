@@ -268,8 +268,8 @@ describe('botModelParts', () => {
 });
 
 describe('the hubs and the translated region names (#1937)', () => {
-  // The name_<lang> columns of t_iso3166_2 are being dropped: nothing the hubs
-  // read or render may name one, so the drop can ship in either order
+  // The name_<lang> columns of t_iso3166_2 are dropped: nothing the hubs read
+  // or render may name one
   const files = [
     'sql/9_30_2026_10_29_v_bot_page.sql',
     'sql/9_31_2026_10_30_v_bot_page_massifs_organizations.sql',
@@ -300,13 +300,18 @@ describe('the hubs and the translated region names (#1937)', () => {
       should(source).not.match(SNAKE, `${file} names a name_<lang> column`);
       should(source).not.match(CAMEL, `${file} names a translated attribute`);
     });
-    // The check does bite: the model of the table has them
+    // The check does bite
+    should('SELECT iso.name_fr FROM t_iso3166_2 iso').match(SNAKE);
+    should('region.nameFr').match(CAMEL);
+  });
+
+  it('the model of t_iso3166_2 has no name_<lang> column or attribute any more', () => {
     const model = fs.readFileSync(
       path.join(ROOT, 'api/models/TISO31662.js'),
       'utf8'
     );
-    should(model).match(CAMEL);
-    should(model).match(SNAKE);
+    should(model).not.match(SNAKE);
+    should(model).not.match(CAMEL);
   });
 
   it('reads the region name from t_iso3166_2.name, by the code of the entrance or of the hub', () => {
