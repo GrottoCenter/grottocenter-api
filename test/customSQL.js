@@ -1049,6 +1049,14 @@ const BOT_HUB_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after SEARCH_OUTBOX_MIGRATION, whose two trigger functions it replaces
+const BOT_OUTBOX_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_37_2026_11_06_bot_outbox.sql'),
+    'utf8'
+  )
+);
+
 // t_point.point_geom kept in sync with latitude/longitude by a trigger
 const POINT_GEOM_MIGRATION = forTestDatabase(
   fs.readFileSync(
@@ -1131,6 +1139,7 @@ module.exports = {
   BOT_PAGE_MANIFEST_MIGRATION,
   BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
   BOT_HUB_MIGRATION,
+  BOT_OUTBOX_MIGRATION,
   POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
