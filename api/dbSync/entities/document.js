@@ -33,7 +33,10 @@ const query = `
       d.id_option AS "optionId",
       d.id_cave AS "caveId",
       d.id_parent AS "parentId",
-      d.id_authorization_document AS authorizationDocumentId
+      d.id_authorization_document AS authorizationDocumentId,
+      EXISTS (
+        SELECT 1 FROM t_file f WHERE f.id_document = d.id AND f.is_validated
+      ) AS "hasFiles"
     FROM t_document AS d
     LEFT JOIN t_description n ON n.id_document = d.id
     LEFT JOIN t_type t ON t.id = d.id_type
@@ -366,6 +369,9 @@ module.exports = {
           optional: true,
           sort: true,
         },
+        // At least one validated file is attached (#1739). Kept up to date by
+        // the t_file trigger of the search outbox.
+        { name: 'hasFiles', type: 'bool', facet: true, sort: true },
       ],
       default_sorting_field: 'dateInscription',
     },

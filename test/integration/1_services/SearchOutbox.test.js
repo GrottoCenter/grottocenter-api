@@ -191,6 +191,46 @@ describe('searchOutbox', () => {
       ]);
     });
 
+    it('enqueues the document a file was moved from and the one it was moved to', async () => {
+      const {
+        rows: [{ id }],
+      } = await CommonService.query(
+        `INSERT INTO t_file (filename, id_file_format, id_document, path)
+         VALUES ('file.pdf', 1, 5, 'file.pdf') RETURNING id`
+      );
+      try {
+        await CommonService.query(
+          'UPDATE t_file SET is_validated = true WHERE id = $1',
+          [id]
+        );
+        await CommonService.query(
+          'UPDATE t_file SET id_document = 6 WHERE id = $1',
+          [id]
+        );
+      } finally {
+        await CommonService.query('DELETE FROM t_file WHERE id = $1', [id]);
+      }
+
+      const rows = await readOutbox();
+      should(rows.map((r) => [r.kind, r.entityId, r.operation])).eql([
+        ['documents', 5, 'I'],
+        ['documents', 5, 'U'],
+        ['documents', 5, 'U'],
+        ['documents', 6, 'U'],
+        ['documents', 6, 'D'],
+      ]);
+    });
+
+    it('enqueues nothing for a file change that keeps its document and validation', async () => {
+      await CommonService.query(
+        "UPDATE t_file SET thumbnail_small = 'small.png' WHERE id = 1"
+      );
+      await CommonService.query(
+        'UPDATE t_file SET thumbnail_small = NULL WHERE id = 1'
+      );
+      should(await readOutbox()).eql([]);
+    });
+
     it('records the soft delete of an organization as an update', async () => {
       const organization = await TGrotto.create({ author: 1 }).fetch();
       await clearOutbox();
