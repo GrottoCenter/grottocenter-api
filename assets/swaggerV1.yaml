@@ -7061,6 +7061,7 @@ paths:
                     Entity-specific sort fields:
                       - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
+                      - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
@@ -7084,6 +7085,14 @@ paths:
                         maximum: 100
                         nullable: true
                       example: [50, 100]
+                    hasFiles:
+                      allOf:
+                        - $ref: '#/components/schemas/BooleanLike'
+                      description: >-
+                        Only valid for entity=documents. `true` keeps the documents
+                        with at least one validated attached file, `false` those
+                        without any. Returns 400 when the value is not a
+                        `BooleanLike` value.
                     type:
                       type: string
                       description: >-
@@ -7114,7 +7123,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Search'
         '400':
-          description: Invalid sort parameter (unknown field, non-sortable field, or bad format), or `matchAllFields` is not a `BooleanLike` value.
+          description: Invalid sort parameter (unknown field, non-sortable field, or bad format), or `matchAllFields` or `filter.hasFiles` is not a `BooleanLike` value.
         '404':
           description: Resource not found
 
@@ -7163,11 +7172,22 @@ paths:
                     Entity-specific sort fields:
                       - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
+                      - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
                   example: "cave.depth:desc"
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
+                  properties:
+                    hasFiles:
+                      allOf:
+                        - $ref: '#/components/schemas/BooleanLike'
+                      description: >-
+                        Only valid for entity=documents. `true` keeps the documents
+                        with at least one validated attached file, `false` those
+                        without any. Returns 400 when the value is not a
+                        `BooleanLike` value.
+                  additionalProperties: true
                 matchAllFields:
                   allOf:
                     - $ref: '#/components/schemas/BooleanLike'
@@ -7217,7 +7237,7 @@ paths:
             - Geographic format requested for non-entrance entity
             - Missing or invalid columns/columnsName (CSV format only)
             - Search results exceed 10,000 row limit
-            - `matchAllFields` is not a `BooleanLike` value
+            - `matchAllFields` or `filter.hasFiles` is not a `BooleanLike` value
 
   '/field-search':
     post:
@@ -7253,6 +7273,16 @@ paths:
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
+                  properties:
+                    hasFiles:
+                      allOf:
+                        - $ref: '#/components/schemas/BooleanLike'
+                      description: >-
+                        Only valid for entity=documents. `true` keeps the documents
+                        with at least one validated attached file, `false` those
+                        without any. Returns 400 when the value is not a
+                        `BooleanLike` value.
+                  additionalProperties: true
                 matchAllFields:
                   allOf:
                     - $ref: '#/components/schemas/BooleanLike'
@@ -11626,6 +11656,12 @@ components:
           $ref: '#/components/schemas/Document'
         authorComment:
           type: string
+        hasFiles:
+          type: boolean
+          description: >-
+            Only in search results (`/search`, `/advanced-search`): whether the
+            document has at least one validated file. Absent until the search
+            index is rebuilt with this field.
         authorsOrganization:
           type: array
           items:

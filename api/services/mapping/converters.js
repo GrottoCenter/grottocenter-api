@@ -1174,6 +1174,11 @@ const c = {
         delete data.newFiles;
         delete data.modifiedFiles;
         delete data.deletedFiles;
+        // Whether a validated file is attached (#1739); absent from an index
+        // built before the field existed
+        if (typeof item.document.hasFiles === 'boolean') {
+          data.hasFiles = item.document.hasFiles;
+        }
       } else if (_type === 'caves')
         data = c.toSimpleCave(item.document, meta); // Only used in quick search
       else if (_type === 'entrances') {
