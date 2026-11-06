@@ -1,7 +1,19 @@
 openapi: 3.0.0
 
 info:
-  description: "This page documents the available Grottocenter's API."
+  description: >
+    This page documents the available Grottocenter's API.
+
+
+    Authentication: operations that need an account take a JWT from
+    `POST /login` in the `Authorization: Bearer <token>` header. An operation
+    is authenticated unless it states otherwise; public operations that list
+    both "none" and `bearerAuth` accept an optional token and return more
+    data to some roles.
+
+
+    Tracing: every request may send an `X-Trace-Id` header (a UUID). The API
+    echoes it in the response, or generates a UUID v7 when it is absent.
   title: 'Grottocenter API'
   version: 'v1 - 24.0.0'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
@@ -31,6 +43,8 @@ tags:
     description: OAI-PMH endpoints for metadata harvesting
   - name: caves
   - name: cavers
+  - name: changes
+    description: Recent changes made on Grottocenter
   - name: countries
   - name: descriptions
   - name: documents
@@ -41,6 +55,7 @@ tags:
   - name: guidelines
   - name: health
     description: API health monitoring endpoints
+  - name: histories
   - name: identifierTypes
   - name: languages
   - name: licenses
@@ -57,6 +72,8 @@ tags:
   - name: comments
   - name: riggings
   - name: messaging
+  - name: misc
+    description: Miscellaneous endpoints
   - name: notifications
     description: In-app notifications of the authenticated user
   - name: devices
@@ -72,11 +89,16 @@ tags:
   - name: SSO
     description: Single Sign-On token issuance for external product integration
 
+security:
+  - bearerAuth: []
+
 paths:
   '/health':
     get:
       tags:
         - health
+      summary: Check the health of the API
+      security: []
       description: 'Check the health of the API and its dependencies including database, search, and build information generated at build time.'
       responses:
         200:
@@ -92,10 +114,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthStatus'
 
+  '/swagger.yaml':
+    get:
+      tags:
+        - misc
+      summary: Get this OpenAPI specification
+      description: The OpenAPI document describing this API, in YAML.
+      security: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/yaml:
+              schema:
+                type: string
+
   '/licenses':
     get:
       tags:
         - licenses
+      summary: List the licenses
+      security: []
       description: 'Get all the licenses present in Grottocenter.'
       responses:
         200:
@@ -111,6 +150,8 @@ paths:
     get:
       tags:
         - file formats
+      summary: List the accepted file formats
+      security: []
       description: 'Get all the file formats present in Grottocenter. A document file is accepted only when its extension is listed here (for example glb and gltf for 3D models).'
       responses:
         200:
@@ -122,10 +163,105 @@ paths:
                 items:
                   $ref: '#/components/schemas/File-format'
 
+  '/options':
+    get:
+      tags:
+        - documents
+      summary: List the document options
+      description: The options a document can refer to (`t_option`).
+      security: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Option'
+
+  '/convert':
+    get:
+      tags:
+        - geoloc
+      summary: List the coordinate reference systems
+      description: >-
+        The coordinate reference systems (proj4 definitions) known to
+        Grottocenter, with the countries they apply to. `title`, `units` and
+        `proj` are parsed from the proj4 definition.
+      security: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    definition:
+                      type: string
+                      description: proj4 definition
+                    title:
+                      type: string
+                    units:
+                      type: string
+                    proj:
+                      type: string
+                    Fr_name:
+                      type: string
+                      description: French name of the country, `World` when none.
+        '404':
+          description: No coordinate reference system was found.
+
+  '/rss/{language}':
+    get:
+      tags:
+        - misc
+      summary: Get the latest blog post
+      description: >-
+        The latest post of the Grottocenter blog, French when `language` is
+        `FR` and English otherwise.
+      security: []
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            example: FR
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  text:
+                    type: string
+                  link:
+                    type: string
+                  day:
+                    type: integer
+                  month:
+                    type: string
+        '500':
+          description: The feed could not be read.
+        '502':
+          description: The blog feed is unavailable.
+
   '/caves':
     post:
       tags:
         - caves
+      summary: Create a cave
       description: 'Create a Cave. When submitting a new cave, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission.'
       parameters:
         - name: depth
@@ -209,12 +345,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Cave'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to create a cave.
 
     get:
       tags:
         - caves
+      summary: List the caves
+      security:
+        - {}
+        - bearerAuth: []
       description: Get all caves.
       responses:
         '200':
@@ -230,6 +372,10 @@ paths:
     get:
       tags:
         - caves
+      summary: Get a cave
+      security:
+        - {}
+        - bearerAuth: []
       description: Get a cave by id.
       parameters:
         - name: id
@@ -251,6 +397,7 @@ paths:
     delete:
       tags:
         - caves
+      summary: Delete a cave
       description: Delete a cave. If a destinationCaveForOrphan parameter is provided, all the data related to the cave are transfered to the destination cave before it's deleted. If a value is set in both caves, the destination cave value is retained.
       parameters:
         - name: id
@@ -281,6 +428,7 @@ paths:
     put:
       tags:
         - caves
+      summary: Update a cave
       description: Update a cave. See the POST /caves route explaination about the parameters you can use to update a cave.
       parameters:
         - name: id
@@ -298,14 +446,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Cave'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to update a cave.
+
+  '/caves/{id}/restore':
+    post:
+      tags:
+        - caves
+      summary: Restore a cave
+      description: >-
+        Restore a soft-deleted cave (a merged one is unmerged: its `redirectTo` is cleared). Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted cave.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored cave, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cave'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No cave has this id, or it is not deleted.
 
   '/caves/{caveId}/documents/{documentId}':
     put:
       tags:
         - caves
         - documents
+      summary: Link a document to a cave
       description: Add a document to a cave.
       parameters:
         - name: caveId
@@ -325,14 +505,46 @@ paths:
           description: Successful operation
         '400':
           description: "Bad request. Both the caveId and documentId parameters must exist in the database. Also, you can't add a document if it is already associated to the cave you specified."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to add a document to a cave.
+
+    delete:
+      tags:
+        - caves
+        - documents
+      summary: Unlink a document from a cave
+      description: Remove the link between a cave and a document. Moderators only.
+      parameters:
+        - name: caveId
+          in: path
+          description: Cave id.
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          description: Id of the document to unlink.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The document is no longer linked to the cave.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+        '404':
+          description: The cave does not exist or is deleted, or the document does not exist.
 
   '/caves/{caveId}/organizations/{organizationId}':
     put:
       tags:
         - caves
         - organizations
+      summary: Add an organization as a cave explorer
       description: Add an organization as a cave explorer. Organization members, moderators, or administrators can manage explorer relationships.
       parameters:
         - name: caveId
@@ -363,6 +575,7 @@ paths:
       tags:
         - caves
         - organizations
+      summary: Remove an organization as a cave explorer
       description: Remove an organization as a cave explorer. Organization members, moderators, or administrators can manage explorer relationships.
       parameters:
         - name: caveId
@@ -389,35 +602,12 @@ paths:
         '404':
           description: Cave or organization not found.
 
-  '/caves/{caveId}/massif/{massifId}':
-    put:
-      tags:
-        - caves
-        - massifs
-      description: Set a cave massif.
-      parameters:
-        - name: caveId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: massifId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Successful operation
-        '400':
-          description: 'Bad request. Both the caveId and massifId parameters must exist in the database.'
-        '403':
-          description: You are not authorized to set the massif of a cave.
-
   '/caves/cumulated-length':
     get:
       tags:
         - caves
+      summary: Get the cumulated length of all caves
+      security: []
       description: Get cumulated length of all caves in the database.
       responses:
         '200':
@@ -427,10 +617,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Count'
 
+  '/caves/findAll':
+    get:
+      tags:
+        - caves
+      summary: List the caves (deprecated)
+      description: Deprecated alias of `GET /caves`, use it instead.
+      deprecated: true
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Same as `GET /caves`.
+
   '/cavers':
     post:
       tags:
         - cavers
+      summary: Create a caver
       description: Create a caver (currently using only a name & surname)
       parameters:
         - name: name
@@ -456,6 +661,8 @@ paths:
                   $ref: '#/components/schemas/Caver'
         '400':
           description: You must provide a surname and a name to create a new caver.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to create a caver.
 
@@ -579,6 +786,10 @@ paths:
     get:
       tags:
         - cavers
+      summary: Get a caver
+      security:
+        - {}
+        - bearerAuth: []
       description: Get information about a caver. Only administrators can access all the information about caver. If you are not an administrator, you will only get the documents submitted by the user, his/her name, surname and nickname.
       parameters:
         - name: id
@@ -598,9 +809,10 @@ paths:
     put:
       tags:
         - cavers
+      summary: Update a caver's profile
       description: Update a caver's profile. Administrator only. Use PATCH /account for self-service updates.
       parameters:
-        - name: caverId
+        - name: id
           in: path
           required: true
           schema:
@@ -636,14 +848,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/Caver'
         '400':
-          description: 'Bad request, caverId must exist in database. Or invalid fields to update'
+          description: 'Bad request, id must exist in database. Or invalid fields to update'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: 'You are not authorized to update a caver.'
         '404':
-          description: 'Could not find caver with caverId.'
+          description: 'Could not find caver with this id.'
     delete:
       tags:
         - cavers
+      summary: Delete a caver
       description: >-
         Permanently delete a caver (administrator) or an author (moderator).
         With `entityId`, the caver's links (explored entrances, groups,
@@ -691,6 +906,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: List the administrators
       description: Get all the administrators of Grottocenter.
       responses:
         '200':
@@ -704,6 +920,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Caver'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: No administrators found.
 
@@ -711,6 +929,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: List the authors
       description: Get all authors (if the user have one document in j_document_caver_author with is id) of Grottocenter. (only for moderators and administrators)
       parameters:
         - name: page
@@ -770,6 +989,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: List the contributors
       description: Get all contributors (if the user have one document in t_document with is id in id_authors) of Grottocenter. (only for moderators and administrators)
       parameters:
         - name: page
@@ -829,6 +1049,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: List the users
       description: Get all users (valid email and have a password) of Grottocenter. (only for moderators and administrators)
       parameters:
         - name: page
@@ -888,7 +1109,24 @@ paths:
     get:
       tags:
         - cavers
+      summary: Count the cavers
+      security: []
       description: Get the number of cavers (both users and document authors) of the application
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+
+  '/cavers/users/count':
+    get:
+      tags:
+        - cavers
+      summary: Count the users
+      description: Number of distinct cavers who have an account (users), authors excluded.
+      security: []
       responses:
         '200':
           description: Successful operation
@@ -901,6 +1139,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: Get a link to the latest database export
       description: >
         Get a download link to the latest full export of the database, a zip
         archive of one JSON file per collection (massifs, entrances, caves,
@@ -937,6 +1176,7 @@ paths:
     get:
       tags:
         - cavers
+      summary: List the moderators
       description: Get all the moderators of Grottocenter.
       responses:
         '200':
@@ -950,14 +1190,47 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Caver'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: No moderators found.
+
+  '/cavers/groups':
+    get:
+      tags:
+        - cavers
+        - groups
+      summary: List the members of each group
+      description: The administrators, moderators and leaders of Grottocenter.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  administrators:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimpleCaver'
+                  moderators:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimpleCaver'
+                  leaders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimpleCaver'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   '/cavers/{caverId}/groups':
     post:
       tags:
         - cavers
         - groups
+      summary: Set the groups of a caver
       description: Set caver groups (administrators only). Replaces all the caver's groups.
       security:
         - bearerAuth: []
@@ -1008,6 +1281,7 @@ paths:
       tags:
         - cavers
         - groups
+      summary: Add a caver to a group
       description: Add a caver to a group.
       parameters:
         - name: caverId
@@ -1031,6 +1305,8 @@ paths:
                 type: object
         '400':
           description: "Bad request. Both the caverId and groupId parameters must exist in the database. Also, you can't add a caver if he / she is already in the group you specified."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to add a caver to a group.
 
@@ -1038,6 +1314,7 @@ paths:
       tags:
         - cavers
         - groups
+      summary: Remove a caver from a group
       description: Remove a caver from a group.
       parameters:
         - name: caverId
@@ -1057,6 +1334,8 @@ paths:
           description: Successful operation
         '400':
           description: Bad request. Both the caverId and groupId parameters must exist in the database.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to remove a caver from a group.
 
@@ -1065,6 +1344,7 @@ paths:
       tags:
         - entrances
         - cavers
+      summary: Add a caver as an entrance explorer
       description: Add a caver as an entrance explorer. Users can only add entrances to their own profile. Moderators and administrators can add entrances to any user's profile.
       parameters:
         - name: entranceId
@@ -1095,6 +1375,7 @@ paths:
       tags:
         - entrances
         - cavers
+      summary: Remove a caver as an entrance explorer
       description: Remove a caver as an entrance explorer. Users can only remove entrances from their own profile. Moderators and administrators can remove entrances from any user's profile.
       parameters:
         - name: entranceId
@@ -1124,6 +1405,7 @@ paths:
       tags:
         - cavers
         - organizations
+      summary: Add a caver to an organization
       description: Add a caver to an organization. Users can only manage their own memberships unless they are administrators.
       parameters:
         - name: caverId
@@ -1143,6 +1425,8 @@ paths:
           description: Successful operation
         '400':
           description: "Bad request. Both the caverId and organizationId parameters must exist in the database. Also, you can't add a caver if they are already a member of the organization."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to manage organization memberships for other users.
         '404':
@@ -1152,6 +1436,7 @@ paths:
       tags:
         - cavers
         - organizations
+      summary: Remove a caver from an organization
       description: Remove a caver from an organization. Users can only manage their own memberships unless they are administrators.
       parameters:
         - name: caverId
@@ -1171,6 +1456,8 @@ paths:
           description: Successful operation
         '400':
           description: Bad request. The caver is not a member of this organization.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to manage organization memberships for other users.
         '404':
@@ -1180,6 +1467,8 @@ paths:
     get:
       tags:
         - documents
+      summary: List the documents authored by a caver
+      security: []
       description: Get all documents authored by the identified caver.
       parameters:
         - name: id
@@ -1229,6 +1518,69 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Document'
+
+  '/cavers/{caverId}/subscriptions':
+    get:
+      tags:
+        - cavers
+      summary: List the subscriptions of a caver
+      description: >-
+        The massifs, countries and regions a caver subscribed to. Deleted
+        massifs are left out.
+      security: []
+      parameters:
+        - name: caverId
+          in: path
+          description: Caver id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptions:
+                    type: object
+                    properties:
+                      massifs:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            language:
+                              type: string
+                            isDeleted:
+                              type: boolean
+                      countries:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: ISO 3166-1 alpha-2 code
+                            name:
+                              type: string
+                              description: Native name of the country
+                      regions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+        '404':
+          description: '`caverId` is not a valid id, or no caver has this id.'
 
   '/cavers/{caverId}/ban':
     post:
@@ -1366,6 +1718,7 @@ paths:
     post:
       tags:
         - descriptions
+      summary: Create a description
       description: Create a description. You must provide at least one entityId (caveId, documentId, entranceId, exitId, massifId or pointId) which your description is refering to. If you provide two or more of them, the first one will be used and the other ones will be ignored.
       parameters:
         - name: body
@@ -1419,6 +1772,8 @@ paths:
                 $ref: '#/components/schemas/Description'
         '400':
           description: Some required information are missing (title, body, language or entityId).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to create a description.
         '404':
@@ -1428,6 +1783,7 @@ paths:
     delete:
       tags:
         - descriptions
+      summary: Delete a description
       description: >
         Delete a description (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted description leaves it
@@ -1474,6 +1830,7 @@ paths:
     patch:
       tags:
         - descriptions
+      summary: Update a description
       description: Update a description body and/or title and/or language (you can provide one or multiple).
       parameters:
         - name: id
@@ -1500,11 +1857,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Description'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/descriptions/{id}/restore':
+    post:
+      tags:
+        - descriptions
+      summary: Restore a description
+      description: >-
+        Restore a soft-deleted description. Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted description.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored description, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Description'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No description has this id, or it is not deleted.
 
   '/descriptions/{id}/snapshots':
     get:
       tags:
         - descriptions
+      summary: Get the snapshots of a description
+      security: []
       description: Get snapshots of a description.
       parameters:
         - name: id
@@ -1526,6 +1916,7 @@ paths:
     patch:
       tags:
         - descriptions
+      summary: Move a description in the relevance order
       description: Move a description up or down in the relevance ordering within its cave, entrance, massif, or document scope.
       security:
         - bearerAuth: []
@@ -1562,6 +1953,7 @@ paths:
     post:
       tags:
         - documents
+      summary: Create a document
       description: "Create a document. When submitting a new document, you must provide an authentification token (from the /login route) in the Authorization header. This token will be used to set the author of the submission. A lot of parameters are required but it depends a lot on the document type you are submitting (example: there is no publication date for a Collection but it's mandatory for an Issue. The type of the request must be a multipart/form-data if some files are uploaded."
       parameters:
         - name: authors
@@ -1761,12 +2153,16 @@ paths:
             20, `datePublication` 10 characters). Nothing is created in that
             case. A length error answers `{ message, errors }`, where `errors`
             lists `{ field, message }` for each overlong field.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to create a document.
 
     get:
       tags:
         - documents
+      summary: List the documents
+      security: []
       description: Get all documents.
       parameters:
         - name: isValidated
@@ -1831,6 +2227,7 @@ paths:
     delete:
       tags:
         - documents
+      summary: Delete a document
       description: >
         Delete a document (moderators or administrators). By default this is a reversible
         soft-delete that also removes the document from search. Deleting an
@@ -1897,6 +2294,10 @@ paths:
     get:
       tags:
         - documents
+      summary: Get a document
+      security:
+        - {}
+        - bearerAuth: []
       description: Get a document by id.
       parameters:
         - name: id
@@ -1928,6 +2329,7 @@ paths:
     put:
       tags:
         - documents
+      summary: Update a document
       description: >-
         Update a document. See the POST /documents route explanation about the
         parameters you can use to update a document.
@@ -2050,13 +2452,45 @@ paths:
             file that is not a PDF, `newFilesMetadata` for a file that was not
             uploaded, or a modified or deleted file that does not belong to the
             document. Nothing is uploaded or submitted in that case.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to update a document.
+
+  '/documents/{id}/restore':
+    post:
+      tags:
+        - documents
+      summary: Restore a document
+      description: >-
+        Restore a soft-deleted document (a merged one is unmerged: its `redirectTo` is cleared). Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted document.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored document, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No document has this id, or it is not deleted.
 
   '/documents/{id}/new-entities':
     put:
       tags:
         - documents
+      summary: Update a document and create new entities
       description: >-
         Update a document and optionally create new cavers or descriptions as
         part of the same operation. This endpoint accepts JSON only.
@@ -2183,6 +2617,8 @@ paths:
     get:
       tags:
         - documents
+      summary: Count the documents
+      security: []
       description: Get the number of documents.
       responses:
         '200':
@@ -2196,6 +2632,8 @@ paths:
     get:
       tags:
         - documents
+      summary: List the children of a document
+      security: []
       description: >
         Get the documents whose parent is the given document (for instance the
         issues of a collection, or the articles of an issue).
@@ -2227,6 +2665,7 @@ paths:
     put:
       tags:
         - documents
+      summary: Validate or refuse a document
       description: Validate or not a document, with or without a comment.
       parameters:
         - name: id
@@ -2251,6 +2690,8 @@ paths:
           description: Successful operation.
         '400':
           description: Bad request. If you are refusing a document, you must provide a validationComment.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Document to update not found.
 
@@ -2258,6 +2699,7 @@ paths:
     put:
       tags:
         - documents
+      summary: Validate or refuse several documents
       description: >-
         Validate or not multiple documents, with or without a comment.
 
@@ -2403,6 +2845,8 @@ paths:
       tags:
         - documents
         - identifierTypes
+      summary: List the document identifier types
+      security: []
       description: Get all the document identifier types.
       responses:
         '200':
@@ -2421,6 +2865,8 @@ paths:
     get:
       tags:
         - documents
+      summary: List the document types
+      security: []
       description: Get the document types.
       parameters:
         - name: isAvailable
@@ -2462,10 +2908,52 @@ paths:
         '400':
           $ref: '#/components/responses/InvalidBoolean'
 
+  '/documents/types/{id}':
+    get:
+      tags:
+        - documents
+      summary: Get a document type
+      description: Get a document type by its id.
+      security: []
+      parameters:
+        - name: id
+          in: path
+          description: Document type id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  comment:
+                    type: string
+                  isAvailable:
+                    type: boolean
+                  url:
+                    type: string
+                    nullable: true
+                  parent:
+                    type: integer
+                    nullable: true
+                    description: Id of the parent document type.
+        '404':
+          description: No document type has this id.
+
   '/documents/{id}/snapshots':
     get:
       tags:
         - documents
+      summary: Get the snapshots of a document
+      security: []
       description: Get snapshots of a document.
       parameters:
         - name: id
@@ -2493,6 +2981,8 @@ paths:
       tags:
         - documents
         - subjects
+      summary: List the document subjects
+      security: []
       description: Get all the document subjects.
       responses:
         '200':
@@ -2512,6 +3002,8 @@ paths:
       tags:
         - documents
         - subjects
+      summary: Get a subject
+      security: []
       description: Get a subject by its code.
       parameters:
         - name: code
@@ -2535,6 +3027,8 @@ paths:
       tags:
         - documents
         - subjects
+      summary: Search the subjects
+      security: []
       description: Get a subject according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
         - name: name
@@ -2566,6 +3060,7 @@ paths:
     post:
       tags:
         - documents
+      summary: Create a document from a duplicate
       description: >
         Create a document from a duplicate parked during a CSV import, then delete
         the duplicate. Use it when a moderator decides the parked row is not a
@@ -2593,10 +3088,162 @@ paths:
         '500':
           description: The document could not be created.
 
+  '/document-duplicates':
+    get:
+      tags:
+        - documents
+        - import csv
+      summary: List the document duplicates
+      description: >-
+        A page of the document rows parked as duplicates during a CSV import.
+        The total is given in the `Content-Range` header (`skip-to/total`).
+        Moderators only.
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            default: dateInscription
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: ASC
+      responses:
+        '206':
+          description: A page of duplicates. `Content-Range` holds `skip-to/total`.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: 0-50/137
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  duplicates:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+
+    delete:
+      tags:
+        - documents
+        - import csv
+      summary: Delete several document duplicates
+      description: Delete the document duplicates whose ids are given. Moderators only.
+      parameters:
+        - name: id
+          in: query
+          description: Ids of the duplicates to delete.
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '204':
+          description: The duplicates are deleted.
+        '400':
+          description: No id was given.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+
+  '/document-duplicates/{id}':
+    get:
+      tags:
+        - documents
+        - import csv
+      summary: Get a document duplicate
+      description: >-
+        A document duplicate with the existing document it duplicates and the
+        imported content. Moderators only.
+      parameters:
+        - name: id
+          in: path
+          description: Duplicate id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  datePublication:
+                    type: string
+                    format: date-time
+                  author:
+                    $ref: '#/components/schemas/SimpleCaver'
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  content:
+                    type: object
+                    description: The imported document data.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+        '404':
+          description: >-
+            `id` is not a valid id, or no duplicate has this id.
+
+    delete:
+      tags:
+        - documents
+        - import csv
+      summary: Delete a document duplicate
+      description: Delete one document duplicate. Moderators only.
+      parameters:
+        - name: id
+          in: path
+          description: Duplicate id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The duplicate is deleted.
+        '400':
+          description: No duplicate has this id.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+
   '/documents/check-rows':
     post:
       tags:
         - documents
+      summary: Check document rows before an import
       description: Check if the document data sent are already present in Grottocenter.
       security:
         - bearerAuth: []
@@ -2654,6 +3301,7 @@ paths:
     post:
       tags:
         - import csv
+      summary: Import document rows
       description: Import the data in the database.
       requestBody:
         description: Check https://ontology.uis-speleo.org/howto/ to learn the mandatories properties. It must be an array of object containing the properties mentioned.
@@ -2702,6 +3350,8 @@ paths:
                           type: integer
                         message:
                           type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to create a document (or entrance).
 
@@ -2709,6 +3359,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: Get a bibliographic record (GetRecord)
+      security: []
       description: 'Retrieve a single bibliographic metadata record by numeric ID (GetRecord operation).'
       parameters:
         - name: id
@@ -2732,6 +3384,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: Get a bibliographic record in a MARC format
+      security: []
       description: 'Get bibliographic metadata by ID and convert to specific MARC format.'
       parameters:
         - name: id
@@ -2776,6 +3430,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: List bibliographic records (ListRecords)
+      security: []
       description: 'Retrieve multiple bibliographic metadata records with full metadata (ListRecords operation).'
       parameters:
         - name: set
@@ -2842,6 +3498,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: List bibliographic record headers (ListIdentifiers)
+      security: []
       description: 'Retrieve record headers only without full metadata (ListIdentifiers operation).'
       parameters:
         - name: set
@@ -2908,6 +3566,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: List bibliographic records, paginated
+      security: []
       description: 'Retrieve paginated bibliographic metadata records with full metadata (ListRecords operation with pagination).'
       parameters:
         - name: limit
@@ -3010,6 +3670,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: List bibliographic record headers, paginated
+      security: []
       description: 'Retrieve paginated record headers without full metadata (ListIdentifiers operation with pagination).'
       parameters:
         - name: limit
@@ -3112,6 +3774,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: List the harvesting sets (ListSets)
+      security: []
       description: 'List available sets for selective harvesting (ListSets operation).'
       responses:
         '200':
@@ -3135,6 +3799,8 @@ paths:
     get:
       tags:
         - bibliographic metadata
+      summary: Count the bibliographic records
+      security: []
       description: 'Get the number of matching bibliographic metadata records (custom endpoint for pagination support).'
       parameters:
         - name: set
@@ -3197,6 +3863,8 @@ paths:
     post:
       tags:
         - regions
+      summary: Search the regions
+      security: []
       description: Get a region according to the parameters given, applying a logical OR. The search is case insensitive and autocompleted (i.e. it search for the parameters being contained in the actual field).
       parameters:
         - name: query
@@ -3254,6 +3922,8 @@ paths:
       tags:
         - regions
         - countries
+      summary: Get a region
+      security: []
       description: Get a region by ID within a specific country.
       parameters:
         - name: countryId
@@ -3286,6 +3956,7 @@ paths:
       tags:
         - regions
         - countries
+      summary: Subscribe to a region
       description: Subscribe to a region within a specific country. Requires LEADER group permissions.
       parameters:
         - name: countryId
@@ -3306,6 +3977,8 @@ paths:
           description: Successfully subscribed to region
         '400':
           description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to subscribe to a region
         '404':
@@ -3316,6 +3989,7 @@ paths:
       tags:
         - regions
         - countries
+      summary: Unsubscribe from a region
       description: Unsubscribe from a region within a specific country. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
       parameters:
         - name: countryId
@@ -3342,6 +4016,8 @@ paths:
           description: Successfully unsubscribed from region
         '400':
           description: userId is not a positive integer, or you are not subscribed to this region
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to unsubscribe from a region
         '404':
@@ -3351,6 +4027,7 @@ paths:
     put:
       tags:
         - regions
+      summary: Associate an organization with a region
       description: Associate an organization with a region.
       security:
         - bearerAuth: []
@@ -3391,6 +4068,7 @@ paths:
     delete:
       tags:
         - regions
+      summary: Dissociate an organization from a region
       description: Remove the association between an organization and a region.
       security:
         - bearerAuth: []
@@ -3423,6 +4101,8 @@ paths:
       tags:
         - regions
         - countries
+      summary: Get the statistics of a region
+      security: []
       description: Get statistics for a region within a specific country.
       parameters:
         - name: countryId
@@ -3471,6 +4151,8 @@ paths:
       tags:
         - regions
         - countries
+      summary: Count the regions of a country
+      security: []
       description: Get the count of regions within a specific country.
       parameters:
         - name: countryId
@@ -3495,6 +4177,8 @@ paths:
       tags:
         - entrances
         - regions
+      summary: List the entrances of a region with their data quality
+      security: []
       description: Get entrance data quality information for a specific region.
       parameters:
         - name: countryId
@@ -3557,6 +4241,8 @@ paths:
     get:
       tags:
         - languages
+      summary: List the languages
+      security: []
       description: Get all languages supported by Grottocenter.
       parameters:
         - name: isPrefered
@@ -3585,6 +4271,8 @@ paths:
     get:
       tags:
         - languages
+      summary: Get a language
+      security: []
       description: Get a language by its id.
       parameters:
         - name: id
@@ -3605,6 +4293,7 @@ paths:
     post:
       tags:
         - locations
+      summary: Create a location
       description: Create a location. You must provide an existing entrance id which your location is refering to.
       parameters:
         - name: body
@@ -3639,6 +4328,8 @@ paths:
                 $ref: '#/components/schemas/Location'
         '400':
           description: Some required information are missing (body, language or entrance id).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: The entrance which the location is refering to was not found.
 
@@ -3646,6 +4337,7 @@ paths:
     delete:
       tags:
         - locations
+      summary: Delete a location
       description: >
         Delete a location (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted location leaves it
@@ -3692,6 +4384,7 @@ paths:
     put:
       tags:
         - locations
+      summary: Update a location
       description: Update a location's body and/or title and/or language (you can provide one or multiple).
       parameters:
         - name: id
@@ -3718,11 +4411,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Location'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/locations/{id}/restore':
+    post:
+      tags:
+        - locations
+      summary: Restore a location
+      description: >-
+        Restore a soft-deleted location. Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted location.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored location, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No location has this id, or it is not deleted.
 
   '/locations/{id}/snapshots':
     get:
       tags:
         - locations
+      summary: Get the snapshots of a location
+      security:
+        - {}
+        - bearerAuth: []
       description: Get snapshots of a location.
       parameters:
         - name: id
@@ -3746,6 +4474,7 @@ paths:
     patch:
       tags:
         - locations
+      summary: Move a location in the relevance order
       description: Move a location up or down in the relevance ordering within its entrance scope.
       security:
         - bearerAuth: []
@@ -3782,6 +4511,7 @@ paths:
     post:
       tags:
         - histories
+      summary: Create a history
       description: Create an history. You must provide an existing entrance id which your history is refering to.
       parameters:
         - name: body
@@ -3811,6 +4541,8 @@ paths:
                 $ref: '#/components/schemas/History'
         '400':
           description: Some required information are missing (body, language or entrance id).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: The entrance which the history is referring to was not found.
 
@@ -3818,6 +4550,7 @@ paths:
     delete:
       tags:
         - histories
+      summary: Delete a history
       description: >
         Delete a history (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted history leaves it
@@ -3861,9 +4594,10 @@ paths:
           description: You are not authorized to delete history, or `isPermanent=true` without the Administrator role.
         '404':
           description: History not found.
-    patch:
+    put:
       tags:
         - histories
+      summary: Update a history
       description: Update an history's body and/or language (you can provide one or multiple).
       parameters:
         - name: id
@@ -3886,11 +4620,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/History'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/histories/{id}/restore':
+    post:
+      tags:
+        - histories
+      summary: Restore a history
+      description: >-
+        Restore a soft-deleted history. Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted history.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored history, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No history has this id, or it is not deleted.
 
   '/histories/{id}/snapshots':
     get:
       tags:
         - histories
+      summary: Get the snapshots of a history
+      security: []
       description: Get snapshots of a history.
       parameters:
         - name: id
@@ -3912,6 +4679,7 @@ paths:
     post:
       tags:
         - comments
+      summary: Create a comment
       description: Create a comment. You must provide an existing entrance or cave id which your comment is referring to.
       parameters:
         - in: query
@@ -3928,6 +4696,8 @@ paths:
                 $ref: '#/components/schemas/Comment'
         '400':
           description: Some required information are missing (body, title, language or entrance/cave id).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: The entrance/cave which the comment is referring to was not found.
 
@@ -3935,6 +4705,7 @@ paths:
     delete:
       tags:
         - comments
+      summary: Delete a comment
       description: >
         Delete a comment (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted comment leaves it
@@ -3981,6 +4752,7 @@ paths:
     patch:
       tags:
         - comments
+      summary: Update a comment
       description: Update a comment's body, title, ... language (you can provide one or multiple).
       parameters:
         - name: id
@@ -4000,11 +4772,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/comments/{id}/restore':
+    post:
+      tags:
+        - comments
+      summary: Restore a comment
+      description: >-
+        Restore a soft-deleted comment. Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted comment.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored comment, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No comment has this id, or it is not deleted.
 
   '/comments/{id}/snapshots':
     get:
       tags:
         - comments
+      summary: Get the snapshots of a comment
+      security: []
       description: Get snapshots of a comment.
       parameters:
         - name: id
@@ -4026,6 +4831,7 @@ paths:
     patch:
       tags:
         - comments
+      summary: Move a comment in the relevance order
       description: Move a comment up or down in the relevance ordering within its entrance or cave scope.
       security:
         - bearerAuth: []
@@ -4062,6 +4868,7 @@ paths:
     post:
       tags:
         - riggings
+      summary: Create a rigging
       description: Create a rigging. You must provide an existing entrance/cave id which your rigging is refering to.
       parameters:
         - in: query
@@ -4078,6 +4885,8 @@ paths:
                 $ref: '#/components/schemas/Rigging'
         '400':
           description: Some required information is missing ?
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: The entrance/cave which the rigging is referring to was not found.
 
@@ -4085,6 +4894,7 @@ paths:
     delete:
       tags:
         - riggings
+      summary: Delete a rigging
       description: >
         Delete a rigging (moderators or administrators). By default this is a reversible
         soft-delete. Deleting an already soft-deleted rigging leaves it
@@ -4131,6 +4941,7 @@ paths:
     patch:
       tags:
         - riggings
+      summary: Update a rigging
       description: Update a rigging (you can provide one or multiple).
       parameters:
         - name: id
@@ -4150,11 +4961,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Rigging'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/riggings/{id}/restore':
+    post:
+      tags:
+        - riggings
+      summary: Restore a rigging
+      description: >-
+        Restore a soft-deleted rigging. Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted rigging.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored rigging, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rigging'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No rigging has this id, or it is not deleted.
 
   '/riggings/{id}/snapshots':
     get:
       tags:
         - riggings
+      summary: Get the snapshots of a rigging
+      security: []
       description: Get snapshots of a rigging.
       parameters:
         - name: id
@@ -4176,6 +5020,7 @@ paths:
     patch:
       tags:
         - riggings
+      summary: Move a rigging in the relevance order
       description: Move a rigging up or down in the relevance ordering within its entrance or cave scope.
       security:
         - bearerAuth: []
@@ -4212,6 +5057,7 @@ paths:
     patch:
       tags:
         - histories
+      summary: Move a history in the relevance order
       description: Move a history up or down in the relevance ordering within its entrance or cave scope.
       security:
         - bearerAuth: []
@@ -4248,6 +5094,8 @@ paths:
     get:
       tags:
         - guidelines
+      summary: List the guidelines
+      security: []
       description: Find all guidelines.
       parameters:
         - name: skip
@@ -4276,6 +5124,7 @@ paths:
     post:
       tags:
         - guidelines
+      summary: Create a guideline
       description: Create a new guideline. Authenticated action (any logged-in user).
       security:
         - bearerAuth: []
@@ -4348,6 +5197,7 @@ paths:
     get:
       tags:
         - guidelines
+      summary: Get a guideline
       description: >-
         Get a single guideline by ID. Public endpoint — no authentication is
         required for an active guideline. Geographic relations and the language
@@ -4392,6 +5242,7 @@ paths:
     patch:
       tags:
         - guidelines
+      summary: Update a guideline
       description: Update a guideline. Authenticated action (any authenticated user can update a guideline).
       security:
         - bearerAuth: []
@@ -4467,6 +5318,7 @@ paths:
     delete:
       tags:
         - guidelines
+      summary: Delete a guideline
       description: >
         Delete a guideline. By default this is a reversible soft-delete
         (moderator or administrator). When `isPermanent=true`, the guideline and
@@ -4521,6 +5373,7 @@ paths:
     post:
       tags:
         - guidelines
+      summary: Restore a guideline
       description: Restore a soft-deleted guideline. Authenticated action (moderator or administrator).
       security:
         - bearerAuth: []
@@ -4565,6 +5418,8 @@ paths:
     get:
       tags:
         - guidelines
+      summary: Get the snapshots of a guideline
+      security: []
       description: Get all history snapshots for a guideline.
       parameters:
         - name: id
@@ -4599,6 +5454,7 @@ paths:
     post:
       tags:
         - guidelines
+      summary: Roll a guideline back to a snapshot
       description: Rollback a guideline to a specific history snapshot. Authenticated action.
       security:
         - bearerAuth: []
@@ -4647,6 +5503,8 @@ paths:
     get:
       tags:
         - guidelines
+      summary: List the guidelines of an entity
+      security: []
       description: >-
         Find all non-deleted guidelines for a specific entity. A non-existent
         entity is not an error: it returns 200 with an empty array, identical to
@@ -4691,6 +5549,7 @@ paths:
     patch:
       tags:
         - names
+      summary: Update a name
       description: Update a name. Both fields are optional (PATCH semantics).
       parameters:
         - name: id
@@ -4721,6 +5580,8 @@ paths:
                 $ref: '#/components/schemas/Name'
         '400':
           description: Validation error (name too long, language null or not found)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Name not found
 
@@ -4728,6 +5589,7 @@ paths:
     post:
       tags:
         - names
+      summary: Set a name as the main one
       description: Set a name to the main one. An entity can have multiples names, in different languages for example. But only one of them is the main one. If you set a name to main, all the other names of the entity isMain will be set to false.
       parameters:
         - name: id
@@ -4742,11 +5604,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Name'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   '/account/password':
     patch:
       tags:
         - account
         - authentication
+      summary: Change the password
+      security:
+        - {}
+        - bearerAuth: []
       description: Update the user password by using a reset password token issued by the /forgotPassword route.
       parameters:
         - name: password
@@ -4775,6 +5643,7 @@ paths:
     get:
       tags:
         - account
+      summary: Get the notification preferences
       description: Get notification preferences for the authenticated caver.
       security:
         - bearerAuth: []
@@ -4800,6 +5669,7 @@ paths:
     patch:
       tags:
         - account
+      summary: Update the notification preferences
       description: Update notification preferences for the authenticated caver.
       security:
         - bearerAuth: []
@@ -4847,6 +5717,8 @@ paths:
       tags:
         - account
         - authentication
+      summary: Request a password reset
+      security: []
       description: >-
         Launch the procedure of password change. This will send an email to the email adress you provided if it exists as a Grottocenter user's email. This email contains a password reset link expiring after 24 hours using the Grottocenter application.
 
@@ -4882,6 +5754,8 @@ paths:
     post:
       tags:
         - authentication
+      summary: Log in
+      security: []
       description: Login to Grottocenter. For administrators with active MFA, a valid TOTP code must be provided alongside credentials. For administrators without MFA enrolled, a restricted enrollment token is returned instead of a full auth token.
       requestBody:
         required: true
@@ -5054,6 +5928,8 @@ paths:
     post:
       tags:
         - authentication
+      summary: Create an account
+      security: []
       description: Create an account on Grottocenter
       requestBody:
         required: true
@@ -5097,6 +5973,8 @@ paths:
     get:
       tags:
         - authentication
+      summary: Verify an email address
+      security: []
       description: Verify a user's email address or an email change request using the activation token. On success, the account is activated (if not already) and any pending email change is committed.
       parameters:
         - name: token
@@ -5128,6 +6006,8 @@ paths:
     post:
       tags:
         - authentication
+      summary: Resend the verification email
+      security: []
       description: Resend the verification email to the user if they are not yet verified.
       requestBody:
         required: true
@@ -5151,6 +6031,7 @@ paths:
     post:
       tags:
         - entrances
+      summary: Create an entrance
       description: Create a cave entrance.
       parameters:
         - name: address
@@ -5356,12 +6237,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   '/entrances/{entranceId}/documents/{documentId}':
     delete:
       tags:
         - entrances
         - documents
+      summary: Unlink a document from an entrance
       description: Unlink a document from an entrance. Available only to the moderators.
       parameters:
         - name: entranceId
@@ -5378,6 +6262,8 @@ paths:
       responses:
         '204':
           description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
 
@@ -5385,6 +6271,7 @@ paths:
       tags:
         - entrances
         - documents
+      summary: Link a document to an entrance
       description: Add a document to an entrance. This operation is idempotent — linking an already-linked document returns 204 without error.
       parameters:
         - name: entranceId
@@ -5401,6 +6288,8 @@ paths:
       responses:
         '204':
           description: Successful operation (also returned if the link already exists)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Could not find entrance with the entrance id you provided or could not find the document with the document id you provided.
         '403':
@@ -5411,6 +6300,7 @@ paths:
       tags:
         - entrances
         - caves
+      summary: Move an entrance to another cave
       description: Move an entrance from its case to another one. If the remaining cave is left without entrance, it's deleted.
       parameters:
         - name: entranceId
@@ -5431,6 +6321,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Could not find the entrance or the cave with the ids you provided.
         '403':
@@ -5440,6 +6332,8 @@ paths:
     get:
       tags:
         - entrances
+      summary: Get a random entrance
+      security: []
       description: Get a random entrance.
       responses:
         '200':
@@ -5453,6 +6347,10 @@ paths:
     get:
       tags:
         - entrances
+      summary: Get an entrance
+      security:
+        - {}
+        - bearerAuth: []
       description: |
         Get an entrance by id.
         If the entrance is sensitive (i.e. not public):
@@ -5483,6 +6381,7 @@ paths:
     delete:
       tags:
         - entrances
+      summary: Delete an entrance
       description: >
         Delete an entrance (moderators and administrators). By default this
         is a reversible soft-delete. When `isPermanent=true`, which requires
@@ -5550,6 +6449,7 @@ paths:
     put:
       tags:
         - entrances
+      summary: Update an entrance
       description: Update an entrance. See the POST /entrances route explanation about the parameters you can use to update an entrance. When the coordinates change and the new position lies in a sensitive massif, the entrance becomes sensitive (whatever isSensitive says), unless its sensitivity is locked.
       parameters:
         - name: id
@@ -5567,13 +6467,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to update an entrance.
+
+  '/entrances/{id}/restore':
+    post:
+      tags:
+        - entrances
+      summary: Restore an entrance
+      description: >-
+        Restore a soft-deleted entrance (a merged one is unmerged: its `redirectTo` is cleared). Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted entrance.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored entrance, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No entrance has this id, or it is not deleted.
+
+  '/entrances/{id}/new-entities':
+    put:
+      tags:
+        - entrances
+      summary: Update an entrance and create new entities
+      description: >-
+        Update an entrance and create, in the same request, the names,
+        descriptions, locations, riggings and comments given in the `new*`
+        arrays. They are linked to the entrance. This endpoint accepts JSON
+        only.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the entrance to update.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                entrance:
+                  type: object
+                  description: Entrance fields to update.
+                newNames:
+                  type: array
+                  items:
+                    type: object
+                newDescriptions:
+                  type: array
+                  items:
+                    type: object
+                newLocations:
+                  type: array
+                  items:
+                    type: object
+                newRiggings:
+                  type: array
+                  items:
+                    type: object
+                newComments:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: The updated entrance.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No entrance has this id, or it is deleted.
 
   '/entrances/publicCount':
     get:
       tags:
         - entrances
+      summary: Count the public entrances
+      security: []
       description: Get the number of public entrances.
       responses:
         '200':
@@ -5587,6 +6579,8 @@ paths:
     get:
       tags:
         - entrances
+      summary: Count the entrances
+      security: []
       description: Get the number of entrances.
       responses:
         '200':
@@ -5600,6 +6594,7 @@ paths:
     post:
       tags:
         - entrances
+      summary: Create an entrance from a duplicate
       description: >
         Create a entrance from a duplicate parked during a CSV import, then delete
         the duplicate. Use it when a moderator decides the parked row is not a
@@ -5627,10 +6622,160 @@ paths:
         '500':
           description: The entrance could not be created.
 
+  '/entrance-duplicates':
+    get:
+      tags:
+        - entrances
+        - import csv
+      summary: List the entrance duplicates
+      description: >-
+        A page of the entrance rows parked as duplicates during a CSV import.
+        The total is given in the `Content-Range` header (`skip-to/total`).
+        Any authenticated user.
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            default: dateInscription
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: ASC
+      responses:
+        '206':
+          description: A page of duplicates. `Content-Range` holds `skip-to/total`.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: 0-50/137
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  duplicates:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - entrances
+        - import csv
+      summary: Delete several entrance duplicates
+      description: Delete the entrance duplicates whose ids are given. Moderators only.
+      parameters:
+        - name: id
+          in: query
+          description: Ids of the duplicates to delete.
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '204':
+          description: The duplicates are deleted.
+        '400':
+          description: No id was given.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+
+  '/entrance-duplicates/{id}':
+    get:
+      tags:
+        - entrances
+        - import csv
+      summary: Get an entrance duplicate
+      description: >-
+        A entrance duplicate with the existing entrance it duplicates and the
+        imported content. Any authenticated user.
+      parameters:
+        - name: id
+          in: path
+          description: Duplicate id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  datePublication:
+                    type: string
+                    format: date-time
+                  author:
+                    $ref: '#/components/schemas/SimpleCaver'
+                  entrance:
+                    $ref: '#/components/schemas/Entrance'
+                  content:
+                    type: object
+                    description: The imported entrance data.
+        '400':
+          description: No duplicate has this id.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            `id` is not a valid id.
+
+    delete:
+      tags:
+        - entrances
+        - import csv
+      summary: Delete an entrance duplicate
+      description: Delete one entrance duplicate. Moderators only.
+      parameters:
+        - name: id
+          in: path
+          description: Duplicate id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The duplicate is deleted.
+        '400':
+          description: No duplicate has this id.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+
   '/entrances/check-rows':
     post:
       tags:
         - entrances
+      summary: Check entrance rows before an import
       description: Check if the entrance data sent are already present in Grottocenter. Returns which rows will be created, which are duplicates, and which are invalid.
       security:
         - bearerAuth: []
@@ -5688,6 +6833,10 @@ paths:
     get:
       tags:
         - entrances
+      summary: Get the snapshots of an entrance
+      security:
+        - {}
+        - bearerAuth: []
       description: Get snapshots of an entrance.
       parameters:
         - name: id
@@ -5709,6 +6858,10 @@ paths:
     get:
       tags:
         - entrances
+      summary: Get the snapshots of an entrance and its elements
+      security:
+        - {}
+        - bearerAuth: []
       description: Get all elements snapshots of an entrance.
       parameters:
         - name: id
@@ -5730,6 +6883,8 @@ paths:
     get:
       tags:
         - massifs
+      summary: List the entrances of a massif with their data quality
+      security: []
       description: Get the entrances of a massif with the data quality value computed
       parameters:
         - name: id
@@ -5784,6 +6939,8 @@ paths:
     get:
       tags:
         - countries
+      summary: List the entrances of a country with their data quality
+      security: []
       description: Get the entrances of a country with the data quality value computed
       parameters:
         - name: id
@@ -5839,6 +6996,8 @@ paths:
     post:
       tags:
         - search
+      summary: Quick search
+      security: []
       description: Quick search for multiple resources (persons, documents, caves, entrances, massifs, organizations). Case insensitive. Search over a many of resource properties (not only name).
       requestBody:
         content:
@@ -5873,6 +7032,8 @@ paths:
     post:
       tags:
         - search
+      summary: Advanced search
+      security: []
       description: Search in a entity (persons, documents, caves, entrances, massifs, organizations) in the criterias mentionned in the request. It's case insensitive.
       requestBody:
         content:
@@ -5961,6 +7122,8 @@ paths:
     post:
       tags:
         - search
+      summary: Export advanced search results
+      security: []
       description: |
         Export search results in CSV, GeoJSON, KML, or GPX format. Maximum 10,000 rows.
         Geographic formats (geojson, kml, gpx) are restricted to entrance searches only.
@@ -6032,21 +7195,21 @@ paths:
               schema:
                 type: string
                 format: binary
-              description: CSV output (default format)
+                description: CSV output (default format)
             application/geo+json:
               schema:
                 type: object
-              description: GeoJSON FeatureCollection output
+                description: GeoJSON FeatureCollection output
             application/vnd.google-earth.kml+xml:
               schema:
                 type: string
                 format: binary
-              description: KML Document output
+                description: KML Document output
             application/gpx+xml:
               schema:
                 type: string
                 format: binary
-              description: GPX waypoints output
+                description: GPX waypoints output
         '400':
           description: |
             Bad request. Possible causes:
@@ -6060,6 +7223,8 @@ paths:
     post:
       tags:
         - search
+      summary: Suggest values for a field
+      security: []
       description: Get a few possible of a field for a given search
       requestBody:
         content:
@@ -6112,6 +7277,8 @@ paths:
                         - type: integer
   '/geoloc/countEntries':
     get:
+      summary: Count the entrances in a bounding box (deprecated)
+      security: []
       deprecated: true
       tags:
         - geoloc
@@ -6133,6 +7300,8 @@ paths:
     get:
       tags:
         - geoloc
+      summary: List the entrances in a bounding box
+      security: []
       description: Get detailed entrances inside the given bounding box. Optionally filter by massif polygon. When both bounding box and massif are provided, returns entrances in the intersection of both areas. The bounding box is limited to 35 000 km² of surface area; anything larger is rejected with 400 `BBOX_AREA_EXCEEDED`. Use `/geoloc/entrancesCoordinates` for wider coverage. Note that a bounding box given with `ne_lng` west of `sw_lng` is normalised to min/max rather than wrapped across the antimeridian, so it covers the complement of the intended strip and will usually exceed the limit.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
@@ -6216,6 +7385,8 @@ paths:
     get:
       tags:
         - geoloc
+      summary: List the entrance coordinates in a bounding box
+      security: []
       description: >-
         Get the coordinates of the public entrances inside the given bounding
         box, for map clustering.
@@ -6318,6 +7489,8 @@ paths:
     get:
       tags:
         - geoloc
+      summary: List the networks in a bounding box
+      security: []
       description: >-
         Returns networks (caves with multiple entrances) that have at least one
         non-sensitive entrance within the given bounding box. Each network includes
@@ -6373,10 +7546,29 @@ paths:
         '400':
           description: Missing or invalid bounding box parameters
 
+  '/geoloc/caves':
+    get:
+      tags:
+        - geoloc
+      summary: List the networks in a bounding box (deprecated)
+      description: Deprecated alias of `GET /geoloc/networks`, use it instead.
+      deprecated: true
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
+      responses:
+        '200':
+          description: Same as `GET /geoloc/networks`.
+
   '/geoloc/networksCoordinates':
     get:
       tags:
         - geoloc
+      summary: List the network coordinates in a bounding box
+      security: []
       description: Count entrances contained inside the given coords
       parameters:
         - $ref: '#/components/parameters/sw_lat'
@@ -6396,10 +7588,29 @@ paths:
                   items:
                     type: number
 
+  '/geoloc/cavesCoordinates':
+    get:
+      tags:
+        - geoloc
+      summary: List the network coordinates in a bounding box (deprecated)
+      description: Deprecated alias of `GET /geoloc/networksCoordinates`, use it instead.
+      deprecated: true
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
+      responses:
+        '200':
+          description: Same as `GET /geoloc/networksCoordinates`.
+
   '/geoloc/organizations':
     get:
       tags:
         - geoloc
+      summary: List the organizations in a bounding box
+      security: []
       description: >-
         Organizations located inside the given coords, for the map. Only
         caving (SPELEOLOGY) and cave-rescue (CAVE_RESCUE) organizations are
@@ -6434,10 +7645,29 @@ paths:
                   latitude:
                     type: number
 
+  '/geoloc/grottos':
+    get:
+      tags:
+        - geoloc
+      summary: List the organizations in a bounding box (deprecated)
+      description: Deprecated alias of `GET /geoloc/organizations`, use it instead.
+      deprecated: true
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/sw_lat'
+        - $ref: '#/components/parameters/sw_lng'
+        - $ref: '#/components/parameters/ne_lat'
+        - $ref: '#/components/parameters/ne_lng'
+      responses:
+        '200':
+          description: Same as `GET /geoloc/organizations`.
+
   '/geoloc/countEntrances':
     get:
       tags:
         - geoloc
+      summary: Count the entrances in a bounding box
+      security: []
       description: Count entrances contained inside the given coords
       parameters:
         - $ref: '#/components/parameters/sw_lat'
@@ -6458,6 +7688,8 @@ paths:
     get:
       tags:
         - geoloc
+      summary: List the massif centroids in a bounding box
+      security: []
       description: Get massif centroid coordinates inside the given bounding box. Returns an array of [longitude, latitude] pairs for use in hexbin heatmap rendering. Results are served from an in-memory snapshot cache when available, with a database fallback.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
@@ -6492,6 +7724,8 @@ paths:
     get:
       tags:
         - geoloc
+      summary: List the massifs in a bounding box
+      security: []
       description: Get massif polygons with popup metadata inside the given bounding box. Returns massifs whose polygon intersects the bounding box, with name, GeoJSON polygon, entrance count, and network count.
       parameters:
         - $ref: '#/components/parameters/sw_lat'
@@ -6539,6 +7773,8 @@ paths:
     get:
       tags:
         - massifs
+      summary: Count the massifs
+      security: []
       description: Get the total number of massifs.
       responses:
         '200':
@@ -6552,6 +7788,7 @@ paths:
     post:
       tags:
         - massifs
+      summary: Create a massif
       description: Create a massif.
       parameters:
         - name: description
@@ -6625,6 +7862,8 @@ paths:
                 $ref: '#/components/schemas/Massif'
         '400':
           description: Some required information are missing, the polygon area exceeds the 35 000 km² limit, or a flag is not a `BooleanLike` value.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to create a massif.
 
@@ -6632,6 +7871,10 @@ paths:
     get:
       tags:
         - massifs
+      summary: Get a massif
+      security:
+        - {}
+        - bearerAuth: []
       description: Get a massif, its authors, names, geogPolygon, documents, descriptions and networks.
       parameters:
         - name: id
@@ -6655,6 +7898,7 @@ paths:
     put:
       tags:
         - massifs
+      summary: Update a massif
       description: Update a massif, its list of caves, names, descriptions and documents and its geogPolygon. The polygon area must not exceed 35 000 km². Accepts an optional name field to update the main name atomically. When the polygon of a sensitive massif is changed (a polygon sent again unchanged is ignored), the non-sensitive, unlocked entrances it now contains become sensitive.
       parameters:
         - name: id
@@ -6719,6 +7963,8 @@ paths:
                   $ref: '#/components/schemas/Massif'
         '400':
           description: Bad request, name too long, language null or not found, the polygon area exceeds the 35 000 km² limit, or a flag is not a `BooleanLike` value.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Resource not found
         '403':
@@ -6727,6 +7973,7 @@ paths:
     delete:
       tags:
         - massifs
+      summary: Delete a massif
       description: >
         Delete a massif (moderators or administrators). By default this is a reversible
         soft-delete; deleting an already soft-deleted massif is a no-op that
@@ -6784,10 +8031,40 @@ paths:
         '404':
           description: Massif not found.
 
+  '/massifs/{id}/restore':
+    post:
+      tags:
+        - massifs
+      summary: Restore a massif
+      description: >-
+        Restore a soft-deleted massif (a merged one is unmerged: its `redirectTo` is cleared). Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted massif.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored massif, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Massif'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No massif has this id, or it is not deleted.
+
   '/massifs/{id}/subscribe':
     post:
       tags:
         - massifs
+      summary: Subscribe to a massif
       description: Subscribe to a massif. Requires LEADER group permissions.
       parameters:
         - name: id
@@ -6801,6 +8078,8 @@ paths:
           description: Successfully subscribed to massif
         '400':
           description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to subscribe to a massif
         '404':
@@ -6810,6 +8089,7 @@ paths:
     post:
       tags:
         - massifs
+      summary: Unsubscribe from a massif
       description: Unsubscribe from a massif. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
       parameters:
         - name: id
@@ -6829,6 +8109,8 @@ paths:
           description: Successfully unsubscribed from massif
         '400':
           description: userId is not a positive integer, or you are not subscribed to this massif
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to unsubscribe from a massif
         '404':
@@ -6838,6 +8120,7 @@ paths:
     put:
       tags:
         - massifs
+      summary: Associate an organization with a massif
       description: Associate an organization with a massif.
       security:
         - bearerAuth: []
@@ -6873,6 +8156,7 @@ paths:
     delete:
       tags:
         - massifs
+      summary: Dissociate an organization from a massif
       description: Remove the association between an organization and a massif.
       security:
         - bearerAuth: []
@@ -6895,10 +8179,73 @@ paths:
         '404':
           description: Association or massif not found
 
+  '/massifs/{massifId}/documents/{documentId}':
+    put:
+      tags:
+        - massifs
+        - documents
+      summary: Link a document to a massif
+      description: Link a non-deleted document to a non-deleted massif.
+      parameters:
+        - name: massifId
+          in: path
+          description: Massif id.
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          description: Id of the document to link.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The document is linked to the massif.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            `massifId` is not a valid id, or the massif or the document does
+            not exist or is deleted.
+
+    delete:
+      tags:
+        - massifs
+        - documents
+      summary: Unlink a document from a massif
+      description: Remove the link between a massif and a document. Moderators only.
+      parameters:
+        - name: massifId
+          in: path
+          description: Massif id.
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          description: Id of the document to unlink.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The document is no longer linked to the massif.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The caller is not a moderator.
+        '404':
+          description: >-
+            `massifId` is not a valid id, the massif does not exist or is
+            deleted, or the document does not exist.
+
   '/massifs/{id}/statistics':
     get:
       tags:
         - massifs
+      summary: Get the statistics of a massif
+      security: []
       description: Get the statistics about a massif, number of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
       parameters:
         - name: id
@@ -6921,6 +8268,7 @@ paths:
     post:
       tags:
         - massifs
+      summary: Mark a massif as sensitive
       description: Mark a massif as sensitive and propagate this status to all entrances inside it. Requires ADMINISTRATOR group permissions.
       parameters:
         - name: id
@@ -6956,6 +8304,7 @@ paths:
     post:
       tags:
         - massifs
+      summary: Unmark a massif as sensitive
       description: Unmark a massif as sensitive. This action does not propagate to entrances. Requires ADMINISTRATOR group permissions.
       parameters:
         - name: id
@@ -6988,6 +8337,7 @@ paths:
     get:
       tags:
         - massifs
+      summary: Preview the effect of marking a massif as sensitive
       description: Compute the number of currently unsensitive entrances that would be affected by marking this massif as sensitive. Requires ADMINISTRATOR group permissions.
       parameters:
         - name: id
@@ -7021,6 +8371,7 @@ paths:
     get:
       tags:
         - organizations
+      summary: List the organizations
       description: >-
         List the organizations, sorted by id ascending and paginated with
         `skip` and `limit` like `/documents`. By default (or with
@@ -7106,6 +8457,7 @@ paths:
     post:
       tags:
         - organizations
+      summary: Create an organization
       description: >-
         Create an organization. The type is required: only the organizations
         registered before types were introduced may have none.
@@ -7187,6 +8539,8 @@ paths:
           description: >-
             The name is missing or too long, the postal code is too long, or
             the type is missing, null or not in the list.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to create an organization.
 
@@ -7194,6 +8548,7 @@ paths:
     delete:
       tags:
         - organizations
+      summary: Delete an organization
       description: >
         Delete an organization. By default this is a reversible soft-delete
         (moderators or administrators). When `isPermanent=true`, the organization and its
@@ -7235,6 +8590,8 @@ paths:
           $ref: '#/components/responses/InvalidBoolean'
         '200':
           description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to delete an organization, or `isPermanent=true` without the Administrator role.
         '404':
@@ -7245,6 +8602,10 @@ paths:
     get:
       tags:
         - organizations
+      summary: Get an organization
+      security:
+        - {}
+        - bearerAuth: []
       description: Get an organization (speleo club, association, library, editor etc.) by its id.
       parameters:
         - name: id
@@ -7268,6 +8629,7 @@ paths:
     put:
       tags:
         - organizations
+      summary: Update an organization
       description: Update an organization. Accepts an optional name field to update the main name atomically.
       parameters:
         - name: id
@@ -7339,15 +8701,48 @@ paths:
                 $ref: '#/components/schemas/Organization'
         400:
           description: Validation error (name too long, postal code too long, language null or not found, type null or not in the list)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to update an organization.
         404:
           description: Organization not found.
 
+  '/organizations/{id}/restore':
+    post:
+      tags:
+        - organizations
+      summary: Restore an organization
+      description: >-
+        Restore a soft-deleted organization (a merged one is unmerged: its `redirectTo` is cleared). Moderators or administrators
+        only. Subscribers are notified.
+      parameters:
+        - name: id
+          in: path
+          description: Id of the soft-deleted organization.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The restored organization, with `isDeleted` set to false.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator.
+        '404':
+          description: No organization has this id, or it is not deleted.
+
   '/organizations/count':
     get:
       tags:
         - organizations
+      summary: Count the caving organizations
+      security: []
       description: >-
         Get the number of non-deleted organizations whose type is SPELEOLOGY
         or CAVE_RESCUE. Organizations of any other type, or whose type is not
@@ -7364,6 +8759,8 @@ paths:
     get:
       tags:
         - organizations
+      summary: Count the partners
+      security: []
       description: Get the number of Grottocenter official partners.
       responses:
         '200':
@@ -7377,6 +8774,8 @@ paths:
     get:
       tags:
         - organizations
+      summary: List the partners shown in the carousel
+      security: []
       description: "Get all Grottocenter's partners which can be displayed in a carousel: it must have a picture and a custom message."
       responses:
         '200':
@@ -7388,10 +8787,70 @@ paths:
                 items:
                   $ref: '#/components/schemas/Language'
 
+  '/partners':
+    get:
+      tags:
+        - organizations
+      summary: List the organizations (deprecated)
+      description: Deprecated alias of `GET /organizations`, use it instead.
+      deprecated: true
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Same as `GET /organizations`.
+
+  '/partners/{id}':
+    get:
+      tags:
+        - organizations
+      summary: Get an organization (deprecated)
+      description: Deprecated alias of `GET /organizations/{id}`, use it instead.
+      deprecated: true
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Same as `GET /organizations/{id}`.
+
+  '/partners/findForCarousel/{skip}/{limit}':
+    get:
+      tags:
+        - organizations
+      summary: List a page of the partners shown in the carousel
+      description: >-
+        Same as `GET /partners/findForCarousel`, with `skip` and `limit` in
+        the path.
+      security: []
+      responses:
+        '200':
+          description: Same as `GET /partners/findForCarousel`.
+      parameters:
+        - name: skip
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: path
+          required: true
+          schema:
+            type: integer
+
   '/countries/{id}':
     get:
       tags:
         - countries
+      summary: Get a country
+      security: []
       description: Get a country by its id (iso 2).
       parameters:
         - name: id
@@ -7417,6 +8876,7 @@ paths:
     put:
       tags:
         - countries
+      summary: Associate an organization with a country
       description: Associate an organization with a country.
       security:
         - bearerAuth: []
@@ -7454,6 +8914,7 @@ paths:
     delete:
       tags:
         - countries
+      summary: Dissociate an organization from a country
       description: Remove the association between an organization and a country.
       security:
         - bearerAuth: []
@@ -7482,6 +8943,8 @@ paths:
     get:
       tags:
         - countries
+      summary: Get the statistics of a country
+      security: []
       description: Get the statistics about a country, number of massifs, of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
       parameters:
         - name: id
@@ -7505,6 +8968,7 @@ paths:
     post:
       tags:
         - countries
+      summary: Subscribe to a country
       description: Subscribe to a country. Requires LEADER group permissions.
       parameters:
         - name: id
@@ -7519,6 +8983,8 @@ paths:
           description: Successfully subscribed to country
         '400':
           description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to subscribe to a country
         '404':
@@ -7528,6 +8994,7 @@ paths:
     post:
       tags:
         - countries
+      summary: Unsubscribe from a country
       description: Unsubscribe from a country. Leaders can unsubscribe themselves. Administrators can unsubscribe any user by providing a userId query parameter.
       parameters:
         - name: id
@@ -7548,6 +9015,8 @@ paths:
           description: Successfully unsubscribed from country
         '400':
           description: userId is not a positive integer, or you are not subscribed to this country
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to unsubscribe from a country
         '404':
@@ -7557,6 +9026,8 @@ paths:
     get:
       tags:
         - countries
+      summary: Count the countries with entrances
+      security: []
       description: Get the number of countries in the database which are at least associated with one entrance.
       responses:
         '200':
@@ -7570,6 +9041,8 @@ paths:
     get:
       tags:
         - changes
+      summary: List the recent changes
+      security: []
       description: |
         Get the latest entity changes on Grottocenter, newest first.
 
@@ -7707,6 +9180,8 @@ paths:
     post:
       tags:
         - bibliographic metadata
+      summary: Search the bibliographic metadata
+      security: []
       description: Search for bibliographic metadata using a query. (limit to 1500 results, accent insensitive, case insensitive)
       requestBody:
         content:
@@ -7746,6 +9221,7 @@ paths:
     post:
       tags:
         - messaging
+      summary: Send a private message
       description: 'Send a private message to another user. If no conversation exists between the sender and the recipient, a new one is created. If conversationId is provided, it acts as a reply.'
       security:
         - bearerAuth: []
@@ -7806,6 +9282,7 @@ paths:
     get:
       tags:
         - messaging
+      summary: List the active conversations
       description: 'List active conversations for the authenticated caver (paginated).'
       security:
         - bearerAuth: []
@@ -7848,6 +9325,7 @@ paths:
     get:
       tags:
         - messaging
+      summary: List the archived conversations
       description: 'List archived conversations for the authenticated caver (paginated).'
       security:
         - bearerAuth: []
@@ -7890,6 +9368,7 @@ paths:
     get:
       tags:
         - messaging
+      summary: Get the messages of a conversation
       description: 'Get messages in a conversation (paginated, marks as read). Messages are returned in chronological order, but pagination starts from the most recent (e.g., skip=0 returns the latest page).'
       security:
         - bearerAuth: []
@@ -7950,6 +9429,7 @@ paths:
     post:
       tags:
         - messaging
+      summary: Archive a conversation
       description: Archive a conversation for the authenticated caver.
       security:
         - bearerAuth: []
@@ -7988,6 +9468,7 @@ paths:
     post:
       tags:
         - messaging
+      summary: Unarchive a conversation
       description: Unarchive a conversation for the authenticated caver.
       security:
         - bearerAuth: []
@@ -8026,6 +9507,7 @@ paths:
     get:
       tags:
         - messaging
+      summary: Count the unread messages
       description: 'Get unread message counts for active and archived lists.'
       security:
         - bearerAuth: []
@@ -8085,6 +9567,9 @@ paths:
     get:
       tags:
         - devices
+      security:
+        - {}
+        - bearerAuth: []
       summary: Find device by ID
       description: >-
         Get a device by its ID. Public access (no authentication required).
@@ -8183,6 +9668,7 @@ paths:
     get:
       tags:
         - devices
+      security: []
       summary: Search devices
       description: Full-text search on devices via Typesense. Public access (no authentication required).
       parameters:
@@ -8307,6 +9793,9 @@ paths:
     get:
       tags:
         - SensorConfiguration
+      security:
+        - {}
+        - bearerAuth: []
       summary: Find sensor configuration by ID
       description: >-
         Get a sensor configuration by its ID. Public access (no authentication required).
@@ -8562,6 +10051,7 @@ paths:
       tags:
         - points
       summary: List points
+      security: []
       description: >-
         List the non-deleted points, sorted by id, which makes the pages
         stable. Public access.
@@ -8637,6 +10127,7 @@ paths:
       tags:
         - points
       summary: Find a point
+      security: []
       description: >-
         Get a point with a summary of its positions on SVG documents (the first
         20, by document id; `positionCount` gives their number, and
@@ -8732,6 +10223,7 @@ paths:
       tags:
         - points
       summary: List the positions of a point
+      security: []
       description: >-
         The positions of the point on non-deleted SVG documents, sorted by
         document id. Public access; the positions of a soft-deleted point are
@@ -8929,6 +10421,7 @@ paths:
         - documents
         - points
       summary: Points positioned on a document
+      security: []
       description: >-
         The non-deleted points positioned on this document, sorted by point
         id: the markers to draw on its SVG. `x` and `y` are in the document's
@@ -8959,6 +10452,9 @@ paths:
     get:
       tags:
         - Substances
+      security:
+        - {}
+        - bearerAuth: []
       summary: Search substances
       description: >-
         Search the substance reference table. Returns all substances when no search
@@ -9138,6 +10634,45 @@ paths:
         '500':
           description: Internal server error
 
+  '/notifications/unread/count':
+    get:
+      tags:
+        - notifications
+      summary: Count the unread notifications
+      description: Number of notifications of the authenticated user not read yet.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/notifications/{notificationId}/read':
+    post:
+      tags:
+        - notifications
+      summary: Mark a notification as read
+      description: Mark one notification of the authenticated user as read.
+      parameters:
+        - name: notificationId
+          in: path
+          description: Notification id.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The notification is marked as read.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The notification belongs to another user.
+        '404':
+          description: No notification has this id.
+
   '/notifications/read':
     put:
       tags:
@@ -9211,6 +10746,8 @@ paths:
                 $ref: '#/components/schemas/ImportBatchAccepted'
         '400':
           description: Invalid payload (empty data, missing mandatory columns).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: You are not authorized to import entrances via CSV.
         '500':
@@ -9241,6 +10778,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JobBatchStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           description: Batch not found (also returned for unauthorized access to prevent leaking batch existence).
 
@@ -9266,15 +10805,6 @@ components:
         minimum: 1
         maximum: 100
         default: 50
-    X-Trace-Id:
-      name: X-Trace-Id
-      in: header
-      description: Optional trace ID for distributed tracing. If not provided, a new UUID v7 will be generated.
-      required: false
-      schema:
-        type: string
-        format: uuid
-        example: '01932e9e-7890-7000-8000-0123456789ab'
     sw_lat:
       name: sw_lat
       in: query
@@ -9311,15 +10841,6 @@ components:
         type: number
         minimum: -180
         maximum: 180
-    zoom:
-      name: zoom
-      in: query
-      description: zoom level (1 to 22)
-      required: true
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 22
     qualitySortAll:
       name: sort
       in: query
@@ -9396,6 +10917,17 @@ components:
           - $ref: '#/components/schemas/BooleanLike'
         default: false
   responses:
+    Unauthorized:
+      description: >
+        Authentication required: no bearer token was sent, or it is invalid,
+        expired or revoked.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
     InvalidBoolean:
       description: >
         Bad request. Among other causes, a boolean parameter holds a value
@@ -9984,6 +11516,7 @@ components:
               type:
                 allOf:
                   - $ref: '#/components/schemas/OrganizationType'
+                type: string
                 nullable: true
                 description: Absent on a deleted organization.
               isDeleted:
@@ -10105,6 +11638,7 @@ components:
         cave:
           $ref: '#/components/schemas/Cave'
         point:
+          type: object
           allOf:
             - $ref: '#/components/schemas/SimplePoint'
           nullable: true
@@ -10190,6 +11724,7 @@ components:
         pages:
           type: string
         parent:
+          type: object
           nullable: true
           description: >
             Parent publication (e.g. the Issue of an Article), with its own
@@ -10377,6 +11912,7 @@ components:
         description:
           type: string
         editor:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/SimpleOrganization'
@@ -10399,6 +11935,7 @@ components:
         isValidated:
           type: boolean
         library:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/SimpleOrganization'
@@ -10422,6 +11959,7 @@ components:
           type: string
           nullable: true
         parent:
+          type: object
           nullable: true
           description: >
             Parent publication. For an Article this is the Issue it appeared in,
@@ -10455,6 +11993,7 @@ components:
           type: string
           nullable: true
         parent:
+          type: object
           nullable: true
           description: >
             The next ancestor, or null at the top of the chain.
@@ -10758,13 +12297,6 @@ components:
         softwares:
           type: string
 
-    Geoloc:
-      properties:
-        entries:
-          type: array
-          items:
-            $ref: '#/components/schemas/Entrance'
-
     Group:
       type: object
       properties:
@@ -10812,6 +12344,7 @@ components:
         author:
           $ref: '#/components/schemas/Caver'
         reviewer:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/Caver'
@@ -10897,6 +12430,7 @@ components:
         author:
           $ref: '#/components/schemas/Caver'
         reviewer:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/Caver'
@@ -11106,6 +12640,7 @@ components:
               type:
                 allOf:
                   - $ref: '#/components/schemas/OrganizationType'
+                type: string
                 nullable: true
                 description: Absent on a deleted organization.
               isDeleted:
@@ -11201,6 +12736,7 @@ components:
         entity:
           allOf:
             - $ref: '#/components/schemas/NotificationEntity'
+          type: object
           nullable: true
           description: >-
             Null on notifications created before the snapshot existed and on
@@ -11208,14 +12744,17 @@ components:
         cave:
           allOf:
             - $ref: '#/components/schemas/Cave'
+          type: object
           nullable: true
         comment:
           allOf:
             - $ref: '#/components/schemas/Comment'
+          type: object
           nullable: true
         description:
           allOf:
             - $ref: '#/components/schemas/Description'
+          type: object
           nullable: true
         document:
           type: object
@@ -11224,26 +12763,32 @@ components:
         entrance:
           allOf:
             - $ref: '#/components/schemas/Entrance'
+          type: object
           nullable: true
         history:
           allOf:
             - $ref: '#/components/schemas/History'
+          type: object
           nullable: true
         location:
           allOf:
             - $ref: '#/components/schemas/Location'
+          type: object
           nullable: true
         massif:
           allOf:
             - $ref: '#/components/schemas/Massif'
+          type: object
           nullable: true
         organization:
           allOf:
             - $ref: '#/components/schemas/Organization'
+          type: object
           nullable: true
         rigging:
           allOf:
             - $ref: '#/components/schemas/Rigging'
+          type: object
           nullable: true
 
     StructuredError:
@@ -11718,6 +13263,7 @@ components:
         type:
           allOf:
             - $ref: '#/components/schemas/OrganizationType'
+          type: string
           nullable: true
         village:
           type: 'string'
@@ -11740,6 +13286,7 @@ components:
         type:
           allOf:
             - $ref: '#/components/schemas/OrganizationType'
+          type: string
           nullable: true
 
     OrganizationType:
@@ -11953,6 +13500,7 @@ components:
             author:
               $ref: '#/components/schemas/SimpleCaver'
             reviewer:
+              type: object
               allOf:
                 - $ref: '#/components/schemas/SimpleCaver'
               nullable: true
@@ -12000,6 +13548,7 @@ components:
               type:
                 allOf:
                   - $ref: '#/components/schemas/OrganizationType'
+                type: string
                 nullable: true
                 description: Absent on a deleted organization.
               isDeleted:
@@ -12084,16 +13633,6 @@ components:
               - $ref: '#/components/schemas/Caver'
               - $ref: '#/components/schemas/Document'
               - $ref: '#/components/schemas/Organization'
-
-    Search-type:
-      type: string
-      enum:
-        - caves
-        - persons
-        - documents
-        - entrances
-        - organizations
-        - massifs
 
     Specific-cave:
       type: object
@@ -12350,6 +13889,7 @@ components:
         author:
           $ref: '#/components/schemas/SimpleCaver'
         reviewer:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/SimpleCaver'
