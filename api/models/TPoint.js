@@ -66,6 +66,27 @@ module.exports = {
       model: 'TCave',
     },
 
+    // true underground, false at the surface, null when not classified yet:
+    // points created before #1961 are not inferred from their cave or their
+    // coordinates.
+    underground: {
+      type: 'boolean',
+      allowNull: true,
+      columnName: 'is_underground',
+    },
+
+    // The SVG documents the point is drawn on, one position per document (#1961).
+    positions: {
+      collection: 'JPointDocumentPosition',
+      via: 'point',
+    },
+
+    // The documents attached to the point (#1733), independent of positions.
+    documents: {
+      collection: 'TDocument',
+      via: 'point',
+    },
+
     observations: {
       collection: 'TObservation',
       via: 'point',

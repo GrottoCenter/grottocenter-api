@@ -86,6 +86,12 @@ module.exports = async (req, res) => {
   }
 
   if (deletePermanently) {
+    // Done first: j_point_document_position references the document, so the
+    // final hard delete would fail on that foreign key once everything else is
+    // gone. A merge does not move the positions either: x and y are in this
+    // document's reference frame, meaningless on another document.
+    await JPointDocumentPosition.destroy({ document: documentId });
+
     await TDocument.update({ redirectTo: documentId }).set({
       dateReviewed: new Date(), // Avoid a uniqueness error
       redirectTo: shouldMergeInto ? mergeIntoId : null,

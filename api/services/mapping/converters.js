@@ -374,6 +374,11 @@ const c = {
       entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
       cave: convertIfObject(source.cave, c.toSimpleCave),
       massifs: toList('massifs', source, c.toSimpleMassif),
+      // The point the document references (#1733), when populated
+      point:
+        source.point instanceof Object
+          ? (!source.point.isDeleted && c.toSimplePoint(source.point)) || null
+          : undefined,
 
       oldBBS: {
         pages: source.pagesBBSOld,
@@ -994,6 +999,72 @@ const c = {
     author: source.authorId
       ? { id: source.authorId, nickname: source.authorNickname }
       : convertIfObject(source.author, c.toSimpleCaver),
+  }),
+
+  // A point with a bounded summary of its positions (the complete collection
+  // is GET /points/:id/positions) and its attached documents, from
+  // PointService.getPopulatedPoint()
+  toPoint: (source) => ({
+    ...c.toSimplePoint(source),
+    positions: toList('positions', source, c.toPointPosition, {
+      filterDeleted: false,
+    }),
+    positionCount: source.positionCount ?? 0,
+    documents: toList('documents', source, c.toSimpleDocument),
+    author: convertIfObject(source.author, c.toSimpleCaver),
+    reviewer: convertIfObject(source.reviewer, c.toSimpleCaver),
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed,
+    isDeleted: source.isDeleted,
+  }),
+
+  // A point in a list, without its positions and documents. t_point stores
+  // the coordinates as numeric, read as strings: they are returned as numbers.
+  toSimplePoint: (source) => ({
+    id: source.id,
+    label: source.label,
+    caveId: source.cave?.id ?? source.cave ?? null,
+    underground: source.underground ?? null,
+    latitude:
+      source.latitude === null || source.latitude === undefined
+        ? null
+        : Number(source.latitude),
+    longitude:
+      source.longitude === null || source.longitude === undefined
+        ? null
+        : Number(source.longitude),
+  }),
+
+  // The position of a point on an SVG document, in the document's fixed
+  // reference frame (#1961), with a summary of the document when it was
+  // loaded by PointService.withDocumentSummaries()
+  toPointPosition: (source) => ({
+    pointId: source.point?.id ?? source.point,
+    documentId: source.document?.id ?? source.document,
+    document:
+      source.document instanceof Object
+        ? c.toPositionDocument(source.document)
+        : null,
+    x: source.x,
+    y: source.y,
+    dateInscription: source.dateInscription ?? null,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  // The document a position is on: enough to list it and open its SVG
+  toPositionDocument: (source) => ({
+    id: source.id,
+    type: source.type?.name ?? null,
+    title: c.toDocumentDescriptions(source.descriptions).title ?? null,
+    files: toList('files', source, c.toFile),
+  }),
+
+  // A marker to draw on an SVG document, at x/y in its reference frame
+  toPointMarker: (source) => ({
+    pointId: source.id,
+    label: source.label,
+    x: source.x,
+    y: source.y,
   }),
 
   toDeletedEntity: (source) => ({

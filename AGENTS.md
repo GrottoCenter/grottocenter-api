@@ -260,6 +260,7 @@ Read these only when the task touches the topic:
 | [`docs/agents/dependency-upgrade.md`](docs/agents/dependency-upgrade.md)     | Upgrading npm dependencies            |
 | [`docker/superset/README.md`](docker/superset/README.md)                     | Touching `docker/superset/**`         |
 | [`docs/snapshot-types.md`](docs/snapshot-types.md)                           | Entrance snapshot history             |
+| [`docs/point-svg-positions.md`](docs/point-svg-positions.md)                 | Points, SVG positions, location rules |
 | [`docs/request-logging.md`](docs/request-logging.md)                         | Request log lines and their consumers |
 
 Production hosting and incident triage are documented in the maintainers' private infrastructure repository, not here.

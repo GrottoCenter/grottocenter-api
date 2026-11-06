@@ -102,6 +102,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_PAGE_MANIFEST_MIGRATION,
                 customSQL.BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
                 customSQL.BOT_HUB_MIGRATION,
+                customSQL.POINT_GEOM_MIGRATION,
               ].join('\n')
             )
               // Planner statistics, as production has them. A fresh database

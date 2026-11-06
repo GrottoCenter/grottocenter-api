@@ -102,6 +102,9 @@ CREATE INDEX IF NOT EXISTS idx_document_hierarchy ON t_document(id, id_parent);
 CREATE INDEX IF NOT EXISTS idx_t_document_type ON t_document(id_type);
 CREATE INDEX IF NOT EXISTS idx_t_document_author ON t_document(id_author);
 CREATE INDEX IF NOT EXISTS idx_t_document_is_deleted ON t_document(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_t_document_point ON t_document (id_point) WHERE id_point IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_j_point_document_position_point_document ON j_point_document_position (id_point, id_document);
+CREATE INDEX IF NOT EXISTS idx_j_point_document_position_document ON j_point_document_position (id_document);
 CREATE INDEX IF NOT EXISTS idx_t_file_document ON t_file(id_document);
 CREATE INDEX IF NOT EXISTS idx_t_history_cave ON t_history(id_cave) WHERE id_cave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_history_entrance ON t_history(id_entrance) WHERE id_entrance IS NOT NULL;
@@ -1046,6 +1049,14 @@ const BOT_HUB_MIGRATION = forTestDatabase(
   )
 );
 
+// t_point.point_geom kept in sync with latitude/longitude by a trigger
+const POINT_GEOM_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_36_2026_11_04_point_geom.sql'),
+    'utf8'
+  )
+);
+
 // Organization history, as production runs it: every t_grotto update copies
 // the old row into h_grotto. Waterline builds h_grotto with id alone as
 // primary key, so a second update of the same organization would collide:
@@ -1120,6 +1131,7 @@ module.exports = {
   BOT_PAGE_MANIFEST_MIGRATION,
   BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
   BOT_HUB_MIGRATION,
+  POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
 };

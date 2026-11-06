@@ -65,6 +65,8 @@ tags:
     description: Per-channel sensor configuration management (nested under devices)
   - name: Observation
     description: Scientific observation data import
+  - name: points
+    description: Named locations in a cave, optionally positioned on an SVG plan
   - name: Substances
     description: Substance reference table for chemical species and isotopes
   - name: SSO
@@ -1844,7 +1846,9 @@ paths:
         incoming redirects and country, entrance, ISO region, language, massif,
         subject and author links are moved to that document instead of being
         dropped; the legacy region links (`j_document_region`) are discarded
-        even then.
+        even then. The positions of points on the document are removed, merge
+        or not: their coordinates only make sense in that document's reference
+        frame. The points keep their positions on other documents.
       security:
         - bearerAuth: []
       parameters:
@@ -2072,6 +2076,11 @@ paths:
         Note: unlike `PUT /documents/{id}` (which is `multipart/form-data`),
         this endpoint receives a JSON body, so a real empty array `[]` is used
         to clear a collection — the `'[]'` string sentinel is not needed here.
+
+
+        A `point` sent in `document` is ignored: the point a document
+        references is changed through `PUT` and `DELETE
+        /points/{pointId}/documents/{documentId}` only.
       security:
         - bearerAuth: []
       parameters:
@@ -8463,6 +8472,404 @@ paths:
         '500':
           description: Internal server error
 
+  '/points':
+    get:
+      tags:
+        - points
+      summary: List points
+      description: >-
+        List the non-deleted points, sorted by id, which makes the pages
+        stable. Public access.
+      parameters:
+        - name: caveId
+          in: query
+          description: Only the points of this cave.
+          required: false
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/pointPage'
+        - $ref: '#/components/parameters/pointPageSize'
+      responses:
+        '200':
+          description: A page of points.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SimplePoint'
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    description: Number of points matching the filters.
+        '400':
+          description: Invalid caveId, page or size.
+
+    post:
+      tags:
+        - points
+      summary: Create a point
+      description: >-
+        Create a point. `underground` must be given explicitly. `latitude` and
+        `longitude` are given together or not at all, and are required for a
+        surface point (`underground: false`). Positions on SVG documents are
+        set afterwards through `PUT /points/{id}/positions/{documentId}`.
+        Requires authentication.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointCreate'
+      responses:
+        '200':
+          description: The created point.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDetails'
+        '400':
+          description: >-
+            Validation error: blank or overlong label, unknown cave, missing or
+            non-boolean `underground`, incomplete, non-numeric or out-of-bounds
+            coordinates, a surface point without coordinates, or one of the
+            former position fields (`referenceDocumentId`, `x`, `y`).
+        '401':
+          description: Authentication required.
+        '500':
+          description: The point could not be created.
+
+  '/points/{id}':
+    get:
+      tags:
+        - points
+      summary: Find a point
+      description: >-
+        Get a point with a summary of its positions on SVG documents (the first
+        20, by document id; `positionCount` gives their number, and
+        `GET /points/{id}/positions` the complete collection) and the documents
+        attached to it. Public access; a soft-deleted point is only visible to
+        moderators.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDetails'
+        '404':
+          description: Point not found.
+
+    patch:
+      tags:
+        - points
+      summary: Update a point
+      description: >-
+        Partial update: only the fields sent change, the others keep their
+        value. The resulting point is validated as on creation: `latitude` and
+        `longitude` both set or both `null`, and set for a surface point.
+        `underground` cannot be set back to `null`. `false` and `0` are values
+        like any other. Positions are not changed here: see
+        `/points/{id}/positions/{documentId}`. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointUpdate'
+      responses:
+        '200':
+          description: The updated point.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDetails'
+        '400':
+          description: No updatable field, or an invalid value or resulting point (see the creation).
+        '401':
+          description: Authentication required.
+        '404':
+          description: Point not found or soft-deleted.
+
+    delete:
+      tags:
+        - points
+      summary: Delete a point
+      description: >-
+        Soft-delete a point (Moderator or Administrator). Its positions, and the
+        documents and observations linked to it, are kept.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The deleted point.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointDetails'
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to delete a point.
+        '404':
+          description: Point not found.
+
+  '/points/{id}/positions':
+    get:
+      tags:
+        - points
+      summary: List the positions of a point
+      description: >-
+        The positions of the point on non-deleted SVG documents, sorted by
+        document id. Public access; the positions of a soft-deleted point are
+        only visible to moderators.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/pointPage'
+        - $ref: '#/components/parameters/pointPageSize'
+      responses:
+        '200':
+          description: A page of positions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PointPosition'
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+        '400':
+          description: Invalid page or size.
+        '404':
+          description: Point not found.
+
+  '/points/{id}/positions/{documentId}':
+    put:
+      tags:
+        - points
+      summary: Create or replace the position of a point on a document
+      description: >-
+        Set the position of the point on one SVG document (a document of type
+        Topographic Drawing, Topographic Data or Map), creating it or replacing
+        the existing one. Idempotent; the positions on other documents are not
+        affected, so a point can be on a plan and on a section at once.
+
+
+        `x` and `y` are in the fixed reference frame of the document's SVG
+        (its `viewBox` user units: origin, units and orientation). A
+        replacement SVG, and every SVG file used for positioning within the
+        same document, must keep that frame (same origin, units, orientation
+        and correspondence to the represented locations), so the existing
+        positions stay valid. An unchanged `viewBox` alone does not guarantee
+        this. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - x
+                - y
+              properties:
+                x:
+                  type: number
+                  description: Abscissa in the document's reference frame.
+                y:
+                  type: number
+                  description: Ordinate in the document's reference frame.
+      responses:
+        '200':
+          description: The position, created or replaced.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointPosition'
+        '400':
+          description: >-
+            `x` or `y` missing or not a finite number, or the document is not a
+            plan.
+        '401':
+          description: Authentication required.
+        '404':
+          description: Point or document not found (or soft-deleted).
+
+    delete:
+      tags:
+        - points
+      summary: Remove the position of a point on a document
+      description: >-
+        Remove the position of the point on this document only; its positions
+        on other documents are kept. Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Authentication required.
+        '404':
+          description: >-
+            Point not found or soft-deleted, or the point has no position on
+            this document.
+
+  '/points/{pointId}/documents/{documentId}':
+    put:
+      tags:
+        - points
+        - documents
+      summary: Attach a document to a point
+      description: >-
+        Make a document reference a point. A document references at most one
+        point. Idempotent: attaching an already attached document returns 204.
+        Requires authentication.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successful operation (also returned if the link already exists).
+        '401':
+          description: Authentication required.
+        '404':
+          description: Point or document not found (or soft-deleted).
+        '409':
+          description: The document already references another point; detach it first.
+
+    delete:
+      tags:
+        - points
+        - documents
+      summary: Detach a document from a point
+      description: Available to moderators only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Authentication required.
+        '403':
+          description: You are not authorized to remove a document from a point.
+        '404':
+          description: Point not found, or the document does not reference it.
+
+  '/documents/{id}/points':
+    get:
+      tags:
+        - documents
+        - points
+      summary: Points positioned on a document
+      description: >-
+        The non-deleted points positioned on this document, sorted by point
+        id: the markers to draw on its SVG. `x` and `y` are in the document's
+        fixed reference frame (its SVG `viewBox` user units) and map directly
+        onto `cx`/`cy`. Public access.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PointMarker'
+        '404':
+          description: Document not found or soft-deleted.
+
   '/substances':
     get:
       tags:
@@ -8755,6 +9162,25 @@ paths:
 components:
 
   parameters:
+    pointPage:
+      name: page
+      in: query
+      description: 1-based page number.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pointPageSize:
+      name: size
+      in: query
+      description: Number of items per page.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
     X-Trace-Id:
       name: X-Trace-Id
       in: header
@@ -9593,6 +10019,12 @@ components:
                 type: string
         cave:
           $ref: '#/components/schemas/Cave'
+        point:
+          allOf:
+            - $ref: '#/components/schemas/SimplePoint'
+          nullable: true
+          description: >-
+            The point the document references, on `GET /documents/{id}` only.
         commentsBBSOld:
           type: string
         dateInscription:
@@ -11253,6 +11685,199 @@ components:
 
     Point:
       type: object
+
+    PointLocationFields:
+      type: object
+      properties:
+        underground:
+          type: boolean
+          description: >-
+            `true` underground, `false` at the surface. Points created before
+            this field existed are unclassified (`null` in responses) until a
+            user sets it; their status is never inferred from their cave or
+            their coordinates.
+        latitude:
+          type: number
+          nullable: true
+          minimum: -90
+          maximum: 90
+          description: WGS84 latitude, given together with `longitude`.
+        longitude:
+          type: number
+          nullable: true
+          minimum: -180
+          maximum: 180
+          description: WGS84 longitude, given together with `latitude`.
+
+    PointCreate:
+      allOf:
+        - $ref: '#/components/schemas/PointLocationFields'
+        - type: object
+          required:
+            - label
+            - underground
+          properties:
+            label:
+              type: string
+              maxLength: 200
+            caveId:
+              type: integer
+              nullable: true
+
+    PointUpdate:
+      description: >-
+        At least one field is required; the omitted fields keep their value.
+      allOf:
+        - $ref: '#/components/schemas/PointLocationFields'
+        - type: object
+          properties:
+            label:
+              type: string
+              maxLength: 200
+            caveId:
+              type: integer
+              nullable: true
+
+    SimplePoint:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        caveId:
+          type: integer
+          nullable: true
+        underground:
+          type: boolean
+          nullable: true
+          description: '`null` for a point not classified yet.'
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+
+    PointPosition:
+      type: object
+      description: >-
+        The position of a point on an SVG document, in the document's fixed
+        reference frame (its SVG `viewBox` user units).
+      properties:
+        pointId:
+          type: integer
+        documentId:
+          type: integer
+        document:
+          $ref: '#/components/schemas/PointPositionDocument'
+        x:
+          type: number
+        y:
+          type: number
+        dateInscription:
+          type: string
+          nullable: true
+        dateReviewed:
+          type: string
+          nullable: true
+
+    PointPositionDocument:
+      type: object
+      description: >-
+        The document a position is on, loaded for the whole page in one batch:
+        enough to list it and open its SVG without a request per position.
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          nullable: true
+          description: Name of the document type, e.g. Topographic Drawing.
+        title:
+          type: string
+          nullable: true
+          description: Title of the document's main description.
+        files:
+          type: array
+          description: The validated files of the document, by id.
+          items:
+            $ref: '#/components/schemas/File'
+
+    PointMarker:
+      type: object
+      properties:
+        pointId:
+          type: integer
+        label:
+          type: string
+        x:
+          type: number
+        y:
+          type: number
+
+    PointReferencedDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        dateInscription:
+          type: string
+        dateReviewed:
+          type: string
+          nullable: true
+        datePublication:
+          type: string
+          nullable: true
+        isValidated:
+          type: boolean
+        isDeleted:
+          type: boolean
+
+    PointDetails:
+      allOf:
+        - $ref: '#/components/schemas/SimplePoint'
+        - type: object
+          properties:
+            positions:
+              type: array
+              maxItems: 20
+              description: >-
+                The first 20 positions on non-deleted documents, by document
+                id. The complete collection is `GET /points/{id}/positions`.
+              items:
+                $ref: '#/components/schemas/PointPosition'
+            positionCount:
+              type: integer
+              description: Number of positions on non-deleted documents.
+            documents:
+              type: array
+              description: The non-deleted documents attached to the point.
+              items:
+                $ref: '#/components/schemas/PointReferencedDocument'
+            author:
+              $ref: '#/components/schemas/SimpleCaver'
+            reviewer:
+              allOf:
+                - $ref: '#/components/schemas/SimpleCaver'
+              nullable: true
+            dateInscription:
+              type: string
+            dateReviewed:
+              type: string
+              nullable: true
+            isDeleted:
+              type: boolean
 
     Quicksearch-type:
       type: string

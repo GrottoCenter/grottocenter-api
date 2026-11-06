@@ -100,6 +100,7 @@ module.exports.policies = {
   'v1/document/find-by-caver-id': true,
   'v1/document/find-children': true,
   'v1/document/find': ['validateId'],
+  'v1/document/find-points': ['validateId'],
   'v1/document/get-snapshots': true,
   'v1/document/check-rows': 'tokenAuth',
   'v1/document/create': 'tokenAuth',
@@ -294,6 +295,18 @@ module.exports.policies = {
   'v1/sensor-configuration/update': ['validateId', 'tokenAuth'],
   'v1/sensor-configuration/delete': ['validateId', 'tokenAuth'],
   'v1/sensor-configuration/restore': ['validateId', 'tokenAuth'],
+
+  // Point
+  'v1/point/find-all': true,
+  'v1/point/find': ['validateId'],
+  'v1/point/create': 'tokenAuth',
+  'v1/point/update': ['validateId', 'tokenAuth'],
+  'v1/point/delete': ['validateId', 'tokenAuth'],
+  'v1/point/find-positions': ['validateId'],
+  'v1/point/put-position': ['validateId', 'tokenAuth'],
+  'v1/point/delete-position': ['validateId', 'tokenAuth'],
+  'v1/point/add-document': ['validateId', 'tokenAuth'],
+  'v1/point/unlink-document': ['validateId', 'tokenAuth'],
 
   // Partner
   'v1/partner/count': true,

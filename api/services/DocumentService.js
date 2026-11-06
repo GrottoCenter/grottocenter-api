@@ -519,7 +519,8 @@ module.exports = {
     module.exports
       .appendPopulateForSimpleDocument(docQuery)
       .populate('cave')
-      .populate('entrances');
+      .populate('entrances')
+      .populate('point');
     // .populate('parent') // resolved in populateFullDocumentSubEntities()
     // .populate('children') // resolved in populateFullDocumentSubEntities()
     // .populate('authorizationDocument'); // resolved in populateFullDocumentSubEntities()
