@@ -82,6 +82,7 @@ module.exports = {
       result = await BotOutboxService.run({
         adapter: createStorageAdapter(sails.config.custom.botSurface.storage),
         signal: job?.signal,
+        entityTypes: sails.config.custom.botSurface.entityTypes,
       });
     } catch (err) {
       failed = true;

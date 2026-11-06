@@ -102,7 +102,7 @@ The chain follows `redirect_to` through merged records and stops at the first re
 
 ## The page generator
 
-`BotPageGeneratorService.run({ adapter })` (`api/services/bot/BotPageGeneratorService.js`) is step 4 of the nightly pipeline. It publishes the pages of `v_bot_page` as static files and keeps `t_bot_page_manifest` equal to what is online. Scheduling is #1760; what a page contains is described in [The pages](#the-pages); the sitemaps are step 5, see [Sitemaps](#sitemaps).
+`BotPageGeneratorService.run({ adapter })` (`api/services/bot/BotPageGeneratorService.js`) is step 4 of the nightly pipeline. It publishes the pages of `v_bot_page` as static files and keeps `t_bot_page_manifest` equal to what is online. Scheduling is the [nightly pipeline](#the-nightly-pipeline); what a page contains is described in [The pages](#the-pages); the sitemaps are step 5, see [Sitemaps](#sitemaps).
 
 **Render.** `BotRenderService.render(row, { languageTags, countryNames, hubLinks })` turns one view row into one HTML string. It is built in two steps: `api/utils/botPageModel.js` projects the row's `page` through the whitelist and computes everything the page shows (language and its writing direction, labels, country names, title, description, breadcrumb), and the templates under `views/bot/` and the JSON-LD (`api/utils/botJsonLd.js`) read that model and nothing else. Each template is read and compiled once per process with `ejs.compile` (not `res.view`; the Sails view config and the email templates are untouched). The generator, the withdrawal worker (#1886) and the audit (#1887) call the same function, each passing `languageTags` from `BotRenderService.loadLanguageTags()`, `countryNames` from `BotRenderService.loadCountryNames()` and `hubLinks` (`{ index, country, region }`, from `BotHubService.createHubLinks`; `BotRenderService.NO_HUB_LINKS` when there are no hubs), and, for a massif row, `massifExtras` (see [Hub pages](#hub-pages)). These options are required: `render` throws a `TypeError` without them (an empty `Map` is the explicit way to keep every 3-letter code, to show country codes and to show a massif without extras), because a page rendered without them has other bytes than the generator's. The hubs have their own entry point, `BotRenderService.renderHub(row, { languageTags, countryNames, hubLinks, hubFigures })`. The output does not include `lastmod`, so a record whose only change is that hint renders the same bytes.
 
@@ -240,9 +240,158 @@ Hub pages (#1935) give every cave a crawlable parent at the SPA's own addresses:
 - **Order.** Shards are uploaded first, then the index, then the shards no longer produced (a range or a type that became empty) are deleted: a crawler never reads an index that names a missing shard. When no shard is left at all the index is deleted first (an empty index is not valid). As for the pages, the manifest row of a file is written after its upload and removed after its delete.
 - **Memory.** The manifest of one type is read by keyset (`batchSize`, 5,000 rows); at most one shard (50,000 short strings) is held at a time, plus the list of shards for the index.
 - **Lock.** `run()` takes the page generator's advisory lock (key 1758) and rejects with `E_BOT_PAGES_RUNNING` while a generation run holds it, so the sitemaps never read a manifest that is being written, and a generation run cannot start while they are written.
-- **Entity types.** `entityTypes` (default: `cave`, `massif`, `organization` and `hub`, all of them) lists the types the sitemaps include; the shards of a type left out are deleted at the next run. `BOT_SURFACE_ENTITY_TYPES` (#1888) does not exist yet: the pipeline will pass it here.
+- **Entity types.** `entityTypes` (default: `cave`, `massif`, `organization` and `hub`, all of them) lists the types the sitemaps include; the shards of a type left out are deleted at the next run. The pipeline passes `BOT_SURFACE_ENTITY_TYPES` here (see [The allow-list](#the-allow-list)).
 - **Same-day removals** (#1886) are dropped from the shards at the next nightly run; until then a shard can list a URL that already answers the 404 page, which is accepted (the record was public until that day).
 - **Tests.** `test/integration/1_services/BotSitemapService.test.js` runs the service with the local adapter over manifest rows and checks every file against the rules of the sitemaps 0.9 schemas (`sitemap.xsd`, `siteindex.xsd`: root and namespace, `<loc>` first and once, at most one `<lastmod>` in W3C datetime, nothing else, 1 to 50,000 entries, 50 MB at most), parsed with `fast-xml-parser` (a dev dependency, already in the tree through `@azure/storage-blob`). There is no XSD validator: the JS ones need native bindings or a JVM, and `xmllint` is not in CI.
+
+## The nightly pipeline
+
+One pg-boss job, `bot-surface-nightly` (#1760), runs the six steps in order. `BotPipelineQueueService` (`api/services/BotPipelineQueueService.js`) schedules it, next to the other Node-side schedules (`SearchOutboxQueueService`, `DbExportQueueService`), and `BotPipelineService` (`api/services/bot/BotPipelineService.js`) holds the steps, the stop rules and the run record. `pg_cron` could not do this: one independent job per step cannot stop the next one, and several steps are Node code.
+
+| Step | Name         | What                                                                        | On failure                                                                                 |
+| ---- | ------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1    | `invariant`  | `bot_cascade_check()`; a violation is a failure                             | **stop**; nothing is uploaded or deleted                                                   |
+| 2    | `scan`       | `BotTextScanService.run()`                                                  | **stop**                                                                                   |
+| 3    | `admission`  | `bot_admit_pages()`                                                         | **stop**                                                                                   |
+| 4    | `generation` | `BotPageGeneratorService.run({ adapter, entityTypes })`                     | **stop**; the manifest stays consistent with what is online                                |
+| 5    | `sitemaps`   | `BotSitemapService.run({ adapter, entityTypes })`                           | the previous sitemaps stay; the run is recorded as failed at step 5, and step 6 still runs |
+| 6    | `audit`      | **hook, not built yet** (#1887): records `{ "skipped": "not implemented" }` | handled by #1887                                                                           |
+
+**The order is the contract.** The scan runs before admission because the content rule reads the verdicts: a description written 30 days ago and scanned tonight counts for admission tonight. Admission runs before generation: a record that turns 30 days old tonight is published tonight. Both are tested end to end over real rows.
+
+**The audit hook.** Step 6 is `BotPipelineService.steps.audit`. #1887 replaces its body, returns its counts (pages audited, failures) and throws to fail the run; the orchestrator, the run table and the alert do not change.
+
+### Configuration
+
+| Variable                   | Default      | Meaning                                                                                                                                                        |
+| -------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BOT_SURFACE_ENTITY_TYPES` | empty        | The allow-list, comma-separated among `cave`, `massif`, `organization`, `hub` (any case, any order). An unknown name stops the startup with the accepted ones. |
+| `BOT_SURFACE_ENABLED`      | `false`      | Turns on the **schedule** of the pipeline and the withdrawal worker. A manual run does not need it.                                                            |
+| `BOT_SURFACE_SCHEDULE`     | `30 1 * * *` | Cron expression, five fields, read in **UTC**. Validated at startup. **The default is provisional**: the real time is chosen from the traffic measurements.    |
+| `BOT_PAGES_STORAGE` et al. | `local`      | The storage adapter (see [The page generator](#the-page-generator)). The local driver is refused in production.                                                |
+
+`sails.config.custom.botSurface` holds them (`enabled`, `entityTypes`, `schedule`, `storage`), parsed by `api/utils/botSurfaceConfig.js`.
+
+**Schedule.** The default, 01:30 UTC every day, avoids the other heavy jobs: `pg_cron` at 04:20 daily, 04:30 (bot outbox trim) and 04:40, 04:45, 04:50 every 3 days, and the database export on Sundays at 03:00. With `missed: 'once'`, a night the API was down is run once when it comes back, like the weekly export.
+
+### Two switches
+
+| Entity types listed | Storage valid | `BOT_SURFACE_ENABLED` | Worker                      | Schedule                               |
+| ------------------- | ------------- | --------------------- | --------------------------- | -------------------------------------- |
+| no                  | any           | any                   | no                          | no (a leftover one is not removed)     |
+| yes                 | no            | any                   | startup fails and is logged | no                                     |
+| yes                 | yes           | `false`               | yes                         | **no**; an earlier schedule is removed |
+| yes                 | yes           | `true`                | yes                         | yes                                    |
+
+The **worker** (the pg-boss handler that runs the pipeline) registers as soon as the surface is configured, so that `npm run bot-surface:run` has something to run it; it does nothing until a job is in the queue. The **schedule** is the only thing `BOT_SURFACE_ENABLED` adds. The withdrawal worker (`BotOutboxQueueService`) is unchanged: it still depends on `BOT_SURFACE_ENABLED` alone. Switching `BOT_SURFACE_ENABLED` off unschedules the nightly job on the next startup.
+
+**Going to production.** Set `BOT_SURFACE_ENTITY_TYPES` and the Azure storage, leave `BOT_SURFACE_ENABLED` unset, deploy, run `npm run bot-surface:run` by hand, read the run record (and take the baseline, below), and only then set `BOT_SURFACE_ENABLED=true`.
+
+**Emptying the list.** An empty list means nothing is generated and nothing is scheduled (a schedule left by an earlier configuration is removed at startup). It also means no run deletes what an earlier run published: removing the _last_ type from the list does not take its pages down. To roll back every type, follow the launch runbook (#1888: disable the Worker route first) and delete the pages with `BotPageGeneratorService.run({ adapter, entityTypes: [] })`, which deletes all of them; removing one type while another stays listed is handled by the next run.
+
+### The allow-list
+
+`BOT_SURFACE_ENTITY_TYPES` (#1888) is read at startup into `botSurface.entityTypes` and enforced in three places:
+
+- **The generator** (`entityTypes` option, default: all four). Only the listed types are rendered and published. The pages, the redirect pages and the manifest rows of a type that is **not** listed are **deleted** on the next run (the file first, then the row, as everywhere). Without `hub` in the list, no hub is published, **no page links to a hub** (the breadcrumbs and lists link to a hub only when it is published), and the hub pages already online are deleted.
+- **The sitemaps** (`entityTypes` option, already there). The shards of a type that is not listed are deleted, and the index stops naming them. They are built from the manifest, so they follow the deletes above.
+- **The withdrawal worker** (`BotOutboxService.run({ entityTypes })`, the three page types by default). It never publishes a type that is not listed: such a page reads as absent, so a file that is online is deleted and nothing is uploaded. It leaves the hubs to the nightly run, as before.
+
+Pages of a listed type may still link to a page of a type that is not listed (a cave page lists its massifs): the link is the SPA's own address, which always answers; only the static page is missing. List `cave`, `massif` and `hub` together when the hubs should list what is published.
+
+### Waiting for the page lock
+
+The generator and the sitemaps take the advisory lock 1758 and reject with `E_BOT_PAGES_RUNNING` while it is held. The withdrawal worker holds it for up to about 45 seconds every minute, so steps 4 and 5 **retry**: every 5 seconds, up to 60 attempts (about 5 minutes), each step on its own. After that the step fails with `E_BOT_PAGES_LOCK_TIMEOUT` and a message naming the step, and the run is recorded as failed at that step. An error other than `E_BOT_PAGES_RUNNING` is never retried.
+
+### One run at a time
+
+The queue has the `exclusive` policy: pg-boss keeps at most one `bot-surface-nightly` job queued or running across all API instances, so an enqueue while one is queued or running is refused (and a second scheduled firing is too). `BotPipelineService.run` also takes a session-level advisory lock (key 1760) for the whole run and rejects with `E_BOT_PIPELINE_RUNNING` when it is held, so a direct call cannot overlap either. Because that lock proves no other run is alive, a row left `running` by a process that died is marked `failed` ("abandoned") by the next run.
+
+`expireInSeconds` is **4 hours**, `retryLimit` 0. The first full publication (about 11,000 cave pages plus hubs, redirect pages and sitemaps) has **not been measured**; a typical night changes few pages. A job killed by a restart stays active until it expires and blocks the exclusive queue, a manual run included, so the value is not padded: 4 hours is far above a plausible run and well under the 24 hours between two nights. If the first run comes close to it, raise it in `QUEUE_OPTIONS`. A failed run is not retried at once: it stopped for a reason, the run table says which, and the next night starts again. The job's abort signal (at expiry or on shutdown) stops the run before its next step.
+
+### The run record
+
+`t_bot_pipeline_run` (`sql/9_38_2026_11_06_bot_pipeline_run.sql`, applied by hand in production like the other bot migrations: production does not run migrations on deploy). One row per run, inserted when it starts and updated after every step, so a crash leaves what was done.
+
+| Column           | Holds                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| `id`             | serial                                                                                                 |
+| `started_at`     | start of the run                                                                                       |
+| `finished_at`    | end of the run; `NULL` while it runs                                                                   |
+| `status`         | `running`, `succeeded` or `failed`                                                                     |
+| `failed_step`    | 1 to 6 (see the table above); `NULL` unless the run failed                                             |
+| `step_durations` | jsonb, milliseconds by step name (`invariant`, `scan`, `admission`, `generation`, `sitemaps`, `audit`) |
+| `counts`         | jsonb, below                                                                                           |
+| `error`          | the code and message of the failure; `NULL` otherwise                                                  |
+
+`counts` holds: `trigger` (`schedule` or `manual`), `entityTypes`; `invariant` (`violations`, `overrides`); `scan` (`patternVersion`, **`scanned` and `quarantined` per source**, `t_description` and `t_name`, `errors`, `passes`); `admission` (**admitted tonight** per type, and `total`); `generation` (`uploaded`, `unchanged`, `deleted`, `byType`, and the pages online after the run: **`pages` and `redirects` per type**); `sitemaps` (`uploaded`, `unchanged`, `deleted`, `shards`, `urls`); `audit` (`{ "skipped": "not implemented" }` until #1887); `peakRssMb` (the API process's resident set, sampled every second during the run and after each step). A failed step holds `{ "failed": true }`, and the steps after a stop are absent.
+
+**Retention.** Each run deletes the rows older than **one year** when it starts: about 365 small rows are kept, enough to see a trend, and the table needs no cron job.
+
+```sql
+-- Last runs
+SELECT id, status, failed_step, started_at, finished_at, step_durations, counts->'peakRssMb' AS peak_rss_mb, error
+  FROM t_bot_pipeline_run ORDER BY id DESC LIMIT 10;
+
+-- True when there is no successful run in the last 26 hours (the alert, in SQL)
+SELECT coalesce(max(finished_at) < now() - interval '26 hours', true) AS stale
+  FROM t_bot_pipeline_run WHERE status = 'succeeded';
+```
+
+### Logs and the alert
+
+- Success, `info`: `bot-surface-nightly succeeded (run 42): admitted=17 scanned=212 quarantined=3 uploaded=120 deleted=4 unchanged=11050 sitemapUrls=11170 shards=5 audit=skipped peakRssMb=612.4 durationMs=184233`.
+- Failure, one `error` line per failed step: `bot-surface-nightly failed at step <n> (<step label>): <message>`, with the error and its stack. `BotTextScanService` and the steps keep their own lines.
+- A run that waits for the lock logs an `info` line per attempt: `bot-surface-nightly: generation waits for the page lock (attempt 3 of 60)`.
+
+The `pg_cron` alert does not see pg-boss jobs. Both alerts below read the App Service console logs, like the ones in [Request logging](request-logging.md); create them in the infrastructure repository.
+
+```kusto
+// Alert 1: no successful run in 26 hours. Fire when the result has a row
+// with successes == 0. Evaluate every hour. Does not make sense until the schedule is on.
+AppServiceConsoleLogs
+| where TimeGenerated > ago(26h)
+| summarize successes = countif(ResultDescription has "bot-surface-nightly succeeded")
+| where successes == 0
+
+// Alert 2: a failed run. Fire when the result has a row. Evaluate every 15 minutes.
+AppServiceConsoleLogs
+| where TimeGenerated > ago(15m)
+| where ResultDescription has "bot-surface-nightly failed at step"
+| project TimeGenerated, ResultDescription
+```
+
+The App Service log agent sends console output in batches: allow a few minutes of delay. For alert 1, the SQL above is the source of truth.
+
+### Manual trigger
+
+```shell
+npm run bot-surface:run
+```
+
+`scripts/bot-surface-run.js` puts one `bot-surface-nightly` job in the queue and exits; there is no HTTP endpoint. It lifts Sails without its bootstrap (no worker starts in the script), opens its own pg-boss connection with the same settings as the API, and refuses cleanly (exit code 1, a message, nothing sent) when `BOT_SURFACE_ENTITY_TYPES` lists no type or the storage is invalid. It also reports, and exits 1, when a run is already queued or running (the queue is `exclusive`). It does **not** run the pipeline itself and does not wait for it: **an API instance started with the same configuration must be running**, because that instance's worker takes the job. Follow the run in `t_bot_pipeline_run` (the SQL above) or in the logs. Run it where the environment variables are set (SSH on the Web App), like `scripts/resync-search.js`.
+
+### The production-scale baseline (owed by #1759 and #1760)
+
+The tables are empty in production until the first run, so the baseline **cannot be taken before it** and is not in the pull request that built the pipeline. After the first run (the first full publication), record, in a comment on #1760, separately for that run and for a typical incremental night a week later:
+
+1. **Per-step durations and peak RSS**, from the run table: `SELECT step_durations, counts->'peakRssMb', counts->'generation'->'byType' FROM t_bot_pipeline_run ORDER BY id LIMIT 2;`.
+2. **One keyset batch of `v_bot_page` per type**, read-only, as the generator reads it:
+
+   ```sql
+   EXPLAIN (ANALYZE, BUFFERS)
+   SELECT entity_type, entity_id, language, lastmod, page
+     FROM v_bot_page
+    WHERE entity_type = 'cave' AND entity_id > 0
+    ORDER BY entity_id LIMIT 1000;
+   ```
+
+   Repeat for `massif` and `organization`, and for one batch deep in the id range (`entity_id > 50000`). The total read time of the view is the sum over the batches (about 11 for the caves at stage 1): the generation step's duration minus the rendering and the uploads is the upper bound.
+
+3. **The one read of `v_bot_hub`** (`EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM v_bot_hub;`) and **of `v_bot_redirect`** per type (`... WHERE entity_type = 'cave' ORDER BY entity_id`), which the generator reads once per run and once per type.
+4. **Postgres CPU credits before and after the run**: the Azure metric _CPU Credits Remaining_ of the Flexible Server (Burstable), read just before the run and at the end of the step durations, e.g. `az monitor metrics list --resource <server id> --metric cpu_credits_remaining --interval PT1M`.
+
+If a full read of `v_bot_page` is too slow, materialize it: that changes how the pipeline reads, not the policy. If the first run comes close to `expireInSeconds`, raise it.
 
 ## Withdrawals
 
@@ -257,7 +406,7 @@ Pages are generated once a night. A change that must take a page down (an entran
 
 **The worker.** `BotOutboxQueueService` (`api/services/BotOutboxQueueService.js`) is a pg-boss job every minute with the `exclusive` policy, registered next to the search outbox one in `config/bootstrap.js`. It is **off unless `BOT_SURFACE_ENABLED=true`** (`sails.config.custom.botSurface.enabled`) and writes to the storage adapter of `botSurface.storage`; a misconfigured storage fails at start, not every minute. `BotOutboxService.run` (`api/services/bot/BotOutboxService.js`) does the work:
 
-1. **Lock.** It takes the generator's advisory lock (key 1758). When a generation or sitemap run holds it, the minute is **skipped**: nothing is read, the rows stay for the next run, and one `info` line says so (no error). The worker holds the lock for its run (a time budget of 45 s, plus the batch under way), so the nightly pipeline (#1760) must retry on `E_BOT_PAGES_RUNNING` rather than fail.
+1. **Lock.** It takes the generator's advisory lock (key 1758). When a generation or sitemap run holds it, the minute is **skipped**: nothing is read, the rows stay for the next run, and one `info` line says so (no error). The worker holds the lock for its run (a time budget of 45 s, plus the batch under way), so the nightly pipeline retries on `E_BOT_PAGES_RUNNING` rather than fail (see [Waiting for the page lock](#waiting-for-the-page-lock)). The worker respects the [allow-list](#the-allow-list): it never publishes a type that is not listed.
 2. **Trim**, then read a batch of 500 rows, oldest first.
 3. **Fan-out to pages.** The search fan-out (`expand` in `api/dbSync/searchOutbox.js`) is reused, with every row of a table read as a delete: a page does not depend on which column changed (`is_sensitive`, which the search fan-out ignores, is exactly what removes a page), so the old and the current cave and massifs are always followed. An entrance affects its cave page and the massif pages around its old and current point; a cave its own page and the massifs that hold its entrances; a massif its page and the cave pages of the entrances inside its old and current polygon (a cave page lists its massifs); an organization its page; a name or a description the page of the entity. The records merged into an affected one are added, since their redirect page points to the final target of the chain.
 4. **Per page**, re-reads `v_bot_page` by `(entity_type, entity_id)` (the same view as the nightly run), through the code the generator uses (`BotPublishService`): **row present** → render and upload when the hash differs from the manifest's; **no row but merged into a publishable target** (`v_bot_redirect`) → publish the redirect page like the generator; **neither** → delete the file, then the manifest row. It can never publish what the nightly run would not: same views, same renderer, same gates.

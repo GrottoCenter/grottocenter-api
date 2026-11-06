@@ -186,11 +186,18 @@ const loadRenderOptions = async () => {
 };
 
 // Handles the pages of one type and returns what it did
-async function handleChunk(type, ids, { adapter, renderOptions, hubs }) {
+async function handleChunk(
+  type,
+  ids,
+  { adapter, renderOptions, hubs, entityTypes }
+) {
   const counts = emptyCounts();
-  const viewRows = await readViewRows(type, ids);
+  // A type that is not listed (BOT_SURFACE_ENTITY_TYPES) is never published,
+  // so it reads as absent: what is online of it is deleted, nothing is put
+  const listed = entityTypes.includes(type);
+  const viewRows = listed ? await readViewRows(type, ids) : new Map();
   const absent = ids.filter((id) => !viewRows.has(id));
-  const redirects = await readRedirects(type, absent);
+  const redirects = listed ? await readRedirects(type, absent) : new Map();
   const known = await BotPublishService.manifestHashes(
     ids.map((id) => botPagePaths.toKey(type, id))
   );
@@ -246,7 +253,13 @@ async function handleChunk(type, ids, { adapter, renderOptions, hubs }) {
   return counts;
 }
 
-async function runLocked({ adapter, batchSize, timeBudgetMs, signal }) {
+async function runLocked({
+  adapter,
+  batchSize,
+  timeBudgetMs,
+  signal,
+  entityTypes,
+}) {
   const deadline = Date.now() + timeBudgetMs;
   const counts = emptyCounts();
   await query('SELECT bot_outbox_trim()');
@@ -271,6 +284,7 @@ async function runLocked({ adapter, batchSize, timeBudgetMs, signal }) {
         // eslint-disable-next-line no-await-in-loop
         const done = await handleChunk(type, ids.slice(i, i + READ_CHUNK), {
           adapter,
+          entityTypes,
           ...context,
         });
         Object.keys(done).forEach((key) => {
@@ -304,6 +318,11 @@ module.exports = {
    * @param {number} [options.batchSize] outbox rows per batch
    * @param {number} [options.timeBudgetMs] no new batch starts after it
    * @param {AbortSignal} [options.signal] the signal of the pg-boss job
+   * @param {string[]} [options.entityTypes] the types listed
+   *   (BOT_SURFACE_ENTITY_TYPES); default: the three page types. The worker
+   *   never publishes a type that is not listed; it still deletes the pages
+   *   of one it is asked about. 'hub' is of no concern to it (hubs are left
+   *   to the nightly run).
    * @returns {Promise<{skipped: boolean, rows: number, pages: number,
    *   rendered: number, uploaded: number, redirected: number, deleted: number,
    *   unchanged: number}>} `skipped` is true, and nothing was read, when a
@@ -315,11 +334,13 @@ module.exports = {
     batchSize = BATCH_SIZE,
     timeBudgetMs = TIME_BUDGET_MS,
     signal,
+    entityTypes = botPagePaths.ENTITY_TYPES,
   } = {}) {
     if (!adapter) throw new Error('BotOutboxService.run needs an adapter');
     try {
       const counts = await BotPageGeneratorService.withRunLock(
-        () => runLocked({ adapter, batchSize, timeBudgetMs, signal }),
+        () =>
+          runLocked({ adapter, batchSize, timeBudgetMs, signal, entityTypes }),
         'bot-outbox-worker'
       );
       return { skipped: false, ...counts };

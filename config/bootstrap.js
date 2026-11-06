@@ -144,6 +144,15 @@ module.exports.bootstrap = async function (done) {
     sails.log.warn('Bot pages will only be withdrawn by the nightly run');
   }
 
+  // Nightly bot-surface pipeline (worker once configured, schedule only when
+  // BOT_SURFACE_ENABLED)
+  try {
+    await sails.services.botpipelinequeueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start BotPipelineQueueService:', err.message);
+    sails.log.warn('The nightly bot-surface pipeline will not run');
+  }
+
   // Monthly search reconciliation, the safety net behind the outbox
   try {
     await sails.services.searchreconcilequeueservice.start();
