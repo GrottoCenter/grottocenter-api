@@ -200,6 +200,13 @@ function concernsArea(entranceInArea, extra = [], document = []) {
   )`;
 }
 
+// SQL condition true when a guideline change of t_last_change (alias tbl) is
+// linked to the area through one of the guideline junction tables, whose row
+// is aliased jg. Guideline changes carry no related entity, and a soft-deleted
+// guideline keeps its links.
+const guidelineLinkedTo = (table, condition) =>
+  `(tbl.type_entity = 'guideline' AND EXISTS (SELECT 1 FROM ${table} jg WHERE jg.id_guideline = tbl.id_entity AND ${condition}))`;
+
 // Builds the WHERE conditions and parameters for the optional filters of
 // getRecent(). Each filter is one condition, so filters combine with AND, and
 // each is an EXISTS, so a change matching several relationships is returned
@@ -219,6 +226,11 @@ function buildFilterConditions(filters = {}) {
         `e.id_country = ${p}`,
         [
           `(tbl.type_entity = 'grotto' AND EXISTS (SELECT 1 FROM t_grotto g WHERE g.id = tbl.id_entity AND g.id_country = ${p}))`,
+          guidelineLinkedTo('j_guideline_country', `jg.id_country = ${p}`),
+          guidelineLinkedTo(
+            'j_guideline_region',
+            `jg.id_region LIKE ${p} || '-%'`
+          ),
         ],
         [
           `EXISTS (SELECT 1 FROM j_document_country jdc WHERE jdc.id_document = d.id AND jdc.id_country = ${p})`,
@@ -235,6 +247,7 @@ function buildFilterConditions(filters = {}) {
         `e.iso_3166_2 = ${p}`,
         [
           `(tbl.type_entity = 'grotto' AND EXISTS (SELECT 1 FROM t_grotto g WHERE g.id = tbl.id_entity AND g.iso_3166_2 = ${p}))`,
+          guidelineLinkedTo('j_guideline_region', `jg.id_region = ${p}`),
         ],
         [
           `EXISTS (SELECT 1 FROM j_document_iso3166_2 jdi WHERE jdi.id_document = d.id AND jdi.id_iso = ${p})`,
@@ -251,6 +264,7 @@ function buildFilterConditions(filters = {}) {
         [
           `(tbl.type_entity = 'massif' AND tbl.id_entity = ${p})`,
           `(tbl.type_related_entity = 'massif' AND tbl.id_related_entity = ${p})`,
+          guidelineLinkedTo('j_guideline_massif', `jg.id_massif = ${p}`),
         ],
         [
           `d.id_massif = ${p}`,

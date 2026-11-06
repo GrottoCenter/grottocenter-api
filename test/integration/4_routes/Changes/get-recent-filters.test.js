@@ -45,6 +45,15 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     );
   };
 
+  const createGuideline = async (isDeleted = false) => {
+    const { rows } = await CommonService.query(
+      `INSERT INTO t_guideline (title, id_author, id_language, date_reviewed, is_deleted)
+       VALUES ('filter test', 1, 'fra', now(), $1) RETURNING id`,
+      [isDeleted]
+    );
+    return rows[0].id;
+  };
+
   const createEntrance = (caveId, props) =>
     TEntrance.create({
       author: 1,
@@ -146,6 +155,24 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
       await TGrotto.create({ author: 1, country: 'ES' }).fetch()
     ).id;
 
+    // Guidelines are linked to a country, a region (FR-01, in France) and the
+    // massif; the massif one is deleted, and keeps its link
+    ids.guidelineCountry = await createGuideline();
+    await CommonService.query(
+      'INSERT INTO j_guideline_country (id_guideline, id_country) VALUES ($1, $2)',
+      [ids.guidelineCountry, 'ES']
+    );
+    ids.guidelineRegion = await createGuideline();
+    await CommonService.query(
+      'INSERT INTO j_guideline_region (id_guideline, id_region) VALUES ($1, $2)',
+      [ids.guidelineRegion, 'FR-01']
+    );
+    ids.guidelineMassif = await createGuideline(true);
+    await CommonService.query(
+      'INSERT INTO j_guideline_massif (id_guideline, id_massif) VALUES ($1, $2)',
+      [ids.guidelineMassif, ids.massif]
+    );
+
     await logChange(10, { type: 'entrance', id: ids.entranceA1 }, MEMBER_ID);
     await logChange(20, {
       type: 'comment',
@@ -178,6 +205,17 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     });
     await logChange(110, { type: 'grotto', id: ids.spanishOrganization });
     await logChange(120, { type: 'document', id: ids.documentCave });
+    await logChange(130, {
+      type: 'guideline',
+      change: 'create',
+      id: ids.guidelineCountry,
+    });
+    await logChange(140, { type: 'guideline', id: ids.guidelineRegion });
+    await logChange(150, {
+      type: 'guideline',
+      change: 'delete',
+      id: ids.guidelineMassif,
+    });
   });
 
   after(async () => {
@@ -200,6 +238,7 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     shouldContain(body, 'entrance', ids.entranceA1, MEMBER_ID);
     shouldContain(body, 'massif', ids.massif);
     shouldContain(body, 'grotto', ids.spanishOrganization);
+    shouldContain(body, 'guideline', ids.guidelineCountry);
   });
 
   it('filters by country through entrances, networks, sub-entities, documents and organizations', async () => {
@@ -214,6 +253,9 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     shouldNotContain(fr, 'document', ids.documentMassif, MEMBER_ID);
     shouldNotContain(fr, 'massif', ids.massif);
     shouldNotContain(fr, 'grotto', ids.spanishOrganization);
+    shouldContain(fr, 'guideline', ids.guidelineRegion); // FR-01 is in France
+    shouldNotContain(fr, 'guideline', ids.guidelineCountry);
+    shouldNotContain(fr, 'guideline', ids.guidelineMassif);
 
     const { body: es } = await getRecent({ countryId: 'ES' }).expect(200);
     shouldContain(es, 'entrance', ids.entranceA2); // comment on A2
@@ -225,6 +267,8 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     shouldNotContain(es, 'entrance', ids.entranceA1, MEMBER_ID);
     shouldNotContain(es, 'document', ids.documentEntrance);
     shouldNotContain(es, 'document', ids.documentRegion);
+    shouldContain(es, 'guideline', ids.guidelineCountry); // creation
+    shouldNotContain(es, 'guideline', ids.guidelineRegion);
   });
 
   it('filters by region, returning a change once when several relationships match', async () => {
@@ -238,6 +282,8 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     shouldContain(body, 'document', ids.documentRegion);
     shouldNotContain(body, 'cave', ids.caveB);
     shouldNotContain(body, 'document', ids.documentCountry);
+    shouldContain(body, 'guideline', ids.guidelineRegion); // update
+    shouldNotContain(body, 'guideline', ids.guidelineCountry);
   });
 
   it('filters by massif, including the massif itself and its descriptions', async () => {
@@ -253,6 +299,11 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     shouldNotContain(body, 'entrance', ids.entranceA2);
     shouldNotContain(body, 'cave', ids.caveB);
     shouldNotContain(body, 'document', ids.documentRegion);
+    // Deletion of a guideline, through the link it keeps
+    const guidelineGroups = groupsOf(body, 'guideline', ids.guidelineMassif);
+    should(guidelineGroups).have.length(1);
+    should(guidelineGroups[0].mainAction).equal('delete');
+    shouldNotContain(body, 'guideline', ids.guidelineRegion);
   });
 
   it("filters by the author's current membership of an organization", async () => {

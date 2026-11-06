@@ -7582,6 +7582,8 @@ paths:
           entrances of its cave, or a direct link to the area: its countries
           or ISO 3166-2 regions for `countryId` (a region of the country also
           matches) and `regionId`, its massifs for `massifId`;
+        - a guideline matches through the countries, regions and massifs it is
+          attached to, a region of the country also matching `countryId`;
         - for `countryId` and `regionId`, an organization matches through its
           address; for `massifId`, the massif and its descriptions match.
       parameters:
