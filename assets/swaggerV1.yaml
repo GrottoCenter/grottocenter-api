@@ -11638,6 +11638,7 @@ components:
         cave:
           $ref: '#/components/schemas/Cave'
         point:
+          type: object
           allOf:
             - $ref: '#/components/schemas/SimplePoint'
           nullable: true
@@ -13499,6 +13500,7 @@ components:
             author:
               $ref: '#/components/schemas/SimpleCaver'
             reviewer:
+              type: object
               allOf:
                 - $ref: '#/components/schemas/SimpleCaver'
               nullable: true
