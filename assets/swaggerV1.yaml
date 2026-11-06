@@ -624,7 +624,9 @@ paths:
       summary: List the caves (deprecated)
       description: Deprecated alias of `GET /caves`, use it instead.
       deprecated: true
-      security: []
+      security:
+        - {}
+        - bearerAuth: []
       responses:
         '200':
           description: Same as `GET /caves`.
@@ -2926,7 +2928,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document-type'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  comment:
+                    type: string
+                  isAvailable:
+                    type: boolean
+                  url:
+                    type: string
+                    nullable: true
+                  parent:
+                    type: integer
+                    nullable: true
+                    description: Id of the parent document type.
         '404':
           description: No document type has this id.
 
@@ -8776,7 +8794,9 @@ paths:
       summary: List the organizations (deprecated)
       description: Deprecated alias of `GET /organizations`, use it instead.
       deprecated: true
-      security: []
+      security:
+        - {}
+        - bearerAuth: []
       responses:
         '200':
           description: Same as `GET /organizations`.
@@ -8788,7 +8808,9 @@ paths:
       summary: Get an organization (deprecated)
       description: Deprecated alias of `GET /organizations/{id}`, use it instead.
       deprecated: true
-      security: []
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
