@@ -137,6 +137,12 @@ DECLARE
   old_row jsonb := CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END;
   new_row jsonb := CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END;
   i integer := 0;
+  -- date_reviewed is listed because histo_update_name (BEFORE UPDATE,
+  -- sql/0_triggers.sql) sets it to now() on EVERY update of t_name, so this
+  -- AFTER trigger always sees it changed: without it in the list no rename would
+  -- ever be skipped in production (the test database does not install that
+  -- trigger; a test adds its effect). id_reviewer is the editor, set by the
+  -- application on an edit.
   rename_only boolean := TG_OP = 'UPDATE'
     AND (old_row - '{name,id_language,date_reviewed,id_reviewer}'::text[])
         = (new_row - '{name,id_language,date_reviewed,id_reviewer}'::text[]);

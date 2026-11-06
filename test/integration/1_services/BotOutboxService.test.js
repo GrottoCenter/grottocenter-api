@@ -451,6 +451,41 @@ describe('BotOutboxService', () => {
       should(page).not.containEql('<h1>Gouffre Old Name</h1>');
     });
 
+    it('skips a rename in production, where histo_update_name stamps date_reviewed on every update', async () => {
+      // The test database does not install that trigger: do what it does
+      await query(`
+        CREATE OR REPLACE FUNCTION test_stamp_name_review() RETURNS trigger AS $$
+        BEGIN
+          NEW.date_reviewed := now() + interval '1 second';
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        CREATE OR REPLACE TRIGGER test_stamp_name_review
+          BEFORE UPDATE ON t_name FOR EACH ROW EXECUTE FUNCTION test_stamp_name_review();
+      `);
+      try {
+        const { cave } = await mkPublishedCave('Gouffre Stamped');
+        await generate();
+
+        await query('UPDATE t_name SET name = $2 WHERE id_cave = $1', [
+          cave.id,
+          'Gouffre Stamped Renamed',
+        ]);
+        should(await outboxCount()).equal(0);
+
+        // A deletion is still an event, stamp or not
+        await query('UPDATE t_name SET is_deleted = true WHERE id_cave = $1', [
+          cave.id,
+        ]);
+        should(await outboxCount()).be.above(0);
+      } finally {
+        await query(`
+          DROP TRIGGER IF EXISTS test_stamp_name_review ON t_name;
+          DROP FUNCTION IF EXISTS test_stamp_name_review();
+        `);
+      }
+    });
+
     it('does not enqueue a change of language or reviewer of a name either, but a name that stops being the main one', async () => {
       const { cave } = await mkPublishedCave('Gouffre Quiet Name');
       await generate();
