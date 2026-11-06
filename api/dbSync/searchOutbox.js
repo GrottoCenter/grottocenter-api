@@ -437,4 +437,4 @@ async function backlog() {
   return rows[0];
 }
 
-module.exports = { expand, drain, backlog };
+module.exports = { expand, drain, backlog, withMerged, queryIds };

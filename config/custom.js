@@ -101,6 +101,10 @@ module.exports.custom = {
    *                                                                          *
    * Static pages published for indexing bots (docs/bot-surface.md).          *
    *                                                                          *
+   * enabled: the background jobs of the bot surface run only when this is   *
+   *   true (BOT_SURFACE_ENABLED=true; off by default). Today: the withdrawal *
+   *   worker (BotOutboxQueueService). The nightly pipeline (#1760) will use *
+   *   it too.                                                               *
    * publicBaseUrl: the SPA's own address; a page lives at                    *
    *   <publicBaseUrl>/caves/123 (BOT_PAGES_PUBLIC_BASE_URL).                 *
    * storage.driver: 'local' (dev, default) or 'azure' (BOT_PAGES_STORAGE).   *
@@ -110,6 +114,7 @@ module.exports.custom = {
    *                                                                          *
    ************************************************************************** */
   botSurface: {
+    enabled: process.env.BOT_SURFACE_ENABLED === 'true',
     publicBaseUrl:
       process.env.BOT_PAGES_PUBLIC_BASE_URL || 'https://grottocenter.org/ui',
     storage: {

@@ -147,13 +147,14 @@ It returns `{ uploaded, unchanged, deleted, byType }`. A blob deleted by hand wh
 
 **Configuration** (`sails.config.custom.botSurface`, from the environment; nothing is hardcoded):
 
-| Variable                            | Meaning                                                            | Default                       |
-| ----------------------------------- | ------------------------------------------------------------------ | ----------------------------- |
-| `BOT_PAGES_PUBLIC_BASE_URL`         | The SPA's own address; pages live at `<base>/caves/123`            | `https://grottocenter.org/ui` |
-| `BOT_PAGES_STORAGE`                 | `local` or `azure`                                                 | `local`                       |
-| `BOT_PAGES_LOCAL_DIR`               | Directory for the `local` driver (gitignored default)              | `.local-bot-pages`            |
-| `BOT_PAGES_AZURE_CONNECTION_STRING` | Connection string of the storage account (`azure`; required)       | none                          |
-| `BOT_PAGES_AZURE_CONTAINER`         | Container name, the static website one, `$web` (`azure`; required) | none                          |
+| Variable                            | Meaning                                                                                                                                            | Default                       |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `BOT_SURFACE_ENABLED`               | `true` starts the background jobs of the bot surface (today the withdrawal worker, see [Withdrawals](#withdrawals)); anything else leaves them off | off                           |
+| `BOT_PAGES_PUBLIC_BASE_URL`         | The SPA's own address; pages live at `<base>/caves/123`                                                                                            | `https://grottocenter.org/ui` |
+| `BOT_PAGES_STORAGE`                 | `local` or `azure`                                                                                                                                 | `local`                       |
+| `BOT_PAGES_LOCAL_DIR`               | Directory for the `local` driver (gitignored default)                                                                                              | `.local-bot-pages`            |
+| `BOT_PAGES_AZURE_CONNECTION_STRING` | Connection string of the storage account (`azure`; required)                                                                                       | none                          |
+| `BOT_PAGES_AZURE_CONTAINER`         | Container name, the static website one, `$web` (`azure`; required)                                                                                 | none                          |
 
 `createStorageAdapter(sails.config.custom.botSurface.storage)` builds the adapter and throws when the driver is unknown or an Azure setting is missing.
 
@@ -242,3 +243,46 @@ Hub pages (#1935) give every cave a crawlable parent at the SPA's own addresses:
 - **Entity types.** `entityTypes` (default: `cave`, `massif`, `organization` and `hub`, all of them) lists the types the sitemaps include; the shards of a type left out are deleted at the next run. `BOT_SURFACE_ENTITY_TYPES` (#1888) does not exist yet: the pipeline will pass it here.
 - **Same-day removals** (#1886) are dropped from the shards at the next nightly run; until then a shard can list a URL that already answers the 404 page, which is accepted (the record was public until that day).
 - **Tests.** `test/integration/1_services/BotSitemapService.test.js` runs the service with the local adapter over manifest rows and checks every file against the rules of the sitemaps 0.9 schemas (`sitemap.xsd`, `siteindex.xsd`: root and namespace, `<loc>` first and once, at most one `<lastmod>` in W3C datetime, nothing else, 1 to 50,000 entries, 50 MB at most), parsed with `fast-xml-parser` (a dev dependency, already in the tree through `@azure/storage-blob`). There is no XSD validator: the JS ones need native bindings or a JVM, and `xmllint` is not in CI.
+
+## Withdrawals
+
+Pages are generated once a night. A change that must take a page down (an entrance marked sensitive, a massif turned sensitive, a record deleted or merged) cannot wait for it, so a worker removes or re-renders the affected pages within minutes (#1886). Publishing new pages stays nightly by design (admission, the text scan and the 30-day age gate).
+
+**Change capture: `t_bot_outbox`** (`sql/9_37_2026_11_06_bot_outbox.sql`, applied by hand in production, like the other bot migrations; the last part, the pg_cron trim job, runs as the owner of the jobs). It has the shape of `t_search_outbox` and is filled by the **same trigger functions** (`search_outbox_enqueue`, `search_outbox_enqueue_refs`), in the transaction of the write, with one more `INSERT`. It is a table of its own, not a shared one: the search drain deletes the rows it has processed, and a cursor per consumer on a `bigserial` is unsafe (transactions commit out of order), so sharing would have tied the production search sync to this worker. The search insert in the functions is unchanged and unconditional: `t_search_outbox` receives exactly the rows it did before, and the search drain and its tests are untouched.
+
+- **Which writes.** Only the kinds a page is built from: `entrance`, `cave`, `massif`, `organization` (with the same `old_values`), the `*_name` kinds of the same four entities, and `entrance_description`, `cave_description`, `massif_description` (a new trigger on `t_description`, `bot_outbox_enqueue_refs`). Documents, cavers, devices, comments and the data quality job enqueue nothing here. An `UPDATE` that changes nothing enqueues nothing.
+- **Cost.** One more small `INSERT` per write to those tables, in the same transaction. Not measured under production write load.
+- **Retention.** A worker that is off or failing must not make the table grow without bound. `bot_outbox_trim()` deletes the rows older than 14 days; the worker calls it at the start of each run and a daily pg_cron job (`Trim bot outbox daily`, 4h30) calls it too, so it holds even when the worker is off. What a trimmed row would have done is done by the nightly run, which compares every page with `v_bot_page`: the only cost is that the page leaves at night instead of within minutes.
+
+**The worker.** `BotOutboxQueueService` (`api/services/BotOutboxQueueService.js`) is a pg-boss job every minute with the `exclusive` policy, registered next to the search outbox one in `config/bootstrap.js`. It is **off unless `BOT_SURFACE_ENABLED=true`** (`sails.config.custom.botSurface.enabled`) and writes to the storage adapter of `botSurface.storage`; a misconfigured storage fails at start, not every minute. `BotOutboxService.run` (`api/services/bot/BotOutboxService.js`) does the work:
+
+1. **Lock.** It takes the generator's advisory lock (key 1758). When a generation or sitemap run holds it, the minute is **skipped**: nothing is read, the rows stay for the next run, and one `info` line says so (no error). The worker holds the lock for its run (a time budget of 45 s, plus the batch under way), so the nightly pipeline (#1760) must retry on `E_BOT_PAGES_RUNNING` rather than fail.
+2. **Trim**, then read a batch of 500 rows, oldest first.
+3. **Fan-out to pages.** The search fan-out (`expand` in `api/dbSync/searchOutbox.js`) is reused, with every row of a table read as a delete: a page does not depend on which column changed (`is_sensitive`, which the search fan-out ignores, is exactly what removes a page), so the old and the current cave and massifs are always followed. An entrance affects its cave page and the massif pages around its old and current point; a cave its own page and the massifs that hold its entrances; a massif its page and the cave pages of the entrances inside its old and current polygon (a cave page lists its massifs); an organization its page; a name or a description the page of the entity. The records merged into an affected one are added, since their redirect page points to the final target of the chain.
+4. **Per page**, re-reads `v_bot_page` by `(entity_type, entity_id)` (the same view as the nightly run), through the code the generator uses (`BotPublishService`): **row present** → render and upload when the hash differs from the manifest's; **no row but merged into a publishable target** (`v_bot_redirect`) → publish the redirect page like the generator; **neither** → delete the file, then the manifest row. It can never publish what the nightly run would not: same views, same renderer, same gates.
+5. **Delete the rows**, by the exact ids it read, only after every page of the batch is handled. A failure anywhere (storage down, database error, job aborted) leaves the batch in the outbox and the next run starts it again; everything above is idempotent. No new batch starts once the time budget is spent (the first batch of a run always completes).
+
+**Same bytes as the nightly run.** The render options (`languageTags`, `countryNames`, `hubLinks`, and `massifExtras` for a massif) and the page and manifest code are shared with the generator (`BotPublishService`, `BotHubService`), and a test compares the files the worker writes with the generator's byte for byte, breadcrumb links to a published hub included.
+
+**Hubs are left to the nightly run.** The worker never re-renders or deletes a hub page and never reads `v_bot_hub`, which rebuilds every published cave (far too heavy every minute). It only needs the hub KEYS, to link a page to the same hubs the nightly run does: it reads them from the manifest (`entity_type = 'hub'`), and finds the region hubs of a massif from the pages of its caves (`BotHubService.regionsOfMassifs`). So a hub may list a withdrawn cave's name until the next night; the cave's page and details are gone within minutes. The same goes for the sitemap shards (see [Sitemaps](#sitemaps)).
+
+**Logging.** One line per run, parsed by nothing yet but kept stable:
+
+```text
+BotOutboxQueueService: run rows=4 pages=5 rendered=5 uploaded=1 redirected=1 deleted=2 unchanged=1 pending=0 oldestSeconds=0 durationMs=213
+BotOutboxQueueService: run skipped, a generation or sitemap run holds the lock pending=12 oldestSeconds=95 durationMs=4
+BotOutboxQueueService: run failed pending=12 oldestSeconds=95 durationMs=40 <error>
+```
+
+`pending` and `oldestSeconds` are what the outbox holds after the run (-1 when it could not be read): an `oldestSeconds` that keeps growing means the worker is stuck or skipping.
+
+**Known limit.** A crash between a page's upload and its manifest row leaves a page online that no manifest row names; neither the worker nor the nightly run removes it. The audit (#1887) compares the adapter with the manifest.
+
+### Asking search engines to drop a page
+
+**Deleting our page does not clear a search index that has already crawled it.** The worker makes the next fetch answer the not-found page; Google and Bing keep the old result until they recrawl, which can take days. For a page that must disappear now (a sensitive location published by mistake), also ask them (the launch runbook, #1888, links here):
+
+- **Google Search Console** → property of the site → **Removals** → **New request** → _Temporary removal_ of the URL (or of all URLs with a prefix), which hides it for about six months while the page returns 404/410. Open it from the property that owns `grottocenter.org`.
+- **Bing Webmaster Tools** → **Block URLs** (under _Configure my site_) → _Block URL_, with the page address, choosing _Remove from cache and search results_.
+
+Do both as soon as the page is withdrawn, and check that the public address now answers the not-found page first (a removal request for a page that still answers 200 is refused or reverted).

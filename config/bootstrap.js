@@ -136,6 +136,14 @@ module.exports.bootstrap = async function (done) {
     sails.log.warn('Search will only be updated by the monthly reconciliation');
   }
 
+  // Withdrawal of bot pages within minutes (off unless BOT_SURFACE_ENABLED)
+  try {
+    await sails.services.botoutboxqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start BotOutboxQueueService:', err.message);
+    sails.log.warn('Bot pages will only be withdrawn by the nightly run');
+  }
+
   // Monthly search reconciliation, the safety net behind the outbox
   try {
     await sails.services.searchreconcilequeueservice.start();

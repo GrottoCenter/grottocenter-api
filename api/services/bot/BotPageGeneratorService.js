@@ -62,11 +62,11 @@
  * exactly as for a page.
  */
 
-const crypto = require('crypto');
 const botPagePaths = require('../../utils/botPagePaths');
 const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
 const BotHubService = require('./BotHubService');
+const BotPublishService = require('./BotPublishService');
 const botSitemap = require('../../utils/botSitemap');
 
 const DEFAULT_BATCH_SIZE = 1000;
@@ -79,9 +79,6 @@ const MAX_ID = 2147483647;
 const LOCK_KEY = 1758;
 
 const query = (sql, params) => CommonService.query(sql, params);
-
-const sha256 = (html) =>
-  crypto.createHash('sha256').update(html, 'utf8').digest('hex');
 
 const readRedirectRows = async (entityType) => {
   const { rows } = await query(
@@ -106,42 +103,7 @@ const readViewBatch = async (entityType, afterId, limit) => {
   return rows;
 };
 
-const manifestHashes = async (paths) => {
-  if (paths.length === 0) return new Map();
-  const { rows } = await query(
-    'SELECT path, content_hash FROM t_bot_page_manifest WHERE path = ANY($1::text[])',
-    [paths]
-  );
-  return new Map(rows.map((row) => [row.path, row.content_hash]));
-};
-
-const recordPublished = (page) =>
-  query(
-    `INSERT INTO t_bot_page_manifest (path, entity_type, entity_id, hub_type, hub_key, content_hash, lastmod, redirect_to, published_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
-     ON CONFLICT (path) DO UPDATE
-       SET entity_type = EXCLUDED.entity_type,
-           entity_id = EXCLUDED.entity_id,
-           hub_type = EXCLUDED.hub_type,
-           hub_key = EXCLUDED.hub_key,
-           content_hash = EXCLUDED.content_hash,
-           lastmod = EXCLUDED.lastmod,
-           redirect_to = EXCLUDED.redirect_to,
-           published_at = EXCLUDED.published_at`,
-    [
-      page.path,
-      page.entityType,
-      page.entityId,
-      page.hubType ?? null,
-      page.hubKey ?? null,
-      page.hash,
-      page.lastmod,
-      page.redirectTo ?? null,
-    ]
-  );
-
-const forgetPublished = (path) =>
-  query('DELETE FROM t_bot_page_manifest WHERE path = $1', [path]);
+const { sha256, manifestHashes, forgetPublished } = BotPublishService;
 
 // Runs `fn` holding the generator lock, or rejects at once when another run
 // holds it. No transaction is held open while pages are uploaded. The sitemaps
@@ -198,34 +160,23 @@ async function publish({
   const hubs = await BotHubService.loadHubs(
     readHubs ? { readAll: readHubs } : {}
   );
-  const resolvedBaseUrl = baseUrl || BotRenderService.defaultBaseUrl();
-  const renderOptions = {
+  const resolvedBaseUrl = BotPublishService.resolveBaseUrl(baseUrl);
+  const renderOptions = await BotPublishService.loadRenderOptions({
     baseUrl: resolvedBaseUrl,
-    languageTags: languageTags || (await BotRenderService.loadLanguageTags()),
-    countryNames: countryNames || (await BotRenderService.loadCountryNames()),
+    languageTags,
+    countryNames,
     hubLinks: BotHubService.createHubLinks(hubs, resolvedBaseUrl),
-  };
+  });
   const summary = { uploaded: 0, unchanged: 0, deleted: 0, byType: {} };
 
   const publishIfChanged = async (page, known) => {
-    if (known.get(page.path) === page.hash) {
-      summary.unchanged += 1;
-      return false;
-    }
-    await adapter.put(
-      page.path,
-      page.html,
-      page.metadata ? { metadata: page.metadata } : undefined
+    const uploaded = await BotPublishService.publishIfChanged(
+      adapter,
+      page,
+      known.get(page.path)
     );
-    // A hub or a massif page changes with the SPA figures and with its list
-    // of caves, which v_bot_page.lastmod does not see: its manifest lastmod
-    // (what the sitemaps publish) is the time of the upload, so it moves when
-    // the page does and never goes back
-    await recordPublished(
-      page.lastmodAtUpload ? { ...page, lastmod: new Date() } : page
-    );
-    summary.uploaded += 1;
-    return true;
+    summary[uploaded ? 'uploaded' : 'unchanged'] += 1;
+    return uploaded;
   };
 
   const remove = async (path) => {
@@ -289,49 +240,25 @@ async function publish({
             }
           : renderOptions;
       // eslint-disable-next-line no-await-in-loop
-      await mapLimit(rows, concurrency, async (row) => {
-        const html = BotRenderService.render(row, batchOptions);
-        await publishIfChanged(
-          {
-            path: botPagePaths.toKey(entityType, row.entity_id),
-            entityType,
-            entityId: row.entity_id,
-            html,
-            hash: sha256(html),
-            lastmod: row.lastmod,
-            lastmodAtUpload: entityType === 'massif',
-          },
+      await mapLimit(rows, concurrency, (row) =>
+        publishIfChanged(
+          BotPublishService.pagePublication(row, batchOptions),
           known
-        );
-      });
+        )
+      );
 
       // eslint-disable-next-line no-await-in-loop
-      await mapLimit(batchRedirects, concurrency, async (redirect) => {
-        const html = BotRenderService.renderRedirect(
-          entityType,
-          redirect.target_id,
-          renderOptions
-        );
-        await publishIfChanged(
-          {
-            path: botPagePaths.toKey(entityType, redirect.entity_id),
+      await mapLimit(batchRedirects, concurrency, (redirect) =>
+        publishIfChanged(
+          BotPublishService.redirectPublication(
             entityType,
-            entityId: redirect.entity_id,
-            html,
-            hash: sha256(html),
-            lastmod: null,
-            redirectTo: redirect.target_id,
-            metadata: {
-              redirectto: BotRenderService.redirectTarget(
-                entityType,
-                redirect.target_id,
-                renderOptions
-              ),
-            },
-          },
+            redirect.entity_id,
+            redirect.target_id,
+            renderOptions
+          ),
           known
-        );
-      });
+        )
+      );
 
       // eslint-disable-next-line no-await-in-loop
       await removeAll(
