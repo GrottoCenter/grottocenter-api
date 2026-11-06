@@ -1226,21 +1226,6 @@ CREATE INDEX idx_j_caver_country_subscription_caver ON j_caver_country_subscript
 CREATE TABLE t_iso3166_2 (
 	iso varchar(10) NOT NULL,
 	name varchar(200) NOT NULL,
-	name_ar varchar(200) NULL,
-	name_bg varchar(200) NULL,
-	name_ca varchar(200) NULL,
-	name_de varchar(200) NULL,
-	name_el varchar(200) NULL,
-	name_en varchar(200) NULL,
-	name_es varchar(200) NULL,
-	name_fr varchar(200) NULL,
-	name_he varchar(200) NULL,
-	name_id varchar(200) NULL,
-	name_it varchar(200) NULL,
-	name_ja varchar(200) NULL,
-	name_nl varchar(200) NULL,
-	name_pt varchar(200) NULL,
-	name_ro varchar(200) NULL,
 	CONSTRAINT t_iso3166_2_pk PRIMARY KEY (iso)
 );
 
