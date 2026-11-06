@@ -320,8 +320,8 @@ module.exports = {
    * @param {object} options.adapter storage adapter (put, delete, list)
    * @param {string[]} [options.entityTypes] the types listed, among cave,
    *   massif, organization and hub. Default: all of them. A type left out has
-   *   no shard, so its shards already published are deleted. This is where
-   *   BOT_SURFACE_ENTITY_TYPES (#1888) plugs in once it exists.
+   *   no shard, so its shards already published are deleted. The nightly
+   *   pipeline passes BOT_SURFACE_ENTITY_TYPES (#1888) here.
    * @param {string} [options.baseUrl] public base URL of the pages (default:
    *   sails.config.custom.botSurface.publicBaseUrl)
    * @param {string} [options.siteUrl] where the sitemap files are served

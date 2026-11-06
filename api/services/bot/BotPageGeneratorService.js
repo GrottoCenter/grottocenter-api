@@ -154,12 +154,16 @@ async function publish({
   languageTags,
   countryNames,
   readHubs,
+  entityTypes,
 }) {
+  const listed = new Set(entityTypes);
   // The published hubs, read once before any page is rendered: the same rows
-  // give the links of every page and the hubs this run publishes
-  const hubs = await BotHubService.loadHubs(
-    readHubs ? { readAll: readHubs } : {}
-  );
+  // give the links of every page and the hubs this run publishes. Hubs not
+  // listed: none, so no page links to one and the ones online are deleted
+  let hubSource = {};
+  if (!listed.has(HUB_TYPE)) hubSource = { readAll: async () => [] };
+  else if (readHubs) hubSource = { readAll: readHubs };
+  const hubs = await BotHubService.loadHubs(hubSource);
   const resolvedBaseUrl = BotPublishService.resolveBaseUrl(baseUrl);
   const renderOptions = await BotPublishService.loadRenderOptions({
     baseUrl: resolvedBaseUrl,
@@ -286,6 +290,23 @@ async function publish({
     summary.byType[entityType] = stats;
   };
 
+  // A type that is not listed: every page, redirect page and manifest row of it
+  // goes, and the sitemaps (built from the manifest) stop naming them
+  const unpublishType = async (entityType) => {
+    const before = { ...summary };
+    await removeAll(
+      `SELECT path FROM t_bot_page_manifest
+        WHERE entity_type = $1
+        ORDER BY path LIMIT $2`,
+      [entityType, 1000]
+    );
+    summary.byType[entityType] = {
+      uploaded: 0,
+      unchanged: 0,
+      deleted: summary.deleted - before.deleted,
+    };
+  };
+
   // The hubs: rendered from the rows read at the start, with the SPA's figures.
   // A hub that is no longer published has no row, so its path is among the
   // manifest's hub paths that this run does not produce, and is deleted. The
@@ -336,7 +357,9 @@ async function publish({
   // eslint-disable-next-line no-restricted-syntax
   for (const entityType of botPagePaths.ENTITY_TYPES) {
     // eslint-disable-next-line no-await-in-loop
-    await publishType(entityType);
+    await (listed.has(entityType)
+      ? publishType(entityType)
+      : unpublishType(entityType));
   }
 
   await publishHubs();
@@ -389,6 +412,13 @@ module.exports = {
    *   {entity_id, target_id}, sorted by entity_id; defaults to v_bot_redirect
    * @param {Function} [options.readHubs] () => every row of v_bot_hub;
    *   defaults to one read of v_bot_hub, replaceable for a synthetic source
+   * @param {string[]} [options.entityTypes] the types listed (cave, massif,
+   *   organization, hub); default: all of them. This is the allow-list
+   *   BOT_SURFACE_ENTITY_TYPES (#1888). Only these are rendered and published;
+   *   the pages, redirect pages and manifest rows of any other type are
+   *   DELETED, and with no listed hub no page links to a hub and the hub pages
+   *   are deleted. Records listed pages link to may be of a type that is not
+   *   listed: they link to the SPA's own address, which always answers.
    * @param {Function} [options.onBatch] called after each batch
    * @param {Map<string, string>} [options.languageTags] ISO 639-3 to 639-1;
    *   read from t_language when absent
@@ -404,12 +434,25 @@ module.exports = {
       adapter,
       concurrency = DEFAULT_CONCURRENCY,
       batchSize = DEFAULT_BATCH_SIZE,
+      entityTypes = [...botPagePaths.ENTITY_TYPES, HUB_TYPE],
     } = options;
     if (!adapter)
       throw new Error('BotPageGeneratorService.run needs an adapter');
     assertPositiveInteger('concurrency', concurrency);
     assertPositiveInteger('batchSize', batchSize);
-    return withRunLock(() => publish({ ...options, concurrency, batchSize }));
+    if (!Array.isArray(entityTypes)) {
+      throw new TypeError(
+        'BotPageGeneratorService.run needs an array of entityTypes'
+      );
+    }
+    entityTypes.forEach((type) => {
+      if (![...botPagePaths.ENTITY_TYPES, HUB_TYPE].includes(type)) {
+        throw new RangeError(`Unknown bot entity type: ${type}`);
+      }
+    });
+    return withRunLock(() =>
+      publish({ ...options, concurrency, batchSize, entityTypes })
+    );
   },
 
   NOT_FOUND_PATH,

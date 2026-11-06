@@ -1066,6 +1066,13 @@ const BOT_OUTBOX_MIGRATION = forTestDatabase(
   )
 );
 
+const BOT_PIPELINE_RUN_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_38_2026_11_06_bot_pipeline_run.sql'),
+    'utf8'
+  )
+);
+
 // t_point.point_geom kept in sync with latitude/longitude by a trigger
 const POINT_GEOM_MIGRATION = forTestDatabase(
   fs.readFileSync(
@@ -1184,6 +1191,7 @@ module.exports = {
   BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
   BOT_HUB_MIGRATION,
   BOT_OUTBOX_MIGRATION,
+  BOT_PIPELINE_RUN_MIGRATION,
   POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
