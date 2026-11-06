@@ -1,6 +1,9 @@
 const CommonService = require('./CommonService');
 
 const GROUP_MAX_TIME_DIFF_S = 60 * 60 * 6; // 6 Hours
+// A cave change logged within this delay of a change of one of its entrances,
+// by the same author, duplicates it
+const CAVE_ENTRANCE_PAIR_MAX_DIFF_MS = 5000;
 
 // Dashboard only needs a short lookback; 7 days covers the typical review cycle
 // while keeping the query fast on the unpartitioned t_last_change table.
@@ -153,42 +156,180 @@ function groupChanges(changes) {
     .map(({ subActionEntityId, ...group }) => group); // strip internal tracking field
 }
 
-async function getRecent() {
+// SQL condition true when a change of t_last_change (alias tbl) concerns an
+// area. `entranceInArea` is a condition on an entrance aliased e; `extra` lists
+// the conditions for changes that are not attached to an entrance; `document`
+// lists the conditions on a document aliased d that is linked to the area
+// without going through an entrance.
+//
+// Current relationships are used, whether the related rows are deleted or not,
+// so the deletion of an entrance still shows up in its area:
+// - an entrance, and its sub-entities (comments, descriptions, histories,
+//   locations, riggings), through the entrance
+// - a cave, and the descriptions of a cave, through any entrance of the cave,
+//   so a network concerns every area one of its entrances is in
+// - a document, through the entrances it is linked to (j_document_entrance),
+//   the entrances of the cave it belongs to (t_document.id_cave), or a direct
+//   link to the area listed in `document`
+function concernsArea(entranceInArea, extra = [], document = []) {
+  const entranceWhere = (join) =>
+    `EXISTS (SELECT 1 FROM t_entrance e WHERE ${join} AND ${entranceInArea})`;
+  return `(
+    (tbl.type_entity = 'entrance' AND ${entranceWhere('e.id = tbl.id_entity')})
+    OR (tbl.type_related_entity = 'entrance' AND ${entranceWhere(
+      'e.id = tbl.id_related_entity'
+    )})
+    OR (tbl.type_entity = 'cave' AND ${entranceWhere(
+      'e.id_cave = tbl.id_entity'
+    )})
+    OR (tbl.type_related_entity = 'cave' AND ${entranceWhere(
+      'e.id_cave = tbl.id_related_entity'
+    )})
+    OR (tbl.type_entity = 'document' AND EXISTS (
+      SELECT 1 FROM t_document d WHERE d.id = tbl.id_entity AND (
+        EXISTS (
+          SELECT 1 FROM j_document_entrance jde
+          JOIN t_entrance e ON e.id = jde.id_entrance
+          WHERE jde.id_document = d.id AND ${entranceInArea}
+        )
+        OR ${entranceWhere('e.id_cave = d.id_cave')}
+        ${document.map((c) => `OR ${c}`).join('\n        ')}
+      )
+    ))
+    ${extra.map((c) => `OR ${c}`).join('\n    ')}
+  )`;
+}
+
+// SQL condition true when a guideline change of t_last_change (alias tbl) is
+// linked to the area through one of the guideline junction tables, whose row
+// is aliased jg. Guideline changes carry no related entity, and a soft-deleted
+// guideline keeps its links.
+const guidelineLinkedTo = (table, condition) =>
+  `(tbl.type_entity = 'guideline' AND EXISTS (SELECT 1 FROM ${table} jg WHERE jg.id_guideline = tbl.id_entity AND ${condition}))`;
+
+// Builds the WHERE conditions and parameters for the optional filters of
+// getRecent(). Each filter is one condition, so filters combine with AND, and
+// each is an EXISTS, so a change matching several relationships is returned
+// once.
+function buildFilterConditions(filters = {}) {
+  const conditions = [];
+  const params = [];
+  const param = (value) => {
+    params.push(value);
+    return `$${params.length}`;
+  };
+
+  if (filters.countryId !== undefined) {
+    const p = param(filters.countryId);
+    conditions.push(
+      concernsArea(
+        `e.id_country = ${p}`,
+        [
+          `(tbl.type_entity = 'grotto' AND EXISTS (SELECT 1 FROM t_grotto g WHERE g.id = tbl.id_entity AND g.id_country = ${p}))`,
+          guidelineLinkedTo('j_guideline_country', `jg.id_country = ${p}`),
+          guidelineLinkedTo(
+            'j_guideline_region',
+            `jg.id_region LIKE ${p} || '-%'`
+          ),
+        ],
+        [
+          `EXISTS (SELECT 1 FROM j_document_country jdc WHERE jdc.id_document = d.id AND jdc.id_country = ${p})`,
+          `EXISTS (SELECT 1 FROM j_document_iso3166_2 jdi WHERE jdi.id_document = d.id AND jdi.id_iso LIKE ${p} || '-%')`,
+        ]
+      )
+    );
+  }
+
+  if (filters.regionId !== undefined) {
+    const p = param(filters.regionId);
+    conditions.push(
+      concernsArea(
+        `e.iso_3166_2 = ${p}`,
+        [
+          `(tbl.type_entity = 'grotto' AND EXISTS (SELECT 1 FROM t_grotto g WHERE g.id = tbl.id_entity AND g.iso_3166_2 = ${p}))`,
+          guidelineLinkedTo('j_guideline_region', `jg.id_region = ${p}`),
+        ],
+        [
+          `EXISTS (SELECT 1 FROM j_document_iso3166_2 jdi WHERE jdi.id_document = d.id AND jdi.id_iso = ${p})`,
+        ]
+      )
+    );
+  }
+
+  if (filters.massifId !== undefined) {
+    const p = param(filters.massifId);
+    conditions.push(
+      concernsArea(
+        `EXISTS (SELECT 1 FROM t_massif m WHERE m.id = ${p} AND e.point_geom && m.geog_polygon::geometry AND ST_Contains(m.geog_polygon::geometry, e.point_geom))`,
+        [
+          `(tbl.type_entity = 'massif' AND tbl.id_entity = ${p})`,
+          `(tbl.type_related_entity = 'massif' AND tbl.id_related_entity = ${p})`,
+          guidelineLinkedTo('j_guideline_massif', `jg.id_massif = ${p}`),
+        ],
+        [
+          `d.id_massif = ${p}`,
+          `EXISTS (SELECT 1 FROM j_document_massif jdm WHERE jdm.id_document = d.id AND jdm.id_massif = ${p})`,
+        ]
+      )
+    );
+  }
+
+  if (filters.organizationId !== undefined) {
+    // The author of the change, as a current member of the organization
+    const p = param(filters.organizationId);
+    conditions.push(
+      `EXISTS (SELECT 1 FROM j_grotto_caver jgc WHERE jgc.id_caver = tbl.id_author AND jgc.id_grotto = ${p})`
+    );
+  }
+
+  return { conditions, params };
+}
+
+/**
+ * Recent changes, grouped by author and entity, newest first.
+ *
+ * @param {object} [filters] optional filters, combined with AND and applied
+ *   before the RECENT_CHANGES_LIMIT cap on raw changes
+ * @param {string} [filters.countryId] ISO 3166-1 alpha-2 code
+ * @param {string} [filters.regionId] full ISO 3166-2 code
+ * @param {number} [filters.massifId]
+ * @param {number} [filters.organizationId] changes by current members
+ */
+async function getRecent(filters = {}) {
+  const { conditions, params } = buildFilterConditions(filters);
   // The t_last_change table is populated by trigger on the other main tables
   const query = `
-  SELECT tbl.*, author.nickname FROM t_last_change tbl
+  SELECT tbl.*, author.nickname,
+    CASE WHEN tbl.type_entity = 'entrance'
+      THEN (SELECT e.id_cave FROM t_entrance e WHERE e.id = tbl.id_entity)
+    END AS entrance_cave_id
+  FROM t_last_change tbl
   LEFT JOIN t_caver author ON tbl.id_author = author.id
   WHERE tbl.date_change > current_timestamp - interval '${RECENT_CHANGES_WINDOW_DAYS} days'
+  ${conditions.map((c) => `AND ${c}`).join('\n  ')}
   ORDER BY date_change DESC
   LIMIT ${RECENT_CHANGES_LIMIT}
   `;
-  const rep = await CommonService.query(query);
+  const rep = await CommonService.query(query, params);
 
-  // When creating/updating a entrance the associated cave is also created/updated (when not part of a network)
-  // As cave changes are duplicate we filter out them
-  const changes = rep.rows.filter((e, i, a) => {
-    if (e.type_entity !== 'cave') return true;
-
-    // Is the cave change is after the entrance change ?
-    if (
-      i < a.length - 2 &&
-      a[i + 1].date_change - e.date_change < 5000 &&
-      a[i + 1].id_author === e.id_author &&
-      a[i + 1].type_entity === 'entrance'
-    )
-      return false;
-
-    // Is the cave change is before the entrance change ?
-    if (
-      i > 0 &&
-      e.date_change - a[i - 1].date_change < 5000 &&
-      a[i - 1].id_author === e.id_author &&
-      a[i - 1].type_entity === 'entrance'
-    )
-      return false;
-
-    return true;
-  });
+  // When creating/updating an entrance the associated cave is also
+  // created/updated (when not part of a network). Such a cave change is a
+  // duplicate of the change of its own entrance, by the same author at nearly
+  // the same time, so it is left out. The pairing checks the entrance's cave
+  // rather than the rows next to it: a filter can remove the changes in between
+  // and make an unrelated entrance change adjacent.
+  const changes = rep.rows.filter(
+    (e, _, a) =>
+      e.type_entity !== 'cave' ||
+      !a.some(
+        (other) =>
+          other.type_entity === 'entrance' &&
+          other.entrance_cave_id === e.id_entity &&
+          other.id_author === e.id_author &&
+          Math.abs(other.date_change - e.date_change) <
+            CAVE_ENTRANCE_PAIR_MAX_DIFF_MS
+      )
+  );
 
   // 5% chance to also remove older changes
   if (Math.random() < 0.05) removeOlderChanges();
@@ -197,7 +338,10 @@ async function getRecent() {
 }
 
 module.exports = {
+  RECENT_CHANGES_WINDOW_DAYS,
+  RECENT_CHANGES_LIMIT,
   getRecent,
+  buildFilterConditions,
   setNameCreate,
   setDeleteRestoreAuthor,
   logDocumentUpdate,

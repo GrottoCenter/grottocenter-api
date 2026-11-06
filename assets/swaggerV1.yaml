@@ -7570,21 +7570,106 @@ paths:
     get:
       tags:
         - changes
-      description: Get the latest entity changes on Grottocenter
+      description: |
+        Get the latest entity changes on Grottocenter, newest first.
+
+        Only the changes of the last 7 days are read, and at most the 500 most
+        recent of them. Changes by the same author about the same entity within
+        6 hours are grouped; `offset` and `limit` page through the groups.
+
+        The optional filters `countryId`, `regionId`, `massifId` and
+        `organizationId` combine with AND. They are applied in the database
+        before the 500-change cap, so changes in a quiet area are not hidden by
+        activity elsewhere, and a change matching several ways is returned once.
+        They use current relationships, including those of deleted records:
+
+        - an entrance, and its comments, descriptions, histories, locations and
+          riggings, match through the entrance;
+        - a cave, and its descriptions, match through any of its entrances, so
+          a network matches every area one of its entrances is in;
+        - a document matches through the entrances it is linked to, the
+          entrances of its cave, or a direct link to the area: its countries
+          or ISO 3166-2 regions for `countryId` (a region of the country also
+          matches) and `regionId`, its massifs for `massifId`;
+        - a guideline matches through the countries, regions and massifs it is
+          attached to, a region of the country also matching `countryId`;
+        - for `countryId` and `regionId`, an organization matches through its
+          address; for `massifId`, the massif and its descriptions match.
       parameters:
         - name: offset
           in: query
-          description: The number of changes to skip
+          description: The number of change groups to skip
           schema:
             type: integer
             default: 0
         - name: limit
           in: query
-          description: The number of changes to retrieve
+          description: The number of change groups to retrieve
           schema:
             type: integer
             default: 10
+        - name: countryId
+          in: query
+          required: false
+          description: |
+            Changes concerning a country, by its ISO 3166-1 alpha-2 code
+            (case-insensitive). The country of an entrance is its `id_country`.
+          schema:
+            type: string
+            pattern: '^[A-Za-z]{2}$'
+          example: FR
+        - name: regionId
+          in: query
+          required: false
+          description: |
+            Changes concerning a region, by its full ISO 3166-2 code
+            (case-insensitive). The region of an entrance is its `iso_3166_2`.
+          schema:
+            type: string
+            pattern: '^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$'
+          example: FR-ARA
+        - name: massifId
+          in: query
+          required: false
+          description: |
+            Changes concerning a massif. An entrance is in the massif when the
+            massif polygon contains it.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
+          example: 123
+        - name: organizationId
+          in: query
+          required: false
+          description: |
+            Changes whose author is a current member of the organization. It
+            does not add the changes to the organization record itself, nor the
+            activity in its intervention areas.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
+          example: 456
       responses:
+        '400':
+          description: A filter is malformed (blank, repeated or out of format). `metadata.field` names it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredError'
+        '404':
+          description: The country, region, massif or organization of a filter does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Massif 123 not found.
+        '500':
+          description: Unexpected error while reading the changes.
         '200':
           description: Successful operation.
           content:
