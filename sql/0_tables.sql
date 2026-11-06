@@ -39,15 +39,6 @@ CREATE TABLE t_country (
 	latitude numeric(24, 20) NULL,
 	longitude numeric(24, 20) NULL,
 	native_name varchar(50) NULL,
-	en_name varchar(50) NOT NULL,
-	fr_name varchar(50) NOT NULL,
-	es_name varchar(50) NOT NULL,
-	de_name varchar(50) NOT NULL,
-	bg_name varchar(50) NOT NULL,
-	it_name varchar(50) NOT NULL,
-	ca_name varchar(50) NOT NULL,
-	nl_name varchar(50) NOT NULL,
-	rs_name varchar(50) NOT NULL,
 	CONSTRAINT t_country_pk PRIMARY KEY (iso)
 );
 -- t_file_format definition

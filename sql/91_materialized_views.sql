@@ -92,7 +92,7 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
   n.name as entrance_name,
   nn.name as massif_name,
   e.id_country as id_country,
-  co.fr_name as country_name,
+  co.native_name as country_name,
   NOW() as date_of_update
 
   FROM t_entrance e
@@ -109,7 +109,7 @@ CREATE MATERIALIZED VIEW v_data_quality_compute_entrance AS
   LEFT JOIN (SELECT * FROM t_name WHERE is_main = true) nn ON m.id = nn.id_massif
   WHERE n.is_main = true
   AND e.is_deleted = false
-  GROUP BY e.id, m.id, n.name, nn.name, co.fr_name
+  GROUP BY e.id, m.id, n.name, nn.name, co.native_name
   WITH NO DATA;
 
 -- v_bibliographic_metadata definition

@@ -101,6 +101,17 @@ describe('Convert features', () => {
       const worldWide = res.body.find((p) => p.code === 'EPSG:NO_TITLE');
       should(worldWide.iso2).be.null();
     });
+
+    it('should not expose translated country names', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/convert')
+        .expect(200);
+
+      res.body.forEach((proj) => {
+        should(proj).not.have.property('en_name');
+        should(proj).not.have.property('fr_name');
+      });
+    });
   });
 
   describe('GET /api/convert (legacy)', () => {

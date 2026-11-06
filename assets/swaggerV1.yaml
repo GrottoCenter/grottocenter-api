@@ -10856,7 +10856,7 @@ components:
     qualitySortAll:
       name: sort
       in: query
-      description: Column name to sort results by. When omitted, no specific order is applied.
+      description: Column name to sort results by. When omitted, no specific order is applied. country_name sorts by the native country name.
       required: false
       schema:
         type: string
@@ -10882,7 +10882,7 @@ components:
     qualitySortCountry:
       name: sort
       in: query
-      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints.
+      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints. country_name sorts by the native country name.
       required: false
       schema:
         type: string
@@ -11550,6 +11550,7 @@ components:
           type: string
         country_name:
           type: string
+          description: Native name of the country (`t_country.native_name`), for example `España`. It was the French name before.
         data_quality:
           type: integer
         date_of_update:
@@ -13167,24 +13168,6 @@ components:
               id:
                 type: string
               nativeName:
-                type: string
-              enName:
-                type: string
-              frName:
-                type: string
-              esName:
-                type: string
-              deName:
-                type: string
-              bgName:
-                type: string
-              itName:
-                type: string
-              caName:
-                type: string
-              nlName:
-                type: string
-              rsName:
                 type: string
         managedRegions:
           type: array
