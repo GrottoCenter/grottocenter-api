@@ -16,6 +16,10 @@ const POLYGON =
 const INSIDE = { latitude: -39.5, longitude: 160.5 };
 const OUTSIDE = { latitude: -30, longitude: 100 };
 
+// The activity log of the tests that ran before is set aside here while this
+// suite runs, so the 500-change cap only ever sees the changes logged below
+const LAST_CHANGE_BACKUP = 'filter_test_t_last_change_backup';
+
 const getRecent = (query) =>
   supertest(sails.hooks.http.app)
     .get('/api/v1/changes/recent')
@@ -24,25 +28,21 @@ const getRecent = (query) =>
 
 describe('Changes - GET /api/v1/changes/recent filters', () => {
   const ids = {};
-  const lastChangeIds = [];
+  let lastChangeSetAside = false;
 
-  // Logs a change `minutesAgo` minutes before a point one day ahead. Dating
-  // the changes in the future keeps them among the RECENT_CHANGES_LIMIT newest
-  // raw changes, whatever the tests that ran before logged. They are spread out
-  // so that neither the cave/entrance deduplication nor the grouping merges them
+  // Logs a change `minutesAgo` minutes ago. The changes are spread out so that
+  // neither the cave/entrance deduplication nor the grouping merges them
   const logChange = async (
     minutesAgo,
     { type, change = 'update', id, relatedType = null, relatedId = null },
     author = OTHER_ID
   ) => {
-    const { rows } = await CommonService.query(
+    await CommonService.query(
       `INSERT INTO t_last_change
         (type_entity, type_change, date_change, id_entity, id_author, type_related_entity, id_related_entity, name)
-       VALUES ($1, $2, now() + interval '1 day' - make_interval(mins => $3), $4, $5, $6, $7, 'filter test')
-       RETURNING id`,
+       VALUES ($1, $2, now() - make_interval(mins => $3), $4, $5, $6, $7, 'filter test')`,
       [type, change, minutesAgo, id, author, relatedType, relatedId]
     );
-    lastChangeIds.push(rows[0].id);
   };
 
   const createEntrance = (caveId, props) =>
@@ -85,6 +85,13 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     );
 
   before(async () => {
+    await CommonService.query(`DROP TABLE IF EXISTS ${LAST_CHANGE_BACKUP}`);
+    await CommonService.query(
+      `CREATE TABLE ${LAST_CHANGE_BACKUP} AS SELECT * FROM t_last_change`
+    );
+    await CommonService.query('DELETE FROM t_last_change');
+    lastChangeSetAside = true;
+
     ids.massif = (
       await TMassif.create({ author: 1, geogPolygon: POLYGON }).fetch()
     ).id;
@@ -174,9 +181,13 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
   });
 
   after(async () => {
-    await CommonService.query('DELETE FROM t_last_change WHERE id = ANY($1)', [
-      lastChangeIds,
-    ]);
+    if (lastChangeSetAside) {
+      await CommonService.query('DELETE FROM t_last_change');
+      await CommonService.query(
+        `INSERT INTO t_last_change SELECT * FROM ${LAST_CHANGE_BACKUP}`
+      );
+      await CommonService.query(`DROP TABLE ${LAST_CHANGE_BACKUP}`);
+    }
     await CommonService.query(
       'DELETE FROM j_grotto_caver WHERE id_grotto = $1',
       [ids.organization]
@@ -297,14 +308,12 @@ describe('Changes - GET /api/v1/changes/recent filters', () => {
     before(async () => {
       // Newer changes about organizations no filter matches, enough to push
       // every change logged above out of the unfiltered selection
-      const { rows } = await CommonService.query(
+      await CommonService.query(
         `INSERT INTO t_last_change (type_entity, type_change, date_change, id_entity, id_author, name)
-         SELECT 'grotto', 'update', now() + interval '2 days', 800000 + n, $1, 'flood'
-         FROM generate_series(1, $2::int) AS n
-         RETURNING id`,
+         SELECT 'grotto', 'update', now(), 800000 + n, $1, 'flood'
+         FROM generate_series(1, $2::int) AS n`,
         [FLOOD_AUTHOR_ID, RecentChangeService.RECENT_CHANGES_LIMIT]
       );
-      lastChangeIds.push(...rows.map((r) => r.id));
     });
 
     it('still returns the matching changes of a quieter area', async () => {
