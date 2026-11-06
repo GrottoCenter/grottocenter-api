@@ -15,6 +15,14 @@
 --
 -- Idempotent: the view is recreated from scratch and the columns are dropped
 -- with IF EXISTS.
+--
+-- Deployment order: deploy the API code that no longer reads these columns
+-- first, wait until no older API process is left, then apply this migration.
+-- The older code still reads them (TCountry declares them and Waterline
+-- selects every declared column, ConvertService sorts on fr_name, the
+-- organization export groups by them) and fails on the migrated schema.
+-- Rolling the code back after this migration requires restoring the columns
+-- and their data first.
 -- =============================================================================
 
 BEGIN;
