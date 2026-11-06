@@ -40,6 +40,23 @@ describe('botModelParts', () => {
       );
     });
 
+    it('never ends with an asterisk, whatever the spacing around it', () => {
+      // "* " was found by the property test below: the asterisk was not the last
+      // character, so it stayed, and cleaning the result again removed it
+      [
+        ['* ', null],
+        [' *', null],
+        ['**', null],
+        ['a* *', 'a'],
+        ['a *  ', 'a'],
+        ['a*\t', 'a'],
+        ['a [x] *', 'a'],
+        ['a*b', 'a*b'],
+      ].forEach(([raw, expected]) =>
+        should(cleanRegionName(raw)).equal(expected, JSON.stringify(raw))
+      );
+    });
+
     it('is null when nothing is left, or when it is not a string', () => {
       ['[Only]', '*', '', '   ', null, undefined, 12].forEach((raw) =>
         should(cleanRegionName(raw)).be.null()
@@ -47,8 +64,15 @@ describe('botModelParts', () => {
     });
 
     it('never leaves a bracket pair or a trailing asterisk, and is idempotent', () => {
+      // Random text rarely holds the characters that matter; this alphabet is
+      // made of them, so the corner cases do not wait for a lucky seed
+      const nasty = fc
+        .array(fc.constantFrom('*', ' ', '\t', '[', ']', 'a', 'b'), {
+          maxLength: 14,
+        })
+        .map((chars) => chars.join(''));
       fc.assert(
-        fc.property(fc.string({ maxLength: 40 }), (raw) => {
+        fc.property(fc.oneof(fc.string({ maxLength: 40 }), nasty), (raw) => {
           const cleaned = cleanRegionName(raw);
           if (cleaned === null) return;
           should(cleaned).not.match(/\[[^\]]*\]/);
@@ -56,7 +80,7 @@ describe('botModelParts', () => {
           should(cleaned).equal(cleaned.trim());
           should(cleanRegionName(cleaned)).equal(cleaned);
         }),
-        { numRuns: 500 }
+        { numRuns: 1000 }
       );
     });
   });

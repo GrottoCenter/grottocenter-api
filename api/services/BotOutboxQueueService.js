@@ -52,7 +52,9 @@ module.exports = {
     await boss.createQueue(QUEUE_NAME, QUEUE_OPTIONS);
     await boss.schedule(QUEUE_NAME, CRON, null, { tz: 'UTC' });
     await boss.work(QUEUE_NAME, module.exports.processJob);
-    sails.log.info('BotOutboxQueueService: started and listening for jobs');
+    sails.log.info(
+      `BotOutboxQueueService: started and listening for jobs (storage ${botSurface.storage.driver})`
+    );
   },
 
   /**
