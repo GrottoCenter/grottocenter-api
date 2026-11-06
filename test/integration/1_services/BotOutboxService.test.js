@@ -418,18 +418,105 @@ describe('BotOutboxService', () => {
       should(page).not.containEql('Edited words');
     });
 
-    it('takes a renamed cave off its page until the new name is scanned', async () => {
+    it('keeps a renamed cave on its page, with the old name, until the nightly run scans the new one', async () => {
       const { cave } = await mkPublishedCave('Gouffre Old Name');
       await generate();
+      const before = await manifestRow(keyOf('cave', cave.id));
 
       await query('UPDATE t_name SET name = $2 WHERE id_cave = $1', [
         cave.id,
         'Gouffre New Name',
       ]);
+      // A rename alone is not an event for the worker
+      should(await outboxCount()).equal(0);
+      const result = await work();
+
+      should(result.pages).equal(0);
+      should(html(keyOf('cave', cave.id))).containEql(
+        '<h1>Gouffre Old Name</h1>'
+      );
+      should(await manifestRow(keyOf('cave', cave.id))).eql(before);
+
+      // The nightly run: the scan clears the new name, the page shows it
+      await query(
+        `INSERT INTO t_bot_text_scan (source_table, source_id, body_hash, pattern_version, matched)
+         SELECT 't_name', t.id, md5(COALESCE(t.name, '')), $2, false FROM t_name t WHERE t.id_cave = $1
+         ON CONFLICT (source_table, source_id) DO UPDATE
+           SET body_hash = EXCLUDED.body_hash, scanned_at = now()`,
+        [cave.id, VERSION]
+      );
+      await generate();
+      const page = html(keyOf('cave', cave.id));
+      should(page).containEql('<h1>Gouffre New Name</h1>');
+      should(page).not.containEql('<h1>Gouffre Old Name</h1>');
+    });
+
+    it('does not enqueue a change of language or reviewer of a name either, but a name that stops being the main one', async () => {
+      const { cave } = await mkPublishedCave('Gouffre Quiet Name');
+      await generate();
+
+      await query(
+        "UPDATE t_name SET id_language = 'eng', id_reviewer = 1, date_reviewed = now() WHERE id_cave = $1",
+        [cave.id]
+      );
+      should(await outboxCount()).equal(0);
+
+      await query('UPDATE t_name SET is_main = false WHERE id_cave = $1', [
+        cave.id,
+      ]);
+      should(await outboxCount()).be.above(0);
+      await work();
+      // No main name, no page
+      await shouldBeWithdrawn('cave', cave.id);
+    });
+
+    it('withdraws a cave whose main name is deleted within one run', async () => {
+      const { cave } = await mkPublishedCave('Gouffre Deleted Name');
+      await generate();
+
+      await query('UPDATE t_name SET is_deleted = true WHERE id_cave = $1', [
+        cave.id,
+      ]);
       await work();
 
-      // No scanned main name, no page
       await shouldBeWithdrawn('cave', cave.id);
+    });
+
+    it('withdraws a page whose name was edited and which another change reaches the same day: the name is not scanned, so it fails closed', async () => {
+      const { cave } = await mkPublishedCave('Gouffre Two Events');
+      const description = await mkDescription(
+        { cave: cave.id },
+        'Words of the description'
+      );
+      await generate();
+
+      await query('UPDATE t_name SET name = $2 WHERE id_cave = $1', [
+        cave.id,
+        'Gouffre Two Events Renamed',
+      ]);
+      await query('UPDATE t_description SET body = $2 WHERE id = $1', [
+        description.id,
+        'Other words of the description',
+      ]);
+      await work();
+
+      // The description event made the worker read the page: no scanned name
+      await shouldBeWithdrawn('cave', cave.id);
+    });
+
+    it('adds a name that is inserted to the outbox', async () => {
+      const { cave } = await mkPublishedCave('Gouffre Extra Name');
+      await generate();
+
+      const extra = await TName.create({
+        author: 1,
+        name: 'Another name',
+        language: 'fra',
+        isMain: false,
+        cave: cave.id,
+      }).fetch();
+      created.name.push(extra.id);
+      should(await outboxCount()).be.above(0);
     });
 
     it('leaves a page alone when nothing it shows changed', async () => {
@@ -899,6 +986,26 @@ describe('BotOutboxService', () => {
           oldValues: null,
         },
       ]);
+    });
+
+    it('send a rename to the search outbox, which indexes the name, and not to the bot outbox', async () => {
+      const { cave } = await mkPublishedCave('Gouffre Search Rename');
+      await query('TRUNCATE t_bot_outbox, t_search_outbox');
+
+      await query('UPDATE t_name SET name = $2 WHERE id_cave = $1', [
+        cave.id,
+        'Gouffre Search Renamed',
+      ]);
+
+      should(await rowsOf('t_search_outbox')).eql([
+        {
+          kind: 'cave_name',
+          entityId: cave.id,
+          operation: 'U',
+          oldValues: null,
+        },
+      ]);
+      should(await rowsOf('t_bot_outbox')).eql([]);
     });
 
     it('enqueue an update that changes nothing in neither outbox', async () => {

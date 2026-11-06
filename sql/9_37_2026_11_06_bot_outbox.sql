@@ -23,7 +23,8 @@
 --   * entrance, cave, massif, organization: a row of the table, from
 --     search_outbox_enqueue (the same old_values);
 --   * entrance_name, cave_name, massif_name, organization_name: a t_name row of
---     that entity, from search_outbox_enqueue_refs;
+--     that entity, from search_outbox_enqueue_refs, except an UPDATE that only
+--     changes the text, the language or the reviewer (a rename: see the function);
 --   * entrance_description, cave_description, massif_description: a t_description
 --     row of that entity, from bot_outbox_enqueue_refs on t_description. The
 --     view hides a description whose text no longer matches its scan, so an
@@ -118,19 +119,35 @@ ALTER FUNCTION search_outbox_enqueue() OWNER TO gc_owner;
 
 -- search_outbox_enqueue_refs of the same file, with the bot insert for the name
 -- kinds.
+--
+-- A rename alone does not reach the bot outbox. The page shows a name only
+-- while the scan has cleared its current text, so a typo fix would make the
+-- page disappear (no scanned main name, no page) until the night's scan, and
+-- everything that points at it would lose a link and be fetched again. The old
+-- page holds the old name, which has already passed the scan, so keeping it
+-- until the nightly run, which scans the new name and renders the page with it,
+-- shows nothing that run would not have shown. An UPDATE of a name that changes
+-- only the text, the language or who reviewed it is therefore left out; any
+-- other change (is_main, is_deleted, the entity it belongs to) and every INSERT
+-- and DELETE still enqueue, so a name that is removed or no longer the main one
+-- takes effect within minutes. The search outbox is not affected.
 CREATE OR REPLACE FUNCTION search_outbox_enqueue_refs() RETURNS trigger
 LANGUAGE plpgsql AS $$
 DECLARE
   old_row jsonb := CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END;
   new_row jsonb := CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END;
   i integer := 0;
+  rename_only boolean := TG_OP = 'UPDATE'
+    AND (old_row - '{name,id_language,date_reviewed,id_reviewer}'::text[])
+        = (new_row - '{name,id_language,date_reviewed,id_reviewer}'::text[]);
 BEGIN
   WHILE i < TG_NARGS LOOP
     INSERT INTO t_search_outbox (kind, id_entity, operation)
     SELECT DISTINCT TG_ARGV[i], ref::integer, left(TG_OP, 1)
     FROM (VALUES (old_row ->> TG_ARGV[i + 1]), (new_row ->> TG_ARGV[i + 1])) AS v(ref)
     WHERE ref IS NOT NULL;
-    IF TG_ARGV[i] IN ('entrance_name', 'cave_name', 'massif_name', 'organization_name') THEN
+    IF TG_ARGV[i] IN ('entrance_name', 'cave_name', 'massif_name', 'organization_name')
+       AND NOT rename_only THEN
       INSERT INTO t_bot_outbox (kind, id_entity, operation)
       SELECT DISTINCT TG_ARGV[i], ref::integer, left(TG_OP, 1)
       FROM (VALUES (old_row ->> TG_ARGV[i + 1]), (new_row ->> TG_ARGV[i + 1])) AS v(ref)
