@@ -8,6 +8,8 @@
  * https://sailsjs.com/config/custom
  */
 
+const botSurfaceConfig = require('../api/utils/botSurfaceConfig');
+
 module.exports.custom = {
   /** ************************************************************************
    *                                                                         *
@@ -102,9 +104,16 @@ module.exports.custom = {
    * Static pages published for indexing bots (docs/bot-surface.md).          *
    *                                                                          *
    * enabled: the background jobs of the bot surface run only when this is   *
-   *   true (BOT_SURFACE_ENABLED=true; off by default). Today: the withdrawal *
-   *   worker (BotOutboxQueueService). The nightly pipeline (#1760) will use *
-   *   it too.                                                               *
+   *   true (BOT_SURFACE_ENABLED=true; off by default): the withdrawal worker *
+   *   (BotOutboxQueueService) and the SCHEDULE of the nightly pipeline      *
+   *   (BotPipelineQueueService). A manual run does not need it.             *
+   * entityTypes: the allow-list (BOT_SURFACE_ENTITY_TYPES, comma-separated   *
+   *   among cave, massif, organization, hub). Only these are published; the  *
+   *   pages of any other type are deleted by the next run. Unset or empty    *
+   *   means nothing is generated and the pipeline does not run. An unknown   *
+   *   name stops the startup.                                                *
+   * schedule: cron expression, UTC, of the nightly pipeline                  *
+   *   (BOT_SURFACE_SCHEDULE; default 30 1 * * *, provisional).               *
    * publicBaseUrl: the SPA's own address; a page lives at                    *
    *   <publicBaseUrl>/caves/123 (BOT_PAGES_PUBLIC_BASE_URL).                 *
    * storage.driver: 'local' (dev, default) or 'azure' (BOT_PAGES_STORAGE).   *
@@ -115,6 +124,10 @@ module.exports.custom = {
    ************************************************************************** */
   botSurface: {
     enabled: process.env.BOT_SURFACE_ENABLED === 'true',
+    entityTypes: botSurfaceConfig.parseEntityTypes(
+      process.env.BOT_SURFACE_ENTITY_TYPES
+    ),
+    schedule: botSurfaceConfig.parseSchedule(process.env.BOT_SURFACE_SCHEDULE),
     publicBaseUrl:
       process.env.BOT_PAGES_PUBLIC_BASE_URL || 'https://grottocenter.org/ui',
     storage: {
