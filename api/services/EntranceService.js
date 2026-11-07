@@ -13,6 +13,7 @@ const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
+const EntranceFeaturedFileService = require('./EntranceFeaturedFileService');
 const MassifService = require('./MassifService');
 const NameService = require('./NameService');
 const TemporalNameResolver = require('./TemporalNameResolver');
@@ -514,6 +515,7 @@ module.exports = {
       entrance.histories,
       entrance.comments,
       entrance.documents,
+      entrance.featuredFile,
     ] = await Promise.all([
       DescriptionService.getEntranceDescriptions(entrance.id, subEntitiesWhere),
       LocationService.getEntranceLocations(entrance.id, subEntitiesWhere),
@@ -522,6 +524,10 @@ module.exports = {
       CommentService.getEntranceComments(entrance.id, subEntitiesWhere),
       DocumentService.getDocumentsForCitation(
         entrance.documents.map((d) => d.id)
+      ),
+      EntranceFeaturedFileService.getDisplayableFile(
+        entrance.id,
+        entrance.featuredFile
       ),
     ]);
 

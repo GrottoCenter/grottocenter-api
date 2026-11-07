@@ -88,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_t_cave_author ON t_cave(id_author);
 CREATE INDEX IF NOT EXISTS idx_entrance_geom_gist ON t_entrance USING gist (point_geom);
 CREATE INDEX IF NOT EXISTS idx_t_entrance_cave ON t_entrance(id_cave) WHERE id_cave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_entrance_country ON t_entrance(id_country);
+CREATE INDEX IF NOT EXISTS idx_t_entrance_featured_file ON t_entrance(id_featured_file) WHERE id_featured_file IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_t_entrance_is_deleted ON t_entrance(is_deleted);
 CREATE INDEX IF NOT EXISTS idx_t_location_entrance ON t_location(id_entrance);
 CREATE INDEX IF NOT EXISTS idx_t_rigging_entrance ON t_rigging(id_entrance) WHERE id_entrance IS NOT NULL;

@@ -308,5 +308,13 @@ module.exports = {
       allowNull: true,
       columnName: 'redirect_to',
     },
+
+    // Image file of a linked document shown as the entrance picture (#1701).
+    // Read through EntranceFeaturedFileService, which drops a file that is no
+    // longer eligible.
+    featuredFile: {
+      columnName: 'id_featured_file',
+      model: 'TFile',
+    },
   },
 };

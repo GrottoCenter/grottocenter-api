@@ -2,6 +2,7 @@ const ControllerService = require('../../../services/ControllerService');
 const EntranceService = require('../../../services/EntranceService');
 const CountryResolverService = require('../../../services/CountryResolverService');
 const EnrichmentQueueService = require('../../../services/EnrichmentQueueService');
+const EntranceFeaturedFileService = require('../../../services/EntranceFeaturedFileService');
 const NotificationService = require('../../../services/NotificationService');
 const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
@@ -10,6 +11,28 @@ const readBoolParam = require('../../../utils/readBoolParam');
 
 // Below this change (about a centimetre) a coordinate is the same point
 const POSITION_EPSILON = 1e-7;
+
+// Returns the updated entrance, populated as GET returns it.
+const respondWithEntrance = async (req, res, entranceId) => {
+  const populatedEntrance =
+    await EntranceService.getPopulatedEntrance(entranceId);
+
+  await NotificationService.notifySubscribers(
+    populatedEntrance,
+    req.token.id,
+    NotificationService.NOTIFICATION_TYPES.UPDATE,
+    NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
+  );
+
+  return ControllerService.treatAndConvert(
+    req,
+    null,
+    populatedEntrance,
+    { controllerMethod: 'EntranceController.update' },
+    res,
+    toEntrance
+  );
+};
 
 module.exports = async (req, res) => {
   const boolError = readBoolParam.firstError(
@@ -26,6 +49,45 @@ module.exports = async (req, res) => {
     });
   }
 
+  // featuredFile (#1701): omitted keeps the selection, null clears it, a file
+  // id selects that file once it is found eligible. Checked before any write,
+  // so a refused selection leaves the entrance unchanged.
+  const { id: ignoredId, ...requestFields } = req.body ?? {};
+  const hasFeaturedFile = Object.hasOwn(requestFields, 'featuredFile');
+  let featuredFileId;
+  if (hasFeaturedFile) {
+    const parsed = EntranceFeaturedFileService.parseRequestValue(
+      requestFields.featuredFile
+    );
+    if (parsed.error) return res.badRequest(parsed.error);
+    featuredFileId = parsed.value;
+    if (featuredFileId !== null) {
+      const { reason } = await EntranceFeaturedFileService.checkEligibility(
+        currentEntrance.id,
+        featuredFileId
+      );
+      if (reason) {
+        const message = EntranceFeaturedFileService.getMessage(
+          reason,
+          featuredFileId
+        );
+        return reason === EntranceFeaturedFileService.REASONS.NOT_FOUND
+          ? res.notFound({ message })
+          : res.badRequest(message);
+      }
+    }
+
+    // A request carrying only featuredFile changes nothing else: neither the
+    // name nor the defaults the full update applies (geology).
+    if (Object.keys(requestFields).length === 1) {
+      await TEntrance.updateOne({ id: currentEntrance.id }).set({
+        featuredFile: featuredFileId,
+        reviewer: req.token.id,
+      });
+      return respondWithEntrance(req, res, currentEntrance.id);
+    }
+  }
+
   // Validate name length
   const nameText = req.param('name')?.text;
   const nameError = validateNameLength(nameText);
@@ -38,6 +100,7 @@ module.exports = async (req, res) => {
     // dateReviewed will be updated automatically by the SQL historisation trigger
     ...EntranceService.getConvertedDataFromClientRequest(req),
   };
+  if (hasFeaturedFile) cleanedData.featuredFile = featuredFileId;
 
   const isAdmin = RightService.hasGroup(
     req.token.groups,
@@ -142,22 +205,5 @@ module.exports = async (req, res) => {
     );
   }
 
-  const populatedEntrance =
-    await EntranceService.getPopulatedEntrance(entranceId);
-
-  await NotificationService.notifySubscribers(
-    populatedEntrance,
-    req.token.id,
-    NotificationService.NOTIFICATION_TYPES.UPDATE,
-    NotificationService.NOTIFICATION_ENTITIES.ENTRANCE
-  );
-
-  return ControllerService.treatAndConvert(
-    req,
-    null,
-    populatedEntrance,
-    { controllerMethod: 'EntranceController.update' },
-    res,
-    toEntrance
-  );
+  return respondWithEntrance(req, res, entranceId);
 };
