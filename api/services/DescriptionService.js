@@ -68,6 +68,9 @@ module.exports = {
       .where({
         document: documentId,
       })
+      // Without an explicit order, .populate() returns the rows in no fixed
+      // order, so a document with several descriptions got a random one.
+      .sort('id ASC')
       .populate('author')
       .populate('language')
       .populate('reviewer');

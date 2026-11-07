@@ -260,6 +260,14 @@ paths:
                     type: string
                   link:
                     type: string
+                  image:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: >-
+                      URL of the first image in the post body, at the size
+                      the post displays it. `null` when the post has no
+                      image.
                   day:
                     type: integer
                   month:

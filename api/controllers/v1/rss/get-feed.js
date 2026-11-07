@@ -9,6 +9,7 @@ const EN_RSS_FEED =
 const FEED_TIMEOUT_MS = 10000;
 
 const CommonService = require('../../../services/CommonService');
+const extractFirstImageUrl = require('../../../utils/extractFirstImageUrl');
 
 module.exports = async (req, res) => {
   // TODO error when language is neither FR nor EN
@@ -26,6 +27,7 @@ module.exports = async (req, res) => {
       255
     );
     result.link = article.link;
+    result.image = extractFirstImageUrl(article.content);
     result.day = new Date(article.pubDate).getDate();
     result.month =
       underscoreDate.monthsShort[new Date(article.pubDate).getMonth()];
