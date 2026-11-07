@@ -292,4 +292,83 @@ describe('Entrance featured file (#1701)', () => {
       });
     });
   });
+
+  describe('PUT /api/v1/entrances/:id/new-entities', () => {
+    const putNewEntities = (entrance) =>
+      supertest(sails.hooks.http.app)
+        .put(`/api/v1/entrances/${entranceId}/new-entities`)
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', userToken)
+        .send({ entrance, newNames: [] });
+
+    it('keeps the selection when the field is omitted', async () => {
+      await setStored(files.jpg);
+      await putNewEntities({ altitude: 321 }).expect(200);
+      should(await storedFeaturedFile()).equal(files.jpg);
+    });
+
+    it('selects an eligible file', async () => {
+      await putNewEntities({ featuredFile: files.png }).expect(200);
+      should(await storedFeaturedFile()).equal(files.png);
+    });
+
+    it('clears the selection with null', async () => {
+      await setStored(files.jpg);
+      await putNewEntities({ featuredFile: null }).expect(200);
+      should(await storedFeaturedFile()).be.null();
+    });
+
+    it('returns 404 for a file that does not exist', async () => {
+      await setStored(files.jpg);
+      await putNewEntities({ featuredFile: 987654321 }).expect(404);
+      should(await storedFeaturedFile()).equal(files.jpg);
+    });
+
+    describe('rejects an invalid selection with 400 and keeps the current one', () => {
+      const cases = [
+        ['a non-numeric value', () => 'abc'],
+        ['an id above the int4 range', () => 2147483648],
+        ['a PDF', () => files.pdf],
+        ['a file of an unlinked document', () => files.ofUnlinkedDocument],
+        ['an unvalidated file', () => files.unvalidated],
+      ];
+      cases.forEach(([label, value]) => {
+        it(label, async () => {
+          await setStored(files.jpg);
+          await putNewEntities({
+            featuredFile: value(),
+            altitude: 999,
+          }).expect(400);
+          const after = await TEntrance.findOne(entranceId);
+          should(after.featuredFile).equal(files.jpg);
+          should(after.altitude).equal(321);
+        });
+      });
+
+      it('without creating the new entities', async () => {
+        await setStored(files.jpg);
+        await supertest(sails.hooks.http.app)
+          .put(`/api/v1/entrances/${entranceId}/new-entities`)
+          .set('Content-type', 'application/json')
+          .set('Accept', 'application/json')
+          .set('Authorization', userToken)
+          .send({
+            entrance: { featuredFile: files.pdf },
+            newNames: [
+              {
+                name: 'Not created',
+                language: 'fra',
+                author: 1,
+                dateInscription: new Date(),
+              },
+            ],
+          })
+          .expect(400);
+        should(
+          await TName.count({ entrance: entranceId, name: 'Not created' })
+        ).equal(0);
+      });
+    });
+  });
 }).timeout(20000);

@@ -6592,6 +6592,17 @@ paths:
                 entrance:
                   type: object
                   description: Entrance fields to update.
+                  additionalProperties: true
+                  properties:
+                    featuredFile:
+                      type: integer
+                      nullable: true
+                      minimum: 1
+                      maximum: 2147483647
+                      description: >
+                        Id of the file to feature, or null to clear the
+                        selection, checked as on `PUT /entrances/{id}`. Omit it
+                        to keep the current selection.
                 newNames:
                   type: array
                   items:
@@ -6619,10 +6630,18 @@ paths:
             application/json:
               schema:
                 type: object
+        '400':
+          description: >
+            `entrance.featuredFile` is not a positive integer or null, or
+            names a file that cannot be featured (not linked to the entrance,
+            not validated, not a displayable image, document deleted, merged
+            or refused). Nothing is written.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: No entrance has this id, or it is deleted.
+          description: >
+            No entrance has this id, or it is deleted, or the file named by
+            `entrance.featuredFile` does not exist.
 
   '/entrances/publicCount':
     get:

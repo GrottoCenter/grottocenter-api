@@ -1,4 +1,5 @@
 const ControllerService = require('../../../services/ControllerService');
+const EntranceFeaturedFileService = require('../../../services/EntranceFeaturedFileService');
 const NameService = require('../../../services/NameService');
 const NotificationService = require('../../../services/NotificationService');
 const { toEntranceDuplicate } = require('../../../services/mapping/converters');
@@ -27,6 +28,19 @@ module.exports = async (req, res) => {
     ...entrance,
     id: entranceId,
   };
+
+  // featuredFile (#1701) goes through the same checks as on
+  // PUT /entrances/:id, before any write: a refused selection never replaces
+  // the current one.
+  if (entrance && Object.hasOwn(entrance, 'featuredFile')) {
+    const resolved = await EntranceFeaturedFileService.resolveRequestValue(
+      dbEntrance.id,
+      entrance.featuredFile
+    );
+    if (resolved.notFound) return res.notFound({ message: resolved.notFound });
+    if (resolved.badRequest) return res.badRequest(resolved.badRequest);
+    cleanedData.featuredFile = resolved.value;
+  }
 
   const isArrNotEmpty = (value) => Array.isArray(value) && value.length > 0;
 

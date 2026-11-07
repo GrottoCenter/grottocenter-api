@@ -130,4 +130,29 @@ module.exports = {
       error: 'featuredFile must be a positive integer file id or null.',
     };
   },
+
+  /**
+   * Parses the featuredFile request field and checks the file is eligible.
+   * Every entrance write path calls it before writing anything, so a refused
+   * selection never replaces the current one.
+   * @param {number} entranceId
+   * @param {*} value the raw body value
+   * @returns {Promise<{value: number|null}|{notFound: string}|{badRequest: string}>}
+   *   value is what to store (null clears the selection)
+   */
+  async resolveRequestValue(entranceId, value) {
+    const parsed = module.exports.parseRequestValue(value);
+    if (parsed.error) return { badRequest: parsed.error };
+    if (parsed.value === null) return { value: null };
+
+    const { reason } = await module.exports.checkEligibility(
+      entranceId,
+      parsed.value
+    );
+    if (!reason) return { value: parsed.value };
+    const message = module.exports.getMessage(reason, parsed.value);
+    return reason === REASONS.NOT_FOUND
+      ? { notFound: message }
+      : { badRequest: message };
+  },
 };

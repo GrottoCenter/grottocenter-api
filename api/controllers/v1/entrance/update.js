@@ -56,26 +56,13 @@ module.exports = async (req, res) => {
   const hasFeaturedFile = Object.hasOwn(requestFields, 'featuredFile');
   let featuredFileId;
   if (hasFeaturedFile) {
-    const parsed = EntranceFeaturedFileService.parseRequestValue(
+    const resolved = await EntranceFeaturedFileService.resolveRequestValue(
+      currentEntrance.id,
       requestFields.featuredFile
     );
-    if (parsed.error) return res.badRequest(parsed.error);
-    featuredFileId = parsed.value;
-    if (featuredFileId !== null) {
-      const { reason } = await EntranceFeaturedFileService.checkEligibility(
-        currentEntrance.id,
-        featuredFileId
-      );
-      if (reason) {
-        const message = EntranceFeaturedFileService.getMessage(
-          reason,
-          featuredFileId
-        );
-        return reason === EntranceFeaturedFileService.REASONS.NOT_FOUND
-          ? res.notFound({ message })
-          : res.badRequest(message);
-      }
-    }
+    if (resolved.notFound) return res.notFound({ message: resolved.notFound });
+    if (resolved.badRequest) return res.badRequest(resolved.badRequest);
+    featuredFileId = resolved.value;
 
     // A request carrying only featuredFile changes nothing else: neither the
     // name nor the defaults the full update applies (geology).
