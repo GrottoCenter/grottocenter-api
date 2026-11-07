@@ -418,7 +418,22 @@ paths:
       tags:
         - caves
       summary: Delete a cave
-      description: Delete a cave. If a destinationCaveForOrphan parameter is provided, all the data related to the cave are transfered to the destination cave before it's deleted. If a value is set in both caves, the destination cave value is retained.
+      description: >-
+        Delete a cave. If an `entityId` parameter is provided, all the data
+        related to the cave are transfered to the destination cave before it's
+        deleted. If a value is set in both caves, the destination cave value
+        is retained. On a permanent delete, the destination must be another
+        existing, non-deleted cave, checked once it is locked: otherwise the
+        request is refused with a 400 and the permanent step is not applied
+        (it never falls back to a delete without a target).
+
+
+        Scientific data (points and observations, soft-deleted ones included):
+        a soft delete leaves their cave reference untouched, so a restore finds
+        them back. A permanent merge transfers them to the target cave. A
+        permanent delete without a target detaches them (`caveId: null`)
+        without deleting them or their time series, measurements and
+        documents. The permanent delete runs in one transaction.
       parameters:
         - name: id
           in: path
@@ -426,22 +441,34 @@ paths:
           required: true
           schema:
             type: string
-        - name: destinationCaveForOrphan
+        - name: entityId
           in: query
-          description: Destination cave id in which the cave data will be merged before being deleted.
+          description: >
+            Id of the cave this one is a duplicate of. Sets `redirectTo` on a
+            soft-delete, and is the cave the data is merged into on a
+            permanent delete.
           required: false
           schema:
-            type: string
+            type: integer
         - $ref: '#/components/parameters/isPermanent'
       responses:
         '204':
           description: Successful operation
         '400':
-          description: Cave(s) not found, or `isPermanent` is not a `BooleanLike` value.
+          description: >
+            Cave(s) not found, `isPermanent` is not a `BooleanLike` value, a
+            permanent delete of a cave with entrances has no `entityId`, or
+            the `entityId` of a permanent delete is the cave itself, does not
+            exist or is deleted.
         '401':
           description: Authentication required.
         '403':
           description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
+        '404':
+          description: >
+            Cave not found, or permanently deleted or merged by a concurrent
+            request before this permanent delete got its lock (nothing is
+            written).
         '410':
           description: Cave already deleted
 
@@ -1958,7 +1985,7 @@ paths:
                 direction:
                   type: integer
                   enum: [1, -1]
-                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+                  description: '1 to move down (increase relevance), -1 to move up (decrease relevance)'
       responses:
         '200':
           description: Successful swap — returns both entities with updated relevance values
@@ -4516,7 +4543,7 @@ paths:
                 direction:
                   type: integer
                   enum: [1, -1]
-                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+                  description: '1 to move down (increase relevance), -1 to move up (decrease relevance)'
       responses:
         '200':
           description: Successful swap — returns both entities with updated relevance values
@@ -4873,7 +4900,7 @@ paths:
                 direction:
                   type: integer
                   enum: [1, -1]
-                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+                  description: '1 to move down (increase relevance), -1 to move up (decrease relevance)'
       responses:
         '200':
           description: Successful swap — returns both entities with updated relevance values
@@ -5062,7 +5089,7 @@ paths:
                 direction:
                   type: integer
                   enum: [1, -1]
-                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+                  description: '1 to move down (increase relevance), -1 to move up (decrease relevance)'
       responses:
         '200':
           description: Successful swap — returns both entities with updated relevance values
@@ -5099,7 +5126,7 @@ paths:
                 direction:
                   type: integer
                   enum: [1, -1]
-                  description: "1 to move down (increase relevance), -1 to move up (decrease relevance)"
+                  description: '1 to move down (increase relevance), -1 to move up (decrease relevance)'
       responses:
         '200':
           description: Successful swap — returns both entities with updated relevance values
@@ -6321,7 +6348,16 @@ paths:
         - entrances
         - caves
       summary: Move an entrance to another cave
-      description: Move an entrance from its case to another one. If the remaining cave is left without entrance, it's deleted.
+      description: >-
+        Move an entrance from its cave to another one, in one transaction. If
+        the remaining cave is left without entrance, its points and
+        observations (soft-deleted ones included) are transferred to the
+        destination cave, then it is soft-deleted with a redirect to the
+        destination. If it keeps other entrances, its points and observations
+        stay on it: which of them belong to the moved entrance cannot be
+        inferred. Points sharing a label are not merged. Concurrent moves of
+        the same entrance are serialised: each one starts from the cave the
+        previous one left the entrance in.
       parameters:
         - name: entranceId
           in: path
@@ -6347,6 +6383,8 @@ paths:
           description: Could not find the entrance or the cave with the ids you provided.
         '403':
           description: You are not authorized to move an entrance from a cave to another one.
+        '500':
+          description: Server error; nothing was changed.
 
   '/entrances/findRandom':
     get:
@@ -6419,7 +6457,10 @@ paths:
         A permanent delete or merge runs in a single transaction: it is
         applied entirely or not at all. Concurrent permanent deletes of the
         same entrance are serialised; the ones that wait find it gone and
-        get a 404.
+        get a 404. When the entrance's cave is deleted with it, its points and
+        observations follow the rules of `DELETE /caves/{id}`; the cave of the
+        `entityId` entrance must then exist and not be deleted (400
+        otherwise).
       security:
         - bearerAuth: []
       parameters:
@@ -6448,7 +6489,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Entrance'
         '400':
-          $ref: '#/components/responses/InvalidBoolean'
+          description: >
+            `isPermanent` is not a `BooleanLike` value, or the cave of the
+            `entityId` entrance cannot receive the merge of this entrance's
+            cave (it does not exist or is deleted).
         '401':
           description: Authentication required.
         '403':
@@ -7083,7 +7127,7 @@ paths:
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
                       - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
-                  example: "cave.depth:desc"
+                  example: 'cave.depth:desc'
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
@@ -7194,7 +7238,7 @@ paths:
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
                       - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
-                  example: "cave.depth:desc"
+                  example: 'cave.depth:desc'
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
@@ -10075,7 +10119,7 @@ paths:
           description: |
             Validation error. Possible error codes:
             - IMPORT_VALIDATION_ERROR: Profile structure invalid (missing fields, bad locale, non-integer IDs, invalid headerRow, etc.)
-            - IMPORT_REFERENCE_ERROR: Referenced entity not found (device, sensor config, cave, etc.)
+            - IMPORT_REFERENCE_ERROR: Referenced entity not found (device, sensor config, cave, etc.), or the cave is deleted (including a cave emptied or merged while the import ran)
             - IMPORT_PARSE_ERROR: File cannot be parsed (encoding, delimiter, empty)
             - IMPORT_TIMESTAMP_ERROR: Timestamp columns missing, unpaired, format mismatch, or epoch value out of range (1900–2100)
             - IMPORT_CONVERSION_ERROR: SI unit conversion failure or measurement column index not found in parsed data
@@ -10088,7 +10132,7 @@ paths:
         '409':
           description: |
             Conflict error. Possible error codes:
-            - IMPORT_CONFLICT_ERROR: A record with conflicting unique values already exists (e.g., duplicate point label + cave)
+            - IMPORT_CONFLICT_ERROR: A record with conflicting unique values already exists, or several non-deleted points carry `pointLabel` in the cave (possible after a cave merge): the import does not choose one of them
           content:
             application/json:
               schema:
@@ -10104,7 +10148,9 @@ paths:
       security: []
       description: >-
         List the non-deleted points, sorted by id, which makes the pages
-        stable. Public access.
+        stable. Without `caveId`, detached points (`caveId: null`, for
+        instance after their cave was permanently deleted) are listed too.
+        Public access.
       parameters:
         - name: caveId
           in: query
@@ -10834,7 +10880,6 @@ paths:
           description: Batch not found (also returned for unauthorized access to prevent leaking batch existence).
 
 components:
-
   parameters:
     pointPage:
       name: page
@@ -12409,7 +12454,7 @@ components:
           $ref: '#/components/schemas/Language'
         t_id:
           type: integer
-          description: "Only present in history snapshots. The ID of the parent guideline this snapshot belongs to."
+          description: 'Only present in history snapshots. The ID of the parent guideline this snapshot belongs to.'
 
     GuidelineDetail:
       type: object
@@ -12976,7 +13021,19 @@ components:
                 enum: [excluded, timestamp, measurement]
               timestampType:
                 type: string
-                enum: [datetime, dateOnly, timeOnly, year, month, day, hour, minute, second, elapsed_seconds]
+                enum:
+                  [
+                    datetime,
+                    dateOnly,
+                    timeOnly,
+                    year,
+                    month,
+                    day,
+                    hour,
+                    minute,
+                    second,
+                    elapsed_seconds,
+                  ]
                 description: |
                   Required when role is "timestamp". Determines how the column contributes to the final timestamp.
 
@@ -13007,7 +13064,12 @@ components:
           nullable: true
         pointLabel:
           type: string
-          description: Label for the observation point (reuses existing or creates new). Must be a string when provided.
+          description: >-
+            Label for the observation point. Reuses the non-deleted point with
+            this label in `caveId` (or without a cave when `caveId` is
+            omitted), creates one when there is none, and refuses the import
+            (409 IMPORT_CONFLICT_ERROR) when several points share the label.
+            Must be a string when provided.
         latitude:
           type: number
           nullable: true
@@ -13102,8 +13164,6 @@ components:
           type: integer
         nickname:
           type: string
-
-
 
     Name:
       properties:
@@ -13403,6 +13463,10 @@ components:
         caveId:
           type: integer
           nullable: true
+          description: >-
+            `null` for a detached point, for instance after its cave was
+            permanently deleted without a merge target. A detached point can
+            be reassociated with `PATCH /points/{id}`.
         underground:
           type: boolean
           nullable: true

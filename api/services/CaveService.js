@@ -1,3 +1,4 @@
+const CaveLifecycleService = require('./CaveLifecycleService');
 const CommonService = require('./CommonService');
 const coerceToInt = require('../utils/coerceToInt');
 const coerceToNumeric = require('../utils/coerceToNumeric');
@@ -221,11 +222,71 @@ module.exports = {
   },
 
   /**
-   * @param {Object} [db] connection to run every write on, typically the
-   *   caller's transaction
+   * Physically delete a cave, merging what it holds into another cave when
+   * `shouldMergeInto`. Its points and observations are transferred to the
+   * merge target, or detached (id_cave = NULL) without one (#1982).
+   *
+   * A merge target must be another existing, non-deleted cave, checked once
+   * it is locked: otherwise nothing is written and the error is recognized by
+   * CaveLifecycleService.isMergeTargetUnavailable().
+   *
+   * The cave and the associations it hands over are read again under its
+   * lock: `caveToDelete` only gives its id. A concurrent merge or delete may have
+   * moved its entrances or removed it while this one waited; a cave gone
+   * meanwhile is left alone and nothing is written.
+   *
+   * @param {Object} caveToDelete the cave to delete, only its id is used
+   * @param {Object} [db] the caller's transaction; without one, the delete
+   *   runs in its own transaction, so that a failure leaves nothing half-done
+   * @returns {Promise<boolean>} false when the cave no longer exists
    */
-  async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId, db) {
-    const on = (query) => (db ? query.usingConnection(db) : query);
+  async permanentlyDeleteCave(caveToDelete, shouldMergeInto, mergeIntoId, db) {
+    if (!db) {
+      // The callback must be an `async` function: Waterline treats any other
+      // function as callback-style and commits even when it rejects.
+      return sails
+        .getDatastore()
+        .transaction(async (tx) =>
+          module.exports.permanentlyDeleteCave(
+            caveToDelete,
+            shouldMergeInto,
+            mergeIntoId,
+            tx
+          )
+        );
+    }
+    const on = (query) => query.usingConnection(db);
+    // Locked so that no point or observation write can add a reference to
+    // the cave once its references have been moved (see CaveLifecycleService).
+    await CaveLifecycleService.lockCaves(
+      shouldMergeInto ? [caveToDelete.id, mergeIntoId] : [caveToDelete.id],
+      db
+    );
+    // Read under the lock, not from the caller's snapshot: handing over
+    // entrances read before a concurrent merge would take them away from the
+    // scientific data that merge moved with them.
+    const cave = await on(
+      TCave.findOne(caveToDelete.id)
+        .populate('entrances')
+        .populate('descriptions')
+        .populate('documents')
+        .populate('names')
+    );
+    if (!cave) {
+      sails.log.info(
+        `Permanent delete of cave ${caveToDelete.id} skipped: it no longer exists.`
+      );
+      return false;
+    }
+    if (shouldMergeInto) {
+      // Checked under the lock, before any write: a target deleted
+      // meanwhile, or already deleted, must not receive what the cave holds.
+      await CaveLifecycleService.assertMergeTargetAvailable(
+        cave.id,
+        mergeIntoId,
+        db
+      );
+    }
     const ids = (arr) => (arr || []).map((e) => e.id);
     const action = shouldMergeInto ? 'merge' : 'delete';
     const target = shouldMergeInto ? mergeIntoId : null;
@@ -273,6 +334,17 @@ module.exports = {
       }
     }
 
+    const scientific = shouldMergeInto
+      ? await CaveLifecycleService.transferScientificData(
+          cave.id,
+          mergeIntoId,
+          db
+        )
+      : await CaveLifecycleService.detachScientificData(cave.id, db);
+    sails.log.info(
+      `Permanent ${action} cave ${cave.id}: ${shouldMergeInto ? 'transferred' : 'detached'} ${scientific.points} point(s) and ${scientific.observations} observation(s)`
+    );
+
     await NameService.permanentDelete({ cave: cave.id }, db);
 
     // Clean up junction tables before hard delete.
@@ -298,5 +370,6 @@ module.exports = {
 
     // h_ rows are intentionally preserved for auditability.
     await on(TCave.destroyOne({ id: cave.id })); // Hard delete
+    return true;
   },
 };

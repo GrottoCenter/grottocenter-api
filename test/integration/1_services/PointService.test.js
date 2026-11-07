@@ -1,4 +1,5 @@
 const should = require('should');
+const waitForLockWait = require('../waitForLockWait');
 
 describe('PointService', () => {
   let PointService;
@@ -390,6 +391,59 @@ describe('PointService', () => {
       should(results.every((r) => r.ok)).be.true();
       const stored = await TPoint.find({ id: points.map((p) => p.id) });
       should(stored.every((p) => p.cave === 1)).be.true();
+    });
+
+    it('locks the cave before the point, so that a lifecycle transfer holding the cave does not deadlock with it (#1982)', async () => {
+      // eslint-disable-next-line global-require
+      const CaveLifecycleService = require('../../../api/services/CaveLifecycleService');
+      const [source, destination] = await Promise.all([
+        TCave.create({ author: 1 }).fetch(),
+        TCave.create({ author: 1 }).fetch(),
+      ]);
+      const point = await TPoint.create({
+        label: 'Locked point',
+        author: 1,
+        underground: true,
+        cave: source.id,
+      }).fetch();
+      createdPointIds.push(point.id);
+
+      let update;
+      try {
+        // A last-entrance move holds the source and the destination...
+        await sails.getDatastore().transaction(async (db) => {
+          await CaveLifecycleService.lockCaves([source.id, destination.id], db);
+          // ...while the point is updated onto the source: it waits for the
+          // source without holding the point.
+          update = PointService.updatePoint(
+            point.id,
+            { caveId: source.id, label: 'Renamed' },
+            1
+          );
+          await waitForLockWait();
+          // The transfer would wait forever for a point held by the update.
+          const moved = await CaveLifecycleService.transferScientificData(
+            source.id,
+            destination.id,
+            db
+          );
+          should(moved.points).equal(1);
+          await TCave.updateOne({ id: source.id })
+            .set({ isDeleted: true, redirectTo: destination.id })
+            .usingConnection(db);
+        });
+
+        // The update then finds the source deleted and changes nothing.
+        should(await update).deepEqual({
+          error: `Cave of id ${source.id} not found.`,
+        });
+        const stored = await TPoint.findOne({ id: point.id });
+        should(stored.cave).equal(destination.id);
+        should(stored.label).equal('Locked point');
+      } finally {
+        await update?.catch(() => {});
+        await TCave.destroy({ id: [source.id, destination.id] });
+      }
     });
 
     it('answers not found for a deleted point', async () => {

@@ -10,6 +10,7 @@ const should = require('should');
 const sinon = require('sinon');
 const fc = require('fast-check');
 const FileService = require('../../../../api/services/FileService');
+const CaveLifecycleService = require('../../../../api/services/CaveLifecycleService');
 const EntityBuilder = require('../../../../api/services/observation-import/EntityBuilder');
 
 // ---------------------------------------------------------------------------
@@ -31,8 +32,9 @@ function installStubs({ timeSeriesBaseId }) {
     transaction: async (fn) => fn('mock-db-connection'),
   });
 
-  sinon.stub(TPoint, 'findOne').callsFake(() => ({
-    usingConnection: () => Promise.resolve(null),
+  sinon.stub(CaveLifecycleService, 'lockCaveForScientificWrite').resolves(true);
+  sinon.stub(TPoint, 'find').callsFake(() => ({
+    sort: () => ({ usingConnection: () => Promise.resolve([]) }),
   }));
   sinon.stub(TPoint, 'create').callsFake(() => ({
     usingConnection: () => ({

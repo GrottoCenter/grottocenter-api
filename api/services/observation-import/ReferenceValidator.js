@@ -85,7 +85,7 @@ const validate = async (profile) => {
   // Cave check (optional)
   if (!isBlank(profile.caveId)) {
     checks.push(
-      TCave.findOne({ id: profile.caveId }).then((cave) => {
+      TCave.findOne({ id: profile.caveId, isDeleted: false }).then((cave) => {
         if (!cave) {
           errors.push(`caveId: Cave with ID ${profile.caveId} not found`);
         } else {

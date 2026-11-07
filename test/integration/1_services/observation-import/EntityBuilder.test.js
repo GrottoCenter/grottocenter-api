@@ -6,7 +6,7 @@
  *
  * Tests:
  *  - Transaction rollback: when a DB operation throws, later stubs are NOT called
- *  - Point reuse: when TPoint.findOne returns a record, TPoint.create is NOT called
+ *  - Point reuse: when the label matches one point, TPoint.create is NOT called
  *  - Document title fallback: when documentTitle is missing, uses filename without extension
  *  - Observation name: TName created when non-whitespace, not created when empty/null/whitespace
  *  - File archive failure: when FileService.document.create throws, the error propagates
@@ -15,6 +15,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const FileService = require('../../../../api/services/FileService');
+const CaveLifecycleService = require('../../../../api/services/CaveLifecycleService');
 const EntityBuilder = require('../../../../api/services/observation-import/EntityBuilder');
 
 // ---------------------------------------------------------------------------
@@ -94,11 +95,21 @@ function installDefaultStubs(overrides = {}) {
     transaction: async (fn) => fn('mock-db'),
   });
 
-  sinon.stub(TPoint, 'findOne').callsFake(() => ({
-    usingConnection: () => {
-      tracker.pointFindOneCalled = true;
-      return Promise.resolve(overrides.existingPoint || null);
-    },
+  sinon
+    .stub(CaveLifecycleService, 'lockCaveForScientificWrite')
+    .resolves(overrides.caveAvailable !== false);
+  sinon.stub(TPoint, 'find').callsFake(() => ({
+    sort: () => ({
+      usingConnection: () => {
+        tracker.pointFindOneCalled = true;
+        if (overrides.existingPoints) {
+          return Promise.resolve(overrides.existingPoints);
+        }
+        return Promise.resolve(
+          overrides.existingPoint ? [overrides.existingPoint] : []
+        );
+      },
+    }),
   }));
   sinon.stub(TPoint, 'create').callsFake(() => ({
     usingConnection: () => ({
@@ -213,8 +224,11 @@ describe('EntityBuilder', () => {
       sinon.stub(sails, 'getDatastore').returns({
         transaction: async (fn) => fn('mock-db'),
       });
-      sinon.stub(TPoint, 'findOne').callsFake(() => ({
-        usingConnection: () => Promise.resolve(null),
+      sinon
+        .stub(CaveLifecycleService, 'lockCaveForScientificWrite')
+        .resolves(true);
+      sinon.stub(TPoint, 'find').callsFake(() => ({
+        sort: () => ({ usingConnection: () => Promise.resolve([]) }),
       }));
       sinon.stub(TPoint, 'create').callsFake(() => ({
         usingConnection: () => ({
@@ -268,7 +282,7 @@ describe('EntityBuilder', () => {
   });
 
   describe('Point reuse', () => {
-    it('should NOT call TPoint.create when TPoint.findOne returns a record', async () => {
+    it('should NOT call TPoint.create when the label matches one point', async () => {
       const tracker = installDefaultStubs({
         existingPoint: {
           id: 42,
@@ -286,7 +300,7 @@ describe('EntityBuilder', () => {
       should(result.pointId).equal(42);
     });
 
-    it('should call TPoint.create when TPoint.findOne returns null', async () => {
+    it('should call TPoint.create when no point matches the label', async () => {
       const tracker = installDefaultStubs({
         existingPoint: null,
       });
@@ -297,6 +311,47 @@ describe('EntityBuilder', () => {
       should(tracker.pointFindOneCalled).be.true();
       should(tracker.pointCreateCalled).be.true();
       should(result.pointId).equal(99);
+    });
+  });
+
+  describe('Cave lifecycle (#1982)', () => {
+    it('should refuse to choose between several points sharing the label', async () => {
+      const tracker = installDefaultStubs({
+        existingPoints: [
+          { id: 42, label: 'Test Point' },
+          { id: 43, label: 'Test Point' },
+        ],
+      });
+
+      const err = await should(
+        EntityBuilder.build(buildMinimalParams())
+      ).be.rejected();
+      should(err.importCode).equal('IMPORT_CONFLICT_ERROR');
+      should(err.message).containEql('42, 43');
+      should(tracker.pointCreateCalled).be.false();
+      should(tracker.observationCreateCalled).be.false();
+    });
+
+    it('should refuse a cave deleted before the import locked it', async () => {
+      const tracker = installDefaultStubs({ caveAvailable: false });
+
+      const err = await should(
+        EntityBuilder.build(buildMinimalParams())
+      ).be.rejected();
+      should(err.importCode).equal('IMPORT_REFERENCE_ERROR');
+      should(tracker.pointFindOneCalled).be.false();
+      should(tracker.observationCreateCalled).be.false();
+    });
+
+    it('should lock the cave on the import transaction', async () => {
+      installDefaultStubs();
+      await EntityBuilder.build(buildMinimalParams());
+      should(
+        CaveLifecycleService.lockCaveForScientificWrite.calledOnceWith(
+          1,
+          'mock-db'
+        )
+      ).be.true();
     });
   });
 

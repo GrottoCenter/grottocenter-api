@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const CaveService = require('../../../services/CaveService');
+const CaveLifecycleService = require('../../../services/CaveLifecycleService');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toCave } = require('../../../services/mapping/converters');
@@ -63,7 +64,10 @@ module.exports = async (req, res) => {
         .catch(() => {});
     }
 
-    await TCave.destroyOne({ id: caveId }); // Soft delete
+    // Soft delete, written as the UPDATE the production trigger makes of a
+    // first destroy: a test database without that trigger keeps the row too,
+    // which permanentlyDeleteCave() reads again under its lock.
+    await TCave.updateOne(caveId).set({ isDeleted: true });
     cave.isDeleted = true;
 
     await RecentChangeService.setDeleteRestoreAuthor(
@@ -75,11 +79,10 @@ module.exports = async (req, res) => {
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);
-  let shouldMergeInto = !Number.isNaN(mergeIntoId);
-  if (shouldMergeInto) {
-    const mergeIntoEntity = await TCave.findOne(mergeIntoId);
-    shouldMergeInto = !!mergeIntoEntity;
-  }
+  // A target that does not exist or is deleted is refused by
+  // permanentlyDeleteCave(), once it holds the target's lock: a merge never
+  // falls back to a plain delete that would detach the scientific data.
+  const shouldMergeInto = !Number.isNaN(mergeIntoId);
 
   if (deletePermanently) {
     if (cave.entrances.length > 0 && !shouldMergeInto) {
@@ -88,7 +91,22 @@ module.exports = async (req, res) => {
       });
     }
 
-    await CaveService.permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId);
+    try {
+      const deleted = await CaveService.permanentlyDeleteCave(
+        cave,
+        shouldMergeInto,
+        mergeIntoId
+      );
+      // Removed by a concurrent permanent delete or merge since it was read
+      if (!deleted) {
+        return res.notFound({ message: `Cave of id ${caveId} not found.` });
+      }
+    } catch (err) {
+      if (CaveLifecycleService.isMergeTargetUnavailable(err)) {
+        return res.badRequest({ message: err.message });
+      }
+      throw err;
+    }
   }
 
   // Fire-and-forget: don't block the response on subscriber notifications

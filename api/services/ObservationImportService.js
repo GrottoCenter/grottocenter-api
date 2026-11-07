@@ -188,6 +188,9 @@ const execute = async (file, profile, requestAuthorId) => {
     if (err instanceof ImportError) {
       throw err;
     }
+    if (err.importCode) {
+      throw new ImportError(err.importCode, err.message, []);
+    }
     // Classify constraint violations as client errors (not 500)
     if (err.code === 'E_UNIQUE') {
       throw new ImportError(

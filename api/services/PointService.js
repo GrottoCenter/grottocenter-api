@@ -1,3 +1,4 @@
+const CaveLifecycleService = require('./CaveLifecycleService');
 const isValidId = require('../utils/isValidId');
 
 // Document types a point can be positioned on (sql/2_2021_09_26_1_doc_types.sql):
@@ -53,9 +54,13 @@ const validateCave = async (caveId, db = null) => {
   if (!isValidId(caveId)) {
     return 'caveId must be a positive integer or null.';
   }
-  const query = TCave.findOne({ id: caveId, isDeleted: false });
-  const cave = await (db ? query.usingConnection(db) : query);
-  if (!cave) return `Cave of id ${caveId} not found.`;
+  // On a transaction, the cave is locked until the point is written: a cave
+  // emptied, merged or deleted meanwhile cannot be left with a new point
+  // after its points were transferred or detached (#1982).
+  const exists = db
+    ? await CaveLifecycleService.lockCaveForScientificWrite(caveId, db)
+    : !!(await TCave.findOne({ id: caveId, isDeleted: false }));
+  if (!exists) return `Cave of id ${caveId} not found.`;
   return null;
 };
 
@@ -213,6 +218,32 @@ module.exports = {
   },
 
   /**
+   * Validate and create a point on one transaction connection: the cave it
+   * references stays locked until the point is written (#1982).
+   *
+   * @param {Object} params - as returned by readPointParams()
+   * @param {number} authorId
+   * @returns {Promise<{error: string}|{point: Object}>}
+   */
+  createPoint: async (params, authorId) =>
+    sails.getDatastore().transaction(async (db) => {
+      const { error, data } = await module.exports.validatePointInput(
+        params,
+        null,
+        db
+      );
+      if (error) return { error };
+      const point = await TPoint.create({
+        ...data,
+        author: authorId,
+        dateInscription: new Date(),
+      })
+        .fetch()
+        .usingConnection(db);
+      return { point };
+    }),
+
+  /**
    * Apply a partial update (PATCH) to a point. The point is locked, validated
    * and written on one transaction connection: concurrent updates of the same
    * point are serialized, and each one validates against the values the
@@ -231,6 +262,16 @@ module.exports = {
    */
   updatePoint: async (pointId, params, reviewerId) =>
     sails.getDatastore().transaction(async (db) => {
+      // The cave before the point, in the lock order of CaveLifecycleService:
+      // a lifecycle operation holding this cave and waiting for the point
+      // would otherwise wait for this transaction while it waits for the cave.
+      // validatePointInput() checks the cave again on this same lock.
+      if (isValidId(params.caveId)) {
+        await CaveLifecycleService.lockCaveForScientificWrite(
+          params.caveId,
+          db
+        );
+      }
       await sails
         .sendNativeQuery('SELECT id FROM t_point WHERE id = $1 FOR UPDATE', [
           pointId,
