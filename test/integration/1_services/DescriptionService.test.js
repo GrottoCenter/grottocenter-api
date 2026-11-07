@@ -112,6 +112,14 @@ describe('DescriptionService', () => {
       const result = await DescriptionService.getHDescriptionsOfDocument(1);
       should(result).be.an.Array();
     });
+
+    it('should append the current description with the lowest id', async () => {
+      // Document 1 has two current descriptions (ids 1 and 2) and no history.
+      const result = await DescriptionService.getHDescriptionsOfDocument(1);
+      const current = result[result.length - 1];
+      should(current.t_id).equal(1);
+      should(current.title).equal('An awesome collection');
+    });
   });
 
   describe('compareDescriptionDate()', () => {
