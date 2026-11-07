@@ -9,6 +9,7 @@
  */
 
 const DocumentService = require('./DocumentService');
+const isValidId = require('../utils/isValidId');
 
 /**
  * Image formats every current browser displays in an <img>, as recorded in
@@ -123,7 +124,8 @@ module.exports = {
     if (value === null) return { value: null };
     const isIntegerString = typeof value === 'string' && /^\d+$/.test(value);
     const id = isIntegerString ? Number(value) : value;
-    if (Number.isSafeInteger(id) && id > 0) return { value: id };
+    // t_file.id is an int4: a larger id can only fail in PostgreSQL.
+    if (isValidId(id)) return { value: id };
     return {
       error: 'featuredFile must be a positive integer file id or null.',
     };

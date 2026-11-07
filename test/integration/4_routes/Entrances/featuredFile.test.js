@@ -247,11 +247,21 @@ describe('Entrance featured file (#1701)', () => {
       should(await storedFeaturedFile()).equal(files.jpg);
     });
 
+    it('returns 404 for the largest int4 id, as number or string', async () => {
+      await setStored(files.jpg);
+      await put({ featuredFile: 2147483647 }).expect(404);
+      await put({ featuredFile: '2147483647' }).expect(404);
+      should(await storedFeaturedFile()).equal(files.jpg);
+    });
+
     describe('rejects an invalid selection with 400 and keeps the current one', () => {
       const cases = [
         ['a non-numeric value', () => 'abc'],
         ['zero', () => 0],
         ['a decimal', () => 1.5],
+        ['an id above the int4 range', () => 2147483648],
+        ['an id above the int4 range as a string', () => '2147483648'],
+        ['an id far above the int4 range', () => Number.MAX_SAFE_INTEGER],
         ['an object', () => ({ id: files.png })],
         ['a file of an unlinked document', () => files.ofUnlinkedDocument],
         ['a PDF', () => files.pdf],
