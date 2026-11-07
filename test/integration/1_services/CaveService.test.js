@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaveService = require('../../../api/services/CaveService');
+const waitForLockWait = require('../waitForLockWait');
 
 const findAndPopulateCave = async (caveId) =>
   TCave.findOne(caveId)
@@ -514,6 +515,96 @@ describe('CaveService', () => {
         const kept = await TTimeSeries.findOne({ id: timeSeries.id });
         should(kept.observation).equal(direct.id);
         await TTimeSeries.destroy({ id: timeSeries.id });
+      });
+
+      describe('unavailable merge target', () => {
+        let CaveLifecycleService;
+        before(() => {
+          // eslint-disable-next-line global-require
+          CaveLifecycleService = require('../../../api/services/CaveLifecycleService');
+        });
+
+        // Nothing of the merge is applied: the cave and its data are kept
+        const shouldBeRejectedAndUnchanged = async (
+          promise,
+          point,
+          observation
+        ) => {
+          const err = await promise.then(
+            () => null,
+            (e) => e
+          );
+          should(err).not.be.null();
+          should(CaveLifecycleService.isMergeTargetUnavailable(err)).be.true();
+          should(await TCave.findOne({ id: testCave1.id })).not.be.undefined();
+          should((await TPoint.findOne({ id: point.id })).cave).equal(
+            testCave1.id
+          );
+          should(
+            (await TObservation.findOne({ id: observation.id })).cave
+          ).equal(testCave1.id);
+          should(await TName.count({ cave: testCave1.id })).equal(1);
+        };
+
+        it('should refuse a deleted target', async () => {
+          const point = await createPoint({ cave: testCave1.id });
+          const observation = await createObservation({ cave: testCave1.id });
+          await TCave.updateOne({ id: testCave2.id }).set({ isDeleted: true });
+          const cave = await CaveService.getPopulatedCave(testCave1.id);
+
+          await shouldBeRejectedAndUnchanged(
+            CaveService.permanentlyDeleteCave(cave, true, testCave2.id),
+            point,
+            observation
+          );
+        });
+
+        it('should refuse a target that does not exist or is the cave itself', async () => {
+          const point = await createPoint({ cave: testCave1.id });
+          const observation = await createObservation({ cave: testCave1.id });
+          const cave = await CaveService.getPopulatedCave(testCave1.id);
+
+          await shouldBeRejectedAndUnchanged(
+            CaveService.permanentlyDeleteCave(cave, true, 987654321),
+            point,
+            observation
+          );
+          await shouldBeRejectedAndUnchanged(
+            CaveService.permanentlyDeleteCave(cave, true, testCave1.id),
+            point,
+            observation
+          );
+        });
+
+        it('should refuse a target deleted while the merge waited for its lock', async () => {
+          const point = await createPoint({ cave: testCave1.id });
+          const observation = await createObservation({ cave: testCave1.id });
+          const cave = await CaveService.getPopulatedCave(testCave1.id);
+
+          let merge;
+          await sails.getDatastore().transaction(async (db) => {
+            await CaveLifecycleService.lockCaves([testCave2.id], db);
+            merge = CaveService.permanentlyDeleteCave(
+              cave,
+              true,
+              testCave2.id
+            ).then(
+              () => null,
+              (e) => e
+            );
+            await waitForLockWait();
+            await TCave.updateOne({ id: testCave2.id })
+              .set({ isDeleted: true })
+              .usingConnection(db);
+          });
+
+          const err = await merge;
+          await shouldBeRejectedAndUnchanged(
+            Promise.reject(err),
+            point,
+            observation
+          );
+        });
       });
 
       it('should roll everything back when the delete fails', async () => {

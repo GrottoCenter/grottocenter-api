@@ -226,6 +226,10 @@ module.exports = {
    * `shouldMergeInto`. Its points and observations are transferred to the
    * merge target, or detached (id_cave = NULL) without one (#1982).
    *
+   * A merge target must be another existing, non-deleted cave, checked once
+   * it is locked: otherwise nothing is written and the error is recognized by
+   * CaveLifecycleService.isMergeTargetUnavailable().
+   *
    * @param {Object} [db] the caller's transaction; without one, the delete
    *   runs in its own transaction, so that a failure leaves nothing half-done
    */
@@ -251,6 +255,15 @@ module.exports = {
       shouldMergeInto ? [cave.id, mergeIntoId] : [cave.id],
       db
     );
+    if (shouldMergeInto) {
+      // Checked under the lock, before any write: a target deleted
+      // meanwhile, or already deleted, must not receive what the cave holds.
+      await CaveLifecycleService.assertMergeTargetAvailable(
+        cave.id,
+        mergeIntoId,
+        db
+      );
+    }
     const ids = (arr) => (arr || []).map((e) => e.id);
     const action = shouldMergeInto ? 'merge' : 'delete';
     const target = shouldMergeInto ? mergeIntoId : null;

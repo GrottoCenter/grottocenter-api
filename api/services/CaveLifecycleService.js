@@ -18,8 +18,67 @@
  * lockCaveForScientificWrite() (FOR SHARE) and refuses a deleted one. Either
  * the writer commits first and its reference is moved with the others, or it
  * waits for the operation and then finds the cave deleted or gone.
+ *
+ * Lock order: caves first (in id order), then the entrance, then points.
+ * Every lifecycle operation and every writer follows it, so that no two of
+ * them can wait for each other. An operation that only knows which cave to
+ * lock after reading an unlocked row (an entrance's cave) reads it again
+ * under the locks and starts over in a new transaction when it changed
+ * (withLockRetry).
  */
 const CommonService = require('./CommonService');
+
+const STALE_LOCK = 'E_STALE_LOCK';
+const MERGE_TARGET_UNAVAILABLE = 'E_MERGE_TARGET_UNAVAILABLE';
+const MAX_LOCK_ATTEMPTS = 5;
+
+const errorWithCode = (code, message) => {
+  const err = new Error(message);
+  err.code = code;
+  return err;
+};
+
+/**
+ * Whether an error, possibly wrapped by Waterline, carries this code.
+ * @param {Error} err
+ * @param {string} code
+ */
+const hasCode = (err, code) => err?.code === code || err?.raw?.code === code;
+
+/**
+ * A stale lock error, for a caller that finds that a row it locked after
+ * reading it without a lock no longer holds the value it read: thrown in a
+ * withLockRetry() transaction, it starts the transaction over.
+ * @param {string} message
+ */
+const staleLockError = (message) => errorWithCode(STALE_LOCK, message);
+
+/**
+ * Whether an error is the rejection of an unavailable merge target.
+ * @param {Error} err
+ */
+const isMergeTargetUnavailable = (err) =>
+  hasCode(err, MERGE_TARGET_UNAVAILABLE);
+
+/**
+ * Run `work(db)` in a transaction, and again in a new one when it throws a
+ * stale lock error: the rows it locked no longer match what it read before
+ * locking them. Gives up after MAX_LOCK_ATTEMPTS.
+ *
+ * @param {Function} work async (db) => result
+ */
+const withLockRetry = async (work, attempt = 1) => {
+  try {
+    // The callback must be an `async` function: Waterline treats any other
+    // function as callback-style and commits even when it rejects.
+    return await sails.getDatastore().transaction(async (db) => work(db));
+  } catch (err) {
+    if (hasCode(err, STALE_LOCK) && attempt < MAX_LOCK_ATTEMPTS) {
+      return withLockRetry(work, attempt + 1);
+    }
+    throw err;
+  }
+};
 
 /**
  * Lock caves FOR UPDATE, in id order so that two operations on the same pair
@@ -39,6 +98,73 @@ const lockCaves = async (caveIds, db) => {
     [ids],
     db
   );
+};
+
+/**
+ * Lock an entrance in the lifecycle lock order: its cave and `otherCaveIds`
+ * FOR UPDATE, then the entrance FOR UPDATE. Its cave is read without a lock
+ * to know which cave to lock, then read again under the locks; when a
+ * concurrent move, merge or delete changed it meanwhile, a stale lock error
+ * makes withLockRetry() start over.
+ *
+ * @param {number} entranceId
+ * @param {Array<number>} otherCaveIds caves to lock with the entrance's own
+ * @param {Object} db transaction connection
+ * @returns {Promise<{caveId: number|null, isDeleted: boolean}|null>} the
+ *   entrance as locked, null when it does not exist
+ */
+const lockEntrance = async (entranceId, otherCaveIds, db) => {
+  const read = async (forUpdate) =>
+    (
+      await CommonService.query(
+        `SELECT id_cave, is_deleted FROM t_entrance WHERE id = $1${
+          forUpdate ? ' FOR UPDATE' : ''
+        }`,
+        [entranceId],
+        db
+      )
+    ).rows[0];
+
+  const unlocked = await read(false);
+  if (!unlocked) return null;
+  await lockCaves([unlocked.id_cave, ...otherCaveIds], db);
+  const locked = await read(true);
+  if (!locked) return null;
+  if (locked.id_cave !== unlocked.id_cave) {
+    throw staleLockError(
+      `Entrance ${entranceId} moved from cave ${unlocked.id_cave} to ${locked.id_cave} while its caves were being locked.`
+    );
+  }
+  return { caveId: locked.id_cave, isDeleted: locked.is_deleted };
+};
+
+/**
+ * Check, once the caves are locked, that a merge target can receive what a
+ * cave holds: another cave, existing and not deleted. Throws a merge target
+ * error (isMergeTargetUnavailable()) otherwise.
+ *
+ * @param {number} caveId the cave being merged
+ * @param {number} mergeIntoId
+ * @param {Object} db transaction connection, holding the lock on the target
+ */
+const assertMergeTargetAvailable = async (caveId, mergeIntoId, db) => {
+  const unavailable = () =>
+    errorWithCode(
+      MERGE_TARGET_UNAVAILABLE,
+      `Cave of id ${caveId} cannot be merged into cave ${mergeIntoId}: the target must be another existing, non-deleted cave.`
+    );
+  if (
+    !Number.isInteger(Number(mergeIntoId)) ||
+    Number(mergeIntoId) === Number(caveId)
+  ) {
+    throw unavailable();
+  }
+  const { rows } = await CommonService.query(
+    'SELECT id FROM t_cave WHERE id = $1 AND is_deleted = false',
+    [mergeIntoId],
+    db
+  );
+  if (rows.length === 0) throw unavailable();
 };
 
 /**
@@ -111,20 +237,23 @@ const lockCaveForScientificWrite = async (caveId, db) => {
  * the last one of its cave, the cave's scientific data is transferred to the
  * destination and the cave is soft-deleted with a redirect to it.
  *
+ * The source is the entrance's cave read under the locks (lockEntrance()):
+ * two overlapping moves of the same entrance are serialized, and the second
+ * one starts from the cave the first one moved it to.
+ *
  * @param {number} entranceId
  * @param {number} destinationCaveId
  * @param {number} reviewerId
  * @returns {Promise<{notFound: string}|{ok: true, sourceDeleted: boolean}>}
  */
 const moveEntranceToCave = async (entranceId, destinationCaveId, reviewerId) =>
-  sails.getDatastore().transaction(async (db) => {
-    const entrance = await TEntrance.findOne(entranceId).usingConnection(db);
+  withLockRetry(async (db) => {
+    const entrance = await lockEntrance(entranceId, [destinationCaveId], db);
     if (!entrance || entrance.isDeleted) {
       return { notFound: `Entrance of id ${entranceId} not found.` };
     }
-    const initialCaveId = entrance.cave;
+    const initialCaveId = entrance.caveId;
 
-    await lockCaves([initialCaveId, destinationCaveId], db);
     const destinationCave =
       await TCave.findOne(destinationCaveId).usingConnection(db);
     if (!destinationCave || destinationCave.isDeleted) {
@@ -145,9 +274,16 @@ const moveEntranceToCave = async (entranceId, destinationCaveId, reviewerId) =>
     const initialCave = await TCave.findOne(initialCaveId)
       .populate('entrances')
       .usingConnection(db);
-    if (!initialCave || initialCave.entrances.length > 0) {
-      // The source keeps other entrances: which of its points belong to the
-      // moved entrance cannot be inferred, so its scientific data stays.
+    // The source keeps other entrances: which of its points belong to the
+    // moved entrance cannot be inferred, so its scientific data stays. An
+    // already deleted source keeps its data for a restore, and must not be
+    // destroyed again: the production trigger turns a second delete into a
+    // physical one.
+    if (
+      !initialCave ||
+      initialCave.isDeleted ||
+      initialCave.entrances.length > 0
+    ) {
       return { ok: true, sourceDeleted: false };
     }
 
@@ -167,7 +303,12 @@ const moveEntranceToCave = async (entranceId, destinationCaveId, reviewerId) =>
   });
 
 module.exports = {
+  withLockRetry,
+  staleLockError,
+  isMergeTargetUnavailable,
   lockCaves,
+  lockEntrance,
+  assertMergeTargetAvailable,
   transferScientificData,
   detachScientificData,
   lockCaveForScientificWrite,

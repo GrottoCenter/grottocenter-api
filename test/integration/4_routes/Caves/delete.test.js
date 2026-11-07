@@ -153,6 +153,34 @@ describe('Cave features', () => {
     });
   });
 
+  describe('Permanent merge into an unavailable target (#1982)', () => {
+    it('should return 400 when the merge target is deleted, instead of falling back on a plain delete', async () => {
+      const cave = await TCave.create({}).fetch();
+      const entrance = await TEntrance.create({
+        cave: cave.id,
+        latitude: 45.0,
+        longitude: 6.0,
+      }).fetch();
+      const deletedTarget = await TCave.create({ isDeleted: true }).fetch();
+      try {
+        const res = await supertest(sails.hooks.http.app)
+          .delete(
+            `/api/v1/caves/${cave.id}?isPermanent=true&entityId=${deletedTarget.id}`
+          )
+          .set('Authorization', adminToken)
+          .set('Content-type', 'application/json')
+          .expect(400);
+        should(res.body.message).match(/cannot be merged into/);
+        // The entrance was not moved to the deleted target
+        const kept = await TEntrance.findOne({ id: entrance.id });
+        should(kept.cave).equal(cave.id);
+      } finally {
+        await TEntrance.destroy({ id: entrance.id });
+        await TCave.destroy({ id: [cave.id, deletedTarget.id] });
+      }
+    });
+  });
+
   deleteIsPermanentCases({
     getToken: () => adminToken,
 

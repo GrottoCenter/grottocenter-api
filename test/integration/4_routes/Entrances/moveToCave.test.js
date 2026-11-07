@@ -4,6 +4,8 @@ const sinon = require('sinon');
 const entranceCreationData = require('./FAKE_DATA');
 
 const AuthTokenService = require('../../AuthTokenService');
+const CommonService = require('../../../../api/services/CommonService');
+const waitForLockWait = require('../../waitForLockWait');
 
 describe('Entrance features', () => {
   let userToken;
@@ -337,6 +339,71 @@ describe('Entrance features', () => {
         ]);
         const sourceCave = await TCave.findOne({ id: source.caveId });
         should(sourceCave.isDeleted).be.false();
+      });
+
+      it('should move the scientific data from the cave a concurrent move left the entrance in', async () => {
+        const source = await createSourceCave();
+        const firstDestinationId = await createCave();
+        const secondDestinationId = await createCave();
+
+        let secondMove;
+        // A first move of the entrance, from its cave to an empty cave, holds
+        // both caves...
+        await sails.getDatastore().transaction(async (db) => {
+          await CommonService.query(
+            'SELECT id FROM t_cave WHERE id = ANY($1::int[]) ORDER BY id FOR UPDATE',
+            [[source.caveId, firstDestinationId]],
+            db
+          );
+          await CommonService.query(
+            'UPDATE t_entrance SET id_cave = $2 WHERE id = $1',
+            [source.entranceId, firstDestinationId],
+            db
+          );
+          await CommonService.query(
+            'UPDATE t_point SET id_cave = $2 WHERE id_cave = $1',
+            [source.caveId, firstDestinationId],
+            db
+          );
+          await CommonService.query(
+            'UPDATE t_observation SET id_cave = $2 WHERE id_cave = $1',
+            [source.caveId, firstDestinationId],
+            db
+          );
+          await CommonService.query(
+            'UPDATE t_cave SET is_deleted = true, redirect_to = $2 WHERE id = $1',
+            [source.caveId, firstDestinationId],
+            db
+          );
+          // ...while a second move of the same entrance still reads it in its
+          // original cave, and waits.
+          secondMove = move(source.entranceId, secondDestinationId).then(
+            (res) => res
+          );
+          await waitForLockWait();
+        });
+
+        const res = await secondMove;
+        should(res.status).equal(200);
+        should(res.body.cave.id).equal(secondDestinationId);
+
+        // The data follows the entrance from the cave it actually left
+        should(await caveOf(TPoint, source.pointIds)).eql([
+          secondDestinationId,
+          secondDestinationId,
+        ]);
+        should(await caveOf(TObservation, source.observationIds)).eql([
+          secondDestinationId,
+          secondDestinationId,
+        ]);
+        // The test database has no soft-delete trigger: the emptied cave is
+        // removed instead of soft-deleted.
+        should(await TCave.findOne({ id: firstDestinationId })).be.undefined();
+        // The original cave, already deleted by the first move, is left as
+        // the first move left it instead of being deleted a second time.
+        const original = await TCave.findOne({ id: source.caveId });
+        should(original.isDeleted).be.true();
+        should(original.redirectTo).equal(firstDestinationId);
       });
 
       it('should roll the whole move back when it fails', async () => {

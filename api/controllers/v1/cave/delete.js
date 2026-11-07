@@ -1,6 +1,7 @@
 const ControllerService = require('../../../services/ControllerService');
 const NotificationService = require('../../../services/NotificationService');
 const CaveService = require('../../../services/CaveService');
+const CaveLifecycleService = require('../../../services/CaveLifecycleService');
 const RightService = require('../../../services/RightService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const { toCave } = require('../../../services/mapping/converters');
@@ -75,11 +76,10 @@ module.exports = async (req, res) => {
   }
 
   const mergeIntoId = parseInt(req.param('entityId'), 10);
-  let shouldMergeInto = !Number.isNaN(mergeIntoId);
-  if (shouldMergeInto) {
-    const mergeIntoEntity = await TCave.findOne(mergeIntoId);
-    shouldMergeInto = !!mergeIntoEntity;
-  }
+  // A target that does not exist or is deleted is refused by
+  // permanentlyDeleteCave(), once it holds the target's lock: a merge never
+  // falls back to a plain delete that would detach the scientific data.
+  const shouldMergeInto = !Number.isNaN(mergeIntoId);
 
   if (deletePermanently) {
     if (cave.entrances.length > 0 && !shouldMergeInto) {
@@ -88,7 +88,18 @@ module.exports = async (req, res) => {
       });
     }
 
-    await CaveService.permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId);
+    try {
+      await CaveService.permanentlyDeleteCave(
+        cave,
+        shouldMergeInto,
+        mergeIntoId
+      );
+    } catch (err) {
+      if (CaveLifecycleService.isMergeTargetUnavailable(err)) {
+        return res.badRequest({ message: err.message });
+      }
+      throw err;
+    }
   }
 
   // Fire-and-forget: don't block the response on subscriber notifications

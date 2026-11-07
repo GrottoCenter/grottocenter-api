@@ -5,6 +5,7 @@ const RightService = require('../../../services/RightService');
 const { toEntrance } = require('../../../services/mapping/converters');
 const NameService = require('../../../services/NameService');
 const CaveService = require('../../../services/CaveService');
+const CaveLifecycleService = require('../../../services/CaveLifecycleService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
 const readBoolParam = require('../../../utils/readBoolParam');
@@ -101,9 +102,11 @@ async function loadForPermanentDelete(entranceId, db) {
  * Permanently delete an entrance, or merge it into `mergeIntoId`, in one
  * transaction, soft-deleting it first when it is not already.
  *
- * The entrance row is locked first, so a concurrent permanent delete or
- * merge of the same entrance waits for this one to finish, then finds the
- * entrance gone. Every query below runs on `db`: a write through another
+ * Its cave and the merge target's cave are locked first, then the entrance
+ * row, in the lock order of CaveLifecycleService: a concurrent permanent
+ * delete, merge or move of the same entrance waits for this one to finish,
+ * then finds the entrance gone. Run it through withLockRetry(), which starts
+ * it over when a cave changed while it was being locked. Every query below runs on `db`: a write through another
  * connection to a row this transaction has locked would wait forever, and
  * a read through another connection could wait for a free one forever.
  *
@@ -122,13 +125,25 @@ async function permanentlyDelete(
   { entranceId, wasDeleted, mergeIntoId, authorId },
   db
 ) {
-  const { rows } = await CommonService.query(
-    'SELECT is_deleted FROM t_entrance WHERE id = $1 FOR UPDATE',
-    [entranceId],
+  // The merge target's cave is locked with the entrance's own, in the
+  // lifecycle lock order (caves, then the entrance): the cave of a target
+  // read here and changed before the locks makes the transaction start over.
+  const mergeTargetCaveId = Number.isNaN(mergeIntoId)
+    ? null
+    : ((
+        await CommonService.query(
+          'SELECT id_cave FROM t_entrance WHERE id = $1',
+          [mergeIntoId],
+          db
+        )
+      ).rows[0]?.id_cave ?? null);
+  const locked = await CaveLifecycleService.lockEntrance(
+    entranceId,
+    [mergeTargetCaveId],
     db
   );
-  if (rows.length === 0) return GONE;
-  const isDeleted = rows[0].is_deleted;
+  if (!locked) return GONE;
+  const { isDeleted } = locked;
   if (wasDeleted && !isDeleted) return RESTORED;
 
   // Reloaded under the lock: what the request loaded at its start may
@@ -155,6 +170,11 @@ async function permanentlyDelete(
       .populate('cave')
       .usingConnection(db);
     shouldMergeInto = !!mergeIntoEntity;
+    if ((mergeIntoEntity?.cave?.id ?? null) !== mergeTargetCaveId) {
+      throw CaveLifecycleService.staleLockError(
+        `Entrance ${mergeIntoId} changed cave while the caves of the merge of entrance ${entranceId} were being locked.`
+      );
+    }
   }
 
   const action = shouldMergeInto ? 'merge' : 'delete';
@@ -383,17 +403,26 @@ module.exports = async (req, res) => {
   if (deletePermanently) {
     // `async` is required: Sails awaits the callback only when it is an
     // AsyncFunction, and otherwise commits as soon as it returns
-    const outcome = await sails.getDatastore().transaction(async (db) =>
-      permanentlyDelete(
-        {
-          entranceId,
-          wasDeleted: entrance.isDeleted,
-          mergeIntoId: redirectTo,
-          authorId: req.token.id,
-        },
-        db
-      )
-    );
+    // Started over when a cave changed while it was being locked
+    let outcome;
+    try {
+      outcome = await CaveLifecycleService.withLockRetry(async (db) =>
+        permanentlyDelete(
+          {
+            entranceId,
+            wasDeleted: entrance.isDeleted,
+            mergeIntoId: redirectTo,
+            authorId: req.token.id,
+          },
+          db
+        )
+      );
+    } catch (err) {
+      if (CaveLifecycleService.isMergeTargetUnavailable(err)) {
+        return res.badRequest({ message: err.message });
+      }
+      throw err;
+    }
     if (outcome === GONE) {
       return res.notFound({
         message: `Entrance of id ${entranceId} not found.`,
