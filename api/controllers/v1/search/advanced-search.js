@@ -6,11 +6,13 @@ const {
 const { toSearchResult } = require('../../../services/mapping/converters');
 const normalizeDataQualityFilter = require('../../../utils/normalizeDataQualityFilter');
 const readBoolParam = require('../../../utils/readBoolParam');
+const normalizeBoolFilter = require('../../../utils/normalizeBoolFilter');
 
 // Sort fields that are only valid for specific entities
 const ENTITY_SPECIFIC_SORT_FIELDS = {
   dataQuality: ['entrances'],
   authorsSort: ['documents'],
+  hasFiles: ['documents'],
 };
 
 module.exports = async (req, res) => {
@@ -38,7 +40,19 @@ module.exports = async (req, res) => {
     }
   }
 
-  const filter = normalizeDataQualityFilter(req.param('filter') ?? {});
+  const { filter, error: filterError } = normalizeBoolFilter(
+    normalizeDataQualityFilter(req.param('filter') ?? {}),
+    'hasFiles'
+  );
+  if (filterError) {
+    return res.badRequest(
+      readBoolParam.formatInvalidBoolError(
+        req,
+        filterError.field,
+        filterError.value
+      )
+    );
+  }
 
   let results;
   try {

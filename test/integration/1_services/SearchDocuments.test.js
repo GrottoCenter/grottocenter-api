@@ -131,6 +131,47 @@ describe('searchDocuments', () => {
       should(doc.language).equal('eng');
     });
 
+    describe('attached files', () => {
+      // Document 4 has no file in the fixtures
+      let fileId;
+
+      const hasFiles = async () => {
+        const [doc] = await buildDocuments('documents', [4]);
+        return doc.hasFiles;
+      };
+
+      before(async () => {
+        const {
+          rows: [row],
+        } = await CommonService.query(
+          `INSERT INTO t_file (filename, id_file_format, id_document, path)
+           VALUES ('file.pdf', 1, 4, 'file.pdf') RETURNING id`
+        );
+        fileId = row.id;
+      });
+
+      after(() =>
+        CommonService.query('DELETE FROM t_file WHERE id = $1', [fileId])
+      );
+
+      it('ignores a file awaiting validation', async () => {
+        should(await hasFiles()).be.false();
+      });
+
+      it('tells that a validated file is attached', async () => {
+        await CommonService.query(
+          'UPDATE t_file SET is_validated = true WHERE id = $1',
+          [fileId]
+        );
+        should(await hasFiles()).be.true();
+      });
+
+      it('tells that no file is attached any more', async () => {
+        await CommonService.query('DELETE FROM t_file WHERE id = $1', [fileId]);
+        should(await hasFiles()).be.false();
+      });
+    });
+
     describe('document linked to an entrance', () => {
       before(async () => {
         await CommonService.query(

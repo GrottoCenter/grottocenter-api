@@ -4,6 +4,7 @@ const {
   handleTypesenseError,
 } = require('../../../services/TypesenseErrorService');
 const readBoolParam = require('../../../utils/readBoolParam');
+const normalizeBoolFilter = require('../../../utils/normalizeBoolFilter');
 
 module.exports = async (req, res) => {
   const field = req.param('field');
@@ -27,6 +28,21 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const { filter, error: filterError } = normalizeBoolFilter(
+    req.param('filter') ?? {},
+    'hasFiles'
+  );
+  if (filterError) {
+    res.badRequest(
+      readBoolParam.formatInvalidBoolError(
+        req,
+        filterError.field,
+        filterError.value
+      )
+    );
+    return;
+  }
+
   let r;
   try {
     r = await SearchService.fieldSearch({
@@ -34,7 +50,7 @@ module.exports = async (req, res) => {
       field,
       query: req.param('query'),
       size: req.param('size') ?? 10,
-      filter: req.param('filter') ?? {},
+      filter,
       isLogicalCompareAnd: matchAllFields,
     });
   } catch (error) {

@@ -285,6 +285,22 @@ describe('SearchService', () => {
       should(call.args[1].filter_by).match(/\|\|/);
     });
 
+    it('should filter and sort documents on hasFiles with bare booleans', async () => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [] });
+
+      await SearchService.collectionSearch({
+        entity: 'documents',
+        sort: 'hasFiles:desc',
+        filter: { hasFiles: false, type: 'Article' },
+      });
+
+      const call = typesenseStub.search.getCall(0);
+      should(call.args[1].filter_by).equal('hasFiles:=false && type:`Article`');
+      should(call.args[1].sort_by).equal('hasFiles:desc,_text_match:desc');
+    });
+
     it('should apply pagination parameters', async () => {
       typesenseStub.search = sinon
         .stub(typesense, 'search')

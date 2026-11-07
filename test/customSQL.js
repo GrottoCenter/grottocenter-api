@@ -966,6 +966,14 @@ const SEARCH_OUTBOX_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after SEARCH_OUTBOX_MIGRATION, whose trigger function it reuses
+const SEARCH_OUTBOX_FILE_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_37_2026_11_06_search_outbox_file.sql'),
+    'utf8'
+  )
+);
+
 // Runs after SEARCH_OUTBOX_MIGRATION, whose t_grotto triggers it replaces
 const ORGANIZATION_TYPE_MIGRATION = forTestDatabase(
   fs.readFileSync(
@@ -1129,6 +1137,7 @@ module.exports = {
   DETACH_DOCUMENT_HISTO_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
+  SEARCH_OUTBOX_FILE_MIGRATION,
   ORGANIZATION_TYPE_MIGRATION,
   ORGANIZATION_TYPE_OTHER_MIGRATION,
   BOT_CASCADE_CHECK_MIGRATION,

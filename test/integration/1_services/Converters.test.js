@@ -708,6 +708,27 @@ describe('Converters Service', () => {
       // eslint-disable-next-line no-underscore-dangle
       should(result.results[0]._type).equal('documents');
     });
+
+    it('should tell whether a document has an attached file', () => {
+      const source = {
+        hits: [
+          { document: { id: 1, hasFiles: true }, highlight: {} },
+          { document: { id: 2, hasFiles: false }, highlight: {} },
+          { document: { id: 3 }, highlight: {} },
+        ],
+        found: 3,
+        out_of: 100,
+        page: 1,
+        request_params: { collection_name: 'documents' },
+      };
+      const result = converters.toSearchResult(source);
+      should(result.results.map((r) => r.hasFiles)).eql([
+        true,
+        false,
+        undefined,
+      ]);
+      should(result.results[2]).not.have.property('hasFiles');
+    });
   });
 
   describe('toDeletedEntity()', () => {

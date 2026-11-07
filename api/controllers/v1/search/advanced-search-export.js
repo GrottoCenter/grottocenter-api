@@ -7,6 +7,7 @@ const {
   filterDocuments,
 } = require('../../../services/geo-serializers');
 const readBoolParam = require('../../../utils/readBoolParam');
+const normalizeBoolFilter = require('../../../utils/normalizeBoolFilter');
 
 function escapeCSV(v) {
   // Escape double quotes
@@ -154,6 +155,20 @@ module.exports = async (req, res) => {
     res.badRequest(matchAllFieldsError);
     return;
   }
+  const { filter, error: filterError } = normalizeBoolFilter(
+    req.param('filter') ?? {},
+    'hasFiles'
+  );
+  if (filterError) {
+    res.badRequest(
+      readBoolParam.formatInvalidBoolError(
+        req,
+        filterError.field,
+        filterError.value
+      )
+    );
+    return;
+  }
   const columns = req.param('columns');
   const columnsName = req.param('columnsName');
 
@@ -196,7 +211,7 @@ module.exports = async (req, res) => {
       query: req.param('query'),
       entity,
       sort: req.param('sort'),
-      filter: req.param('filter') ?? {},
+      filter,
       isLogicalCompareAnd: matchAllFields,
     };
 
@@ -299,7 +314,7 @@ module.exports = async (req, res) => {
     query: req.param('query'),
     entity,
     sort: req.param('sort'),
-    filter: req.param('filter') ?? {},
+    filter,
     isLogicalCompareAnd: matchAllFields,
     fields: columns,
   };

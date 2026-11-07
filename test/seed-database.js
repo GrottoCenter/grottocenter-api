@@ -93,6 +93,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.CREATE_DOCUMENT_HISTO_FUNCTION,
                 customSQL.CREATE_GROTTO_SOFT_DELETE_TRIGGER,
                 customSQL.SEARCH_OUTBOX_MIGRATION,
+                customSQL.SEARCH_OUTBOX_FILE_MIGRATION,
                 customSQL.ORGANIZATION_TYPE_MIGRATION,
                 customSQL.ORGANIZATION_TYPE_OTHER_MIGRATION,
                 customSQL.BOT_CASCADE_CHECK_MIGRATION,
