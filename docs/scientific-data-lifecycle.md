@@ -62,6 +62,27 @@ refuses a deleted cave. Either the writer commits first and its new reference is
 transferred or detached with the others, or it waits and then finds the cave
 deleted (400) or gone.
 
+All of them take their locks in one order, so that none of them can wait for
+another that waits for it:
+
+1. caves, in id order;
+2. the entrance (entrance move, entrance permanent delete);
+3. points (the point update, and the `UPDATE`s of a transfer or detachment).
+
+An entrance move or permanent delete only knows which cave to lock once it has
+read the entrance, so `lockEntrance()` reads its cave without a lock, locks the
+caves, then reads the entrance again `FOR UPDATE`. When a concurrent move,
+merge or delete changed its cave meanwhile, `withLockRetry()` starts the
+transaction over: two overlapping moves of one entrance are serialised, and the
+second one transfers the scientific data from the cave the first one left the
+entrance in. A source cave that is already deleted keeps its data and is not
+deleted again.
+
+A permanent merge checks, once the target is locked, that it is another
+existing, non-deleted cave. Otherwise nothing is written and the request is
+refused (400): a target deleted while the merge waited, or already deleted,
+never receives the data, and the merge never falls back to a detach.
+
 ## Imports
 
 `POST /observations/import` reuses the non-deleted point carrying `pointLabel` in

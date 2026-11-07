@@ -411,10 +411,13 @@ paths:
         - caves
       summary: Delete a cave
       description: >-
-        Delete a cave. If a destinationCaveForOrphan parameter is provided, all
-        the data related to the cave are transfered to the destination cave
-        before it's deleted. If a value is set in both caves, the destination
-        cave value is retained.
+        Delete a cave. If an `entityId` parameter is provided, all the data
+        related to the cave are transfered to the destination cave before it's
+        deleted. If a value is set in both caves, the destination cave value
+        is retained. On a permanent delete, the destination must be another
+        existing, non-deleted cave, checked once it is locked: otherwise the
+        request is refused with a 400 and the permanent step is not applied
+        (it never falls back to a delete without a target).
 
 
         Scientific data (points and observations, soft-deleted ones included):
@@ -430,18 +433,25 @@ paths:
           required: true
           schema:
             type: string
-        - name: destinationCaveForOrphan
+        - name: entityId
           in: query
-          description: Destination cave id in which the cave data will be merged before being deleted.
+          description: >
+            Id of the cave this one is a duplicate of. Sets `redirectTo` on a
+            soft-delete, and is the cave the data is merged into on a
+            permanent delete.
           required: false
           schema:
-            type: string
+            type: integer
         - $ref: '#/components/parameters/isPermanent'
       responses:
         '204':
           description: Successful operation
         '400':
-          description: Cave(s) not found, or `isPermanent` is not a `BooleanLike` value.
+          description: >
+            Cave(s) not found, `isPermanent` is not a `BooleanLike` value, a
+            permanent delete of a cave with entrances has no `entityId`, or
+            the `entityId` of a permanent delete is the cave itself, does not
+            exist or is deleted.
         '401':
           description: Authentication required.
         '403':
@@ -6332,7 +6342,9 @@ paths:
         destination cave, then it is soft-deleted with a redirect to the
         destination. If it keeps other entrances, its points and observations
         stay on it: which of them belong to the moved entrance cannot be
-        inferred. Points sharing a label are not merged.
+        inferred. Points sharing a label are not merged. Concurrent moves of
+        the same entrance are serialised: each one starts from the cave the
+        previous one left the entrance in.
       parameters:
         - name: entranceId
           in: path
@@ -6432,7 +6444,10 @@ paths:
         A permanent delete or merge runs in a single transaction: it is
         applied entirely or not at all. Concurrent permanent deletes of the
         same entrance are serialised; the ones that wait find it gone and
-        get a 404.
+        get a 404. When the entrance's cave is deleted with it, its points and
+        observations follow the rules of `DELETE /caves/{id}`; the cave of the
+        `entityId` entrance must then exist and not be deleted (400
+        otherwise).
       security:
         - bearerAuth: []
       parameters:
@@ -6461,7 +6476,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Entrance'
         '400':
-          $ref: '#/components/responses/InvalidBoolean'
+          description: >
+            `isPermanent` is not a `BooleanLike` value, or the cave of the
+            `entityId` entrance cannot receive the merge of this entrance's
+            cave (it does not exist or is deleted).
         '401':
           description: Authentication required.
         '403':
