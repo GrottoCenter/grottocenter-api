@@ -3,22 +3,18 @@ const PointService = require('../../../services/PointService');
 const { toPoint } = require('../../../services/mapping/converters');
 
 module.exports = async (req, res) => {
-  const { error, data } = await PointService.validatePointInput(
-    PointService.readPointParams(req)
-  );
-  if (error) return res.badRequest(error);
-
-  let createdPoint;
+  let result;
   try {
-    createdPoint = await TPoint.create({
-      ...data,
-      author: req.token.id,
-      dateInscription: new Date(),
-    }).fetch();
+    result = await PointService.createPoint(
+      PointService.readPointParams(req),
+      req.token.id
+    );
   } catch (err) {
     sails.log.error('PointCreate: failed to create point', err);
     return res.serverError('An error occurred while creating the point.');
   }
+  if (result.error) return res.badRequest(result.error);
+  const createdPoint = result.point;
 
   const populatedPoint = await ControllerService.populateCreated(
     createdPoint,
