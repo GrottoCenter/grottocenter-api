@@ -4,7 +4,8 @@
  * Creates all database entities for an observation import within a single
  * PostgreSQL transaction. The sequence is:
  *
- *   1. Resolve or create TPoint (label + cave, case-sensitive)
+ *   1. Resolve or create TPoint (label + cave, case-sensitive, non-deleted;
+ *      refused when several points match)
  *   2. Create TObservation with denormalized fields
  *   3. Create TDocument (type=Dataset, license, author, title derived from profile/filename)
  *   4. Upload raw data file to Azure via FileService.document.create()
@@ -20,10 +21,21 @@
  * a file-upload failure still rolls back the DB record created in step 3.
  */
 
+const CaveLifecycleService = require('../CaveLifecycleService');
 const FileService = require('../FileService');
 const PartitionManager = require('./PartitionManager');
 
 const BATCH_SIZE = 1000;
+
+/**
+ * An error ObservationImportService turns into an ImportError of this code
+ * (requiring ImportError here would be a circular dependency).
+ */
+const importFailure = (importCode, message) => {
+  const err = new Error(message);
+  err.importCode = importCode;
+  return err;
+};
 
 /**
  * Derives the document title from the profile or falls back to the filename
@@ -339,12 +351,43 @@ const build = async ({
     // -------------------------------------------------------------------------
     // 1. Resolve or create TPoint
     // -------------------------------------------------------------------------
+    // Lock the cave until the observation is written: a cave emptied, merged
+    // or deleted meanwhile cannot be left with a new point or observation
+    // after its scientific data was transferred or detached (#1982).
+    if (profile.caveId) {
+      const caveIsAvailable =
+        await CaveLifecycleService.lockCaveForScientificWrite(
+          profile.caveId,
+          db
+        );
+      if (!caveIsAvailable) {
+        throw importFailure(
+          'IMPORT_REFERENCE_ERROR',
+          `caveId: Cave with ID ${profile.caveId} not found or deleted`
+        );
+      }
+    }
+
     let point = null;
     if (profile.pointLabel) {
-      point = await TPoint.findOne({
+      // Several points can share a label in one cave, for instance after a
+      // merge: refuse to pick one of them arbitrarily.
+      const candidates = await TPoint.find({
         label: profile.pointLabel,
         cave: profile.caveId || null,
-      }).usingConnection(db);
+        isDeleted: false,
+      })
+        .sort('id ASC')
+        .usingConnection(db);
+      if (candidates.length > 1) {
+        throw importFailure(
+          'IMPORT_CONFLICT_ERROR',
+          `pointLabel: ${candidates.length} points are labelled "${profile.pointLabel}" ${
+            profile.caveId ? `in cave ${profile.caveId}` : 'without a cave'
+          } (ids ${candidates.map((c) => c.id).join(', ')}); the import cannot choose one of them.`
+        );
+      }
+      [point = null] = candidates;
 
       if (!point) {
         const pointData = {

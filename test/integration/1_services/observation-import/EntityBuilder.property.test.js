@@ -19,6 +19,7 @@ const should = require('should');
 const sinon = require('sinon');
 const fc = require('fast-check');
 const FileService = require('../../../../api/services/FileService');
+const CaveLifecycleService = require('../../../../api/services/CaveLifecycleService');
 const EntityBuilder = require('../../../../api/services/observation-import/EntityBuilder');
 
 // ---------------------------------------------------------------------------
@@ -135,11 +136,14 @@ function installStubs({
   });
 
   // --- TPoint ---
-  sinon.stub(TPoint, 'findOne').callsFake(() => ({
-    usingConnection: () => {
-      tracker.pointFindOneCalled = true;
-      return Promise.resolve(existingPoint || null);
-    },
+  sinon.stub(CaveLifecycleService, 'lockCaveForScientificWrite').resolves(true);
+  sinon.stub(TPoint, 'find').callsFake(() => ({
+    sort: () => ({
+      usingConnection: () => {
+        tracker.pointFindOneCalled = true;
+        return Promise.resolve(existingPoint ? [existingPoint] : []);
+      },
+    }),
   }));
   sinon.stub(TPoint, 'create').callsFake(() => ({
     usingConnection: () => ({
