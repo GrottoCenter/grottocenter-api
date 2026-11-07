@@ -28,6 +28,59 @@ describe('RSS endpoints', () => {
       res.body.should.have.property('month');
     }).timeout(15000);
 
+    it('should expose the first image of the post as image', async () => {
+      const stub = sinon.stub(Parser.prototype, 'parseURL').resolves({
+        items: [
+          {
+            title: 'A post',
+            content:
+              '<div><a href="https://blogger.googleusercontent.com/img/b/x/s477/a.JPG"><img border="0" src="https://blogger.googleusercontent.com/img/b/x/s320/a.JPG"/></a></div><p>Text</p>',
+            link: 'https://blog-fr.grottocenter.org/2026/01/a-post.html',
+            pubDate: 'Mon, 05 Jan 2026 10:00:00 +0000',
+          },
+        ],
+      });
+
+      try {
+        const res = await supertest(sails.hooks.http.app)
+          .get('/api/v1/rss/FR')
+          .expect(200);
+
+        res.body.image.should.equal(
+          'https://blogger.googleusercontent.com/img/b/x/s320/a.JPG'
+        );
+        res.body.title.should.equal('A post');
+        res.body.text.should.equal('Text');
+        res.body.day.should.equal(5);
+        res.body.month.should.equal('Jan');
+      } finally {
+        stub.restore();
+      }
+    });
+
+    it('should return a null image when the post has none', async () => {
+      const stub = sinon.stub(Parser.prototype, 'parseURL').resolves({
+        items: [
+          {
+            title: 'A post without picture',
+            content: '<p>Only text</p>',
+            link: 'https://blog-en.grottocenter.org/2026/01/no-picture.html',
+            pubDate: 'Mon, 05 Jan 2026 10:00:00 +0000',
+          },
+        ],
+      });
+
+      try {
+        const res = await supertest(sails.hooks.http.app)
+          .get('/api/v1/rss/EN')
+          .expect(200);
+
+        res.body.should.have.property('image', null);
+      } finally {
+        stub.restore();
+      }
+    });
+
     it('should return 502 when upstream feed times out', async () => {
       const stub = sinon
         .stub(Parser.prototype, 'parseURL')
