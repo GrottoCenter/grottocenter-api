@@ -262,6 +262,16 @@ module.exports = {
    */
   updatePoint: async (pointId, params, reviewerId) =>
     sails.getDatastore().transaction(async (db) => {
+      // The cave before the point, in the lock order of CaveLifecycleService:
+      // a lifecycle operation holding this cave and waiting for the point
+      // would otherwise wait for this transaction while it waits for the cave.
+      // validatePointInput() checks the cave again on this same lock.
+      if (isValidId(params.caveId)) {
+        await CaveLifecycleService.lockCaveForScientificWrite(
+          params.caveId,
+          db
+        );
+      }
       await sails
         .sendNativeQuery('SELECT id FROM t_point WHERE id = $1 FOR UPDATE', [
           pointId,
