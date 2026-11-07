@@ -83,6 +83,13 @@ existing, non-deleted cave. Otherwise nothing is written and the request is
 refused (400): a target deleted while the merge waited, or already deleted,
 never receives the data, and the merge never falls back to a detach.
 
+A permanent merge or delete reads the cave and the entrances, descriptions and
+documents it hands over again once the cave is locked, rather than trusting the
+caller's copy. When two permanent merges of one cave overlap, the second one
+finds the cave gone and writes nothing (`DELETE /caves/{id}` answers 404): it
+cannot move the entrances the first one merged away from the scientific data
+that went with them.
+
 ## Imports
 
 `POST /observations/import` reuses the non-deleted point carrying `pointLabel` in

@@ -300,16 +300,16 @@ async function permanentlyDelete(
       [entrance.cave],
       db
     );
-    const cave = await TCave.findOne(entrance.cave)
-      .populate('names')
-      .populate('entrances')
-      .populate('descriptions')
-      .populate('documents')
-      .usingConnection(db);
+    // permanentlyDeleteCave() reads what the cave holds again under the lock
+    const cave = await TCave.findOne(entrance.cave).usingConnection(db);
     // Already gone if a concurrent request deleted it
     if (cave) {
       if (!cave.isDeleted) {
-        await TCave.destroyOne({ id: cave.id }).usingConnection(db); // Soft delete
+        // Soft delete, written as the UPDATE the production trigger makes of
+        // a first destroy, so that the row is there to be read again.
+        await TCave.updateOne(cave.id)
+          .set({ isDeleted: true })
+          .usingConnection(db);
       }
       await CaveService.permanentlyDeleteCave(
         cave,

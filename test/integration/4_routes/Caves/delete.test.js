@@ -39,7 +39,9 @@ describe('Cave features', () => {
       });
 
       after(async () => {
-        should(await TCave.findOne(caveToDeleteId)).be.undefined();
+        // A soft delete keeps the row, as the production trigger does
+        should((await TCave.findOne(caveToDeleteId)).isDeleted).be.true();
+        await TCave.destroyOne(caveToDeleteId);
       });
 
       it('should return code 200', (done) => {
@@ -81,8 +83,8 @@ describe('Cave features', () => {
       });
 
       after(async () => {
-        should(await TCave.findOne(sourceCaveId)).be.undefined();
-        await TCave.destroyOne(destinationCaveId);
+        should((await TCave.findOne(sourceCaveId)).isDeleted).be.true();
+        await TCave.destroy({ id: [sourceCaveId, destinationCaveId] });
       });
 
       it('should return code 200 on successfull caves merge', (done) => {
@@ -106,7 +108,7 @@ describe('Cave features', () => {
       });
 
       after(async () => {
-        await TCave.destroy({ id: targetCaveId });
+        await TCave.destroy({ id: [caveId, targetCaveId] });
       });
 
       it('should soft delete and set redirectTo when entityId is provided', async () => {
@@ -116,10 +118,9 @@ describe('Cave features', () => {
           .set('Content-type', 'application/json')
           .expect(200);
 
-        const deletedCave = await TCave.findOne(caveId).meta({
-          enableExperimentalDeepTargets: true,
-        });
-        should(deletedCave).be.undefined();
+        const deletedCave = await TCave.findOne(caveId);
+        should(deletedCave.isDeleted).be.true();
+        should(deletedCave.redirectTo).equal(targetCaveId);
       });
     });
 

@@ -64,7 +64,10 @@ module.exports = async (req, res) => {
         .catch(() => {});
     }
 
-    await TCave.destroyOne({ id: caveId }); // Soft delete
+    // Soft delete, written as the UPDATE the production trigger makes of a
+    // first destroy: a test database without that trigger keeps the row too,
+    // which permanentlyDeleteCave() reads again under its lock.
+    await TCave.updateOne(caveId).set({ isDeleted: true });
     cave.isDeleted = true;
 
     await RecentChangeService.setDeleteRestoreAuthor(
@@ -89,11 +92,15 @@ module.exports = async (req, res) => {
     }
 
     try {
-      await CaveService.permanentlyDeleteCave(
+      const deleted = await CaveService.permanentlyDeleteCave(
         cave,
         shouldMergeInto,
         mergeIntoId
       );
+      // Removed by a concurrent permanent delete or merge since it was read
+      if (!deleted) {
+        return res.notFound({ message: `Cave of id ${caveId} not found.` });
+      }
     } catch (err) {
       if (CaveLifecycleService.isMergeTargetUnavailable(err)) {
         return res.badRequest({ message: err.message });

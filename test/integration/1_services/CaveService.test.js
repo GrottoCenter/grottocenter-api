@@ -607,6 +607,62 @@ describe('CaveService', () => {
         });
       });
 
+      it('should not move the entrances of a cave merged by an overlapping merge', async () => {
+        // eslint-disable-next-line global-require
+        const CaveLifecycleService = require('../../../api/services/CaveLifecycleService');
+        const testCave3 = await TCave.create({ author: 1, depth: 70 }).fetch();
+        const entrance = await TEntrance.create({
+          author: 1,
+          cave: testCave1.id,
+          latitude: 45.0,
+          longitude: 6.0,
+        }).fetch();
+        const point = await createPoint({ cave: testCave1.id });
+        const observation = await createObservation({
+          cave: testCave1.id,
+          point: point.id,
+        });
+        try {
+          // Both requests read the cave, with its entrance, before either
+          // of them locks it.
+          const first = await CaveService.getPopulatedCave(testCave1.id);
+          const second = await CaveService.getPopulatedCave(testCave1.id);
+
+          let secondMerge;
+          await sails.getDatastore().transaction(async (db) => {
+            await CaveLifecycleService.lockCaves([testCave1.id], db);
+            secondMerge = CaveService.permanentlyDeleteCave(
+              second,
+              true,
+              testCave3.id
+            );
+            await waitForLockWait();
+            await CaveService.permanentlyDeleteCave(
+              first,
+              true,
+              testCave2.id,
+              db
+            );
+          });
+
+          should(await secondMerge).be.false();
+          should(await TCave.findOne({ id: testCave1.id })).be.undefined();
+          should((await TEntrance.findOne({ id: entrance.id })).cave).equal(
+            testCave2.id
+          );
+          should((await TPoint.findOne({ id: point.id })).cave).equal(
+            testCave2.id
+          );
+          should(
+            (await TObservation.findOne({ id: observation.id })).cave
+          ).equal(testCave2.id);
+          should(await TEntrance.count({ cave: testCave3.id })).equal(0);
+        } finally {
+          await TEntrance.destroy({ id: entrance.id });
+          await TCave.destroy({ id: testCave3.id });
+        }
+      });
+
       it('should roll everything back when the delete fails', async () => {
         const point = await createPoint({ cave: testCave1.id });
         const direct = await createObservation({ cave: testCave1.id });

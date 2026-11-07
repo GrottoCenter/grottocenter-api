@@ -230,10 +230,17 @@ module.exports = {
    * it is locked: otherwise nothing is written and the error is recognized by
    * CaveLifecycleService.isMergeTargetUnavailable().
    *
+   * The cave and the associations it hands over are read again under its
+   * lock: `caveToDelete` only gives its id. A concurrent merge or delete may have
+   * moved its entrances or removed it while this one waited; a cave gone
+   * meanwhile is left alone and nothing is written.
+   *
+   * @param {Object} caveToDelete the cave to delete, only its id is used
    * @param {Object} [db] the caller's transaction; without one, the delete
    *   runs in its own transaction, so that a failure leaves nothing half-done
+   * @returns {Promise<boolean>} false when the cave no longer exists
    */
-  async permanentlyDeleteCave(cave, shouldMergeInto, mergeIntoId, db) {
+  async permanentlyDeleteCave(caveToDelete, shouldMergeInto, mergeIntoId, db) {
     if (!db) {
       // The callback must be an `async` function: Waterline treats any other
       // function as callback-style and commits even when it rejects.
@@ -241,7 +248,7 @@ module.exports = {
         .getDatastore()
         .transaction(async (tx) =>
           module.exports.permanentlyDeleteCave(
-            cave,
+            caveToDelete,
             shouldMergeInto,
             mergeIntoId,
             tx
@@ -252,9 +259,25 @@ module.exports = {
     // Locked so that no point or observation write can add a reference to
     // the cave once its references have been moved (see CaveLifecycleService).
     await CaveLifecycleService.lockCaves(
-      shouldMergeInto ? [cave.id, mergeIntoId] : [cave.id],
+      shouldMergeInto ? [caveToDelete.id, mergeIntoId] : [caveToDelete.id],
       db
     );
+    // Read under the lock, not from the caller's snapshot: handing over
+    // entrances read before a concurrent merge would take them away from the
+    // scientific data that merge moved with them.
+    const cave = await on(
+      TCave.findOne(caveToDelete.id)
+        .populate('entrances')
+        .populate('descriptions')
+        .populate('documents')
+        .populate('names')
+    );
+    if (!cave) {
+      sails.log.info(
+        `Permanent delete of cave ${caveToDelete.id} skipped: it no longer exists.`
+      );
+      return false;
+    }
     if (shouldMergeInto) {
       // Checked under the lock, before any write: a target deleted
       // meanwhile, or already deleted, must not receive what the cave holds.
@@ -347,6 +370,6 @@ module.exports = {
 
     // h_ rows are intentionally preserved for auditability.
     await on(TCave.destroyOne({ id: cave.id })); // Hard delete
-    return undefined;
+    return true;
   },
 };

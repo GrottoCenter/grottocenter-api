@@ -456,6 +456,11 @@ paths:
           description: Authentication required.
         '403':
           description: Neither a moderator nor an administrator, or `isPermanent=true` without the Administrator role.
+        '404':
+          description: >
+            Cave not found, or permanently deleted or merged by a concurrent
+            request before this permanent delete got its lock (nothing is
+            written).
         '410':
           description: Cave already deleted
 
