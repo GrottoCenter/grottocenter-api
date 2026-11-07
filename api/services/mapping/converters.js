@@ -504,6 +504,13 @@ const c = {
       filterDeleted: false,
     });
     result.documents = toList('documents', source, c.toCitationDocument);
+    // Only an entrance read through EntranceService.getPopulatedEntrance has
+    // its featured file checked: a bare id is never exposed (#1701).
+    if (source.featuredFile === null) {
+      result.featuredFile = null;
+    } else if (source.featuredFile instanceof Object) {
+      result.featuredFile = c.toFeaturedFile(source.featuredFile);
+    }
     result.histories = toList('histories', source, c.toSimpleHistory, {
       filterDeleted: false,
     });
@@ -631,6 +638,13 @@ const c = {
           }
         : null,
     };
+  },
+
+  // The compact file an entrance features (#1701): enough to display it
+  // without another request.
+  toFeaturedFile: (source) => {
+    const { id, fileName, completePath, thumbnails } = c.toFile(source);
+    return { id, fileName, completePath, thumbnails };
   },
 
   toSimpleHistory: (source) => {

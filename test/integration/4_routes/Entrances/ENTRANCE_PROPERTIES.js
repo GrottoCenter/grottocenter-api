@@ -20,6 +20,7 @@ const ENTRANCE_PROPERTIES = [
   'descriptions',
   'discoveryYear',
   'documents',
+  'featuredFile',
   'hasBat',
   'hasRules',
   'histories',

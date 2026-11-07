@@ -6514,7 +6514,24 @@ paths:
       tags:
         - entrances
       summary: Update an entrance
-      description: Update an entrance. See the POST /entrances route explanation about the parameters you can use to update an entrance. When the coordinates change and the new position lies in a sensitive massif, the entrance becomes sensitive (whatever isSensitive says), unless its sensitivity is locked.
+      description: >
+        Update an entrance. See the POST /entrances route explanation about
+        the parameters you can use to update an entrance. When the coordinates
+        change and the new position lies in a sensitive massif, the entrance
+        becomes sensitive (whatever isSensitive says), unless its sensitivity
+        is locked.
+
+
+        `featuredFile` selects the entrance picture: omitted, the selection is
+        kept; a file id selects that file; null clears it. A body holding only
+        `featuredFile` changes nothing else (the name need not be sent). The
+        file must belong to a document linked to the entrance, that document
+        must be neither deleted, merged nor refused, and the file must be
+        validated and in a format browsers display (JPEG, PNG, GIF, WebP,
+        BMP); missing thumbnails do not matter. A refused selection leaves the
+        current one unchanged.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -6522,9 +6539,40 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              properties:
+                featuredFile:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  maximum: 2147483647
+                  description: >
+                    Id of the file to feature, or null to clear the selection.
+                    Omit it to keep the current selection.
+            examples:
+              selectFeaturedFile:
+                summary: Select the featured picture only
+                value:
+                  featuredFile: 25
+              clearFeaturedFile:
+                summary: Clear the featured picture
+                value:
+                  featuredFile: null
       responses:
         '400':
-          $ref: '#/components/responses/InvalidBoolean'
+          description: >
+            Bad request: a boolean parameter holds a value other than those
+            accepted by `BooleanLike` (structured error, see
+            `InvalidBoolean`), the name is too long, or `featuredFile` is not
+            a positive integer or null, or names a file that cannot be
+            featured (not linked to the entrance, not validated, not a
+            displayable image, document deleted, merged or refused). Nothing
+            is written.
         200:
           description: Successful operation
           content:
@@ -6535,6 +6583,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         403:
           description: You are not authorized to update an entrance.
+        '404':
+          description: >
+            Entrance not found or deleted, or the file named by
+            `featuredFile` does not exist.
 
   '/entrances/{id}/restore':
     post:
@@ -6592,6 +6644,17 @@ paths:
                 entrance:
                   type: object
                   description: Entrance fields to update.
+                  additionalProperties: true
+                  properties:
+                    featuredFile:
+                      type: integer
+                      nullable: true
+                      minimum: 1
+                      maximum: 2147483647
+                      description: >
+                        Id of the file to feature, or null to clear the
+                        selection, checked as on `PUT /entrances/{id}`. Omit it
+                        to keep the current selection.
                 newNames:
                   type: array
                   items:
@@ -6619,10 +6682,18 @@ paths:
             application/json:
               schema:
                 type: object
+        '400':
+          description: >
+            `entrance.featuredFile` is not a positive integer or null, or
+            names a file that cannot be featured (not linked to the entrance,
+            not validated, not a displayable image, document deleted, merged
+            or refused). Nothing is written.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: No entrance has this id, or it is deleted.
+          description: >
+            No entrance has this id, or it is deleted, or the file named by
+            `entrance.featuredFile` does not exist.
 
   '/entrances/publicCount':
     get:
@@ -12146,6 +12217,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CitationDocument'
+        featuredFile:
+          allOf:
+            - $ref: '#/components/schemas/FeaturedFile'
+          nullable: true
+          description: >
+            Picture of the entrance, chosen among the image files of its
+            documents. Null when none is selected, or when the selected file
+            is no longer eligible (see PUT /entrances/{id}). Present on GET and
+            PUT /entrances/{id} responses.
         externalUrl:
           type: string
         redirectTo:
@@ -12384,6 +12464,37 @@ components:
               type: string
               nullable: true
               description: 1920px wide variant for lightbox default view.
+
+    FeaturedFile:
+      type: object
+      description: >
+        Compact view of a `File`, enough to display it without another
+        request. `completePath` is the original image, also the fallback when
+        `thumbnails`, or one of its variants, is null.
+      properties:
+        id:
+          type: integer
+          example: 25
+        fileName:
+          type: string
+          example: brudour-entrance.jpg
+        completePath:
+          type: string
+          description: Full public URL to the original image.
+        thumbnails:
+          type: object
+          nullable: true
+          description: Resized WebP variants, as in `File.thumbnails`.
+          properties:
+            small:
+              type: string
+              nullable: true
+            medium:
+              type: string
+              nullable: true
+            large:
+              type: string
+              nullable: true
 
     File-format:
       type: object
