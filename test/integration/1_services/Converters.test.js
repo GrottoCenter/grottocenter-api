@@ -668,6 +668,17 @@ describe('Converters Service', () => {
       const result = converters.toOrganization(source);
       should(result.iso3166).equal('FR-75');
     });
+
+    it('should expose managed countries with their id and native name only', () => {
+      const source = {
+        id: 1,
+        managedCountries: [{ id: 'ES', iso3: 'ESP', nativeName: 'España' }],
+      };
+      const result = converters.toOrganization(source);
+      should(result.managedCountries).deepEqual([
+        { id: 'ES', nativeName: 'España' },
+      ]);
+    });
   });
 
   describe('toSearchResult()', () => {

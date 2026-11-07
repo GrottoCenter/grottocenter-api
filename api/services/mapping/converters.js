@@ -884,15 +884,6 @@ const c = {
       source.managedCountries?.map((country) => ({
         id: country.id,
         nativeName: country.nativeName,
-        enName: country.enName,
-        frName: country.frName,
-        esName: country.esName,
-        deName: country.deName,
-        bgName: country.bgName,
-        itName: country.itName,
-        caName: country.caName,
-        nlName: country.nlName,
-        rsName: country.rsName,
       })) || [],
     managedRegions:
       source.managedRegions?.map((region) => ({

@@ -190,8 +190,9 @@ paths:
       summary: List the coordinate reference systems
       description: >-
         The coordinate reference systems (proj4 definitions) known to
-        Grottocenter, with the countries they apply to. `title`, `units` and
-        `proj` are parsed from the proj4 definition.
+        Grottocenter, with the countries they apply to, sorted by native
+        country name then definition. `title`, `units` and `proj` are parsed
+        from the proj4 definition.
       security: []
       responses:
         '200':
@@ -212,9 +213,20 @@ paths:
                       type: string
                     proj:
                       type: string
+                    iso2:
+                      type: string
+                      nullable: true
+                      description: >-
+                        ISO 3166-1 alpha-2 code of the country the projection
+                        applies to, null for a world-wide projection. Localize
+                        the country name from it.
+                    native_name:
+                      type: string
+                      nullable: true
+                      description: Native name of the country, null for a world-wide projection.
                     Fr_name:
                       type: string
-                      description: French name of the country, `World` when none.
+                      description: Always `World`. Kept for compatibility; use `iso2` or `native_name`.
         '404':
           description: No coordinate reference system was found.
 
@@ -10874,7 +10886,7 @@ components:
     qualitySortAll:
       name: sort
       in: query
-      description: Column name to sort results by. When omitted, no specific order is applied.
+      description: Column name to sort results by. When omitted, no specific order is applied. country_name sorts by the native country name.
       required: false
       schema:
         type: string
@@ -10900,7 +10912,7 @@ components:
     qualitySortCountry:
       name: sort
       in: query
-      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints.
+      description: Column name to sort results by. When omitted, no specific order is applied. Note that massif_name is not available on country and region endpoints. country_name sorts by the native country name.
       required: false
       schema:
         type: string
@@ -11568,6 +11580,7 @@ components:
           type: string
         country_name:
           type: string
+          description: Native name of the country (`t_country.native_name`), for example `España`. It was the French name before.
         data_quality:
           type: integer
         date_of_update:
@@ -13191,24 +13204,6 @@ components:
               id:
                 type: string
               nativeName:
-                type: string
-              enName:
-                type: string
-              frName:
-                type: string
-              esName:
-                type: string
-              deName:
-                type: string
-              bgName:
-                type: string
-              itName:
-                type: string
-              caName:
-                type: string
-              nlName:
-                type: string
-              rsName:
                 type: string
         managedRegions:
           type: array
