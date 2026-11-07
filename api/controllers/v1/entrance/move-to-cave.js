@@ -1,40 +1,31 @@
 const ControllerService = require('../../../services/ControllerService');
+const CaveLifecycleService = require('../../../services/CaveLifecycleService');
 const EntranceService = require('../../../services/EntranceService');
 const { toEntrance } = require('../../../services/mapping/converters');
+const isValidId = require('../../../utils/isValidId');
 
 module.exports = async (req, res) => {
-  const entranceId = req.param('entranceId');
-  const entrance = await TEntrance.findOne(entranceId);
-  if (!entrance || entrance.isDeleted) {
-    return res.notFound({ message: `Entrance of id ${entranceId} not found.` });
-  }
-
-  const destinationCaveId = parseInt(req.param('caveId'), 10);
-  const destinationCave = await TCave.findOne(destinationCaveId);
-  if (!destinationCave || destinationCave.isDeleted) {
+  const entranceId = Number(req.param('entranceId'));
+  const destinationCaveId = Number(req.param('caveId'));
+  if (!isValidId(entranceId)) {
     return res.notFound({
-      message: `Cave of id ${destinationCaveId} not found.`,
+      message: `Entrance of id ${req.param('entranceId')} not found.`,
+    });
+  }
+  if (!isValidId(destinationCaveId)) {
+    return res.notFound({
+      message: `Cave of id ${req.param('caveId')} not found.`,
     });
   }
 
-  const initialCaveId = entrance.cave;
-
-  // Single atomic update — produces one h_entrance snapshot (old cave → new cave)
-  await TEntrance.updateOne({ id: entranceId }).set({
-    cave: destinationCaveId,
-    reviewer: req.token.id,
-  });
-
-  // Soft-delete the initial cave if it has no remaining entrances.
-  // An entrance without a cave (legacy orphan) has no initial cave to clean up.
-  if (initialCaveId) {
-    const initialCave =
-      await TCave.findOne(initialCaveId).populate('entrances');
-    if (initialCave && initialCave.entrances.length === 0) {
-      await TCave.update(initialCaveId).set({ redirectTo: destinationCaveId });
-      await TCave.destroyOne({ id: initialCaveId }); // Soft delete
-    }
-  }
+  // The move, the transfer of the scientific data of an emptied cave and its
+  // soft delete run in one transaction (#1982).
+  const { notFound } = await CaveLifecycleService.moveEntranceToCave(
+    entranceId,
+    destinationCaveId,
+    req.token.id
+  );
+  if (notFound) return res.notFound({ message: notFound });
 
   // Return populated entrance
   const populatedEntrance =

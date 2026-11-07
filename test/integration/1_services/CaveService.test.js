@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../AuthTokenService');
 const CaveService = require('../../../api/services/CaveService');
 
@@ -389,6 +390,157 @@ describe('CaveService', () => {
 
       const deletedDesc = await TDescription.findOne({ id: desc.id });
       should(deletedDesc).be.undefined();
+    });
+
+    describe('scientific data (#1982)', () => {
+      const createdPoints = [];
+      const createdObservations = [];
+      const createPoint = async (values) => {
+        const point = await TPoint.create({
+          author: 1,
+          label: 'P',
+          ...values,
+        }).fetch();
+        createdPoints.push(point.id);
+        return point;
+      };
+      const createObservation = async (values) => {
+        const observation = await TObservation.create({
+          author: 1,
+          observationType: 1,
+          observationTypeCode: 'physical_measurements',
+          observationDate: new Date('2026-01-01T00:00:00Z'),
+          ...values,
+        }).fetch();
+        createdObservations.push(observation.id);
+        return observation;
+      };
+
+      afterEach(async () => {
+        await TObservation.destroy({ id: createdObservations.splice(0) });
+        await TPoint.destroy({ id: createdPoints.splice(0) });
+      });
+
+      it('should transfer points and observations, soft-deleted ones included, when merging', async () => {
+        const point = await createPoint({
+          cave: testCave1.id,
+          latitude: '45.1',
+          longitude: '6.1',
+          underground: true,
+        });
+        const deletedPoint = await createPoint({
+          cave: testCave1.id,
+          isDeleted: true,
+        });
+        const targetPoint = await createPoint({
+          cave: testCave2.id,
+          label: 'P',
+        });
+        const onPoint = await createObservation({
+          cave: testCave1.id,
+          point: point.id,
+          caveName: 'TestCave1',
+        });
+        const direct = await createObservation({ cave: testCave1.id });
+        const deletedObservation = await createObservation({
+          cave: testCave1.id,
+          isDeleted: true,
+        });
+
+        const cave = await CaveService.getPopulatedCave(testCave1.id);
+        await CaveService.permanentlyDeleteCave(cave, true, testCave2.id);
+
+        const points = await TPoint.find({
+          id: [point.id, deletedPoint.id, targetPoint.id],
+        });
+        points.forEach((p) => should(p.cave).equal(testCave2.id));
+        const moved = points.find((p) => p.id === point.id);
+        should(moved.label).equal('P');
+        should(Number(moved.latitude)).equal(45.1);
+        should(moved.underground).be.true();
+        should(
+          points.find((p) => p.id === deletedPoint.id).isDeleted
+        ).be.true();
+
+        const observations = await TObservation.find({
+          id: [onPoint.id, direct.id, deletedObservation.id],
+        });
+        observations.forEach((o) => should(o.cave).equal(testCave2.id));
+        const movedOnPoint = observations.find((o) => o.id === onPoint.id);
+        should(movedOnPoint.point).equal(point.id);
+        // Historical snapshot field, not a current association
+        should(movedOnPoint.caveName).equal('TestCave1');
+      });
+
+      it('should detach points and observations without deleting them when there is no merge target', async () => {
+        const point = await createPoint({ cave: testCave1.id });
+        const deletedPoint = await createPoint({
+          cave: testCave1.id,
+          isDeleted: true,
+        });
+        const onPoint = await createObservation({
+          cave: testCave1.id,
+          point: point.id,
+        });
+        const direct = await createObservation({ cave: testCave1.id });
+        const timeSeries = await TTimeSeries.create({
+          observation: direct.id,
+          author: 1,
+          sensorConfiguration: 1,
+          quantityKindCode: 'temperature',
+          unitSymbol: 'K',
+          dataQuality: 'raw',
+        }).fetch();
+
+        const cave = await CaveService.getPopulatedCave(testCave1.id);
+        await CaveService.permanentlyDeleteCave(cave, false, null);
+
+        should(await TCave.findOne({ id: testCave1.id })).be.undefined();
+        const points = await TPoint.find({ id: [point.id, deletedPoint.id] });
+        should(points).have.length(2);
+        points.forEach((p) => should(p.cave).be.null());
+        should(points.find((p) => p.id === point.id).latitude).be.null();
+
+        const observations = await TObservation.find({
+          id: [onPoint.id, direct.id],
+        });
+        should(observations).have.length(2);
+        observations.forEach((o) => should(o.cave).be.null());
+        should(observations.find((o) => o.id === onPoint.id).point).equal(
+          point.id
+        );
+        should(observations.find((o) => o.id === direct.id).point).be.null();
+
+        const kept = await TTimeSeries.findOne({ id: timeSeries.id });
+        should(kept.observation).equal(direct.id);
+        await TTimeSeries.destroy({ id: timeSeries.id });
+      });
+
+      it('should roll everything back when the delete fails', async () => {
+        const point = await createPoint({ cave: testCave1.id });
+        const direct = await createObservation({ cave: testCave1.id });
+        const cave = await CaveService.getPopulatedCave(testCave1.id);
+
+        const stub = sinon
+          .stub(TCave, 'destroyOne')
+          .throws(new Error('simulated failure'));
+        try {
+          await should(
+            CaveService.permanentlyDeleteCave(cave, true, testCave2.id)
+          ).be.rejectedWith('simulated failure');
+        } finally {
+          stub.restore();
+        }
+        should(stub.callCount).equal(1);
+
+        should((await TPoint.findOne({ id: point.id })).cave).equal(
+          testCave1.id
+        );
+        should((await TObservation.findOne({ id: direct.id })).cave).equal(
+          testCave1.id
+        );
+        should(await TCave.findOne({ id: testCave1.id })).not.be.undefined();
+      });
     });
 
     it('should handle cave with redirectTo references', async () => {
