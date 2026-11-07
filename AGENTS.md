@@ -190,6 +190,11 @@ try {
 - **The test suite cannot catch privilege or FK bugs.** The test container only runs `0_initDatabase.sql`: no `gc_*` roles, no foreign keys, superuser connection. After any SQL change, run `npm run dev:clean`, check `docker logs grotto-postgres` for init errors, and exercise the change against `npm run dev`.
 - Materialized views are refreshed by `pg_cron` jobs inside Postgres (`sql/1_cron.sql`). A correct query against a stale view still returns stale data.
 - Production does not run migrations on deploy; they are applied by hand. Say so in the PR when one is included.
+- **Order matters, and the PR must state it.** Waterline selects every column a model declares, so the running API breaks the moment a column it declares disappears.
+  - Additive change (new column, table, index, trigger): migrate first, then deploy.
+  - Destructive change (`DROP COLUMN`, rename, type change): deploy the API that no longer reads it first, wait for the deploy to finish, then migrate. Prod outage of 2026-11-06: `t_country` columns were dropped about an hour before the deploy and every entrance page returned 500 meanwhile.
+- **Never `REFRESH MATERIALIZED VIEW` (non-concurrent) a view the live API reads.** It holds an exclusive lock for the whole refresh, and `gc_app` has `lock_timeout = 10s`, so each reader hangs 10 s and then returns 500. `v_data_quality_compute_entrance` takes ~30 min and backs the map (`/geoloc/entrances`). Also avoid holding `DROP MATERIALIZED VIEW` open in a transaction while it refreshes. Build the replacement under another name, populate it there, then swap both names in one short transaction (`ALTER ... RENAME`).
+- Do not run a migration that rebuilds a heavy view during the daily `pg_cron` refresh (04:20 UTC, about 45 min at 80–89 % CPU on the Burstable B2s) or Azure's maintenance window (Saturday 03:00 UTC, about 11 min of downtime, HA disabled).
 
 ---
 
