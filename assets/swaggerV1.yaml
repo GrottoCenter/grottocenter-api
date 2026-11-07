@@ -13219,22 +13219,6 @@ components:
                 type: string
               name:
                 type: string
-              nameEn:
-                type: string
-              nameFr:
-                type: string
-              nameEs:
-                type: string
-              nameDe:
-                type: string
-              nameBg:
-                type: string
-              nameIt:
-                type: string
-              nameCa:
-                type: string
-              nameNl:
-                type: string
         managedMassifs:
           type: array
           items:

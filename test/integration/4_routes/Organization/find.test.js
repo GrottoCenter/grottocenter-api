@@ -78,6 +78,16 @@ describe('Organization features', () => {
         });
     });
 
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1937
+    it('should return the managed regions with their id and name only', async () => {
+      // Organization 1 manages FR-01 in the fixtures
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/organizations/1')
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body.managedRegions).deepEqual([{ id: 'FR-01', name: 'Ain' }]);
+    });
+
     // https://github.com/GrottoCenter/grottocenter-api/issues/1806
     it('should return the canonical type', async () => {
       const res = await supertest(sails.hooks.http.app)

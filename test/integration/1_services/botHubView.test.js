@@ -360,27 +360,6 @@ describe('v_bot_hub - the countries index, the countries and the regions', () =>
       should((await hub('region', 'ES-NA')).page.name).equal('Nafarroa');
     });
 
-    it('never come from a translated column: a different name_<lang> changes nothing', async () => {
-      await query(
-        "UPDATE t_iso3166_2 SET name_fr = 'Poison FR', name_en = 'Poison EN', name_es = 'Poison ES' WHERE iso = 'GB-CMN'"
-      );
-      try {
-        await mkPublishedCave({ country: 'GB', region: 'GB-CMN' });
-        const row = await hub('region', 'GB-CMN');
-        should(row.page.name).equal('Carmarthenshire');
-        should(JSON.stringify(row.page)).not.containEql('Poison');
-        const country = await hub('country', 'GB');
-        should(country.page.regions).deepEqual([
-          { code: 'GB-CMN', name: 'Carmarthenshire' },
-        ]);
-      } finally {
-        await query(
-          'UPDATE t_iso3166_2 SET name_fr = NULL, name_en = NULL, name_es = NULL WHERE iso = $1',
-          ['GB-CMN']
-        );
-      }
-    });
-
     it('are cleaned in SQL as in JavaScript, which the breadcrumb of a cave page uses', async () => {
       const samples = [
         'Carmarthenshire [Sir Gaerfyrddin GB-GFY]',

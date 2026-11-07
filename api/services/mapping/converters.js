@@ -898,14 +898,6 @@ const c = {
       source.managedRegions?.map((region) => ({
         id: region.id,
         name: region.name,
-        nameEn: region.nameEn,
-        nameFr: region.nameFr,
-        nameEs: region.nameEs,
-        nameDe: region.nameDe,
-        nameBg: region.nameBg,
-        nameIt: region.nameIt,
-        nameCa: region.nameCa,
-        nameNl: region.nameNl,
       })) || [],
     managedMassifs:
       source.managedMassifs?.map((massif) => ({
