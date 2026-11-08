@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deletedListTests = require('../_helpers/deletedListTests');
 
 const list = (query, token) => {
   const request = supertest(sails.hooks.http.app)
@@ -220,5 +221,37 @@ describe('Organization find-all', () => {
         await list({ isDeleted: 'nope' }).expect(400);
       });
     });
+  });
+});
+
+// https://github.com/GrottoCenter/grottocenter-api/issues/1931
+describe('Organization find-all deleted listing contract', () => {
+  const created = [];
+
+  deletedListTests({
+    path: '/api/v1/organizations',
+    key: 'organizations',
+    model: () => TGrotto,
+    seed: async () => {
+      const [active, deleted] = await TGrotto.createEach([
+        { author: 1 },
+        { author: 1, isDeleted: true },
+      ]).fetch();
+      const merged = await TGrotto.create({
+        author: 1,
+        isDeleted: true,
+        redirectTo: active.id,
+      }).fetch();
+      created.push(active.id, deleted.id, merged.id);
+      return {
+        activeIds: [active.id],
+        deletedIds: [deleted.id, merged.id],
+        mergedId: merged.id,
+        mergedInto: active.id,
+      };
+    },
+    cleanup: async () => {
+      await TGrotto.destroy({ id: created });
+    },
   });
 });

@@ -1,4 +1,4 @@
-const { getMetaFromRequest } = require('./mapping/utils');
+const { getMetaFromRequest, toListFromController } = require('./mapping/utils');
 
 const treatRange = (parameters, req, res, converter, found) => {
   res.set('Accept-Range', `${parameters.searchedItem} ${parameters.maxRange}`);
@@ -90,6 +90,65 @@ module.exports = {
       return res.notFound(parameters.notFoundMessage);
     }
     return res.ok(found);
+  },
+
+  /**
+   * Answer one page of a core collection under its usual wrapper `{ [key] }`.
+   *
+   * A non-empty page is a 206 with `Content-Range: <skip>-<to>/<total>`; no
+   * match, or a page past the end, is a 200 with an empty array. The rows are
+   * converted as they are: the query already applied the deletion filter, so
+   * the converter must not drop the soft-deleted rows a privileged caller
+   * asked for.
+   *
+   * @param {object} req Sails request
+   * @param {object} res Sails response
+   * @param {object} page
+   * @param {string} page.key wrapper key (`entrances`, `caves`, …)
+   * @param {Array} page.rows records of the page
+   * @param {number} page.total number of records matching the filters
+   * @param {number} page.skip
+   * @param {number} page.limit
+   * @param {Function} page.converter (row, meta) => converted row
+   * @param {string} page.controllerMethod
+   * @param {string} page.searchedItem
+   * @param {object} [page.extra] extra properties of an empty answer
+   */
+  treatPage: (
+    req,
+    res,
+    {
+      key,
+      rows,
+      total,
+      skip,
+      limit,
+      converter,
+      controllerMethod,
+      searchedItem,
+      extra = {},
+    }
+  ) => {
+    if (rows.length === 0) return res.ok({ [key]: [], ...extra });
+    return module.exports.treatAndConvert(
+      req,
+      null,
+      rows,
+      {
+        controllerMethod,
+        searchedItem,
+        limit,
+        skip,
+        total,
+        url: req.originalUrl,
+      },
+      res,
+      (data, meta) =>
+        toListFromController(key, data, converter, {
+          filterDeleted: false,
+          meta,
+        })
+    );
   },
 
   treatAndConvert: (req, err, found, parameters, res, converter) => {

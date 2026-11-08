@@ -1248,6 +1248,42 @@ const c = {
     data_quality: getQualityData(entrance),
     date_of_update: entrance.date_of_update,
   }),
+
+  // Rows of the core collection lists (GET /organizations, /entrances,
+  // /massifs, /caves). They extend the simple shapes with what a deleted
+  // content browser needs: the deletion flag, the merge target, and the
+  // record's own creation/review timestamps. No deletion date is stored, so
+  // none is given.
+  toOrganizationListItem: (source) => ({
+    ...c.toSimpleOrganization(source),
+    redirectTo: source.redirectTo ?? null,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  toEntranceListItem: (source, meta) => ({
+    ...c.toSimpleEntrance(source, meta),
+    cave: source.cave?.id ?? source.cave ?? null,
+    redirectTo: source.redirectTo ?? null,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  toMassifListItem: (source) => ({
+    ...c.toSimpleMassif(source),
+    isSensitive: source.isSensitive,
+    redirectTo: source.redirectTo ?? null,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
+
+  toCaveListItem: (source) => ({
+    ...c.toSimpleCave(source),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo ?? null,
+    dateInscription: source.dateInscription,
+    dateReviewed: source.dateReviewed ?? null,
+  }),
 };
 
 module.exports = { ...c, extractCountryId };

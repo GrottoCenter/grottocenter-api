@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
+const deletedListTests = require('../_helpers/deletedListTests');
 
 describe('Document find-all', () => {
   let userToken;
@@ -277,5 +278,165 @@ describe('Document lists carry organization names', () => {
     should(document.editor).be.null();
     should(document.library).be.null();
     should(document.authorsOrganization).be.an.Array().and.have.length(0);
+  });
+});
+
+// https://github.com/GrottoCenter/grottocenter-api/issues/1931
+describe('Document find-all deleted listing', () => {
+  const created = [];
+  const docs = {};
+
+  const createDoc = async (title, attributes) => {
+    const doc = await TDocument.create({
+      author: 1,
+      license: 1,
+      type: 18, // Article
+      ...attributes,
+    }).fetch();
+    created.push(doc.id);
+    await TDescription.create({
+      author: 1,
+      title,
+      language: 'fra',
+      document: doc.id,
+    });
+    return doc;
+  };
+
+  const VALIDATED = { isValidated: true, dateValidation: '2024-01-01' };
+  const PENDING = { isValidated: false, dateValidation: null };
+  const REFUSED = { isValidated: false, dateValidation: '2024-01-02' };
+
+  // Every row of a list, page after page.
+  const listAll = async (params, token) => {
+    const rows = [];
+    for (let skip = 0; ; skip += 100) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/documents')
+        .query({ limit: 100, skip, ...params })
+        .set('Authorization', token);
+      if (res.status !== 206) return rows;
+      rows.push(...res.body.documents);
+    }
+  };
+  const idsOf = (rows) => rows.map((d) => d.id);
+
+  const seed = async () => {
+    docs.active = await createDoc('Active list document', VALIDATED);
+    docs.activePending = await createDoc('Pending list document', PENDING);
+    docs.activeRefused = await createDoc('Refused list document', REFUSED);
+    docs.deletedValidated = await createDoc('Deleted validated document', {
+      ...VALIDATED,
+      isDeleted: true,
+    });
+    docs.deletedPending = await createDoc('Deleted pending document', {
+      ...PENDING,
+      isDeleted: true,
+    });
+    docs.deletedRefused = await createDoc('Deleted refused document', {
+      ...REFUSED,
+      isDeleted: true,
+    });
+    docs.merged = await createDoc('Merged document', {
+      ...VALIDATED,
+      isDeleted: true,
+      redirectTo: docs.active.id,
+    });
+    return {
+      activeIds: [docs.active.id],
+      deletedIds: [
+        docs.deletedValidated.id,
+        docs.deletedPending.id,
+        docs.deletedRefused.id,
+        docs.merged.id,
+      ],
+      mergedId: docs.merged.id,
+      mergedInto: docs.active.id,
+    };
+  };
+  const cleanup = async () => {
+    await TDescription.destroy({ document: created });
+    await TDocument.destroy({ id: created });
+  };
+
+  deletedListTests({
+    path: '/api/v1/documents',
+    key: 'documents',
+    model: () => TDocument,
+    seed,
+    cleanup,
+  });
+
+  describe('validation states', () => {
+    let moderatorToken;
+    let adminToken;
+
+    before(async () => {
+      moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+      adminToken = await AuthTokenService.getRawBearerAdminToken();
+      await seed();
+    });
+
+    after(cleanup);
+
+    it('should list deleted documents in every validation state by default', async () => {
+      const ids = idsOf(await listAll({ isDeleted: 'true' }, adminToken));
+      should(ids).containEql(docs.deletedValidated.id);
+      should(ids).containEql(docs.deletedPending.id);
+      should(ids).containEql(docs.deletedRefused.id);
+    });
+
+    it('should narrow the deleted documents to the validated ones', async () => {
+      const rows = await listAll(
+        { isDeleted: 'true', isValidated: 'true' },
+        moderatorToken
+      );
+      const ids = idsOf(rows);
+      for (const row of rows) should(row.isValidated).be.true();
+      should(ids).containEql(docs.deletedValidated.id);
+      should(ids).not.containEql(docs.deletedPending.id);
+      should(ids).not.containEql(docs.deletedRefused.id);
+    });
+
+    it('should narrow the deleted documents to the pending and refused ones', async () => {
+      const rows = await listAll(
+        { isDeleted: 'true', isValidated: 'false' },
+        moderatorToken
+      );
+      const ids = idsOf(rows);
+      for (const row of rows) {
+        should(row.isValidated).be.false();
+        should(row.isDeleted).be.true();
+      }
+      should(ids).containEql(docs.deletedPending.id);
+      should(ids).containEql(docs.deletedRefused.id);
+      should(ids).not.containEql(docs.deletedValidated.id);
+    });
+
+    it('should keep the active list to the validated documents by default', async () => {
+      const ids = idsOf(await listAll({}, moderatorToken));
+      should(ids).containEql(docs.active.id);
+      should(ids).not.containEql(docs.activePending.id);
+      should(ids).not.containEql(docs.activeRefused.id);
+      should(ids).not.containEql(docs.deletedValidated.id);
+    });
+
+    it('should keep the moderation queue to pending active documents', async () => {
+      const ids = idsOf(
+        await listAll({ isValidated: 'false' }, moderatorToken)
+      );
+      should(ids).containEql(docs.activePending.id);
+      should(ids).not.containEql(docs.activeRefused.id);
+      should(ids).not.containEql(docs.deletedPending.id);
+    });
+
+    it('should return 400 on an invalid isValidated', async () => {
+      await supertest(sails.hooks.http.app)
+        .get('/api/v1/documents')
+        .query({ isDeleted: 'true', isValidated: 'perhaps' })
+        .set('Authorization', moderatorToken)
+        .expect(400);
+    });
   });
 });

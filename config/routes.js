@@ -132,6 +132,7 @@ module.exports.routes = {
   'GET /api/v1/entrances/with-quality/countries/:countryId/regions/:regionId':
     'v1/region/get-entrances-data-quality',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
+  'GET /api/v1/entrances': 'v1/entrance/find-all',
   'PATCH /api/v1/entrances/:entranceId/cave/:caveId':
     'v1/entrance/move-to-cave',
   'POST /api/v1/entrances': 'v1/entrance/create',
@@ -241,6 +242,7 @@ module.exports.routes = {
   // Massif
   'GET /api/v1/massifs/count': 'v1/massif/count',
   'GET /api/v1/massifs/:id': 'v1/massif/find',
+  'GET /api/v1/massifs': 'v1/massif/find-all',
   'POST /api/v1/massifs': 'v1/massif/create',
   'POST /api/v1/massifs/:id/subscribe': 'v1/massif/subscribe',
   'POST /api/v1/massifs/:id/unsubscribe': 'v1/massif/unsubscribe',

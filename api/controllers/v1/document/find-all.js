@@ -1,72 +1,82 @@
 const ControllerService = require('../../../services/ControllerService');
 const DocumentService = require('../../../services/DocumentService');
 const { toDocument } = require('../../../services/mapping/converters');
-const { toListFromController } = require('../../../services/mapping/utils');
 const readBoolParam = require('../../../utils/readBoolParam');
+const readDeletedListParams = require('../../../utils/readDeletedListParams');
+
+/**
+ * The validation clause of the list.
+ *
+ * Active list (the default): `isValidated` defaults to true. Four cases exist,
+ * isValidated (true or false) and dateValidation (null or not): a document not
+ * validated but with a dateValidation has been refused. With isValidated=false
+ * the active list is the moderation queue, so the refused documents are left
+ * out by requiring dateValidation to be null (= submitted, to be reviewed).
+ *
+ * Deleted list (isDeleted=true): every validation state by default, so that no
+ * deleted document is missing from the trash. An explicit `isValidated`
+ * narrows it to the validated documents, or to the not validated ones
+ * (pending and refused alike).
+ */
+const validationClauses = (isDeleted, isValidated) => {
+  if (isDeleted) {
+    return isValidated === undefined ? [] : [{ isValidated }];
+  }
+  const validated = isValidated ?? true;
+  return validated
+    ? [{ isValidated: true }]
+    : [{ isValidated: false }, { dateValidation: null }];
+};
 
 module.exports = async (req, res) => {
-  // By default get only the validated ones
+  const params = readDeletedListParams(req, 'documents');
+  if (params.badRequest) return res.badRequest(params.badRequest);
+  if (params.forbidden) return res.forbidden(params.forbidden);
+  const { isDeleted, skip, limit } = params;
+
   const { value: isValidated, error: isValidatedError } = readBoolParam(
     req,
-    'isValidated',
-    true
+    'isValidated'
   );
   if (isValidatedError) return res.badRequest(isValidatedError);
 
-  const sort = `${req.param('sortBy', 'dateInscription')} ${req.param(
-    'orderBy',
-    'ASC'
-  )}`;
+  const sortBy = req.param('sortBy', 'dateInscription');
+  const sort = `${sortBy} ${req.param('orderBy', 'ASC')}`;
+  // id breaks the ties of the requested order, so pages never overlap.
+  const sortCriteria = sortBy === 'id' ? [sort] : [sort, 'id ASC'];
 
-  /*
-      4 possible cases : isValidated (true or false) AND validation (null or not)
-      If the document is not validated and has a dateValidation, it means that it has been refused.
-      We don't want to retrieve these documents refused.
-      So when isValidated is false, we need to retrieve only the documents
-      with a dateValidation set to null
-      (= submitted documents which need to be reviewed).
-    */
-  const whereClause = { and: [{ isValidated, isDeleted: false }] };
-  if (!isValidated) whereClause.and.push({ dateValidation: null });
+  const whereClause = {
+    and: [{ isDeleted }, ...validationClauses(isDeleted, isValidated)],
+  };
 
   const type = req.param('documentType');
   const foundType = type ? await TType.findOne({ name: type }) : null;
   if (foundType) whereClause.and.push({ type: foundType.id });
 
-  const skip = Math.max(req.param('skip', 0), 0);
-  const limit = Math.max(Math.min(req.param('limit', 50), 100), 1);
-
   const totalDocuments = await TDocument.count().where(whereClause);
   const documents = await DocumentService.appendPopulateForSimpleDocument(
-    TDocument.find().where(whereClause).skip(skip).limit(limit).sort(sort)
+    TDocument.find()
+      .where(whereClause)
+      .skip(skip)
+      .limit(limit)
+      .sort(sortCriteria)
   );
-  if (documents.length === 0) {
-    return res.ok({
-      documents: [],
-      message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
-    });
-  }
-
   await DocumentService.setOrganizationNames(documents);
   for (const document of documents) {
     document.mainLanguage = DocumentService.getMainLanguage(document.languages);
   }
 
-  const params = {
+  return ControllerService.treatPage(req, res, {
+    key: 'documents',
+    rows: documents,
+    total: totalDocuments,
+    skip,
+    limit,
+    converter: toDocument,
     controllerMethod: 'DocumentController.findAll',
     searchedItem: 'All documents',
-    limit,
-    skip,
-    total: totalDocuments,
-    url: req.originalUrl,
-  };
-  return ControllerService.treatAndConvert(
-    req,
-    null,
-    documents,
-    params,
-    res,
-    (data, meta) =>
-      toListFromController('documents', data, toDocument, { meta })
-  );
+    extra: {
+      message: `There is no document matching your criterias. It can be because sorting by ${sort} is not supported.`,
+    },
+  });
 };

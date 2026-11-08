@@ -141,6 +141,7 @@ module.exports.policies = {
   'v1/entrance/count': true,
   'v1/entrance/public-count': true,
   'v1/entrance/find': ['validateId'],
+  'v1/entrance/find-all': true,
   'v1/entrance/find-random': true,
   'v1/entrance/get-snapshots': true,
   'v1/entrance/get-all-snapshots': true,
@@ -237,6 +238,7 @@ module.exports.policies = {
   // Massif
   'v1/massif/count': true,
   'v1/massif/find': ['validateId'],
+  'v1/massif/find-all': true,
   'v1/massif/get-statistics': true,
   'v1/massif/get-entrances-data-quality': true,
   'v1/massif/update': ['tokenAuth', 'validateId'],
