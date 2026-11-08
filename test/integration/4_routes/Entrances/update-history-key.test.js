@@ -40,6 +40,15 @@ describe('Entrance update history key (#1987)', () => {
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    await CommonService.query(ATTACH_ENTRANCE_HISTO_TRIGGER);
+  });
+
+  after(async () => {
+    await CommonService.query(DETACH_ENTRANCE_HISTO_TRIGGER);
+  });
+
+  // Each test gets its own entrance, so that it can run alone.
+  beforeEach(async () => {
     const entrance = await TEntrance.create({
       author: 1,
       latitude: 45.123,
@@ -64,11 +73,9 @@ describe('Entrance update history key (#1987)', () => {
       language: 'fra',
       dateInscription: new Date(),
     });
-    await CommonService.query(ATTACH_ENTRANCE_HISTO_TRIGGER);
   });
 
-  after(async () => {
-    await CommonService.query(DETACH_ENTRANCE_HISTO_TRIGGER);
+  afterEach(async () => {
     await CommonService.query('DELETE FROM h_entrance WHERE id = $1', [
       entranceId,
     ]);
@@ -101,14 +108,14 @@ describe('Entrance update history key (#1987)', () => {
     });
 
     // The state left by that transaction: its date_reviewed is already a
-    // history key, holding the intermediate altitude (121).
+    // history key, holding the intermediate altitude (101).
     const stuck = await TEntrance.findOne(entranceId);
-    should(stuck.altitude).equal(122);
+    should(stuck.altitude).equal(102);
     const stuckKey = (await snapshots()).find(
       (r) => r.date_reviewed.getTime() === stuck.dateReviewed.getTime()
     );
     should(stuckKey).not.be.undefined();
-    should(stuckKey.altitude).equal(121);
+    should(stuckKey.altitude).equal(101);
 
     await updateRequest({ altitude: 130 }).expect(200);
 
@@ -121,7 +128,7 @@ describe('Entrance update history key (#1987)', () => {
     const repaired = rows.find(
       (r) => r.date_reviewed.getTime() === stuck.dateReviewed.getTime()
     );
-    should(repaired.altitude).equal(122);
+    should(repaired.altitude).equal(102);
     should(
       rows.filter(
         (r) => r.date_reviewed.getTime() === stuck.dateReviewed.getTime()
