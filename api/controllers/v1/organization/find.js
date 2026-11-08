@@ -9,10 +9,7 @@ const {
 module.exports = async (req, res) => {
   const organizationId = Number(req.params.id);
 
-  const hasRight = RightService.hasGroup(
-    req.token?.groups,
-    RightService.G.MODERATOR
-  );
+  const hasRight = RightService.canViewDeleted(req.token?.groups);
 
   const params = { searchedItem: `Organization of id ${organizationId}` };
   const organization =

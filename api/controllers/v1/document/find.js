@@ -70,10 +70,7 @@ async function getModifiedDocumentData(documentId) {
 module.exports = async (req, res) => {
   const documentId = Number(req.param('id'));
 
-  const hasRight = RightService.hasGroup(
-    req.token?.groups,
-    RightService.G.MODERATOR
-  );
+  const hasRight = RightService.canViewDeleted(req.token?.groups);
 
   const { value: requireUpdate, error: requireUpdateError } = readBoolParam(
     req,

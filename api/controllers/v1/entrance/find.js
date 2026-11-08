@@ -12,10 +12,7 @@ const {
 module.exports = async (req, res) => {
   const entranceId = Number(req.params.id);
 
-  const hasRight = RightService.hasGroup(
-    req.token?.groups,
-    RightService.G.MODERATOR
-  );
+  const hasRight = RightService.canViewDeleted(req.token?.groups);
 
   const where = {};
   if (!hasRight) where.isDeleted = false;
