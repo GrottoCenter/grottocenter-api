@@ -1115,6 +1115,37 @@ CREATE TRIGGER histo_update_document BEFORE UPDATE ON t_document FOR EACH ROW EX
 const DETACH_DOCUMENT_HISTO_TRIGGER =
   'DROP TRIGGER IF EXISTS histo_update_document ON t_document;';
 
+// Entrance history, as production runs it: every t_entrance update copies the
+// old row into h_entrance, keyed by (id, date_reviewed). Waterline builds
+// h_entrance with date_reviewed alone as primary key and without the type
+// column the trigger copies, so both are aligned on production first. Only the
+// function is installed here, so that the many tests updating entrances do not
+// fill h_entrance: the tests that need the history attach the trigger
+// themselves (ATTACH/DETACH_ENTRANCE_HISTO_TRIGGER).
+const CREATE_ENTRANCE_HISTO_FUNCTION = `
+ALTER TABLE t_entrance ADD COLUMN IF NOT EXISTS "type" bpchar(8) NOT NULL DEFAULT 'entrance';
+ALTER TABLE h_entrance ADD COLUMN IF NOT EXISTS "type" bpchar(8) NOT NULL DEFAULT 'entrance';
+ALTER TABLE h_entrance DROP CONSTRAINT IF EXISTS h_entrance_pkey;
+ALTER TABLE h_entrance ADD CONSTRAINT h_entrance_pkey PRIMARY KEY (id, date_reviewed);
+${forTestDatabase(
+  fs.readFileSync(
+    path.join(
+      __dirname,
+      '../sql/9_39_2026_11_08_entrance_history_key_collision.sql'
+    ),
+    'utf8'
+  )
+)}
+`;
+
+const ATTACH_ENTRANCE_HISTO_TRIGGER = `
+DROP TRIGGER IF EXISTS histo_update_entrance ON t_entrance;
+CREATE TRIGGER histo_update_entrance BEFORE UPDATE ON t_entrance FOR EACH ROW EXECUTE PROCEDURE histo_update_entrance();
+`;
+
+const DETACH_ENTRANCE_HISTO_TRIGGER =
+  'DROP TRIGGER IF EXISTS histo_update_entrance ON t_entrance;';
+
 module.exports = {
   forTestDatabase,
   UPDATE_SEQUENCES_QUERY,
@@ -1136,6 +1167,9 @@ module.exports = {
   CREATE_DOCUMENT_HISTO_FUNCTION,
   ATTACH_DOCUMENT_HISTO_TRIGGER,
   DETACH_DOCUMENT_HISTO_TRIGGER,
+  CREATE_ENTRANCE_HISTO_FUNCTION,
+  ATTACH_ENTRANCE_HISTO_TRIGGER,
+  DETACH_ENTRANCE_HISTO_TRIGGER,
   CREATE_GROTTO_SOFT_DELETE_TRIGGER,
   SEARCH_OUTBOX_MIGRATION,
   SEARCH_OUTBOX_FILE_MIGRATION,
