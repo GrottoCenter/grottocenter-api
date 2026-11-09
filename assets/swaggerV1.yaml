@@ -374,19 +374,58 @@ paths:
       tags:
         - caves
       summary: List the caves
+      description: >-
+        List the caves, sorted by id ascending and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        caves are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted caves are returned, including those merged into another cave and those emptied by moving their last entrance to another cave (`redirectTo` is then that cave). Single-entrance caves and networks are both listed, whatever the number of entrances left: this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
       security:
         - {}
         - bearerAuth: []
-      description: Get all caves.
+      parameters:
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
       responses:
-        '200':
-          description: Successful operation
+        '206':
+          description: >-
+            A page of caves. `Content-Range` holds `skip-to/total` where
+            `total` counts the caves matching the filters.
+          headers:
+            Content-Range:
+              $ref: '#/components/headers/ListContentRange'
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Cave'
+                type: object
+                properties:
+                  caves:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CaveListItem'
+        '200':
+          description: >-
+            No cave matches the filters, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  caves:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/CaveListItem'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          $ref: '#/components/responses/DeletedListForbidden'
+        '500':
+          description: Internal server error
 
   '/caves/{id}':
     get:
@@ -396,7 +435,10 @@ paths:
       security:
         - {}
         - bearerAuth: []
-      description: Get a cave by id.
+      description: >-
+        Get a cave by id. If it is soft-deleted, a caller holding the
+        Administrator or the Moderator role (either one) gets the full cave
+        with `isDeleted: true`; anyone else gets a 404.
       parameters:
         - name: id
           in: path
@@ -412,7 +454,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cave'
         '404':
-          description: Cave not found.
+          description: >-
+            Cave not found, or soft-deleted and the caller holds neither the
+            Administrator nor the Moderator role.
 
     delete:
       tags:
@@ -2209,34 +2253,39 @@ paths:
       tags:
         - documents
       summary: List the documents
-      security: []
-      description: Get all documents.
+      description: >-
+        List the documents, sorted by `sortBy` (date of inscription by default, then id) and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        documents are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted documents are returned, including those merged into another one (`redirectTo`): this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
         - name: isValidated
           in: query
-          description: If the documents must be validated or not.
+          description: >-
+            Active list: `true` (default) lists the validated documents,
+            `false` the moderation queue (submitted documents awaiting a
+            review, the refused ones left out). Deleted list
+            (`isDeleted=true`): no value lists every validation state
+            (validated, pending and refused); `true` narrows it to the
+            validated documents, `false` to the pending and refused ones.
           required: false
           schema:
-            default: true
             allOf:
               - $ref: '#/components/schemas/BooleanLike'
-        - name: skip
-          in: query
-          description: Number of documents to skip.
-          required: false
-          schema:
-            type: integer
-            default: 0
-        - name: limit
-          in: query
-          description: Maximum number of documents.
-          required: false
-          schema:
-            type: integer
-            default: 50
         - name: sortBy
           in: query
-          description: Attribute to sort the documents by.
+          description: >-
+            Attribute to sort the documents by. Ties are broken by id
+            ascending.
           required: false
           schema:
             type: string
@@ -2256,10 +2305,13 @@ paths:
           schema:
             type: string
       responses:
-        '400':
-          $ref: '#/components/responses/InvalidBoolean'
-        '200':
-          description: Successful operation
+        '206':
+          description: >-
+            A page of documents. `Content-Range` holds `skip-to/total` where
+            `total` counts the documents matching the filters.
+          headers:
+            Content-Range:
+              $ref: '#/components/headers/ListContentRange'
           content:
             application/json:
               schema:
@@ -2269,6 +2321,28 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Document'
+        '200':
+          description: >-
+            No document matches the filters, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          $ref: '#/components/responses/DeletedListForbidden'
+        '500':
+          description: Internal server error
 
   '/documents/{id}':
     delete:
@@ -2345,7 +2419,12 @@ paths:
       security:
         - {}
         - bearerAuth: []
-      description: Get a document by id.
+      description: >-
+        Get a document by id. If it is soft-deleted, a caller holding the Administrator or the
+        Moderator role (either one) gets the full record with `isDeleted: true`;
+        anyone else gets a partial record (`id`, `isDeleted`, `redirectTo`,
+        `author`, `reviewer`, `dateInscription`, `dateReviewed`, `name`,
+        `language`).
       parameters:
         - name: id
           in: path
@@ -5142,32 +5221,58 @@ paths:
       tags:
         - guidelines
       summary: List the guidelines
-      security: []
-      description: Find all guidelines.
+      description: >-
+        List the guidelines, sorted by id ascending and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        guidelines are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted guidelines are returned: this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
-        - name: skip
-          in: query
-          description: Number of guidelines to skip.
-          required: false
-          schema:
-            type: integer
-            default: 0
-        - name: limit
-          in: query
-          description: Maximum number of guidelines.
-          required: false
-          schema:
-            type: integer
-            default: 50
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
       responses:
-        '200':
-          description: Successful operation
+        '206':
+          description: >-
+            A page of guidelines. `Content-Range` holds `skip-to/total` where
+            `total` counts the guidelines matching the filters.
+          headers:
+            Content-Range:
+              $ref: '#/components/headers/ListContentRange'
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Guideline'
+                type: object
+                properties:
+                  guidelines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guideline'
+        '200':
+          description: >-
+            No guideline matches the filters, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guidelines:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/Guideline'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          $ref: '#/components/responses/DeletedListForbidden'
+        '500':
+          description: Internal server error
     post:
       tags:
         - guidelines
@@ -6075,6 +6180,62 @@ paths:
           description: Missing email parameter or the email is marked as invalid.
 
   '/entrances':
+    get:
+      tags:
+        - entrances
+      summary: List the entrances
+      description: >-
+        List the entrances, sorted by id ascending and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        entrances are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted entrances are returned, including those merged into another one (`redirectTo`). The coordinates of a sensitive entrance stay hidden from anyone but an administrator, deleted or not: this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
+      responses:
+        '206':
+          description: >-
+            A page of entrances. `Content-Range` holds `skip-to/total` where
+            `total` counts the entrances matching the filters.
+          headers:
+            Content-Range:
+              $ref: '#/components/headers/ListContentRange'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entrances:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EntranceListItem'
+        '200':
+          description: >-
+            No entrance matches the filters, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entrances:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/EntranceListItem'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          $ref: '#/components/responses/DeletedListForbidden'
+        '500':
+          description: Internal server error
     post:
       tags:
         - entrances
@@ -6415,7 +6576,7 @@ paths:
         - if you are an unauthenticated visitor, you will not be able to get it.
         - if you are an authenticated Grottocenter user, you will be able to get the entrance information but the fields "longitude", "latitude" and "locations" will be hidden.
         - if you are an authenticated Grottocenter administrator, you will be able to get all the information.
-        If the entrance is deleted you will get a 200 response but the returned entrance will be partial. Only a few fields like "name", "author", ... will be provided.
+        If the entrance is soft-deleted, a caller holding the Administrator or the Moderator role (either one) gets the full entrance with `isDeleted: true`; anyone else gets a 404. The coordinates of a sensitive deleted entrance stay hidden from a moderator who is not an administrator.
         The "redirectTo" optional field is the ID of the entrance to display instead of this deleted entrance.
       parameters:
         - name: id
@@ -6434,7 +6595,9 @@ paths:
         '403':
           description: You are not authorized to view the entrance.
         '404':
-          description: Entrance not found. A deleted entrance will return a 200 response.
+          description: >-
+            Entrance not found, or soft-deleted and the caller holds neither
+            the Administrator nor the Moderator role.
 
     delete:
       tags:
@@ -7950,6 +8113,62 @@ paths:
                 $ref: '#/components/schemas/Count'
 
   '/massifs':
+    get:
+      tags:
+        - massifs
+      summary: List the massifs
+      description: >-
+        List the massifs, sorted by id ascending and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        massifs are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted massifs are returned, including those merged into another one (`redirectTo`): this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
+      responses:
+        '206':
+          description: >-
+            A page of massifs. `Content-Range` holds `skip-to/total` where
+            `total` counts the massifs matching the filters.
+          headers:
+            Content-Range:
+              $ref: '#/components/headers/ListContentRange'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  massifs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MassifListItem'
+        '200':
+          description: >-
+            No massif matches the filters, or `skip` is beyond the last
+            one: the list is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  massifs:
+                    type: array
+                    maxItems: 0
+                    items:
+                      $ref: '#/components/schemas/MassifListItem'
+        '400':
+          $ref: '#/components/responses/InvalidBoolean'
+        '403':
+          $ref: '#/components/responses/DeletedListForbidden'
+        '500':
+          description: Internal server error
     post:
       tags:
         - massifs
@@ -8040,7 +8259,13 @@ paths:
       security:
         - {}
         - bearerAuth: []
-      description: Get a massif, its authors, names, geogPolygon, documents, descriptions and networks.
+      description: >-
+        Get a massif, its authors, names, geogPolygon, documents, descriptions
+        and networks. If it is soft-deleted, a caller holding the Administrator or the
+        Moderator role (either one) gets the full record with `isDeleted: true`;
+        anyone else gets a partial record (`id`, `isDeleted`, `redirectTo`,
+        `author`, `reviewer`, `dateInscription`, `dateReviewed`, `name`,
+        `language`).
       parameters:
         - name: id
           in: path
@@ -8538,56 +8763,28 @@ paths:
         - organizations
       summary: List the organizations
       description: >-
-        List the organizations, sorted by id ascending and paginated with
-        `skip` and `limit` like `/documents`. By default (or with
-        `isDeleted=false`) only the active organizations are returned, to
-        anyone. With `isDeleted=true` only the soft-deleted organizations are
-        returned, including those merged into another organization: this
-        requires a Moderator bearer token. The total of the filtered set is
-        given in the `Content-Range` header (`skip-to/total`).
+        List the organizations, sorted by id ascending and paginated with `skip` and
+        `limit`. By default (or with `isDeleted=false`) only the active
+        organizations are returned, to anyone. With `isDeleted=true` only the
+        soft-deleted organizations are returned, including those merged into another one (`redirectTo`): this requires the
+        Administrator or the Moderator role (either one). Every filter applies
+        before the total in the `Content-Range` header (`skip-to/total`) is
+        counted.
       security:
         - {}
         - bearerAuth: []
       parameters:
-        - name: isDeleted
-          in: query
-          description: >-
-            `false` (default) lists the active organizations only, `true`
-            lists the soft-deleted ones only (Moderator role required).
-          required: false
-          schema:
-            default: false
-            allOf:
-              - $ref: '#/components/schemas/BooleanLike'
-        - name: skip
-          in: query
-          description: Number of organizations to skip. Negative values count as 0.
-          required: false
-          schema:
-            type: integer
-            default: 0
-            minimum: 0
-        - name: limit
-          in: query
-          description: >-
-            Maximum number of organizations per page. Values below 1 are
-            raised to 1, values above 100 are capped to 100.
-          required: false
-          schema:
-            type: integer
-            default: 50
-            minimum: 1
-            maximum: 100
+        - $ref: '#/components/parameters/listIsDeleted'
+        - $ref: '#/components/parameters/listSkip'
+        - $ref: '#/components/parameters/listLimit'
       responses:
         '206':
           description: >-
-            A page of organizations. `Content-Range` holds `skip-to/total`
-            where `total` counts the organizations matching the filter.
+            A page of organizations. `Content-Range` holds `skip-to/total` where
+            `total` counts the organizations matching the filters.
           headers:
             Content-Range:
-              schema:
-                type: string
-              example: 50-100/137
+              $ref: '#/components/headers/ListContentRange'
           content:
             application/json:
               schema:
@@ -8596,10 +8793,10 @@ paths:
                   organizations:
                     type: array
                     items:
-                      $ref: '#/components/schemas/SimpleOrganization'
+                      $ref: '#/components/schemas/OrganizationListItem'
         '200':
           description: >-
-            No organization matches the filter, or `skip` is beyond the last
+            No organization matches the filters, or `skip` is beyond the last
             one: the list is empty.
           content:
             application/json:
@@ -8610,13 +8807,11 @@ paths:
                     type: array
                     maxItems: 0
                     items:
-                      $ref: '#/components/schemas/SimpleOrganization'
+                      $ref: '#/components/schemas/OrganizationListItem'
         '400':
           $ref: '#/components/responses/InvalidBoolean'
         '403':
-          description: >-
-            `isDeleted=true` was requested without the Moderator role (missing
-            or insufficient bearer token).
+          $ref: '#/components/responses/DeletedListForbidden'
         '500':
           description: Internal server error
     post:
@@ -8771,7 +8966,13 @@ paths:
       security:
         - {}
         - bearerAuth: []
-      description: Get an organization (speleo club, association, library, editor etc.) by its id.
+      description: >-
+        Get an organization (speleo club, association, library, editor etc.)
+        by its id. If it is soft-deleted, a caller holding the Administrator or the
+        Moderator role (either one) gets the full record with `isDeleted: true`;
+        anyone else gets a partial record (`id`, `isDeleted`, `redirectTo`,
+        `author`, `reviewer`, `dateInscription`, `dateReviewed`, `name`,
+        `language`).
       parameters:
         - name: id
           in: path
@@ -10952,6 +11153,41 @@ paths:
 
 components:
   parameters:
+    listIsDeleted:
+      name: isDeleted
+      in: query
+      description: >-
+        `false` (default) lists the active records only. `true` lists the
+        soft-deleted ones only, merged ones included; it requires the
+        Administrator or the Moderator role (either one), 403 otherwise. Never
+        a mix of both.
+      required: false
+      schema:
+        default: false
+        allOf:
+          - $ref: '#/components/schemas/BooleanLike'
+    listSkip:
+      name: skip
+      in: query
+      description: >-
+        Number of records to skip. Negative or non-numeric values count as 0.
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    listLimit:
+      name: limit
+      in: query
+      description: >-
+        Maximum number of records per page. Values below 1 are raised to 1,
+        values above 100 are capped to 100, non-numeric values count as 50.
+      required: false
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 100
     pointPage:
       name: page
       in: query
@@ -11082,7 +11318,26 @@ components:
         allOf:
           - $ref: '#/components/schemas/BooleanLike'
         default: false
+  headers:
+    ListContentRange:
+      description: >-
+        `skip-to/total`: the `skip` of the page, `skip` plus the number of
+        records on the page, and the number of records matching the filters.
+      schema:
+        type: string
+      example: 50-100/137
   responses:
+    DeletedListForbidden:
+      description: >-
+        `isDeleted=true` was requested by a caller holding neither the
+        Administrator nor the Moderator role (anonymous, or an ordinary user).
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
     Unauthorized:
       description: >
         Authentication required: no bearer token was sent, or it is invalid,
@@ -11110,6 +11365,168 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    OrganizationListItem:
+      description: A row of `GET /organizations`.
+      allOf:
+        - $ref: '#/components/schemas/SimpleOrganization'
+        - type: object
+          properties:
+            redirectTo:
+              type: integer
+              nullable: true
+              description: Id of the record this one was merged into, if any.
+            dateInscription:
+              type: string
+              format: date-time
+              description: Creation date of the record (not its deletion date).
+            dateReviewed:
+              type: string
+              format: date-time
+              nullable: true
+              description: >-
+                Date of the last review of the record. A soft delete does not
+                set it: no deletion date is stored.
+    EntranceListItem:
+      description: >-
+        A row of `GET /entrances`. The coordinates of a sensitive entrance are
+        null for anyone but an administrator, deleted or not.
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        cave:
+          type: integer
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        region:
+          type: string
+          nullable: true
+        county:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        isSensitive:
+          type: boolean
+        isDeleted:
+          type: boolean
+        redirectTo:
+          type: integer
+          nullable: true
+          description: Id of the record this one was merged into, if any.
+        dateInscription:
+          type: string
+          format: date-time
+          description: Creation date of the record (not its deletion date).
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            Date of the last review of the record. A soft delete does not
+            set it: no deletion date is stored.
+    MassifListItem:
+      description: A row of `GET /massifs`. The polygon is left to `GET /massifs/{id}`.
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        isSensitive:
+          type: boolean
+        isDeleted:
+          type: boolean
+        redirectTo:
+          type: integer
+          nullable: true
+          description: Id of the record this one was merged into, if any.
+        dateInscription:
+          type: string
+          format: date-time
+          description: Creation date of the record (not its deletion date).
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            Date of the last review of the record. A soft delete does not
+            set it: no deletion date is stored.
+    CaveListItem:
+      description: >-
+        A row of `GET /caves`: a single-entrance cave or a network. A cave is
+        listed whatever the number of entrances still attached to it: a cave
+        emptied by moving its last entrance away is deleted and redirected to
+        the destination cave, with no entrance left.
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          nullable: true
+          description: >-
+            Main name of the cave, or of one of its entrances when the cave
+            has none of its own.
+        language:
+          type: string
+          nullable: true
+        length:
+          type: number
+          nullable: true
+        depth:
+          type: number
+          nullable: true
+        temperature:
+          type: number
+          nullable: true
+        isDiving:
+          type: boolean
+          nullable: true
+        nbEntrances:
+          type: integer
+          description: Number of entrances attached to the cave, deleted ones included.
+        entrances:
+          type: array
+          description: Ids of the entrances attached to the cave, deleted ones included.
+          items:
+            type: integer
+        isDeleted:
+          type: boolean
+        redirectTo:
+          type: integer
+          nullable: true
+          description: Id of the record this one was merged into, if any.
+        dateInscription:
+          type: string
+          format: date-time
+          description: Creation date of the record (not its deletion date).
+        dateReviewed:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            Date of the last review of the record. A soft delete does not
+            set it: no deletion date is stored.
     BooleanLike:
       description: >
         A boolean flag. Accepted values are the JSON booleans `true` and

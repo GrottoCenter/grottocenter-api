@@ -31,4 +31,21 @@ describe('RightService', () => {
       should(result).be.false();
     });
   });
+
+  // https://github.com/GrottoCenter/grottocenter-api/issues/1931
+  describe('canViewDeleted()', () => {
+    [
+      ['an administrator only', [{ name: 'Administrator' }], true],
+      ['a moderator only', [{ name: 'Moderator' }], true],
+      ['both roles', [{ name: 'Administrator' }, { name: 'Moderator' }], true],
+      ['a leader', [{ name: 'Leader' }], false],
+      ['an ordinary user', [{ name: 'User' }], false],
+      ['no group', [], false],
+      ['an anonymous caller', undefined, false],
+    ].forEach(([label, groups, expected]) => {
+      it(`should return ${expected} for ${label}`, () => {
+        should(RightService.canViewDeleted(groups)).equal(expected);
+      });
+    });
+  });
 });

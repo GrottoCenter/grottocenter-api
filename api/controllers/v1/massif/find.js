@@ -14,10 +14,7 @@ module.exports = async (req, res) => {
   const params = { searchedItem: `Massif of id ${massifId}` };
 
   try {
-    const hasRight = RightService.hasGroup(
-      req.token?.groups,
-      RightService.G.MODERATOR
-    );
+    const hasRight = RightService.canViewDeleted(req.token?.groups);
 
     const massif = await MassifService.getPopulatedMassif(massifId);
 
