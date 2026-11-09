@@ -23,6 +23,7 @@ module.exports = {
   descriptions: [],
   discoveryYear: undefined,
   documents: [],
+  caveDocuments: [],
   externalUrl: undefined,
   redirectTo: undefined,
   histories: [],

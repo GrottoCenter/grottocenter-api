@@ -27,6 +27,7 @@ async function getModifiedDocumentData(documentId) {
     documentData
   );
   populatedDoc.descriptions = [descriptionData];
+  await DocumentService.setAttachedTo(populatedDoc);
   // An offset the modification does not change keeps its stored value; an
   // explicit clear is stored as null and shown as such (#1936).
   if (documentData.identifierPdfPageOffset === undefined)

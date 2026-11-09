@@ -13,6 +13,7 @@ const RecentChangeService = require('./RecentChangeService');
 const CaveService = require('./CaveService');
 const CommentService = require('./CommentService');
 const DocumentService = require('./DocumentService');
+const { isShownAsEntrance } = require('../utils/caveDisplayTarget');
 const EntranceFeaturedFileService = require('./EntranceFeaturedFileService');
 const MassifService = require('./MassifService');
 const NameService = require('./NameService');
@@ -531,6 +532,38 @@ module.exports = {
       ),
     ]);
 
+    entrance.caveDocuments =
+      await module.exports.getCaveDocumentsShownOnEntrance(entrance);
+
     return entrance;
+  },
+
+  /**
+   * The documents attached to the entrance's cave that its page must show
+   * (#1735): a single-entrance cave is displayed as that entrance's page, so
+   * the cave's own documents surface there. A network keeps them on its cave
+   * page, and so returns none. Documents already linked to the entrance are
+   * left out, as they are listed in its own documents.
+   * @param {Object} entrance with its cave populated, carrying its entrances
+   * @returns {Promise<TDocument[]>} documents ready for toCitationDocument
+   */
+  async getCaveDocumentsShownOnEntrance(entrance) {
+    const { cave } = entrance;
+    if (!cave || typeof cave !== 'object') return [];
+    const liveEntrances = (cave.entrances ?? []).filter((e) => !e.isDeleted);
+    if (!isShownAsEntrance(liveEntrances.length)) return [];
+
+    const entranceDocumentIds = new Set(
+      (entrance.documents ?? []).map((d) => d.id)
+    );
+    const caveDocuments = await TDocument.find({
+      where: { cave: cave.id, isDeleted: false },
+      select: ['id'],
+    });
+    return DocumentService.getDocumentsForCitation(
+      caveDocuments
+        .map((d) => d.id)
+        .filter((id) => !entranceDocumentIds.has(id))
+    );
   },
 };

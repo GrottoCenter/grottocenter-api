@@ -29,6 +29,9 @@ module.exports = async (req, res) => {
   entrance.documents = entrance.documents.filter(
     (d) => !DocumentService.isRefused(d)
   );
+  entrance.caveDocuments = entrance.caveDocuments.filter(
+    (d) => !DocumentService.isRefused(d)
+  );
 
   // Fetch quality data and guidelines.
   // The quality query may return null for deleted entrances (the materialized

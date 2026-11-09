@@ -12227,6 +12227,24 @@ components:
                 type: string
         cave:
           $ref: '#/components/schemas/Cave'
+        attachedTo:
+          type: object
+          nullable: true
+          description: >
+            The page a link to the document's cave points to: its entrance
+            when the cave has exactly one non-deleted entrance, the cave
+            itself otherwise. Null when the document has no cave. Present on
+            GET /documents/{id}.
+          required: [type, id, name]
+          properties:
+            type:
+              type: string
+              enum: [cave, entrance]
+            id:
+              type: integer
+            name:
+              type: string
+              nullable: true
         point:
           type: object
           allOf:
@@ -12634,6 +12652,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CitationDocument'
+        caveDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CitationDocument'
+          description: >
+            Documents attached to the entrance's cave (not to the entrance
+            itself), listed when that cave has exactly one non-deleted
+            entrance: such a cave is displayed as its entrance's page. Empty
+            for an entrance of a network (2 or more entrances), whose
+            documents are on the cave page. Documents already in `documents`
+            are left out.
         featuredFile:
           allOf:
             - $ref: '#/components/schemas/FeaturedFile'
