@@ -5,7 +5,43 @@ const {
 } = require('../../utils/computeDocumentAuthorsSort');
 const { computeNameSortKey } = require('../../utils/computeNameSortKey');
 
-const query = `
+// Values of the validationStatus search field (#1561)
+const VALIDATION_STATUS = Object.freeze({
+  // Accepted by a moderator
+  VALIDATED: 'validated',
+  // A new submission awaiting its first validation
+  PENDING: 'pending',
+  // An accepted document whose modification awaits approval: the row still
+  // holds the accepted version, the modification waits in modified_doc_json,
+  // so the index keeps the accepted content
+  MODIFICATION_PENDING: 'modificationPending',
+});
+
+// The search index holds the accepted documents and the submissions awaiting
+// validation; a refused submission (a date_validation without is_validated,
+// #1907) and a deleted document are left out. The file export keeps the
+// accepted documents only.
+const SEARCH_SCOPE =
+  'd.is_deleted = false AND (d.is_validated = true OR d.date_validation IS NULL)';
+const EXPORT_SCOPE = 'd.is_deleted = false AND d.is_validated = true';
+
+// Whether a document was accepted before its pending modification: the flag
+// DocumentService.updateDocument stores, or, for a snapshot stored before it
+// existed, an accepted row in the history (see
+// DocumentService.wasValidatedBeforeModification)
+const VALIDATION_STATUS_COLUMN = `
+      CASE
+        WHEN d.is_validated THEN '${VALIDATION_STATUS.VALIDATED}'
+        WHEN COALESCE(
+          (d.modified_doc_json->>'wasValidated')::boolean,
+          EXISTS (
+            SELECT 1 FROM h_document h WHERE h.id = d.id AND h.is_validated
+          )
+        ) THEN '${VALIDATION_STATUS.MODIFICATION_PENDING}'
+        ELSE '${VALIDATION_STATUS.PENDING}'
+      END AS "validationStatus"`;
+
+const buildQuery = (scope) => `
     SELECT
       d.id,
       d.id_db_import AS "importId",
@@ -37,7 +73,7 @@ const query = `
       d.id_authorization_document AS authorizationDocumentId,
       EXISTS (
         SELECT 1 FROM t_file f WHERE f.id_document = d.id AND f.is_validated
-      ) AS "hasFiles"
+      ) AS "hasFiles",${VALIDATION_STATUS_COLUMN}
     FROM t_document AS d
     LEFT JOIN t_description n ON n.id_document = d.id
     LEFT JOIN t_type t ON t.id = d.id_type
@@ -45,11 +81,13 @@ const query = `
     LEFT JOIN t_caver a ON a.id = d.id_author
     LEFT JOIN t_caver r ON r.id = d.id_reviewer
     LEFT JOIN t_caver v ON v.id = d.id_validator
-    WHERE d.is_deleted = false AND d.is_validated = true AND d.id ${exportUtils.ID_FILTER_PLACEHOLDER}
+    WHERE ${scope} AND d.id ${exportUtils.ID_FILTER_PLACEHOLDER}
     GROUP BY d.id, t.name, n.title, n.body, r.nickname, a.nickname, v.nickname, l.name
     ORDER BY d.id ASC
     ${exportUtils.PAGGING_PLACEHOLDER}
   `;
+
+const query = buildQuery(SEARCH_SCOPE);
 
 async function* processRows(source) {
   for await (const rows of source) {
@@ -241,10 +279,15 @@ function importFormater(d) {
 /* eslint-enable no-param-reassign */
 
 module.exports = {
+  VALIDATION_STATUS,
   name: 'documents',
   sourceTable: 't_document',
   shouldExportToFile: true,
   export: {
+    // Pending submissions are searchable on request, never exported
+    query: buildQuery(EXPORT_SCOPE),
+    // Every exported document is accepted: the status says nothing there
+    transform: ({ validationStatus, ...row }) => row,
     joins: (rows) => [
       {
         table: 't_file f',
@@ -264,15 +307,6 @@ module.exports = {
   processRows,
   search: {
     importFormater,
-    // A validated document being modified waits for its re-validation with
-    // is_validated = false and no date_validation: the index keeps its last
-    // validated version. A refused submission has a date_validation (#1907)
-    // and is removed.
-    retainedIdsQuery: `
-      SELECT id FROM t_document
-      WHERE id = ANY($1::int[]) AND is_deleted = false AND is_validated = false
-        AND date_validation IS NULL
-    `,
     schema: {
       name: 'documents',
       enable_nested_fields: true,
@@ -380,6 +414,9 @@ module.exports = {
         // At least one validated file is attached (#1739). Kept up to date by
         // the t_file trigger of the search outbox.
         { name: 'hasFiles', type: 'bool', facet: true, sort: true },
+        // validated, pending or modificationPending (#1561): searches leave
+        // the pending submissions out unless asked (SearchService)
+        { name: 'validationStatus', type: 'string', facet: true },
       ],
       default_sorting_field: 'dateInscription',
     },

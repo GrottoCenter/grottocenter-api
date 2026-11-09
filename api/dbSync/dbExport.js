@@ -40,12 +40,14 @@ async function* mapRows(source, transform) {
   for await (const row of source) yield transform ? transform(row) : row;
 }
 
+// A collection may export another scope than the one it indexes
+// (export.query), with the same processRows.
 // The stages are plain async generators chained into a single Readable:
 // with one Duplex.from() per stage, a stage failing while the next one waits
 // on it leaves the pipeline hanging, its callback never called (Node 24).
 function exportCollection({ name, query, processRows, export: exp = {} }) {
   const ref = { fetched: 0 };
-  const pages = syncUtils.paggingQuery(name, query, ref);
+  const pages = syncUtils.paggingQuery(name, exp.query ?? query, ref);
   const rows = processRows(withExportJoins(pages, exp.joins));
   const stream = Readable.from(
     syncUtils.JSONArrayStringify(mapRows(rows, exp.transform))

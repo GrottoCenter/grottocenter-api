@@ -27,8 +27,7 @@ const syncUnderLock = (collectionName, ids) =>
  * for rows that no longer exist.
  *
  * Pages go through syncDocuments, so the rows the collection does not index
- * (soft-deleted, not validated…) are removed from it, and a document pending
- * re-validation keeps its last validated version.
+ * (soft-deleted, refused…) are removed from it.
  *
  * @param {string} collectionName
  * @param {Object} [options]
