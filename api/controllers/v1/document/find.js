@@ -9,7 +9,7 @@ const {
 const readBoolParam = require('../../../utils/readBoolParam');
 
 async function getModifiedDocumentData(documentId) {
-  const { id, modifiedDocJson, identifierPdfPageOffset } =
+  const { id, modifiedDocJson, identifierPdfPageOffset, cave } =
     await TDocument.findOne(documentId);
   if (modifiedDocJson === null) return null;
 
@@ -27,6 +27,10 @@ async function getModifiedDocumentData(documentId) {
     documentData
   );
   populatedDoc.descriptions = [descriptionData];
+  // A document update leaves the cave to the cave linking endpoint, so the
+  // pending change has none: keep the stored cave to resolve the link (#1735).
+  if (documentData.cave === undefined && cave)
+    populatedDoc.cave = await TCave.findOne(cave);
   await DocumentService.setAttachedTo(populatedDoc);
   // An offset the modification does not change keeps its stored value; an
   // explicit clear is stored as null and shown as such (#1936).

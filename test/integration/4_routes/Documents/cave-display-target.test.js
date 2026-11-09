@@ -100,6 +100,29 @@ describe('Documents attached to a cave (#1735)', () => {
         await TEntrance.destroy({ id: extra.id });
       }
     });
+
+    it('should keep the stored cave for a pending edit without a cave', async () => {
+      // A document update leaves the cave to the cave linking endpoint, so
+      // its pending change carries no cave.
+      const pending = await TDocument.create({
+        author: 1,
+        type: 1,
+        license: 1,
+        isValidated: false,
+        cave: 2,
+        modifiedDocJson: {
+          reviewerId: 2,
+          documentData: { type: 17 },
+          descriptionData: { title: 'Modified', body: 'Modified body' },
+        },
+      }).fetch();
+      createdDocIds.push(pending.id);
+
+      const res = await get(`documents/${pending.id}?requireUpdate=true`);
+      should(res.body.title).equal('Modified');
+      should(res.body.cave.id).equal(2);
+      should(res.body.attachedTo).containEql({ type: 'entrance', id: 3 });
+    });
   });
 
   describe('GET /entrances/:id caveDocuments', () => {
