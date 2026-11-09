@@ -116,6 +116,37 @@ module.exports = {
   },
 
   /**
+   * The main name and displayable featured file of an entrance, for callers
+   * that need only these (map popups, #1992). Reads the entrance row, its
+   * main name and the featured file: nothing else is populated.
+   * A soft-deleted entrance keeps its name, but its file is only resolved
+   * for a caller who may view deleted content, as on GET /entrances/:id.
+   * @param {number} entranceId
+   * @param {Object} [options]
+   * @param {boolean} [options.canViewDeleted=false]
+   * @returns {Promise<Object|null>} null when the entrance does not exist
+   */
+  async getFeaturedImage(entranceId, { canViewDeleted = false } = {}) {
+    const entrance = await TEntrance.findOne({
+      where: { id: entranceId },
+      select: ['id', 'isDeleted', 'redirectTo', 'featuredFile'],
+    });
+    if (!entrance) return null;
+
+    const hideFile = entrance.isDeleted && !canViewDeleted;
+    const [names, featuredFile] = await Promise.all([
+      TName.find({
+        where: { entrance: entranceId, isMain: true },
+        select: ['name', 'isMain'],
+      }).limit(1),
+      hideFile
+        ? null
+        : module.exports.getDisplayableFile(entranceId, entrance.featuredFile),
+    ]);
+    return { ...entrance, names, featuredFile };
+  },
+
+  /**
    * Reads the featuredFile request field.
    * @param {*} value the raw body value
    * @returns {{value: number|null}|{error: string}} null clears the selection
