@@ -6,6 +6,7 @@ const EnrichmentQueueService = require('./EnrichmentQueueService');
 const RecentChangeService = require('./RecentChangeService');
 const coerceToNumeric = require('../utils/coerceToNumeric');
 const trimIfString = require('../utils/trimIfString');
+const { isNetwork, isShownAsEntrance } = require('../utils/caveDisplayTarget');
 
 // An organization can author or publish thousands of documents (the FFS
 // publishes ~2000), so the payload carries a preview page and a total count
@@ -70,10 +71,10 @@ module.exports = {
     organization.exploredNetworks = [];
     organization.exploredEntrances = [];
     for (const cave of organization.exploredCaves) {
-      if (cave.entrances.length > 1) {
+      if (isNetwork(cave.entrances.length)) {
         organization.exploredNetworks.push(cave);
       }
-      if (cave.entrances.length === 1) {
+      if (isShownAsEntrance(cave.entrances.length)) {
         organization.exploredEntrances.push(cave.entrances.pop());
       }
     }
@@ -81,10 +82,10 @@ module.exports = {
     organization.partnerNetworks = [];
     organization.partnerEntrances = [];
     for (const cave of organization.partnerCaves) {
-      if (cave.entrances.length > 1) {
+      if (isNetwork(cave.entrances.length)) {
         organization.partnerNetworks.push(cave);
       }
-      if (cave.entrances.length === 1) {
+      if (isShownAsEntrance(cave.entrances.length)) {
         organization.partnerEntrances.push(cave.entrances.pop());
       }
     }
