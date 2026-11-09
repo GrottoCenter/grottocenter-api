@@ -358,6 +358,27 @@ describe('BotPipelineService - runs over real rows with the local adapter', () =
       should(second.counts.generation.pages.cave ?? 0).equal(0);
     });
 
+    it('takes everything down with the documented rollback: the pages, then the sitemaps, with an empty list', async () => {
+      const { cave, massif, organization } = await mkPublished();
+      await nightly(ALL_TYPES);
+      should(isOnline(botSitemap.INDEX_PATH)).be.true();
+
+      await BotPageGeneratorService.run({ adapter, entityTypes: [] });
+      // The pages are down, the sitemaps still name them until the second call
+      should(isOnline(keyOf('cave', cave.id))).be.false();
+      should(isOnline(botSitemap.shardPath('cave', 0))).be.true();
+      await BotSitemapService.run({ adapter, entityTypes: [] });
+
+      should(isOnline(keyOf('massif', massif.id))).be.false();
+      should(isOnline(keyOf('organization', organization.id))).be.false();
+      should(isOnline(botSitemap.INDEX_PATH)).be.false();
+      should(isOnline(botSitemap.shardPath('cave', 0))).be.false();
+      const { rows } = await query(
+        "SELECT path FROM t_bot_page_manifest WHERE path <> '404.html'"
+      );
+      should(rows).eql([]);
+    });
+
     it('deletes the hub pages and their sitemap when hub leaves the list, and no page links to a hub any more', async () => {
       const { cave } = await mkPublished();
       await nightly(ALL_TYPES);

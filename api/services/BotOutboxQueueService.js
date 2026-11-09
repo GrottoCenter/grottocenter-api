@@ -31,7 +31,8 @@ module.exports = {
   /**
    * Create the bot-outbox queue, register its schedule and its worker. Called
    * from bootstrap.js after pg-boss is started. Does nothing unless the bot
-   * surface is enabled; fails (the caller logs it) when the storage is
+   * surface is enabled and lists at least one entity type
+   * (BOT_SURFACE_ENTITY_TYPES); fails (the caller logs it) when the storage is
    * misconfigured, rather than failing every minute.
    */
   async start() {
@@ -45,6 +46,17 @@ module.exports = {
     const boss = sails.enrichmentBoss;
     if (!boss) {
       sails.log.warn('BotOutboxQueueService: pg-boss not available, skipping');
+      return;
+    }
+    // No listed type is "nothing is published": a worker that ran anyway would
+    // treat every type as unlisted and delete the pages of the outbox one by
+    // one, while the sitemaps went on naming them. Like the pipeline, it stays
+    // off, and a schedule left by an earlier configuration is removed.
+    if (!botSurface.entityTypes || botSurface.entityTypes.length === 0) {
+      if (await boss.getQueue(QUEUE_NAME)) await boss.unschedule(QUEUE_NAME);
+      sails.log.info(
+        'BotOutboxQueueService: BOT_SURFACE_ENTITY_TYPES lists no type, skipping'
+      );
       return;
     }
     // eslint-disable-next-line global-require

@@ -26,6 +26,8 @@ describe('BotOutboxQueueService', () => {
   const fakeBoss = () => ({
     createQueue: sinon.stub().resolves(),
     schedule: sinon.stub().resolves(),
+    unschedule: sinon.stub().resolves(),
+    getQueue: sinon.stub().resolves(null),
     work: sinon.stub().resolves('worker-id'),
   });
 
@@ -42,6 +44,7 @@ describe('BotOutboxQueueService', () => {
       sails.config.custom.botSurface = {
         ...originalBotSurface,
         enabled: true,
+        entityTypes: ['cave', 'massif', 'organization'],
       };
 
       await BotOutboxQueueService.start();
@@ -81,11 +84,45 @@ describe('BotOutboxQueueService', () => {
       should(boss.work.called).be.false();
     });
 
+    it('stays off while no entity type is listed, even when enabled: it would delete every page it is asked about', async () => {
+      const boss = fakeBoss();
+      sails.enrichmentBoss = boss;
+      sails.config.custom.botSurface = {
+        ...originalBotSurface,
+        enabled: true,
+        entityTypes: [],
+      };
+
+      await BotOutboxQueueService.start();
+
+      should(boss.createQueue.called).be.false();
+      should(boss.schedule.called).be.false();
+      should(boss.work.called).be.false();
+      should(boss.unschedule.called).be.false();
+    });
+
+    it('removes a schedule left by an earlier configuration when no entity type is listed any more', async () => {
+      const boss = fakeBoss();
+      boss.getQueue.resolves({ name: 'bot-outbox' });
+      sails.enrichmentBoss = boss;
+      sails.config.custom.botSurface = {
+        ...originalBotSurface,
+        enabled: true,
+        entityTypes: [],
+      };
+
+      await BotOutboxQueueService.start();
+
+      should(boss.unschedule.calledOnceWith('bot-outbox')).be.true();
+      should(boss.work.called).be.false();
+    });
+
     it('does nothing when pg-boss is not available', async () => {
       sails.enrichmentBoss = null;
       sails.config.custom.botSurface = {
         ...originalBotSurface,
         enabled: true,
+        entityTypes: ['cave', 'massif', 'organization'],
       };
       await should(BotOutboxQueueService.start()).be.fulfilled();
     });
@@ -96,6 +133,7 @@ describe('BotOutboxQueueService', () => {
       sails.config.custom.botSurface = {
         ...originalBotSurface,
         enabled: true,
+        entityTypes: ['cave', 'massif', 'organization'],
         storage: { driver: 'local', localDir: os.tmpdir() },
       };
       const previous = process.env.NODE_ENV;
@@ -117,6 +155,7 @@ describe('BotOutboxQueueService', () => {
       sails.config.custom.botSurface = {
         ...originalBotSurface,
         enabled: true,
+        entityTypes: ['cave', 'massif', 'organization'],
         storage: { driver: 'local', localDir: os.tmpdir() },
       };
       const info = sinon.stub(sails.log, 'info');
@@ -136,6 +175,7 @@ describe('BotOutboxQueueService', () => {
       sails.config.custom.botSurface = {
         ...originalBotSurface,
         enabled: true,
+        entityTypes: ['cave', 'massif', 'organization'],
         storage: { driver: 'azure' },
       };
 

@@ -272,6 +272,69 @@ describe('BotPipelineService - the order, the stop rules and the run record', ()
     });
   });
 
+  describe('the pipeline lock', () => {
+    it('does not turn a run that succeeded into a failure when the unlock fails: the session, and the lock with it, may be gone', async () => {
+      stubSteps();
+      const warn = sinon.stub(sails.log, 'warn');
+      const original = CommonService.query;
+      const unlock = sinon.spy();
+      sinon.stub(CommonService, 'query').callsFake((sql, ...rest) => {
+        if (/pg_advisory_unlock/.test(sql)) {
+          unlock();
+          return Promise.reject(new Error('connection terminated'));
+        }
+        return original.call(CommonService, sql, ...rest);
+      });
+
+      const result = await run();
+
+      should(unlock.calledOnce).be.true();
+      should(result.id).be.a.Number();
+      should(
+        warn
+          .getCalls()
+          .some((c) => /could not release the pipeline lock/.test(c.args[0]))
+      ).be.true();
+      const { rows } = await query(
+        'SELECT status FROM t_bot_pipeline_run WHERE id = $1',
+        [result.id]
+      );
+      should(rows[0].status).equal('succeeded');
+    });
+  });
+
+  describe('the memory sampler', () => {
+    it('is not started when the run record cannot be opened, so nothing is left running', async () => {
+      stubSteps();
+      const original = CommonService.query;
+      sinon.stub(CommonService, 'query').callsFake((sql, ...rest) => {
+        if (/INSERT INTO t_bot_pipeline_run/.test(sql)) {
+          return Promise.reject(new Error('relation does not exist'));
+        }
+        return original.call(CommonService, sql, ...rest);
+      });
+      const timers = sinon.spy(global, 'setInterval');
+
+      await run().catch(() => {});
+
+      should(timers.getCalls().filter((c) => c.args[1] === 1000)).have.length(
+        0
+      );
+    });
+
+    it('is stopped when the run ends', async () => {
+      stubSteps();
+      const timers = sinon.spy(global, 'setInterval');
+      const cleared = sinon.spy(global, 'clearInterval');
+
+      await run();
+
+      const started = timers.getCalls().filter((c) => c.args[1] === 1000);
+      should(started).have.length(1);
+      should(cleared.called).be.true();
+    });
+  });
+
   describe('configuration', () => {
     it('refuses an empty allow-list: nothing is generated and nothing is recorded', async () => {
       const { stubs } = stubSteps();

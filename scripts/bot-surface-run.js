@@ -70,7 +70,15 @@ sailsApp.load(loadConfig, async (err) => {
   try {
     const queueService = sails.services.botpipelinequeueservice;
     // Refuse before connecting to pg-boss when nothing is configured
-    queueService.checkConfigured();
+    // (checkConfigured throws only for an invalid storage; no type listed is
+    // a result, not an error)
+    const { configured, reason } = queueService.checkConfigured();
+    if (!configured) {
+      throw Object.assign(
+        new Error(`The bot surface is not configured: ${reason}`),
+        { code: 'E_BOT_NOT_CONFIGURED' }
+      );
+    }
     boss = new PgBoss({
       connectionString:
         sails.services.enrichmentqueueservice.getConnectionString(),

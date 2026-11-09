@@ -63,6 +63,9 @@
  */
 
 const botPagePaths = require('../../utils/botPagePaths');
+const {
+  ENTITY_TYPES: LISTABLE_TYPES,
+} = require('../../utils/botSurfaceConfig');
 const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
 const BotHubService = require('./BotHubService');
@@ -434,7 +437,7 @@ module.exports = {
       adapter,
       concurrency = DEFAULT_CONCURRENCY,
       batchSize = DEFAULT_BATCH_SIZE,
-      entityTypes = [...botPagePaths.ENTITY_TYPES, HUB_TYPE],
+      entityTypes = LISTABLE_TYPES,
     } = options;
     if (!adapter)
       throw new Error('BotPageGeneratorService.run needs an adapter');
@@ -446,7 +449,7 @@ module.exports = {
       );
     }
     entityTypes.forEach((type) => {
-      if (![...botPagePaths.ENTITY_TYPES, HUB_TYPE].includes(type)) {
+      if (!LISTABLE_TYPES.includes(type)) {
         throw new RangeError(`Unknown bot entity type: ${type}`);
       }
     });
