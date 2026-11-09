@@ -207,6 +207,7 @@ module.exports.routes = {
   'POST /api/v1/countries/:id/unsubscribe': 'v1/country/unsubscribe',
   'GET /api/v1/countries/:id/statistics': 'v1/country/get-statistics',
   'GET /api/v1/countries/count': 'v1/country/count',
+  'GET /api/v1/countries': 'v1/country/find-all',
   'PUT /api/v1/countries/:id/organizations/:organizationId':
     'v1/country/set-organization',
   'DELETE /api/v1/countries/:id/organizations/:organizationId':
@@ -222,6 +223,7 @@ module.exports.routes = {
   'GET /api/v1/countries/:countryId/regions/:regionId/statistics':
     'v1/region/get-statistics',
   'GET /api/v1/countries/:countryId/regions/count': 'v1/region/count',
+  'GET /api/v1/countries/:countryId/regions': 'v1/region/find-all-by-country',
   'PUT /api/v1/countries/:countryId/regions/:regionId/organizations/:organizationId':
     'v1/region/set-organization',
   'DELETE /api/v1/countries/:countryId/regions/:regionId/organizations/:organizationId':
