@@ -740,6 +740,22 @@ describe('Converters Service', () => {
       ]);
       should(result.results[2]).not.have.property('hasFiles');
     });
+
+    it('should pass the document validation status through', () => {
+      const source = {
+        hits: [
+          { document: { id: 1, validationStatus: 'pending' }, highlight: {} },
+          { document: { id: 2 }, highlight: {} },
+        ],
+        found: 2,
+        out_of: 100,
+        page: 1,
+        request_params: { collection_name: 'documents' },
+      };
+      const result = converters.toSearchResult(source);
+      should(result.results[0].validationStatus).equal('pending');
+      should(result.results[1]).not.have.property('validationStatus');
+    });
   });
 
   describe('toDeletedEntity()', () => {

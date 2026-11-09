@@ -1,5 +1,6 @@
 const typesense = require('../../config/typesense');
 const searchDocuments = require('../dbSync/searchDocuments');
+const { VALIDATION_STATUS } = require('../dbSync/entities/document');
 
 const allEntities = Object.fromEntries(
   Object.entries(searchDocuments.ENTITIES).map(([name, e]) => [name, e.search])
@@ -15,6 +16,31 @@ const allEntitiesKeys = Object.keys(allEntities);
 // costs ~18ms worst case on a 150k collection; exhaustive_search is not a
 // substitute as it also exhausts typo variants and so degrades precision.
 const MAX_CANDIDATES = 1000;
+
+// The documents index also holds the submissions awaiting their first
+// validation: a search leaves them out unless it asks for them (#1561)
+const DEFAULT_DOCUMENT_SCOPE = `validationStatus:!=${VALIDATION_STATUS.PENDING}`;
+
+/**
+ * The validation scope a search of a collection applies on top of its filter.
+ * It is kept apart from the business filter, so matching any filter (OR)
+ * cannot widen it.
+ *
+ * @param {string} entity search collection
+ * @param {boolean} [includePendingDocuments] also return the documents
+ *   awaiting their first validation
+ * @returns {string} a Typesense filter, empty when there is none
+ */
+function scopeFilter(entity, includePendingDocuments = false) {
+  if (entity !== 'documents' || includePendingDocuments) return '';
+  return DEFAULT_DOCUMENT_SCOPE;
+}
+
+function withScope(filterBy, scope) {
+  if (!scope) return filterBy;
+  if (!filterBy) return scope;
+  return `(${filterBy}) && ${scope}`;
+}
 
 function buildFilter(filter, isLogicalCompareAnd = true) {
   let hasPrefixFilter = false;
@@ -115,6 +141,7 @@ async function multiCollectionsSearch({
   query,
   entities = [],
   filter = {},
+  includePendingDocuments = false,
 } = {}) {
   // eslint-disable-next-line no-param-reassign
   entities = entities.filter((e) => allEntitiesKeys.includes(e));
@@ -122,11 +149,17 @@ async function multiCollectionsSearch({
   const q = query || '*';
   const { filterBy, hasPrefixFilter } = buildFilter(filter);
 
-  const collections = entities.map((e) => ({
-    collection: e,
-    query_by: allEntities[e].query.query_by,
-    ...(filterBy && { filter_by: filterBy }),
-  }));
+  const collections = entities.map((e) => {
+    const filterByScoped = withScope(
+      filterBy,
+      scopeFilter(e, includePendingDocuments)
+    );
+    return {
+      collection: e,
+      query_by: allEntities[e].query.query_by,
+      ...(filterByScoped && { filter_by: filterByScoped }),
+    };
+  });
 
   return typesense.multiSearch(collections, {
     per_page: 20,
@@ -148,12 +181,17 @@ async function collectionSearch({
   page,
   size,
   fields,
+  includePendingDocuments = false,
 } = {}) {
   if (!allEntitiesKeys.includes(entity)) return null;
   const q = query || '*';
-  const { filterBy, hasPrefixFilter } = buildFilter(
+  const { filterBy: businessFilter, hasPrefixFilter } = buildFilter(
     filter,
     isLogicalCompareAnd
+  );
+  const filterBy = withScope(
+    businessFilter,
+    scopeFilter(entity, includePendingDocuments)
   );
 
   // Cap size at Typesense's limit of 1000 hits per page
@@ -184,13 +222,18 @@ async function fieldSearch({
   filter = {},
   size,
   isLogicalCompareAnd = true,
+  includePendingDocuments = false,
 } = {}) {
   if (!allEntitiesKeys.includes(entity)) return null;
   if (!field) return null;
   const q = query || '*';
-  const { filterBy, hasPrefixFilter } = buildFilter(
+  const { filterBy: businessFilter, hasPrefixFilter } = buildFilter(
     filter,
     isLogicalCompareAnd
+  );
+  const filterBy = withScope(
+    businessFilter,
+    scopeFilter(entity, includePendingDocuments)
   );
 
   // Use faceted search to get distinct values for the field.
@@ -257,6 +300,7 @@ async function fieldSearch({
 module.exports = {
   allEntities,
   allEntitiesKeys,
+  DEFAULT_DOCUMENT_SCOPE,
 
   isAlive,
 
@@ -265,4 +309,5 @@ module.exports = {
   multiCollectionsSearch,
   collectionSearch,
   fieldSearch,
+  scopeFilter,
 };

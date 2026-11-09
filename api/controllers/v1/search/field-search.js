@@ -27,6 +27,14 @@ module.exports = async (req, res) => {
     res.badRequest(matchAllFieldsError);
     return;
   }
+  const {
+    value: includePendingDocuments,
+    error: includePendingDocumentsError,
+  } = readBoolParam(req, 'includePendingDocuments', false);
+  if (includePendingDocumentsError) {
+    res.badRequest(includePendingDocumentsError);
+    return;
+  }
 
   const { filter, error: filterError } = normalizeBoolFilter(
     req.param('filter') ?? {},
@@ -52,6 +60,7 @@ module.exports = async (req, res) => {
       size: req.param('size') ?? 10,
       filter,
       isLogicalCompareAnd: matchAllFields,
+      includePendingDocuments,
     });
   } catch (error) {
     if (handleTypesenseError(res, error)) return;

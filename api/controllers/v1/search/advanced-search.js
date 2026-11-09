@@ -23,6 +23,12 @@ module.exports = async (req, res) => {
     true
   );
   if (matchAllFieldsError) return res.badRequest(matchAllFieldsError);
+  const {
+    value: includePendingDocuments,
+    error: includePendingDocumentsError,
+  } = readBoolParam(req, 'includePendingDocuments', false);
+  if (includePendingDocumentsError)
+    return res.badRequest(includePendingDocumentsError);
 
   const entity = req.param('entity') ?? '';
   const rawSort = req.param('sort');
@@ -63,6 +69,7 @@ module.exports = async (req, res) => {
       sort,
       filter,
       isLogicalCompareAnd: matchAllFields,
+      includePendingDocuments,
       page: req.param('page') ?? 1,
       size: req.param('size') ?? 10,
     });
