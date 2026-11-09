@@ -12,6 +12,7 @@ const normalizeBoolFilter = require('../../../utils/normalizeBoolFilter');
 const ENTITY_SPECIFIC_SORT_FIELDS = {
   dataQuality: ['entrances'],
   authorsSort: ['documents'],
+  entrancesSort: ['documents'],
   hasFiles: ['documents'],
 };
 

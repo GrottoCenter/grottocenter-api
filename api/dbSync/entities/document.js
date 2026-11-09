@@ -3,6 +3,7 @@ const FileService = require('../../services/FileService');
 const {
   computeDocumentAuthorsSort,
 } = require('../../utils/computeDocumentAuthorsSort');
+const { computeNameSortKey } = require('../../utils/computeNameSortKey');
 
 const query = `
     SELECT
@@ -221,6 +222,7 @@ async function* processRows(source) {
         row.authors?.map((e) => e.nickname),
         row.authorsOrganization?.map((e) => e.name)
       );
+      row.entrancesSort = computeNameSortKey(row.entrances?.map((e) => e.name));
 
       yield row;
     }
@@ -361,6 +363,12 @@ module.exports = {
         { name: 'authorsSort', type: 'string', optional: true, sort: true },
         { name: 'cave.name', type: 'string', optional: true, sort: true },
         { name: 'entrances.name', type: 'string[]', optional: true },
+        // Denormalized scalar key for sorting documents by entrance (#1791).
+        // Typesense cannot sort on the `entrances.name` array field, so this
+        // holds the alphabetical-first main name of the linked entrances;
+        // documents without an entrance sort last on ascending order.
+        // See api/utils/computeNameSortKey.js for method & limitations.
+        { name: 'entrancesSort', type: 'string', optional: true, sort: true },
         { name: 'massifs.name', type: 'string[]', optional: true },
         {
           name: 'language',

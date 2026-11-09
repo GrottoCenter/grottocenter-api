@@ -9,6 +9,10 @@ const {
   buildDocuments,
   planSync,
 } = require('../../../api/dbSync/searchDocuments');
+const {
+  NAMED_SORT_KEY_PREFIX,
+  EMPTY_NAME_SORT_KEY,
+} = require('../../../api/utils/computeNameSortKey');
 
 const COLLECTIONS = [
   'organizations',
@@ -169,6 +173,38 @@ describe('searchDocuments', () => {
       it('tells that no file is attached any more', async () => {
         await CommonService.query('DELETE FROM t_file WHERE id = $1', [fileId]);
         should(await hasFiles()).be.false();
+      });
+    });
+
+    describe('entrance sort key', () => {
+      const entrancesSort = async () => {
+        const [doc] = await buildDocuments('documents', [4]);
+        return doc.entrancesSort;
+      };
+
+      it('sorts a document without an entrance last', async () => {
+        should(await entrancesSort()).equal(EMPTY_NAME_SORT_KEY);
+      });
+
+      describe('with several entrances', () => {
+        before(() =>
+          CommonService.query(
+            'INSERT INTO j_document_entrance (id_document, id_entrance) VALUES (4, 1), (4, 2)'
+          )
+        );
+
+        after(() =>
+          CommonService.query(
+            'DELETE FROM j_document_entrance WHERE id_document = 4 AND id_entrance IN (1, 2)'
+          )
+        );
+
+        it('keys on the alphabetical-first main name', async () => {
+          // Entrance 2's non-main French name sorts before both main names
+          should(await entrancesSort()).equal(
+            `${NAMED_SORT_KEY_PREFIX}the entrance with name 11`
+          );
+        });
       });
     });
 
