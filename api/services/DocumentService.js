@@ -13,6 +13,7 @@ const {
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
 const isValidId = require('../utils/isValidId');
+const { resolveCaveDisplayTarget } = require('../utils/caveDisplayTarget');
 const parsePdfPageOffset = require('../utils/parsePdfPageOffset');
 const { validateStringLengths } = require('../utils/stringLengthValidation');
 
@@ -558,9 +559,7 @@ module.exports = {
     if (document.entrances && document.entrances.length > 0) {
       asyncQueue.push(NameService.setNames(document.entrances, 'entrance'));
     }
-    if (document.cave) {
-      asyncQueue.push(NameService.setNames([document.cave], 'cave'));
-    }
+    asyncQueue.push(module.exports.setAttachedTo(document));
     const allMassifs = document.massifs;
     if (allMassifs.length > 0) {
       asyncQueue.push(NameService.setNames(allMassifs, 'massif'));
@@ -584,6 +583,31 @@ module.exports = {
 
     await Promise.all(asyncQueue);
 
+    return document;
+  },
+
+  /**
+   * Name the document's cave and resolve the page a link to it must point to
+   * (#1735): the entrance of a single-entrance cave, the cave otherwise.
+   * Sets `attachedTo` to `{ type, id, name }`, or null without a cave.
+   * Mutates the document in place.
+   * @param {Object} document whose cave, when set, is a populated TCave
+   * @returns {Promise<Object>} the same document
+   */
+  async setAttachedTo(document) {
+    const { cave } = document;
+    if (!cave || typeof cave !== 'object') {
+      // eslint-disable-next-line no-param-reassign
+      document.attachedTo = null;
+      return document;
+    }
+    const [entrances] = await Promise.all([
+      TEntrance.find({ cave: cave.id, isDeleted: false }),
+      NameService.setNames([cave], 'cave'),
+    ]);
+    await NameService.setNames(entrances, 'entrance');
+    // eslint-disable-next-line no-param-reassign
+    document.attachedTo = resolveCaveDisplayTarget(cave, entrances);
     return document;
   },
 

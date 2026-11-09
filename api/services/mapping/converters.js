@@ -373,6 +373,9 @@ const c = {
       ),
       entrances: toList('entrances', source, c.toSimpleEntrance, { meta }),
       cave: convertIfObject(source.cave, c.toSimpleCave),
+      // The page a link to the document's cave points to (#1735), resolved by
+      // DocumentService.setAttachedTo(); absent when it was not resolved.
+      attachedTo: source.attachedTo,
       massifs: toList('massifs', source, c.toSimpleMassif),
       // The point the document references (#1733), when populated
       point:
@@ -504,6 +507,12 @@ const c = {
       filterDeleted: false,
     });
     result.documents = toList('documents', source, c.toCitationDocument);
+    // Documents of a single-entrance cave, shown on its entrance page (#1735)
+    result.caveDocuments = toList(
+      'caveDocuments',
+      source,
+      c.toCitationDocument
+    );
     // Only an entrance read through EntranceService.getPopulatedEntrance has
     // its featured file checked: a bare id is never exposed (#1701).
     if (source.featuredFile === null) {
