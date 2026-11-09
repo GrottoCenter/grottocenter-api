@@ -43,6 +43,7 @@ describe('Region statistics features', () => {
           const { body: stats } = res;
           should(stats).have.property('nb_massifs');
           should(stats).have.property('nb_caves');
+          should(Number.isInteger(stats.nb_entrances)).be.true();
           should(stats).have.property('nb_networks');
           should(stats).have.property('cave_with_max_depth');
           should(stats).have.property('cave_with_max_length');

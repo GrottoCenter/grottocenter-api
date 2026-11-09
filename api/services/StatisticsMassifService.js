@@ -4,6 +4,15 @@ const GET_NB_CAVES = `
   WHERE id_massif = $1
 `;
 
+// v_massif_info has one row per cave of the massif, each carrying the number
+// of its distinct entrances inside the massif polygon: the sum counts every
+// entrance once.
+const GET_NB_ENTRANCES = `
+  SELECT COALESCE(SUM(nb_entrances), 0)::bigint as nb_entrances
+  FROM v_massif_info
+  WHERE id_massif = $1
+`;
+
 const GET_NB_NETWORKS = `
   SELECT COUNT(*) as nb_networks
   FROM v_massif_info
@@ -65,8 +74,19 @@ module.exports = {
    *
    * @param {int} massifId
    * @returns {int} the number of caves in the massif, or null if no result
+   * @deprecated exposed as the deprecated nb_caves field: use
+   *             getNbEntrancesInMassif for user-facing counts
    */
   getNbCavesInMassif: async (massifId) => queryFirstRow(GET_NB_CAVES, massifId),
+
+  /**
+   *
+   * @param {int} massifId
+   * @returns {Object} { nb_entrances } the number of non-deleted entrances in
+   *                   the massif (sensitive ones included), or null if no result
+   */
+  getNbEntrancesInMassif: async (massifId) =>
+    queryFirstRow(GET_NB_ENTRANCES, massifId),
 
   /**
    *

@@ -21,6 +21,7 @@ module.exports = async (req, res) => {
     // Launching all requests at the same time
     const [
       nbCaves,
+      nbEntrances,
       nbNetworks,
       caveWithMaxDepth,
       caveWithMaxLength,
@@ -29,6 +30,7 @@ module.exports = async (req, res) => {
       totalLength,
     ] = await Promise.all([
       StatisticsMassifService.getNbCavesInMassif(massifId),
+      StatisticsMassifService.getNbEntrancesInMassif(massifId),
       StatisticsMassifService.getNbNetworksInMassif(massifId),
       StatisticsMassifService.getCaveWithMaxDepthInMassif(massifId),
       StatisticsMassifService.getCaveWithMaxLengthInMassif(massifId),
@@ -40,10 +42,16 @@ module.exports = async (req, res) => {
     // to avoid that the function parseInt returns NaN when the value is null, we test the value before
     // if the value is null, we return null
     const data = {
+      // Deprecated: a count of caves, kept for compatibility. nb_entrances
+      // is the figure to display.
       nb_caves:
         nbCaves?.nb_caves == null
           ? null
           : Number.parseInt(nbCaves.nb_caves, 10),
+      nb_entrances:
+        nbEntrances?.nb_entrances == null
+          ? null
+          : Number.parseInt(nbEntrances.nb_entrances, 10),
       nb_networks:
         nbNetworks?.nb_networks == null
           ? null

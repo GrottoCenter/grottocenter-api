@@ -16,6 +16,23 @@ describe('StatisticsMassifService', () => {
     });
   });
 
+  describe('getNbEntrancesInMassif()', () => {
+    it('sums the entrances of the caves of massif 1 (2 + 1)', async () => {
+      const result = await StatisticsMassifService.getNbEntrancesInMassif(1);
+      result.should.have.property('nb_entrances', '3');
+    });
+
+    it('counts the 3 entrances of the network of massif 2 (3 + 1 + 1)', async () => {
+      const result = await StatisticsMassifService.getNbEntrancesInMassif(2);
+      result.should.have.property('nb_entrances', '5');
+    });
+
+    it('returns 0, not null, for a massif with no entrance', async () => {
+      const result = await StatisticsMassifService.getNbEntrancesInMassif(101);
+      result.should.have.property('nb_entrances', '0');
+    });
+  });
+
   describe('getNbNetworksInMassif()', () => {
     it('should count networks in massif 1 (1 network)', async () => {
       const result = await StatisticsMassifService.getNbNetworksInMassif(1);
