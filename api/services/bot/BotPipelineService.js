@@ -47,7 +47,9 @@
  * of each run.
  */
 
-const botPagePaths = require('../../utils/botPagePaths');
+const {
+  ENTITY_TYPES: LISTABLE_TYPES,
+} = require('../../utils/botSurfaceConfig');
 const BotPageGeneratorService = require('./BotPageGeneratorService');
 
 // Any key no other advisory lock uses (1758 pages, 1871 search write lock)
@@ -133,7 +135,20 @@ const withPipelineLock = (fn) =>
     try {
       return await fn();
     } finally {
-      await query('SELECT pg_advisory_unlock($1)', [PIPELINE_LOCK_KEY], db);
+      // The connection sat idle for the whole run and may have been closed
+      // underneath (an idle timeout, a failover): the lock went with the
+      // session, there is nothing to release, and the unlock failing must not
+      // turn a run that succeeded into a failed job
+      await query(
+        'SELECT pg_advisory_unlock($1)',
+        [PIPELINE_LOCK_KEY],
+        db
+      ).catch((err) =>
+        sails.log.warn(
+          'bot-surface-nightly: could not release the pipeline lock',
+          err
+        )
+      );
     }
   });
 
@@ -314,11 +329,13 @@ async function execute(options) {
     peakRss = Math.max(peakRss, process.memoryUsage().rss);
     counts.peakRssMb = toMb(peakRss);
   };
-  const sampler = setInterval(sample, 1000);
-  sampler.unref();
   sample();
 
+  // Before the sampler starts: if the record cannot be opened (migration not
+  // applied, database unreachable) nothing is left running
   const id = await openRecord(counts);
+  const sampler = setInterval(sample, 1000);
+  sampler.unref();
   sails.log.info(
     `bot-surface-nightly: started run ${id} (${trigger}) for ${entityTypes.join(',')}`
   );
@@ -421,7 +438,7 @@ module.exports = {
       );
     }
     entityTypes.forEach((type) => {
-      if (![...botPagePaths.ENTITY_TYPES, 'hub'].includes(type)) {
+      if (!LISTABLE_TYPES.includes(type)) {
         throw new RangeError(`Unknown bot entity type: ${type}`);
       }
     });

@@ -278,16 +278,16 @@ One pg-boss job, `bot-surface-nightly` (#1760), runs the six steps in order. `Bo
 
 | Entity types listed | Storage valid | `BOT_SURFACE_ENABLED` | Worker                      | Schedule                               |
 | ------------------- | ------------- | --------------------- | --------------------------- | -------------------------------------- |
-| no                  | any           | any                   | no                          | no (a leftover one is not removed)     |
+| no                  | any           | any                   | no                          | no (a leftover one is removed)         |
 | yes                 | no            | any                   | startup fails and is logged | no                                     |
 | yes                 | yes           | `false`               | yes                         | **no**; an earlier schedule is removed |
 | yes                 | yes           | `true`                | yes                         | yes                                    |
 
-The **worker** (the pg-boss handler that runs the pipeline) registers as soon as the surface is configured, so that `npm run bot-surface:run` has something to run it; it does nothing until a job is in the queue. The **schedule** is the only thing `BOT_SURFACE_ENABLED` adds. The withdrawal worker (`BotOutboxQueueService`) is unchanged: it still depends on `BOT_SURFACE_ENABLED` alone. Switching `BOT_SURFACE_ENABLED` off unschedules the nightly job on the next startup.
+The **worker** (the pg-boss handler that runs the pipeline) registers as soon as the surface is configured, so that `npm run bot-surface:run` has something to run it; it does nothing until a job is in the queue. The **schedule** is the only thing `BOT_SURFACE_ENABLED` adds. The withdrawal worker (`BotOutboxQueueService`) needs `BOT_SURFACE_ENABLED` **and** at least one listed type: with an empty list it stays off (and removes a leftover schedule), because a worker that ran anyway would treat every type as unlisted and delete the pages of the outbox one by one while the sitemaps went on naming them. Switching `BOT_SURFACE_ENABLED` off unschedules the nightly job on the next startup.
 
 **Going to production.** Set `BOT_SURFACE_ENTITY_TYPES` and the Azure storage, leave `BOT_SURFACE_ENABLED` unset, deploy, run `npm run bot-surface:run` by hand, read the run record (and take the baseline, below), and only then set `BOT_SURFACE_ENABLED=true`.
 
-**Emptying the list.** An empty list means nothing is generated and nothing is scheduled (a schedule left by an earlier configuration is removed at startup). It also means no run deletes what an earlier run published: removing the _last_ type from the list does not take its pages down. To roll back every type, follow the launch runbook (#1888: disable the Worker route first) and delete the pages with `BotPageGeneratorService.run({ adapter, entityTypes: [] })`, which deletes all of them; removing one type while another stays listed is handled by the next run.
+**Emptying the list.** An empty list means nothing is generated and nothing is scheduled (a schedule left by an earlier configuration is removed at startup). It also means no run deletes what an earlier run published: removing the _last_ type from the list does not take its pages down. To roll back every type, follow the launch runbook (#1888: disable the Worker route first) and delete the pages and then the sitemaps with `await BotPageGeneratorService.run({ adapter, entityTypes: [] }); await BotSitemapService.run({ adapter, entityTypes: [] });` (the first deletes every page, the second the shard files and the index, which would otherwise keep naming them); removing one type while another stays listed is handled by the next run.
 
 ### The allow-list
 
