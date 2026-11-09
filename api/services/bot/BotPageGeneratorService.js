@@ -65,6 +65,7 @@
 const botPagePaths = require('../../utils/botPagePaths');
 const {
   ENTITY_TYPES: LISTABLE_TYPES,
+  HUB_TYPE,
 } = require('../../utils/botSurfaceConfig');
 const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
@@ -75,7 +76,6 @@ const botSitemap = require('../../utils/botSitemap');
 const DEFAULT_BATCH_SIZE = 1000;
 const DEFAULT_CONCURRENCY = 4;
 const STATIC_TYPE = 'static';
-const HUB_TYPE = 'hub';
 const NOT_FOUND_PATH = '404.html';
 const MAX_ID = 2147483647;
 // Any key no other advisory lock uses (the search write lock uses 1871)
