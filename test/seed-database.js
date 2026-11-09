@@ -91,6 +91,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.CREATE_SUB_ENTITY_TRIGGERS,
                 customSQL.CREATE_DOCUMENT_CHANGE_TRIGGER,
                 customSQL.CREATE_DOCUMENT_HISTO_FUNCTION,
+                customSQL.CREATE_ENTRANCE_HISTO_FUNCTION,
                 customSQL.CREATE_GROTTO_SOFT_DELETE_TRIGGER,
                 customSQL.SEARCH_OUTBOX_MIGRATION,
                 customSQL.SEARCH_OUTBOX_FILE_MIGRATION,
