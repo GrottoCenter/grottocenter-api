@@ -131,6 +131,8 @@ module.exports.routes = {
     'v1/country/get-entrances-data-quality',
   'GET /api/v1/entrances/with-quality/countries/:countryId/regions/:regionId':
     'v1/region/get-entrances-data-quality',
+  'GET /api/v1/entrances/:entranceId/featured-image':
+    'v1/entrance/find-featured-image',
   'GET /api/v1/entrances/:id': 'v1/entrance/find',
   'GET /api/v1/entrances': 'v1/entrance/find-all',
   'PATCH /api/v1/entrances/:entranceId/cave/:caveId':

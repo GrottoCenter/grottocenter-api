@@ -656,6 +656,16 @@ const c = {
     return { id, fileName, completePath, thumbnails };
   },
 
+  // Lightweight entrance view for map popups (#1992): main name and featured
+  // file only, no coordinates nor other entrance content.
+  toEntranceFeaturedImage: (source) => ({
+    id: source.id,
+    name: getMainName(source),
+    isDeleted: source.isDeleted,
+    redirectTo: source.redirectTo ?? null,
+    featuredFile: convertIfObject(source.featuredFile, c.toFeaturedFile),
+  }),
+
   toSimpleHistory: (source) => {
     const result = {
       id: source.id,

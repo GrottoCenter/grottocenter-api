@@ -141,6 +141,7 @@ module.exports.policies = {
   'v1/entrance/count': true,
   'v1/entrance/public-count': true,
   'v1/entrance/find': ['validateId'],
+  'v1/entrance/find-featured-image': ['validateId'],
   'v1/entrance/find-all': true,
   'v1/entrance/find-random': true,
   'v1/entrance/get-snapshots': true,

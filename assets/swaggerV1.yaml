@@ -6751,6 +6751,49 @@ paths:
             Entrance not found or deleted, or the file named by
             `featuredFile` does not exist.
 
+  '/entrances/{entranceId}/featured-image':
+    get:
+      tags:
+        - entrances
+      summary: Get the name and featured picture of an entrance
+      security:
+        - {}
+        - bearerAuth: []
+      description: >-
+        Lightweight read for map popups: the main name of the entrance and its
+        featured picture, without populating the cave, descriptions,
+        histories, comments, documents or coordinates. The featured file
+        follows the same eligibility rules as on `GET /entrances/{id}`: a
+        validated image a browser can display, of a document still linked to
+        the entrance and neither refused, deleted nor merged; otherwise
+        `featuredFile` is null. A soft-deleted entrance is answered with
+        `isDeleted: true` and its `redirectTo`, and its `featuredFile` is null
+        unless the caller holds the Administrator or the Moderator role, as on
+        `GET /entrances/{id}`. Returns metadata only: the images are served by
+        the file storage.
+      parameters:
+        - name: entranceId
+          in: path
+          description: Entrance id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntranceFeaturedImage'
+        '404':
+          description: >-
+            The id is not a positive 32-bit integer, or no entrance has this
+            id.
+        '500':
+          description: Internal server error.
+
   '/entrances/{id}/restore':
     post:
       tags:
@@ -12943,6 +12986,44 @@ components:
             large:
               type: string
               nullable: true
+
+    EntranceFeaturedImage:
+      type: object
+      description: Main name and featured picture of an entrance.
+      required:
+        - id
+        - name
+        - isDeleted
+        - redirectTo
+        - featuredFile
+      properties:
+        id:
+          type: integer
+          example: 120177
+        name:
+          type: string
+          nullable: true
+          description: Main name of the entrance.
+          example: Gouffre de la Pierre Saint-Martin
+        isDeleted:
+          type: boolean
+          example: false
+        redirectTo:
+          type: integer
+          nullable: true
+          description: Id of the entrance to display instead of this deleted one.
+          example: null
+        featuredFile:
+          description: >-
+            The featured picture, or null when none is selected, the selected
+            file is no longer eligible, or the entrance is deleted and the
+            caller may not view deleted content.
+          oneOf:
+            - $ref: '#/components/schemas/FeaturedFile'
+            - type: object
+              nullable: true
+              enum:
+                - null
 
     File-format:
       type: object
