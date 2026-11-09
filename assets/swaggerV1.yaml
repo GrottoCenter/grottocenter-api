@@ -7359,6 +7359,7 @@ paths:
                     Entity-specific sort fields:
                       - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
+                      - documents: "entrancesSort:asc" or "entrancesSort:desc" (sort by alphabetical-first linked entrance; documents without an entrance sort last on ascending order)
                       - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
                   example: 'cave.depth:desc'
@@ -7470,6 +7471,7 @@ paths:
                     Entity-specific sort fields:
                       - entrances: "dataQuality:asc" or "dataQuality:desc" (sort by data quality score)
                       - documents: "authorsSort:asc" or "authorsSort:desc" (sort by alphabetical-first author)
+                      - documents: "entrancesSort:asc" or "entrancesSort:desc" (sort by alphabetical-first linked entrance; documents without an entrance sort last on ascending order)
                       - documents: "hasFiles:desc" (documents with an attached file first) or "hasFiles:asc"
                     Using an entity-specific sort field with a different entity returns 400.
                   example: 'cave.depth:desc'
