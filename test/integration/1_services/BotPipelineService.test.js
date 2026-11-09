@@ -331,7 +331,8 @@ describe('BotPipelineService - the order, the stop rules and the run record', ()
 
       const started = timers.getCalls().filter((c) => c.args[1] === 1000);
       should(started).have.length(1);
-      should(cleared.called).be.true();
+      // The timer that was started is the one that was cleared
+      should(cleared.calledWith(started[0].returnValue)).be.true();
     });
   });
 
