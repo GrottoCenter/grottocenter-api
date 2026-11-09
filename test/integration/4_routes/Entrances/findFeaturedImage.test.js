@@ -1,3 +1,7 @@
+const fs = require('fs');
+const path = require('path');
+const Ajv = require('ajv');
+const yaml = require('js-yaml');
 const supertest = require('supertest');
 const should = require('should');
 
@@ -8,6 +12,19 @@ const PDF = 1;
 const JPG = 100;
 const PNG = 101;
 const SVG = 103;
+
+const SPEC_PATH = path.join(__dirname, '../../../../assets/swaggerV1.yaml');
+
+// Validates a body against the documented EntranceFeaturedImage schema.
+// Ajv reads the OpenAPI 3.0 `nullable` keyword; `example` is annotation only.
+const compileResponseSchema = () => {
+  const spec = yaml.load(fs.readFileSync(SPEC_PATH, 'utf8'));
+  const ajv = new Ajv({ allErrors: true, strict: false });
+  ajv.addSchema({ $id: 'swagger', components: spec.components });
+  return ajv.compile({
+    $ref: 'swagger#/components/schemas/EntranceFeaturedImage',
+  });
+};
 
 describe('GET /api/v1/entrances/:entranceId/featured-image (#1992)', () => {
   let moderatorToken;
@@ -138,6 +155,48 @@ describe('GET /api/v1/entrances/:entranceId/featured-image (#1992)', () => {
     await TDocument.destroy({ id: documentIds });
     await TName.destroy({ entrance: entranceIds });
     await TEntrance.destroy({ id: entranceIds });
+  });
+
+  describe('documented response schema', () => {
+    let validate;
+    const shouldMatchSchema = (body) => {
+      should(validate(body)).be.true(JSON.stringify(validate.errors));
+    };
+
+    before(() => {
+      validate = compileResponseSchema();
+    });
+
+    it('accepts a null featuredFile', async () => {
+      const { body } = await get().expect(200);
+      should(body.featuredFile).be.null();
+      shouldMatchSchema(body);
+    });
+
+    it('accepts an image with thumbnails', async () => {
+      await setEntrance({ featuredFile: files.jpg });
+      const { body } = await get().expect(200);
+      should(body.featuredFile).be.an.Object();
+      shouldMatchSchema(body);
+    });
+
+    it('accepts an image without thumbnails', async () => {
+      await setEntrance({ featuredFile: files.png });
+      const { body } = await get().expect(200);
+      should(body.featuredFile.thumbnails).be.null();
+      shouldMatchSchema(body);
+    });
+
+    it('rejects a featuredFile that is neither an object nor null', () => {
+      const body = {
+        id: 1,
+        name: null,
+        isDeleted: false,
+        redirectTo: null,
+        featuredFile: 'entrance.jpg',
+      };
+      should(validate(body)).be.false();
+    });
   });
 
   describe('validation', () => {

@@ -12983,13 +12983,16 @@ components:
           description: Id of the entrance to display instead of this deleted one.
           example: null
         featuredFile:
-          nullable: true
           description: >-
             The featured picture, or null when none is selected, the selected
             file is no longer eligible, or the entrance is deleted and the
             caller may not view deleted content.
-          allOf:
+          oneOf:
             - $ref: '#/components/schemas/FeaturedFile'
+            - type: object
+              nullable: true
+              enum:
+                - null
 
     File-format:
       type: object
