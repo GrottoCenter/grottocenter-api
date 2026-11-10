@@ -180,6 +180,12 @@ const createBotFixtures = ({ scanVersion }) => {
 
   const cleanup = async () => {
     await query(`TRUNCATE ${BOT_TABLES}, t_search_outbox`);
+    // The audit may have stopped publishing: back to the state of a fresh database
+    await query(
+      `INSERT INTO t_bot_surface_state (id, publishing, reason, updated_at)
+       VALUES (1, true, NULL, now())
+       ON CONFLICT (id) DO UPDATE SET publishing = true, reason = NULL, updated_at = now()`
+    );
     await purge(TDescription, created.description);
     await purge(TName, created.name);
     await purge(TEntrance, created.entrance);

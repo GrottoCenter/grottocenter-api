@@ -161,7 +161,43 @@ const publishIfChanged = async (adapter, page, knownHash) => {
   return true;
 };
 
+/**
+ * publishIfChanged under the publishing switch (BotSurfaceStateService).
+ * `publishing` true: exactly publishIfChanged. False: nothing is uploaded.
+ *   - hash unchanged: the page stays;
+ *   - hash differs and a page is online (a manifest row): it is DELETED (the
+ *     file first, then the row), because a changed page may be the reduced
+ *     version of a withdrawal and the stale one must not stay online. With
+ *     `withdrawChanged: false` (a page that carries no record data, 404.html)
+ *     it stays instead;
+ *   - nothing online: nothing is uploaded.
+ *
+ * @returns {Promise<'uploaded'|'unchanged'|'withdrawn'|'withheld'>}
+ *   withdrawn: deleted instead of uploaded; withheld: not uploaded, and
+ *   nothing to delete (or left as it was)
+ */
+const publishOrWithhold = async (
+  adapter,
+  page,
+  knownHash,
+  { publishing = true, withdrawChanged = true } = {}
+) => {
+  if (publishing) {
+    return (await publishIfChanged(adapter, page, knownHash))
+      ? 'uploaded'
+      : 'unchanged';
+  }
+  if (knownHash === page.hash) return 'unchanged';
+  if (knownHash !== undefined && withdrawChanged) {
+    await adapter.delete(page.path);
+    await forgetPublished(page.path);
+    return 'withdrawn';
+  }
+  return 'withheld';
+};
+
 module.exports = {
+  publishOrWithhold,
   resolveBaseUrl,
   loadRenderOptions,
   sha256,

@@ -53,6 +53,15 @@
  * produce is deleted (the hub stopped being published). Hub rows are manifest
  * rows of entity_type 'hub', with hub_type and hub_key and no entity_id.
  *
+ * Publishing off (t_bot_surface_state, BotSurfaceStateService; #1887): the run
+ * uploads nothing. A page that would need an upload because it is new or its
+ * hash differs is DELETED instead when it is online (a changed page may be the
+ * reduced version of a withdrawal: the stale one must not stay), a new one is
+ * not uploaded, an unchanged one stays. 404.html carries no record data, so a
+ * changed one simply stays as it is. Deletes run as always. An unreadable or
+ * missing state counts as off (fail closed). `summary.publishing` and
+ * `withheld` say so.
+ *
  * Static extras published by the same run: 404.html (noindex). The sitemap
  * files (sitemap.xml, sitemap-*.xml.gz) are static rows of the manifest too, written
  * by BotSitemapService (step 5, after this one): this run never deletes them.
@@ -71,6 +80,7 @@ const mapLimit = require('../../utils/mapLimit');
 const BotRenderService = require('./BotRenderService');
 const BotHubService = require('./BotHubService');
 const BotPublishService = require('./BotPublishService');
+const BotSurfaceStateService = require('./BotSurfaceStateService');
 const botSitemap = require('../../utils/botSitemap');
 
 const DEFAULT_BATCH_SIZE = 1000;
@@ -158,6 +168,7 @@ async function publish({
   countryNames,
   readHubs,
   entityTypes,
+  publishing,
 }) {
   const listed = new Set(entityTypes);
   // The published hubs, read once before any page is rendered: the same rows
@@ -174,16 +185,29 @@ async function publish({
     countryNames,
     hubLinks: BotHubService.createHubLinks(hubs, resolvedBaseUrl),
   });
-  const summary = { uploaded: 0, unchanged: 0, deleted: 0, byType: {} };
+  const summary = {
+    uploaded: 0,
+    unchanged: 0,
+    deleted: 0,
+    withheld: 0,
+    publishing,
+    byType: {},
+  };
 
-  const publishIfChanged = async (page, known) => {
-    const uploaded = await BotPublishService.publishIfChanged(
+  // With publishing off (BotSurfaceStateService) nothing is uploaded: a page
+  // that would need an upload and is online is deleted, a new one is not
+  // uploaded, an unchanged one stays
+  const publishIfChanged = async (page, known, options) => {
+    const outcome = await BotPublishService.publishOrWithhold(
       adapter,
       page,
-      known.get(page.path)
+      known.get(page.path),
+      { publishing, ...options }
     );
-    summary[uploaded ? 'uploaded' : 'unchanged'] += 1;
-    return uploaded;
+    if (outcome === 'withdrawn') summary.deleted += 1;
+    else if (outcome === 'withheld') summary.withheld += 1;
+    else summary[outcome] += 1;
+    return outcome;
   };
 
   const remove = async (path) => {
@@ -205,7 +229,7 @@ async function publish({
   };
 
   const publishType = async (entityType) => {
-    const stats = { uploaded: 0, unchanged: 0, deleted: 0 };
+    const stats = { uploaded: 0, unchanged: 0, deleted: 0, withheld: 0 };
     let cursor = 0;
     const redirects = await readRedirects(entityType);
     for (;;) {
@@ -285,6 +309,7 @@ async function publish({
       stats.uploaded += summary.uploaded - before.uploaded;
       stats.unchanged += summary.unchanged - before.unchanged;
       stats.deleted += summary.deleted - before.deleted;
+      stats.withheld += summary.withheld - before.withheld;
       // eslint-disable-next-line no-await-in-loop
       await onBatch({ entityType, cursor, rows: rows.length });
       if (isLast) break;
@@ -307,6 +332,7 @@ async function publish({
       uploaded: 0,
       unchanged: 0,
       deleted: summary.deleted - before.deleted,
+      withheld: 0,
     };
   };
 
@@ -316,7 +342,7 @@ async function publish({
   // hubs are few (about 870), so the manifest's hub rows are selected in one
   // query, not walked by range.
   const publishHubs = async () => {
-    const stats = { uploaded: 0, unchanged: 0, deleted: 0 };
+    const stats = { uploaded: 0, unchanged: 0, deleted: 0, withheld: 0 };
     const before = { ...summary };
     const hubFigures = await BotHubService.loadFigures(hubs, { concurrency });
     const pages = hubs.rows.map((row) => ({
@@ -353,6 +379,7 @@ async function publish({
     stats.uploaded = summary.uploaded - before.uploaded;
     stats.unchanged = summary.unchanged - before.unchanged;
     stats.deleted = summary.deleted - before.deleted;
+    stats.withheld = summary.withheld - before.withheld;
     summary.byType[HUB_TYPE] = stats;
   };
 
@@ -380,8 +407,10 @@ async function publish({
     },
   ];
   const knownExtras = await manifestHashes(extras.map((e) => e.path));
+  // 404.html carries no record data: with publishing off a changed one is
+  // left as it is, not deleted
   await mapLimit(extras, concurrency, (page) =>
-    publishIfChanged(page, knownExtras)
+    publishIfChanged(page, knownExtras, { withdrawChanged: false })
   );
   // The sitemap files are static rows too, owned by BotSitemapService: never
   // removed here
@@ -453,9 +482,22 @@ module.exports = {
         throw new RangeError(`Unknown bot entity type: ${type}`);
       }
     });
-    return withRunLock(() =>
-      publish({ ...options, concurrency, batchSize, entityTypes })
-    );
+    return withRunLock(async () => {
+      // Read under the lock, once: a stop set meanwhile applies to the next run
+      const publishing = await BotSurfaceStateService.isPublishing();
+      if (!publishing) {
+        sails.log.warn(
+          'bot-page-generator: publishing is OFF (t_bot_surface_state): nothing is uploaded, a page that would need an upload is deleted'
+        );
+      }
+      return publish({
+        ...options,
+        concurrency,
+        batchSize,
+        entityTypes,
+        publishing,
+      });
+    });
   },
 
   NOT_FOUND_PATH,
