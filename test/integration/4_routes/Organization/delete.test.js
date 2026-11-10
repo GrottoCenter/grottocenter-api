@@ -1,5 +1,6 @@
 const supertest = require('supertest');
 const should = require('should');
+const sinon = require('sinon');
 const AuthTokenService = require('../../AuthTokenService');
 const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 const {
@@ -141,6 +142,98 @@ describe('Organization features', () => {
         grotto: org.id,
       });
       should(junctionCaveExplorer).have.length(0);
+    });
+
+    // https://github.com/GrottoCenter/grottocenter-api/issues/1730
+    describe('avatar', () => {
+      let FileService;
+      let originalCredentials;
+      let deleteBlob;
+
+      before(() => {
+        // The global is the instance the services call
+        ({ FileService } = global);
+        originalCredentials = FileService.getCredentialsForTest();
+        deleteBlob = sinon.stub().resolves();
+        FileService.setCredentialsForTest({
+          documentsBlobClient: {
+            getBlockBlobClient: (blobPath) => ({
+              deleteIfExists: async (options) => deleteBlob(blobPath, options),
+            }),
+          },
+        });
+      });
+
+      beforeEach(() => deleteBlob.resetHistory());
+
+      after(() => {
+        FileService.setCredentialsForTest(originalCredentials);
+      });
+
+      const pendingPaths = async () =>
+        (
+          await CommonService.query(
+            'SELECT blob_path FROM t_avatar_pending_deletion'
+          )
+        ).rows.map((r) => r.blob_path);
+
+      const createOrganization = (avatarPath) =>
+        TGrotto.create({ author: 1, isDeleted: true, avatarPath }).fetch();
+
+      it('should delete the avatar of a permanently deleted organization', async () => {
+        const org = await createOrganization(
+          'avatars/organizations/deleted.webp'
+        );
+        await supertest(sails.hooks.http.app)
+          .delete(`/api/v1/organizations/${org.id}?isPermanent=true`)
+          .set('Authorization', adminToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(await TGrotto.findOne(org.id)).be.undefined();
+        should(deleteBlob.getCalls().map((c) => c.args[0])).eql([
+          'avatars/organizations/deleted.webp',
+        ]);
+        should(await pendingPaths()).be.empty();
+      });
+
+      it('should delete the avatar of a merged organization and keep the target one', async () => {
+        const target = await TGrotto.create({
+          author: 1,
+          avatarPath: 'avatars/organizations/merge-target.webp',
+        }).fetch();
+        const org = await createOrganization(
+          'avatars/organizations/merge-source.webp'
+        );
+        await supertest(sails.hooks.http.app)
+          .delete(
+            `/api/v1/organizations/${org.id}?isPermanent=true&entityId=${target.id}`
+          )
+          .set('Authorization', adminToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(deleteBlob.getCalls().map((c) => c.args[0])).eql([
+          'avatars/organizations/merge-source.webp',
+        ]);
+        should((await TGrotto.findOne(target.id)).avatarPath).equal(
+          'avatars/organizations/merge-target.webp'
+        );
+      });
+
+      it('should keep the avatar of a soft-deleted organization', async () => {
+        const org = await TGrotto.create({
+          author: 1,
+          avatarPath: 'avatars/organizations/soft.webp',
+        }).fetch();
+        await supertest(sails.hooks.http.app)
+          .delete(`/api/v1/organizations/${org.id}`)
+          .set('Authorization', moderatorToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(deleteBlob.callCount).equal(0);
+        should((await TGrotto.findOne(org.id)).avatarPath).equal(
+          'avatars/organizations/soft.webp'
+        );
+      });
     });
 
     it('should drop authorship links when permanently deleting without a merge target', async () => {

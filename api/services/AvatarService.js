@@ -23,8 +23,12 @@ const MAX_SWAP_ATTEMPTS = 5;
 const ACCEPTED_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
 
 const OWNERS = {
-  caver: { folder: 'cavers', getModel: () => TCaver },
-  organization: { folder: 'organizations', getModel: () => TGrotto },
+  caver: { folder: 'cavers', table: 't_caver', getModel: () => TCaver },
+  organization: {
+    folder: 'organizations',
+    table: 't_grotto',
+    getModel: () => TGrotto,
+  },
 };
 
 const INVALID_IMAGE = 'INVALID_IMAGE';
@@ -270,6 +274,44 @@ module.exports = {
     if (!previous) return false;
     await discard(previous);
     return true;
+  },
+
+  /**
+   * Permanently delete a caver or an organization record, and its avatar.
+   * The record is locked while its avatar path is read, so an avatar update
+   * running at the same time either lands before (its path is the one read
+   * here) or finds no record (and deletes its own upload). The path is
+   * recorded for deletion in the transaction that destroys the record.
+   * @param {'caver'|'organization'} owner
+   * @param {number} id
+   * @param {function(object): Promise} destroy - Destroys the record, using
+   *   the transaction connection it is given
+   * @returns {Promise<string|null>} the path of the avatar removed, if any
+   */
+  async destroyOwner(owner, id, destroy) {
+    const { table } = OWNERS[owner];
+    const released = await sails.getDatastore().transaction(async (db) => {
+      const { rows } = await query(
+        `SELECT avatar_path FROM ${table} WHERE id = $1 FOR UPDATE`,
+        [id],
+        db
+      );
+      const avatarPath = rows[0]?.avatar_path ?? null;
+      await destroy(db);
+      if (!avatarPath) return null;
+      // A delete trigger may have kept the row (soft delete): then it still
+      // references its avatar
+      const remaining = await query(
+        `SELECT 1 FROM ${table} WHERE id = $1`,
+        [id],
+        db
+      );
+      if (remaining.rows.length > 0) return null;
+      await markPending([avatarPath], db);
+      return avatarPath;
+    });
+    if (released) await discard(released);
+    return released;
   },
 
   /**

@@ -187,4 +187,106 @@ describe('Caver features', () => {
       should(targetAfter.subscribedToRegions[0].id).equal('FR-01');
     });
   });
+
+  // https://github.com/GrottoCenter/grottocenter-api/issues/1730
+  describe('Delete, avatar', () => {
+    let FileService;
+    let originalCredentials;
+    let deleteBlob;
+
+    before(() => {
+      // The global is the instance the services call
+      ({ FileService } = global);
+      originalCredentials = FileService.getCredentialsForTest();
+      deleteBlob = sinon.stub().resolves();
+      FileService.setCredentialsForTest({
+        documentsBlobClient: {
+          getBlockBlobClient: (blobPath) => ({
+            deleteIfExists: async (options) => deleteBlob(blobPath, options),
+          }),
+        },
+      });
+    });
+
+    beforeEach(() => deleteBlob.resetHistory());
+
+    after(() => {
+      FileService.setCredentialsForTest(originalCredentials);
+    });
+
+    const pendingPaths = async () =>
+      (
+        await CommonService.query(
+          'SELECT blob_path FROM t_avatar_pending_deletion'
+        )
+      ).rows.map((r) => r.blob_path);
+
+    const createCaver = async (name, avatarPath) => {
+      const caver = await CaverService.createNonUserCaver({ name });
+      return TCaver.updateOne({ id: caver.id }).set({ avatarPath });
+    };
+
+    it('should delete the avatar of a deleted caver', async () => {
+      const caver = await createCaver(
+        'AvatarDeleted',
+        'avatars/cavers/deleted.webp'
+      );
+      await supertest(sails.hooks.http.app)
+        .delete(`/api/v1/cavers/${caver.id}`)
+        .set('Authorization', moderatorToken)
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(await TCaver.findOne(caver.id)).be.undefined();
+      should(deleteBlob.getCalls().map((c) => c.args[0])).eql([
+        'avatars/cavers/deleted.webp',
+      ]);
+      should(await pendingPaths()).be.empty();
+    });
+
+    it('should delete the avatar of a merged caver and keep the target one', async () => {
+      const source = await createCaver(
+        'AvatarMergeSource',
+        'avatars/cavers/merge-source.webp'
+      );
+      const target = await createCaver(
+        'AvatarMergeTarget',
+        'avatars/cavers/merge-target.webp'
+      );
+      try {
+        await supertest(sails.hooks.http.app)
+          .delete(`/api/v1/cavers/${source.id}?entityId=${target.id}`)
+          .set('Authorization', moderatorToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(await TCaver.findOne(source.id)).be.undefined();
+        should(deleteBlob.getCalls().map((c) => c.args[0])).eql([
+          'avatars/cavers/merge-source.webp',
+        ]);
+        should((await TCaver.findOne(target.id)).avatarPath).equal(
+          'avatars/cavers/merge-target.webp'
+        );
+      } finally {
+        await TCaver.destroy({ id: target.id });
+      }
+    });
+
+    it('should keep the avatar recorded for deletion when storage fails', async () => {
+      const caver = await createCaver(
+        'AvatarStorageDown',
+        'avatars/cavers/storage-down.webp'
+      );
+      deleteBlob.rejects(new Error('storage down'));
+      try {
+        await supertest(sails.hooks.http.app)
+          .delete(`/api/v1/cavers/${caver.id}`)
+          .set('Authorization', moderatorToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+        should(await pendingPaths()).eql(['avatars/cavers/storage-down.webp']);
+      } finally {
+        deleteBlob.resolves();
+        await CommonService.query('DELETE FROM t_avatar_pending_deletion');
+      }
+    });
+  });
 });

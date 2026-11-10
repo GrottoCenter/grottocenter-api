@@ -443,6 +443,82 @@ describe('AvatarService', () => {
     });
   });
 
+  describe('destroyOwner', () => {
+    afterEach(async () => {
+      deleteBlob.resetBehavior();
+      deleteBlob.resolves();
+      await CommonService.query('DELETE FROM t_avatar_pending_deletion');
+    });
+
+    const createCaver = async (avatarPath) => {
+      const caver = await sails.services.caverservice.createNonUserCaver({
+        name: 'AvatarOwner',
+      });
+      return TCaver.updateOne({ id: caver.id }).set({ avatarPath });
+    };
+
+    it('deletes the avatar of the destroyed record', async () => {
+      const caver = await createCaver('avatars/cavers/x-destroyed.webp');
+      const released = await AvatarService.destroyOwner(
+        'caver',
+        caver.id,
+        (db) => TCaver.destroyOne({ id: caver.id }).usingConnection(db)
+      );
+      should(released).equal('avatars/cavers/x-destroyed.webp');
+      should(await TCaver.findOne({ id: caver.id })).be.undefined();
+      should(deleteBlob.firstCall.args[0]).equal(
+        'avatars/cavers/x-destroyed.webp'
+      );
+    });
+
+    it('keeps the avatar path recorded when storage fails', async () => {
+      const caver = await createCaver('avatars/cavers/x-failed.webp');
+      deleteBlob.rejects(new Error('storage down'));
+      await AvatarService.destroyOwner('caver', caver.id, (db) =>
+        TCaver.destroyOne({ id: caver.id }).usingConnection(db)
+      );
+      const { rows } = await CommonService.query(
+        'SELECT blob_path FROM t_avatar_pending_deletion'
+      );
+      should(rows.map((r) => r.blob_path)).eql([
+        'avatars/cavers/x-failed.webp',
+      ]);
+    });
+
+    it('keeps the avatar of a record the destroy did not remove', async () => {
+      const caver = await createCaver('avatars/cavers/x-kept.webp');
+      try {
+        const released = await AvatarService.destroyOwner(
+          'caver',
+          caver.id,
+          async () => {}
+        );
+        should(released).be.null();
+        should(deleteBlob.callCount).equal(0);
+      } finally {
+        await TCaver.destroyOne({ id: caver.id });
+      }
+    });
+
+    it('rolls back when the destroy fails', async () => {
+      const caver = await createCaver('avatars/cavers/x-rollback.webp');
+      try {
+        await should(
+          AvatarService.destroyOwner('caver', caver.id, async () => {
+            throw new Error('destroy failed');
+          })
+        ).be.rejectedWith('destroy failed');
+        should(deleteBlob.callCount).equal(0);
+        const { rows } = await CommonService.query(
+          'SELECT blob_path FROM t_avatar_pending_deletion'
+        );
+        should(rows).be.empty();
+      } finally {
+        await TCaver.destroyOne({ id: caver.id });
+      }
+    });
+  });
+
   describe('getUrl', () => {
     it('returns null without an avatar', () => {
       should(AvatarService.getUrl(null)).be.null();
