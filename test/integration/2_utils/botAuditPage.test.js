@@ -3,6 +3,7 @@ const path = require('path');
 const should = require('should');
 
 const SNAPSHOTS = path.join(__dirname, '../../snapshots/bot-pages');
+const BASE = 'https://grottocenter.org/ui';
 
 describe('botAuditPage - what the audit reads out of a page', () => {
   let botAuditPage;
@@ -111,6 +112,21 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(verdicts(html).jsonLd.matched).be.true();
     });
 
+    it('closes a script or a style on an unusual end tag, as a browser does, and still finds the coordinates', () => {
+      const withScript = `<!DOCTYPE html><html><body><script type="application/ld+json">{"name":"Gouffre","latitude":46.1,"longitude":6.5}</script\t\n bar><p>after</p></body></html>`;
+      const { body, jsonLd } = botAuditPage.detectionText(withScript);
+      should(jsonLd).containEql('latitude');
+      should(detect(jsonLd).matched).be.true();
+      // The script is out of the body, the text after it is in
+      should(body).not.containEql('latitude');
+      should(body).containEql('after');
+
+      const withStyle = '<style>a{color:red}</style foo><p>text</p>';
+      const shaped = botAuditPage.detectionText(withStyle);
+      should(shaped.body).not.containEql('color');
+      should(shaped.body).containEql('text');
+    });
+
     it('does not throw on JSON-LD that is not JSON, and still reads it as text', () => {
       const html = page({ jsonLd: '{broken, "latitude": 46.1' });
       should(verdicts(html).jsonLd.matched).be.true();
@@ -123,7 +139,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         body: '<a href="https://grottocenter.org/ui/massifs/3">m</a><a href="/ui/caves/12">c</a><a href="/ui/caves/12">c</a><a href="/ui/entrances/77">e</a><a href="https://grottocenter.org/ui/organizations/8">o</a>',
         jsonLd: '{"@id":"https://grottocenter.org/ui/caves/9"}',
       });
-      should(botAuditPage.recordRefs(html)).eql({
+      should(botAuditPage.recordRefs(html, BASE)).eql({
         cave: [9, 12],
         massif: [3],
         organization: [8],
@@ -131,9 +147,42 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       });
     });
 
+    it('reads only what the generator emits: hrefs and JSON-LD ids on the SPA address, not the text of a description', () => {
+      const html = page({
+        body: '<a href="https://grottocenter.org/ui/caves/12">kept</a><p>See https://grottocenter.org/ui/caves/77 and /caves/78 and <a href="https://some-club.fr/caves/79">a club</a> and <a href="https://grottocenter.org/api/caves/80">api</a>, also /ui/massifs/81</p>',
+        jsonLd:
+          '{"@id":"https://grottocenter.org/ui/caves/9","name":"https://grottocenter.org/ui/caves/82","description":"/ui/massifs/83"}',
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [9, 12],
+        massif: [],
+        organization: [],
+        entrance: [],
+      });
+    });
+
+    it('accepts the relative address of the SPA and a trailing slash, query or fragment', () => {
+      const html = page({
+        body: '<a href="/ui/caves/5">a</a><a href="/ui/massifs/6/">b</a><a href="https://grottocenter.org/ui/organizations/7?x=1">c</a><a href="/ui/entrances/8#top">d</a><a href="/other/caves/9">e</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [5],
+        massif: [6],
+        organization: [7],
+        entrance: [8],
+      });
+    });
+
+    it('reads hrefs written with single quotes, without quotes, and with entities', () => {
+      const html = page({
+        body: '<a href=\'/ui/caves/1\'>a</a><a href=/ui/caves/2>b</a><a href="https://grottocenter.org/ui/caves/3?a=1&amp;b=2">c</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE).cave).eql([1, 2, 3]);
+    });
+
     it('reads the snapshot pages: the cave and the massif of the cave page', () => {
       const html = fs.readFileSync(path.join(SNAPSHOTS, 'cave.html'), 'utf8');
-      should(botAuditPage.recordRefs(html)).eql({
+      should(botAuditPage.recordRefs(html, 'https://example.test/ui')).eql({
         cave: [12],
         massif: [3],
         organization: [],
@@ -145,7 +194,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       const html = page({
         body: '<a href="/ui/countries/FR">f</a><a href="/ui/caves/012">z</a><a href="/ui/caves/99999999999">big</a><a href="/ui/caves/2147483648">over</a><a href="/ui/caves/0">zero</a>',
       });
-      should(botAuditPage.recordRefs(html)).eql({
+      should(botAuditPage.recordRefs(html, BASE)).eql({
         cave: [],
         massif: [],
         organization: [],

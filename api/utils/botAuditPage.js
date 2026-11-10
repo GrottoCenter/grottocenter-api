@@ -18,9 +18,15 @@
  *                                  lines, so a JSON escape (°) cannot hide
  *                                  a coordinate and a labelled number keeps its
  *                                  label. The detector itself is untouched.
- *   recordRefs(html)     the cave, massif, organization and entrance ids the
- *                        page links to or carries (`/ui/caves/12`, a JSON-LD
- *                        `@id`).
+ *   recordRefs(html, baseUrl)
+ *                        the cave, massif, organization and entrance ids the
+ *                        page links to or carries: the `href` values and the
+ *                        JSON-LD `@id` values that point at the SPA's own
+ *                        address (`baseUrl`, or its path alone), which are
+ *                        what the generator emits. Free text is left out: a
+ *                        contributor can write "/caves/12", or a link to
+ *                        another site, in a description, and that is not a
+ *                        reference of the page.
  */
 
 const NAMED_ENTITIES = Object.freeze({
@@ -50,8 +56,10 @@ const decodeEntities = (text) =>
       : whole;
   });
 
-const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
-const STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style\s*>/gi;
+// A closing tag is `</script` followed by anything up to `>` (`</script\t\n bar>`
+// closes a script for a browser)
+const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script[^>]*>/gi;
+const STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi;
 const COMMENT_RE = /<!--([\s\S]*?)-->/g;
 const TAG_RE = /<[a-z!/?][^>]*>/gi;
 const ATTRIBUTE_RE = /\s[^\s=/>]+\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
@@ -110,8 +118,6 @@ const detectionText = (html) => {
   return { body, jsonLd: scripts.map(decodeEntities).join('\n') };
 };
 
-const REF_RE =
-  /\/(caves|massifs|organizations|entrances)\/([1-9][0-9]{0,9})(?![0-9])/g;
 const TYPE_BY_DIRECTORY = Object.freeze({
   caves: 'cave',
   massifs: 'massif',
@@ -119,22 +125,64 @@ const TYPE_BY_DIRECTORY = Object.freeze({
   entrances: 'entrance',
 });
 const MAX_ID = 2147483647;
+const HREF_RE = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
+const ID_KEY = '@id';
+
+// Every `href` value of the page's tags, entities decoded
+const hrefs = (html) => {
+  const found = [];
+  let match = HREF_RE.exec(html);
+  while (match) {
+    found.push(decodeEntities(match[1] ?? match[2] ?? match[3]));
+    match = HREF_RE.exec(html);
+  }
+  HREF_RE.lastIndex = 0;
+  return found;
+};
+
+// Every `@id` string of the JSON-LD blocks
+const jsonLdIds = (html) => {
+  const found = [];
+  const walk = (value, key) => {
+    if (Array.isArray(value)) value.forEach((item) => walk(item, key));
+    else if (value !== null && typeof value === 'object') {
+      Object.entries(value).forEach(([k, v]) => walk(v, k));
+    } else if (key === ID_KEY && typeof value === 'string') found.push(value);
+  };
+  html.replace(SCRIPT_RE, (whole, attributes, code) => {
+    try {
+      walk(JSON.parse(code), '');
+    } catch {
+      // Not JSON: no reference to read (the text is still checked for coordinates)
+    }
+    return whole;
+  });
+  return found;
+};
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * @param {string} html
+ * @param {string} baseUrl the SPA's address, `https://grottocenter.org/ui`
  * @returns {{cave: number[], massif: number[], organization: number[], entrance: number[]}}
  *   the distinct ids, sorted
  */
-const recordRefs = (html) => {
+const recordRefs = (html, baseUrl) => {
+  const base = String(baseUrl).replace(/\/+$/, '');
+  const path = new URL(base).pathname.replace(/\/+$/, '');
+  // The absolute address, or the same path alone
+  const prefixes = [base, path].filter(Boolean).map(escapeRegExp).join('|');
+  const refRe = new RegExp(
+    `^(?:${prefixes})/(caves|massifs|organizations|entrances)/([1-9][0-9]{0,9})(?:[/?#].*)?$`
+  );
   const found = { cave: [], massif: [], organization: [], entrance: [] };
-  const text = decodeEntities(html);
-  let match = REF_RE.exec(text);
-  while (match) {
+  [...hrefs(html), ...jsonLdIds(html)].forEach((url) => {
+    const match = refRe.exec(url);
+    if (!match) return;
     const id = Number(match[2]);
     if (id <= MAX_ID) found[TYPE_BY_DIRECTORY[match[1]]].push(id);
-    match = REF_RE.exec(text);
-  }
-  REF_RE.lastIndex = 0;
+  });
   Object.keys(found).forEach((type) => {
     found[type] = [...new Set(found[type])].sort((a, b) => a - b);
   });

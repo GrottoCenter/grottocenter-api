@@ -42,7 +42,7 @@ describe('botAuditPage - Property: what the audit reads out of any text', () => 
           )
         );
         const html = `${before}${links.join(after)}${after}`;
-        const found = botAuditPage.recordRefs(html);
+        const found = botAuditPage.recordRefs(html, 'https://x.test/ui');
         Object.keys(TYPES).forEach((type) => {
           should(found[type]).eql([...byType[type]].sort((a, b) => a - b));
         });

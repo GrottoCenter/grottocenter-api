@@ -116,6 +116,16 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
   const caveKey = (id) => `caves/${id}.html`;
   const link = (type, id) => `<a href="${BASE_URL}/${type}/${id}">x</a>`;
 
+  // Pages that fail the coordinate check, each about its own cave
+  const seedBad = async (n) => {
+    for (let i = 0; i < n; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const subject = await mkPublicCave(`Gouffre Mauvais ${i}`);
+      // eslint-disable-next-line no-await-in-loop
+      await publish(caveKey(subject.cave.id), html({ body: POSITION }));
+    }
+  };
+
   const audit = (options = {}) =>
     BotAuditService.run({
       adapter,
@@ -457,6 +467,45 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
 
       should(counts.failures).equal(1);
       should(counts.failuresByReason).eql({ 'sensitive-entrance': 1 });
+    });
+
+    it('does not fail a page for a path written in a description, or a link to another site: only what the generator emits counts', async () => {
+      const subject = await mkPublicCave();
+      const merged = await fixtures.mkCave('Gouffre Fusionne');
+      await query('UPDATE t_cave SET redirect_to = $2 WHERE id = $1', [
+        merged.id,
+        subject.cave.id,
+      ]);
+      await publish(
+        caveKey(subject.cave.id),
+        html({
+          body: `<p class="text">Voir ${BASE_URL}/caves/${merged.id}, /caves/${merged.id} et <a href="https://un-club.fr/caves/${merged.id}">le club</a></p>`,
+          jsonLd: `{"@id":"${BASE_URL}/caves/${subject.cave.id}","description":"${BASE_URL}/caves/${merged.id}"}`,
+        })
+      );
+
+      const counts = await audit();
+
+      should(counts.pagesChecked).equal(1);
+      should(counts.failures).equal(0);
+      should(isOnline(caveKey(subject.cave.id))).be.true();
+    });
+
+    it('does fail a page for a link the generator would emit to a merged record', async () => {
+      const subject = await mkPublicCave();
+      const merged = await fixtures.mkCave('Gouffre Fusionne Lie');
+      await query('UPDATE t_cave SET redirect_to = $2 WHERE id = $1', [
+        merged.id,
+        subject.cave.id,
+      ]);
+      await publish(
+        caveKey(subject.cave.id),
+        html({ body: link('caves', merged.id) })
+      );
+
+      const counts = await audit();
+
+      should(counts.failuresByReason).eql({ 'merged-record': 1 });
     });
 
     it('leaves the clean pages of the same run alone', async () => {
@@ -810,7 +859,7 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(init.redirect).equal('follow');
     });
 
-    it('fails a page whose public address answers a normal User-Agent with the generator marker: deleted, logged', async () => {
+    it('fails a page whose public address answers a normal User-Agent with the generator marker: logged, publishing stopped at once, the page left alone', async () => {
       const { cave } = await mkPublicCave();
       await publish(caveKey(cave.id), html());
       const fetchFn = fakeFetch(() => ok(LEAKED_PAGE));
@@ -818,11 +867,88 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       const counts = await variant({ fetch: fetchFn });
 
       should(counts.failuresByReason).eql({ 'variant-leak': 1 });
-      should(isOnline(caveKey(cave.id))).be.false();
-      should(await inManifest(caveKey(cave.id))).be.false();
       should(errorLines()).containEql(
         `bot-surface-audit failure ${caveKey(cave.id)}: variant-leak`
       );
+      // One leak is enough, whatever the failure limit (10): it is the cache
+      // or CDN rule that is wrong, for every page, not the page
+      should(counts.failures).equal(1);
+      should(counts.publishingStopped).be.true();
+      should((await BotSurfaceStateService.read()).publishing).be.false();
+      should((await BotSurfaceStateService.read()).reason).match(
+        /crawler page.*fix the cache or CDN rule/
+      );
+      should(
+        errorLines().some((l) =>
+          l.startsWith('bot-surface-audit variant leak, publishing stopped')
+        )
+      ).be.true();
+      // The blob is fine: deleting it would fix nothing, and the next night
+      // would upload it again
+      should(isOnline(caveKey(cave.id))).be.true();
+      should(await inManifest(caveKey(cave.id))).be.true();
+    });
+
+    it('stops publishing on a variant leak that is not the first failure either, and does not stop it for an unreachable address', async () => {
+      const { cave } = await mkPublicCave();
+      await publish(caveKey(cave.id), html());
+
+      const unreachable = await variant({
+        fetch: fakeFetch(() => new Error('connect ECONNREFUSED')),
+      });
+      should(unreachable.variantUnreachable).equal(1);
+      should(unreachable.publishingStopped).be.false();
+      should((await BotSurfaceStateService.read()).publishing).be.true();
+    });
+
+    it('reads no more than the limit of an answer, and stops the request', async () => {
+      const { cave } = await mkPublicCave();
+      await publish(caveKey(cave.id), html());
+      const CHUNK = 256 * 1024;
+      let pulled = 0;
+      let cancelled = false;
+      // An endless body: the audit must not wait for its end
+      const body = new ReadableStream({
+        pull(controller) {
+          pulled += 1;
+          controller.enqueue(new Uint8Array(CHUNK).fill(32));
+        },
+        cancel() {
+          cancelled = true;
+        },
+      });
+      const counts = await variant({
+        fetch: async () => ({ ok: true, status: 200, body }),
+      });
+
+      should(counts.variantChecked).equal(1);
+      should(counts.failures).equal(0);
+      // 2 MiB of 256 KiB chunks is 8, plus the read-ahead of the stream
+      should(pulled).be.below(16);
+      should(cancelled).be.true();
+    });
+
+    it('finds the marker at the start of a long body without reading it all', async () => {
+      const { cave } = await mkPublicCave();
+      await publish(caveKey(cave.id), html());
+      const encoder = new TextEncoder();
+      let pulled = 0;
+      const body = new ReadableStream({
+        pull(controller) {
+          pulled += 1;
+          controller.enqueue(
+            pulled === 1
+              ? encoder.encode(LEAKED_PAGE)
+              : new Uint8Array(512 * 1024).fill(32)
+          );
+        },
+      });
+      const counts = await variant({
+        fetch: async () => ({ ok: true, status: 200, body }),
+      });
+
+      should(counts.failuresByReason).eql({ 'variant-leak': 1 });
+      should(pulled).be.below(16);
     });
 
     it('requests the hub pages at their own address, and never a redirect page', async () => {
@@ -944,15 +1070,6 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
   // ---- the threshold --------------------------------------------------------
 
   describe('the failure limit', () => {
-    const seedBad = async (n) => {
-      for (let i = 0; i < n; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        const subject = await mkPublicCave(`Gouffre Mauvais ${i}`);
-        // eslint-disable-next-line no-await-in-loop
-        await publish(caveKey(subject.cave.id), html({ body: POSITION }));
-      }
-    };
-
     it('does not stop publishing at exactly the limit', async () => {
       await seedBad(3);
 
@@ -1010,7 +1127,7 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(await BotSurfaceStateService.isPublishing()).be.false();
     });
 
-    it('counts variant failures toward the limit', async () => {
+    it('counts a variant leak as a failure, with the others', async () => {
       await seedBad(2);
       const { cave } = await mkPublicCave();
       await publish(caveKey(cave.id), html());
@@ -1129,6 +1246,60 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(counts.failures).equal(1);
       should(isOnline(caveKey(subject.cave.id))).be.false();
       should(await inManifest(caveKey(subject.cave.id))).be.false();
+    });
+
+    it('stops publishing before the deletes, so a lock that never frees cannot leave the switch on after the failures were found', async () => {
+      await seedBad(12);
+      await holdLock();
+
+      const err = await audit({
+        failureLimit: 10,
+        retry: { intervalMs: 1, maxAttempts: 2 },
+      }).should.be.rejected();
+
+      should(err.code).equal('E_BOT_AUDIT_LOCK_TIMEOUT');
+      const state = await BotSurfaceStateService.read();
+      should(state.publishing).be.false();
+      should(state.reason).match(/12 pages failed \(limit 10\)/);
+      should(
+        errorLines().some((l) =>
+          l.startsWith('bot-surface-audit publishing stopped')
+        )
+      ).be.true();
+    });
+
+    it('stops publishing when an error ends the run in a later batch, after the limit was crossed', async () => {
+      await seedBad(6);
+      const clean = await mkPublicCave('Gouffre Propre');
+      await publish(caveKey(clean.cave.id), html(), {});
+      // The first batch finds 6 failures; the next one cannot be read
+      const original = adapter.get.bind(adapter);
+      let calls = 0;
+      sinon.stub(adapter, 'get').callsFake((key, opts) => {
+        calls += 1;
+        if (calls > 6) return Promise.reject(new Error('storage unreachable'));
+        return original(key, opts);
+      });
+
+      await audit({
+        failureLimit: 3,
+        batchSize: 6,
+        retry: { intervalMs: 1, maxAttempts: 2 },
+      }).should.be.rejectedWith('storage unreachable');
+
+      should((await BotSurfaceStateService.read()).publishing).be.false();
+    });
+
+    it('does not stop publishing when the run fails below the limit', async () => {
+      await seedBad(2);
+      await holdLock();
+
+      await audit({
+        failureLimit: 10,
+        retry: { intervalMs: 1, maxAttempts: 2 },
+      }).should.be.rejected();
+
+      should((await BotSurfaceStateService.read()).publishing).be.true();
     });
 
     it('fails on its own error when the lock stays held, and deletes nothing', async () => {
