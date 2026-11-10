@@ -6,7 +6,9 @@ const GET_NB_CAVES = `
 
 // v_massif_info has one row per cave of the massif, each carrying the number
 // of its distinct entrances inside the massif polygon: the sum counts every
-// entrance once.
+// entrance once. Unlike the country and region counts, read live from
+// t_entrance, this one is only as fresh as the view (refreshed every three
+// days by sql/1_cron.sql).
 const GET_NB_ENTRANCES = `
   SELECT COALESCE(SUM(nb_entrances), 0)::bigint as nb_entrances
   FROM v_massif_info

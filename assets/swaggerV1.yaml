@@ -8725,6 +8725,12 @@ paths:
         Entrance counts (`nb_entrances`) include every non-deleted entrance,
         sensitive ones included: a count reveals no location, so it does not
         depend on the caller's rights. `nb_caves` is deprecated: use `nb_entrances`.
+
+        Unlike the country and region counts, which are computed live, the
+        massif statistics (`nb_entrances` included) are read from the
+        `v_massif_info` materialized view, refreshed every three days: an
+        entrance created or deleted since the last refresh is not reflected
+        until the next one.
       parameters:
         - name: id
           in: path
@@ -14544,6 +14550,8 @@ components:
           description: |
             Number of non-deleted entrances, sensitive ones included; `0` when
             there is none. A cave with 3 entrances counts 3.
+            Read from a materialized view refreshed every three days, so it
+            can lag behind recent creations and deletions.
         nb_networks:
           type: integer
         cave_with_max_depth:
