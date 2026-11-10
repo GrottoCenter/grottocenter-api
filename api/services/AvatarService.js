@@ -73,14 +73,15 @@ const encode = async (buffer) => {
       'The image must be a JPEG, PNG, WebP or GIF file.'
     );
   }
+  // The square side is the short edge once oriented, capped at AVATAR_SIZE:
+  // a cover resize to that side center-crops without ever enlarging.
+  const { width, height } = metadata.autoOrient ?? metadata;
+  const side = Math.min(AVATAR_SIZE, width, height);
   try {
     // Only the first frame of an animated image is kept
     return await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS })
       .autoOrient()
-      .resize(AVATAR_SIZE, AVATAR_SIZE, {
-        fit: 'cover',
-        withoutEnlargement: true,
-      })
+      .resize(side, side, { fit: 'cover' })
       .webp({ quality: WEBP_QUALITY })
       .toBuffer();
   } catch (err) {

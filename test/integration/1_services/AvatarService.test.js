@@ -85,13 +85,46 @@ describe('AvatarService', () => {
       should(meta.height).equal(AvatarService.AVATAR_SIZE);
     });
 
-    it('does not enlarge a small image', async () => {
+    it('crops a small rectangular image to a square without enlarging it', async () => {
       const encoded = await AvatarService.encode(
         await makeImage(100, 80, 'jpeg')
       );
       const meta = await sharp(encoded).metadata();
       should(meta.format).equal('webp');
-      should(meta.width).be.belowOrEqual(100);
+      should(meta.width).equal(80);
+      should(meta.height).equal(80);
+    });
+
+    it('crops a wide image whose short edge is below the avatar size to a square', async () => {
+      const encoded = await AvatarService.encode(await makeImage(900, 300));
+      const meta = await sharp(encoded).metadata();
+      should(meta.width).equal(300);
+      should(meta.height).equal(300);
+    });
+
+    it('crops a tall image to a square of the avatar size', async () => {
+      const encoded = await AvatarService.encode(await makeImage(600, 1500));
+      const meta = await sharp(encoded).metadata();
+      should(meta.width).equal(AvatarService.AVATAR_SIZE);
+      should(meta.height).equal(AvatarService.AVATAR_SIZE);
+    });
+
+    it('uses the oriented dimensions of a rotated photo', async () => {
+      const rotated = await sharp({
+        create: {
+          width: 900,
+          height: 300,
+          channels: 3,
+          background: { r: 10, g: 120, b: 200 },
+        },
+      })
+        .jpeg()
+        .withMetadata({ orientation: 6 })
+        .toBuffer();
+      const encoded = await AvatarService.encode(rotated);
+      const meta = await sharp(encoded).metadata();
+      should(meta.width).equal(300);
+      should(meta.height).equal(300);
     });
 
     it('rejects a file that is not an image', async () => {
