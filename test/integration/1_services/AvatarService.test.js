@@ -34,7 +34,7 @@ describe('AvatarService', () => {
         getBlockBlobClient: (blobPath) => ({
           uploadData: async (buffer, options) =>
             uploadData(blobPath, buffer, options),
-          delete: async (options) => deleteBlob(blobPath, options),
+          deleteIfExists: async (options) => deleteBlob(blobPath, options),
         }),
       },
     });
@@ -317,6 +317,129 @@ describe('AvatarService', () => {
       ).be.rejected();
       should(deletedPaths()).eql(uploadedPaths());
       should(uploadData.callCount).equal(1);
+    });
+  });
+
+  describe('pending deletions', () => {
+    const caverId = 1;
+
+    const pendingPaths = async () =>
+      (
+        await CommonService.query(
+          'SELECT blob_path FROM t_avatar_pending_deletion ORDER BY blob_path'
+        )
+      ).rows.map((r) => r.blob_path);
+
+    const deletedPaths = () => deleteBlob.getCalls().map((c) => c.args[0]);
+
+    afterEach(async () => {
+      deleteBlob.resetBehavior();
+      deleteBlob.resolves();
+      uploadData.resetBehavior();
+      uploadData.resolves();
+      await TCaver.updateOne({ id: caverId }).set({ avatarPath: null });
+      await CommonService.query('DELETE FROM t_avatar_pending_deletion');
+    });
+
+    it('records nothing once an image is replaced and deleted', async () => {
+      await AvatarService.setAvatar('caver', caverId, await makeImage(50, 50));
+      await AvatarService.setAvatar('caver', caverId, await makeImage(50, 50));
+      await AvatarService.removeAvatar('caver', caverId);
+      should(await pendingPaths()).be.empty();
+    });
+
+    it('retries a removal that failed in storage once it recovers', async () => {
+      const avatarPath = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      deleteBlob.rejects(new Error('storage down'));
+      should(await AvatarService.removeAvatar('caver', caverId)).be.true();
+      should((await TCaver.findOne({ id: caverId })).avatarPath).be.null();
+      should(await pendingPaths()).eql([avatarPath]);
+      const [{ attempts, last_error: lastError }] = (
+        await CommonService.query(
+          'SELECT attempts, last_error FROM t_avatar_pending_deletion'
+        )
+      ).rows;
+      should(attempts).equal(1);
+      should(lastError).equal('storage down');
+
+      // Still down: the path stays recorded
+      should(
+        await AvatarService.retryPendingDeletions({ graceMs: 0 })
+      ).containEql({ deleted: 0, failed: 1 });
+      should(await pendingPaths()).eql([avatarPath]);
+
+      deleteBlob.resetHistory();
+      deleteBlob.resolves();
+      should(
+        await AvatarService.retryPendingDeletions({ graceMs: 0 })
+      ).containEql({ deleted: 1, failed: 0 });
+      should(deletedPaths()).eql([avatarPath]);
+      should(await pendingPaths()).be.empty();
+    });
+
+    it('retries the deletion of a replaced image', async () => {
+      const first = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      deleteBlob.rejects(new Error('storage down'));
+      const second = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      should((await TCaver.findOne({ id: caverId })).avatarPath).equal(second);
+      should(await pendingPaths()).eql([first]);
+
+      deleteBlob.resetHistory();
+      deleteBlob.resolves();
+      await AvatarService.retryPendingDeletions({ graceMs: 0 });
+      should(deletedPaths()).eql([first]);
+      should(await pendingPaths()).be.empty();
+    });
+
+    it('retries the deletion of an upload the record could not take', async () => {
+      deleteBlob.rejects(new Error('storage down'));
+      await should(
+        AvatarService.setAvatar('caver', 999999, await makeImage(50, 50))
+      ).be.rejected();
+      const [uploaded] = uploadData.lastCall.args;
+      should(await pendingPaths()).eql([uploaded]);
+
+      deleteBlob.resolves();
+      await AvatarService.retryPendingDeletions({ graceMs: 0 });
+      should(await pendingPaths()).be.empty();
+    });
+
+    it('leaves recent paths to the uploads that may still be running', async () => {
+      await CommonService.query(
+        "INSERT INTO t_avatar_pending_deletion (blob_path) VALUES ('avatars/cavers/1-recent.webp')"
+      );
+      should(await AvatarService.retryPendingDeletions()).containEql({
+        deleted: 0,
+        failed: 0,
+      });
+      should(deleteBlob.callCount).equal(0);
+      should(await pendingPaths()).eql(['avatars/cavers/1-recent.webp']);
+    });
+
+    it('forgets a recorded path a record still references, without deleting it', async () => {
+      const avatarPath = 'avatars/cavers/1-referenced.webp';
+      await TCaver.updateOne({ id: caverId }).set({ avatarPath });
+      await CommonService.query(
+        'INSERT INTO t_avatar_pending_deletion (blob_path) VALUES ($1)',
+        [avatarPath]
+      );
+      should(
+        await AvatarService.retryPendingDeletions({ graceMs: 0 })
+      ).containEql({ kept: 1 });
+      should(deleteBlob.callCount).equal(0);
+      should(await pendingPaths()).be.empty();
     });
   });
 

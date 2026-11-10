@@ -35,7 +35,7 @@ describe('Organization avatar', () => {
         getBlockBlobClient: (blobPath) => ({
           uploadData: async (buffer, options) =>
             uploadData(blobPath, buffer, options),
-          delete: async (options) => deleteBlob(blobPath, options),
+          deleteIfExists: async (options) => deleteBlob(blobPath, options),
         }),
       },
     });

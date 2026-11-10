@@ -96,12 +96,76 @@ const buildPath = (owner, id) =>
     .randomBytes(8)
     .toString('hex')}.webp`;
 
+const PENDING_TABLE = 't_avatar_pending_deletion';
+// A recorded path younger than this may belong to an upload still in
+// progress: the cleanup job leaves it alone.
+const PENDING_GRACE_MS = 60 * 60 * 1000;
+const PENDING_BATCH_SIZE = 100;
+
+const query = (sql, params, db) => CommonService.query(sql, params, db);
+
+/**
+ * Record paths whose image must be deleted from storage.
+ * @param {string[]} paths
+ * @param {object} [db] - A transaction connection
+ */
+const markPending = (paths, db) =>
+  query(
+    `INSERT INTO ${PENDING_TABLE} (blob_path)
+       SELECT unnest($1::varchar[])
+       ON CONFLICT (blob_path) DO NOTHING`,
+    [paths],
+    db
+  );
+
+const unmarkPending = (paths, db) =>
+  query(
+    `DELETE FROM ${PENDING_TABLE} WHERE blob_path = ANY($1::varchar[])`,
+    [paths],
+    db
+  );
+
+/**
+ * Delete a recorded image from storage, then forget its path. On a storage
+ * failure the path stays recorded, with the error, and the cleanup job
+ * retries it later.
+ * @param {string} blobPath
+ * @returns {Promise<boolean>} whether the image is gone
+ */
+const discard = async (blobPath) => {
+  try {
+    await FileService.avatar.delete(blobPath);
+  } catch (err) {
+    sails.log.error(
+      `Failed to delete avatar ${blobPath}, it will be retried:`,
+      err
+    );
+    await query(
+      `UPDATE ${PENDING_TABLE}
+         SET attempts = attempts + 1, last_error = $2
+         WHERE blob_path = $1`,
+      [blobPath, String(err?.message ?? err).slice(0, 1000)]
+    ).catch((dbErr) => sails.log.error(dbErr));
+    return false;
+  }
+  try {
+    await unmarkPending([blobPath]);
+  } catch (err) {
+    // The image is gone: the cleanup job forgets the path on its next run
+    sails.log.error(err);
+  }
+  return true;
+};
+
 /**
  * Point a record to a new avatar path with a compare-and-swap: the update only
  * applies if the record still holds the path just read, and is retried
  * otherwise. Concurrent replacements and removals, possibly on different API
  * instances, then each replace a distinct path, so every image that stops
- * being referenced is returned to exactly one caller, which deletes it.
+ * being referenced is returned to exactly one caller, which deletes it. The
+ * swap records the replaced path as pending deletion, and forgets the new
+ * one, in the same transaction: a path leaves the record only to be recorded
+ * for deletion.
  * @param {object} Model - TCaver or TGrotto
  * @param {number} id
  * @param {string|null} avatarPath - The new path, null to clear it
@@ -121,10 +185,17 @@ const swapAvatarPath = async (
   if (!current) return { found: false, previous: null };
   const previous = current.avatarPath ?? null;
   if (previous === avatarPath) return { found: true, previous: null };
-  const updated = await Model.update({ id, avatarPath: previous })
-    .set({ ...extraValues, avatarPath })
-    .fetch();
-  if (updated.length > 0) return { found: true, previous };
+  const swapped = await sails.getDatastore().transaction(async (db) => {
+    const updated = await Model.update({ id, avatarPath: previous })
+      .set({ ...extraValues, avatarPath })
+      .usingConnection(db)
+      .fetch();
+    if (updated.length === 0) return false;
+    if (avatarPath) await unmarkPending([avatarPath], db);
+    if (previous) await markPending([previous], db);
+    return true;
+  });
+  if (swapped) return { found: true, previous };
   if (attempt >= MAX_SWAP_ATTEMPTS) {
     throw new Error(
       `The avatar of record ${id} changed ${attempt} times during the update.`
@@ -163,26 +234,31 @@ module.exports = {
     const Model = OWNERS[owner].getModel();
     const encoded = await encode(buffer);
     const avatarPath = buildPath(owner, id);
-    await FileService.avatar.upload(encoded, avatarPath, AVATAR_MIME_TYPE);
+    // Recorded before the upload: until the record points to it, the image is
+    // removed by the cleanup job if this request dies half-way
+    await markPending([avatarPath]);
     let swap;
     try {
+      await FileService.avatar.upload(encoded, avatarPath, AVATAR_MIME_TYPE);
       swap = await swapAvatarPath(Model, id, avatarPath, extraValues);
       if (!swap.found) {
         throw new Error(`No ${owner} of id ${id} to set an avatar on.`);
       }
     } catch (err) {
-      await FileService.avatar.delete(avatarPath);
+      await discard(avatarPath);
       sails.log.error(err);
       throw err;
     }
     if (swap.previous) {
-      await FileService.avatar.delete(swap.previous);
+      await discard(swap.previous);
     }
     return avatarPath;
   },
 
   /**
-   * Remove the avatar of a caver or an organization.
+   * Remove the avatar of a caver or an organization. The record is cleared
+   * even when storage fails: the image then stays recorded for deletion and
+   * the cleanup job removes it.
    * @param {'caver'|'organization'} owner
    * @param {number} id
    * @param {object} [extraValues] - Other values set with the cleared path
@@ -192,7 +268,44 @@ module.exports = {
     const Model = OWNERS[owner].getModel();
     const { previous } = await swapAvatarPath(Model, id, null, extraValues);
     if (!previous) return false;
-    await FileService.avatar.delete(previous);
+    await discard(previous);
     return true;
+  },
+
+  /**
+   * Retry the deletion of the recorded images (cleanup job). A path still
+   * referenced by a record is only forgotten: it is the record's avatar.
+   * @param {object} [options]
+   * @param {number} [options.graceMs] - Leave the paths recorded more recently
+   * @param {number} [options.limit] - Paths handled per run
+   * @returns {Promise<{deleted: number, failed: number, kept: number}>}
+   */
+  async retryPendingDeletions({
+    graceMs = PENDING_GRACE_MS,
+    limit = PENDING_BATCH_SIZE,
+  } = {}) {
+    const kept = await query(
+      `DELETE FROM ${PENDING_TABLE} p
+         WHERE EXISTS (SELECT 1 FROM t_caver c WHERE c.avatar_path = p.blob_path)
+            OR EXISTS (SELECT 1 FROM t_grotto g WHERE g.avatar_path = p.blob_path)`
+    );
+    const { rows } = await query(
+      `SELECT blob_path FROM ${PENDING_TABLE}
+         WHERE date_inscription < now() - make_interval(secs => $1)
+         ORDER BY date_inscription
+         LIMIT $2`,
+      [graceMs / 1000, limit]
+    );
+    let deleted = 0;
+    for (const { blob_path: blobPath } of rows) {
+      // Sequential: a storage outage fails each call, no need to pile them up
+      // eslint-disable-next-line no-await-in-loop
+      if (await discard(blobPath)) deleted += 1;
+    }
+    return {
+      deleted,
+      failed: rows.length - deleted,
+      kept: kept.rowCount ?? 0,
+    };
   },
 };

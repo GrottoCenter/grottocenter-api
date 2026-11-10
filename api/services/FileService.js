@@ -405,22 +405,19 @@ module.exports = {
     },
 
     /**
-     * Remove a stored avatar. Best effort: a failure is logged, not thrown,
-     * as the database no longer references the image.
+     * Remove a stored avatar. Idempotent: an image already gone is not an
+     * error. A storage failure is thrown, so the caller can keep the path
+     * recorded for a later retry (AvatarService).
      * @param {string} blobPath
      */
     async delete(blobPath) {
-      try {
-        if (!credentials) {
-          fs.rmSync(path.join(LOCAL_DOCUMENTS_DIR, blobPath), { force: true });
-          return;
-        }
-        await credentials.documentsBlobClient
-          .getBlockBlobClient(blobPath)
-          .delete({ deleteSnapshots: 'include' });
-      } catch (err) {
-        sails.log.error(`Failed to delete avatar blob ${blobPath}:`, err);
+      if (!credentials) {
+        fs.rmSync(path.join(LOCAL_DOCUMENTS_DIR, blobPath), { force: true });
+        return;
       }
+      await credentials.documentsBlobClient
+        .getBlockBlobClient(blobPath)
+        .deleteIfExists({ deleteSnapshots: 'include' });
     },
   },
 

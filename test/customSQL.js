@@ -1073,6 +1073,18 @@ const BOT_PIPELINE_RUN_MIGRATION = forTestDatabase(
   )
 );
 
+// t_avatar_pending_deletion (the t_caver and t_grotto columns of the same file
+// already come from the models). The test DB has no gc_app role either.
+const PROFILE_PERSONALIZATION_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_40_2026_11_10_profile_personalization.sql'),
+    'utf8'
+  )
+)
+  .split('\n')
+  .filter((line) => !/^GRANT .* TO gc_app;$/.test(line))
+  .join('\n');
+
 // t_point.point_geom kept in sync with latitude/longitude by a trigger
 const POINT_GEOM_MIGRATION = forTestDatabase(
   fs.readFileSync(
@@ -1192,6 +1204,7 @@ module.exports = {
   BOT_HUB_MIGRATION,
   BOT_OUTBOX_MIGRATION,
   BOT_PIPELINE_RUN_MIGRATION,
+  PROFILE_PERSONALIZATION_MIGRATION,
   POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
   DETACH_GROTTO_HISTO_TRIGGER,
