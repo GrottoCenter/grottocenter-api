@@ -36,6 +36,7 @@ describe('Country statistics features', () => {
         .expect(200);
 
       response.body.nb_caves.should.equal(0);
+      response.body.nb_entrances.should.equal(0);
     });
   });
 });

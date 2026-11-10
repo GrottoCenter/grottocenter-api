@@ -14,6 +14,18 @@ const GET_NB_CAVES = `
     WHERE id_country = $1) as tmp;
 `;
 
+// Counted from t_entrance, not from v_country_info: the view has one row per
+// (cave, massif) pair, so summing its nb_entrances would count twice the
+// entrances lying in overlapping massifs. Same predicate as
+// CountryService.getEntranceCountsByCountry, so the countries list and the
+// country page show the same figure.
+const GET_NB_ENTRANCES = `
+  SELECT COUNT(*) as nb_entrances
+  FROM t_entrance
+  WHERE id_country = $1
+  AND is_deleted = false
+`;
+
 const GET_NB_NETWORKS = `
   SELECT COUNT(*) as nb_networks
   FROM (
@@ -91,9 +103,20 @@ module.exports = {
    *
    * @param {string} countryId
    * @returns {int} the number of caves in the country, or null if no result
+   * @deprecated exposed as the deprecated nb_caves field: use
+   *             getNbEntrancesInCountry for user-facing counts
    */
   getNbCavesInCountry: async (countryId) =>
     queryFirstRow(GET_NB_CAVES, countryId),
+
+  /**
+   *
+   * @param {string} countryId
+   * @returns {Object} { nb_entrances } the number of non-deleted entrances in
+   *                   the country (sensitive ones included), or null if no result
+   */
+  getNbEntrancesInCountry: async (countryId) =>
+    queryFirstRow(GET_NB_ENTRANCES, countryId),
 
   /**
    *

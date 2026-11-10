@@ -48,6 +48,19 @@ describe('Massif statistics features', () => {
         .expect(200);
 
       response.body.nb_caves.should.equal(0);
+      response.body.nb_entrances.should.equal(0);
+    });
+
+    it('counts the entrances of a network, not the network once', async () => {
+      // Massif 2 holds 3 caves, one of them with 3 entrances (fixtures of
+      // v_massif_info): 5 entrances, while the deprecated nb_caves says 3.
+      const { body } = await supertest(sails.hooks.http.app)
+        .get('/api/v1/massifs/2/statistics')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      body.nb_entrances.should.equal(5);
+      body.nb_caves.should.equal(3);
     });
 
     it('should return statistics for valid massif', async () => {

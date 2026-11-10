@@ -14,6 +14,18 @@ const GET_NB_CAVES = `
     WHERE id_region = $1) as tmp
 `;
 
+// Counted from t_entrance, not from v_region_info: the view has one row per
+// (cave, massif) pair, so summing its nb_entrances would count twice the
+// entrances lying in overlapping massifs. Same predicate as
+// RegionService.getEntranceCountsByCountry, so the regions list and the
+// region page show the same figure.
+const GET_NB_ENTRANCES = `
+  SELECT COUNT(*) as nb_entrances
+  FROM t_entrance
+  WHERE iso_3166_2 = $1
+  AND is_deleted = false
+`;
+
 const GET_NB_NETWORKS = `
   SELECT COUNT(*) as nb_networks
   FROM (
@@ -91,8 +103,19 @@ module.exports = {
    *
    * @param {string} regionId ISO 3166-2 code
    * @returns {int} the number of caves in the region, or null if no result
+   * @deprecated exposed as the deprecated nb_caves field: use
+   *             getNbEntrancesInRegion for user-facing counts
    */
   getNbCavesInRegion: async (regionId) => queryFirstRow(GET_NB_CAVES, regionId),
+
+  /**
+   *
+   * @param {string} regionId ISO 3166-2 code
+   * @returns {Object} { nb_entrances } the number of non-deleted entrances in
+   *                   the region (sensitive ones included), or null if no result
+   */
+  getNbEntrancesInRegion: async (regionId) =>
+    queryFirstRow(GET_NB_ENTRANCES, regionId),
 
   /**
    *

@@ -19,6 +19,7 @@ module.exports = async (req, res) => {
     const [
       nbMassifs,
       nbCaves,
+      nbEntrances,
       nbNetworks,
       caveWithMaxDepth,
       caveWithMaxLength,
@@ -28,6 +29,7 @@ module.exports = async (req, res) => {
     ] = await Promise.all([
       StatisticsRegionService.getNbMassifsInRegion(isoCode),
       StatisticsRegionService.getNbCavesInRegion(isoCode),
+      StatisticsRegionService.getNbEntrancesInRegion(isoCode),
       StatisticsRegionService.getNbNetworksInRegion(isoCode),
       StatisticsRegionService.getCaveWithMaxDepthInRegion(isoCode),
       StatisticsRegionService.getCaveWithMaxLengthInRegion(isoCode),
@@ -43,10 +45,16 @@ module.exports = async (req, res) => {
         nbMassifs?.nb_massifs == null
           ? null
           : Number.parseInt(nbMassifs.nb_massifs, 10),
+      // Deprecated: a count of caves, kept for compatibility. nb_entrances
+      // is the figure to display.
       nb_caves:
         nbCaves?.nb_caves == null
           ? null
           : Number.parseInt(nbCaves.nb_caves, 10),
+      nb_entrances:
+        nbEntrances?.nb_entrances == null
+          ? null
+          : Number.parseInt(nbEntrances.nb_entrances, 10),
       nb_networks:
         nbNetworks?.nb_networks == null
           ? null

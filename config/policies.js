@@ -229,6 +229,7 @@ module.exports.policies = {
   // Country
   'v1/country/count': true,
   'v1/country/find': true,
+  'v1/country/find-all': true,
   'v1/country/get-statistics': true,
   'v1/country/get-entrances-data-quality': true,
   'v1/country/subscribe': 'tokenAuth',
@@ -317,9 +318,9 @@ module.exports.policies = {
 
   // Region
   'v1/region/find': true,
-  'v1/region/find-all': true,
   'v1/region/search': true,
   'v1/region/find-by-country': true,
+  'v1/region/find-all-by-country': true,
   'v1/region/count': true,
   'v1/region/get-statistics': true,
   'v1/region/get-entrances-data-quality': true,

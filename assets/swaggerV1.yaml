@@ -4229,7 +4229,14 @@ paths:
         - countries
       summary: Get the statistics of a region
       security: []
-      description: Get statistics for a region within a specific country.
+      description: |
+        Get statistics for a region within a specific country: number of
+        entrances, of massifs, of networks, cave with max depth and length,
+        number of diving caves, average depth and length & total length.
+
+        Entrance counts (`nb_entrances`) include every non-deleted entrance,
+        sensitive ones included: a count reveals no location, so it does not
+        depend on the caller's rights. `nb_caves` is deprecated: use `nb_entrances`.
       parameters:
         - name: countryId
           in: path
@@ -4250,27 +4257,56 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  region_id:
-                    type: string
-                  region_name:
-                    type: string
-                  country_id:
-                    type: string
-                  nb_caves:
-                    type: integer
-                    nullable: true
-                  nb_entrances:
-                    type: integer
-                    nullable: true
-                  nb_massifs:
-                    type: integer
-                    nullable: true
-                  message:
-                    type: string
+                $ref: '#/components/schemas/Statistics-region'
         '404':
           description: Region not found in the specified country
+        '500':
+          description: Internal server error
+
+  '/countries/{countryId}/regions':
+    get:
+      tags:
+        - regions
+        - countries
+      summary: List the regions of a country with their entrance counts
+      security: []
+      description: |
+        Every ISO 3166-2 subdivision of the country, whatever its level (for
+        France, both régions such as `FR-ARA` and departments such as
+        `FR-24`), with its number of entrances, in one request, sorted by id.
+        Subdivisions with no entrance are listed with `0`; a country with no
+        subdivision answers an empty list.
+
+        Entrance counts (`nb_entrances`) include every non-deleted entrance,
+        sensitive ones included: a count reveals no location, so it does not
+        depend on the caller's rights. The count is the same as `nb_entrances` in
+        `GET /countries/{countryId}/regions/{regionId}/statistics`.
+      parameters:
+        - name: countryId
+          in: path
+          description: Country ID (ISO 3166-1 alpha-2 code)
+          required: true
+          schema:
+            type: string
+            example: FR
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - regions
+                properties:
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegionEntranceCount'
+        '404':
+          description: Country not found
+        '500':
+          description: Internal server error
 
   '/countries/{countryId}/regions/count':
     get:
@@ -8693,7 +8729,20 @@ paths:
         - massifs
       summary: Get the statistics of a massif
       security: []
-      description: Get the statistics about a massif, number of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
+      description: |
+        Get the statistics about a massif: number of entrances, of networks,
+        cave with max depth and length, number of diving caves, average depth
+        and length & total length.
+
+        Entrance counts (`nb_entrances`) include every non-deleted entrance,
+        sensitive ones included: a count reveals no location, so it does not
+        depend on the caller's rights. `nb_caves` is deprecated: use `nb_entrances`.
+
+        Unlike the country and region counts, which are computed live, the
+        massif statistics (`nb_entrances` included) are read from the
+        `v_massif_info` materialized view, refreshed every three days: an
+        entrance created or deleted since the last refresh is not reflected
+        until the next one.
       parameters:
         - name: id
           in: path
@@ -8710,6 +8759,8 @@ paths:
                 $ref: '#/components/schemas/Statistics-massif'
         '404':
           description: Resource not found
+        '500':
+          description: Internal server error
 
   '/massifs/{id}/mark-sensitive':
     post:
@@ -9368,7 +9419,14 @@ paths:
         - countries
       summary: Get the statistics of a country
       security: []
-      description: Get the statistics about a country, number of massifs, of caves, of networks, cave with max depth and length, number of diving caves, average depth and length & total length.
+      description: |
+        Get the statistics about a country: number of entrances, of massifs,
+        of networks, cave with max depth and length, number of diving caves,
+        average depth and length & total length.
+
+        Entrance counts (`nb_entrances`) include every non-deleted entrance,
+        sensitive ones included: a count reveals no location, so it does not
+        depend on the caller's rights. `nb_caves` is deprecated: use `nb_entrances`.
       parameters:
         - name: id
           in: path
@@ -9386,6 +9444,8 @@ paths:
                 $ref: '#/components/schemas/Statistics-country'
         '404':
           description: Country id not found
+        '500':
+          description: Internal server error
 
   '/countries/{id}/subscribe':
     post:
@@ -9459,6 +9519,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+
+  '/countries':
+    get:
+      tags:
+        - countries
+      summary: List the countries with their entrance counts
+      security: []
+      description: |
+        Every country of Grottocenter (ISO 3166-1 alpha-2 code) with its
+        number of entrances, in one request, sorted by id. Countries with no
+        entrance are listed with `0`; the `00` placeholder of entrances with
+        no known country is not listed.
+
+        Entrance counts (`nb_entrances`) include every non-deleted entrance,
+        sensitive ones included: a count reveals no location, so it does not
+        depend on the caller's rights. The count is the same as `nb_entrances` in
+        `GET /countries/{id}/statistics`.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - countries
+                properties:
+                  countries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CountryEntranceCount'
+        '500':
+          description: Internal server error
 
   '/changes/recent':
     get:
@@ -12149,6 +12242,40 @@ components:
         count:
           type: integer
 
+    CountryEntranceCount:
+      type: object
+      required:
+        - id
+        - nb_entrances
+      properties:
+        id:
+          type: string
+          description: ISO 3166-1 alpha-2 code
+          example: FR
+        nb_entrances:
+          type: integer
+          description: Number of non-deleted entrances, sensitive ones included
+          example: 14022
+
+    RegionEntranceCount:
+      type: object
+      required:
+        - id
+        - name
+        - nb_entrances
+      properties:
+        id:
+          type: string
+          description: ISO 3166-2 code
+          example: FR-24
+        name:
+          type: string
+          example: Dordogne
+        nb_entrances:
+          type: integer
+          description: Number of non-deleted entrances, sensitive ones included
+          example: 487
+
     Country:
       type: object
       properties:
@@ -14419,6 +14546,18 @@ components:
           type: integer
         nb_caves:
           type: integer
+          nullable: true
+          deprecated: true
+          description: |
+            Number of caves with at least one non-deleted entrance: a network
+            counts once. Deprecated, kept for compatibility; use
+            `nb_entrances` for user-facing counts.
+        nb_entrances:
+          type: integer
+          nullable: true
+          description: |
+            Number of non-deleted entrances, sensitive ones included; `0` when
+            there is none. A cave with 3 entrances counts 3.
         nb_networks:
           type: integer
         cave_with_max_depth:
@@ -14432,11 +14571,28 @@ components:
         total_length:
           $ref: '#/components/schemas/Total-values'
 
+    Statistics-region:
+      $ref: '#/components/schemas/Statistics-country'
+
     Statistics-massif:
       type: object
       properties:
         nb_caves:
           type: integer
+          nullable: true
+          deprecated: true
+          description: |
+            Number of caves with at least one non-deleted entrance: a network
+            counts once. Deprecated, kept for compatibility; use
+            `nb_entrances` for user-facing counts.
+        nb_entrances:
+          type: integer
+          nullable: true
+          description: |
+            Number of non-deleted entrances, sensitive ones included; `0` when
+            there is none. A cave with 3 entrances counts 3.
+            Read from a materialized view refreshed every three days, so it
+            can lag behind recent creations and deletions.
         nb_networks:
           type: integer
         cave_with_max_depth:
