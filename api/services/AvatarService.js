@@ -16,6 +16,8 @@ const MAX_INPUT_PIXELS = 50 * 1024 * 1024;
 const AVATAR_SIZE = 512;
 const AVATAR_MIME_TYPE = 'image/webp';
 const WEBP_QUALITY = 80;
+// Compare-and-swap attempts before giving up on a contended record
+const MAX_SWAP_ATTEMPTS = 5;
 
 // sharp format names (metadata().format) accepted as input
 const ACCEPTED_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
@@ -94,6 +96,43 @@ const buildPath = (owner, id) =>
     .randomBytes(8)
     .toString('hex')}.webp`;
 
+/**
+ * Point a record to a new avatar path with a compare-and-swap: the update only
+ * applies if the record still holds the path just read, and is retried
+ * otherwise. Concurrent replacements and removals, possibly on different API
+ * instances, then each replace a distinct path, so every image that stops
+ * being referenced is returned to exactly one caller, which deletes it.
+ * @param {object} Model - TCaver or TGrotto
+ * @param {number} id
+ * @param {string|null} avatarPath - The new path, null to clear it
+ * @param {object} extraValues - Other values set with the new path
+ * @param {number} [attempt]
+ * @returns {Promise<{found: boolean, previous: string|null}>} whether the
+ *   record exists, and the path it held before the swap
+ */
+const swapAvatarPath = async (
+  Model,
+  id,
+  avatarPath,
+  extraValues,
+  attempt = 1
+) => {
+  const current = await Model.findOne({ id }).select(['avatarPath']);
+  if (!current) return { found: false, previous: null };
+  const previous = current.avatarPath ?? null;
+  if (previous === avatarPath) return { found: true, previous: null };
+  const updated = await Model.update({ id, avatarPath: previous })
+    .set({ ...extraValues, avatarPath })
+    .fetch();
+  if (updated.length > 0) return { found: true, previous };
+  if (attempt >= MAX_SWAP_ATTEMPTS) {
+    throw new Error(
+      `The avatar of record ${id} changed ${attempt} times during the update.`
+    );
+  }
+  return swapAvatarPath(Model, id, avatarPath, extraValues, attempt + 1);
+};
+
 module.exports = {
   MAX_AVATAR_BYTES,
   AVATAR_SIZE,
@@ -111,8 +150,8 @@ module.exports = {
 
   /**
    * Replace the avatar of a caver or an organization. The new image gets a
-   * new path, so a cached URL never shows a stale image, and the previous one
-   * is removed once the record points to the new one.
+   * new path, so a cached URL never shows a stale image, and the image it
+   * replaced is removed once the record points to the new one.
    * @param {'caver'|'organization'} owner
    * @param {number} id
    * @param {Buffer} buffer - The uploaded image
@@ -123,18 +162,21 @@ module.exports = {
   async setAvatar(owner, id, buffer, extraValues = {}) {
     const Model = OWNERS[owner].getModel();
     const encoded = await encode(buffer);
-    const previous = await Model.findOne({ id }).select(['avatarPath']);
     const avatarPath = buildPath(owner, id);
     await FileService.avatar.upload(encoded, avatarPath, AVATAR_MIME_TYPE);
+    let swap;
     try {
-      await Model.updateOne({ id }).set({ ...extraValues, avatarPath });
+      swap = await swapAvatarPath(Model, id, avatarPath, extraValues);
+      if (!swap.found) {
+        throw new Error(`No ${owner} of id ${id} to set an avatar on.`);
+      }
     } catch (err) {
       await FileService.avatar.delete(avatarPath);
       sails.log.error(err);
       throw err;
     }
-    if (previous?.avatarPath) {
-      await FileService.avatar.delete(previous.avatarPath);
+    if (swap.previous) {
+      await FileService.avatar.delete(swap.previous);
     }
     return avatarPath;
   },
@@ -148,10 +190,9 @@ module.exports = {
    */
   async removeAvatar(owner, id, extraValues = {}) {
     const Model = OWNERS[owner].getModel();
-    const previous = await Model.findOne({ id }).select(['avatarPath']);
-    if (!previous?.avatarPath) return false;
-    await Model.updateOne({ id }).set({ ...extraValues, avatarPath: null });
-    await FileService.avatar.delete(previous.avatarPath);
+    const { previous } = await swapAvatarPath(Model, id, null, extraValues);
+    if (!previous) return false;
+    await FileService.avatar.delete(previous);
     return true;
   },
 };

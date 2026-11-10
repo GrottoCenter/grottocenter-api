@@ -248,6 +248,78 @@ describe('AvatarService', () => {
     });
   });
 
+  describe('concurrent setAvatar / removeAvatar', () => {
+    const caverId = 1;
+
+    // Hold every upload until `count` of them are in progress, so the
+    // concurrent calls all reach the database write together.
+    const holdUploads = (count) => {
+      let release;
+      const released = new Promise((resolve) => {
+        release = resolve;
+      });
+      uploadData.callsFake(async () => {
+        if (uploadData.callCount >= count) release();
+        await released;
+      });
+    };
+
+    const uploadedPaths = () => uploadData.getCalls().map((c) => c.args[0]);
+    const deletedPaths = () => deleteBlob.getCalls().map((c) => c.args[0]);
+
+    afterEach(async () => {
+      uploadData.resetBehavior();
+      uploadData.resolves();
+      await TCaver.updateOne({ id: caverId }).set({ avatarPath: null });
+    });
+
+    it('deletes every replaced image when two uploads overlap', async () => {
+      holdUploads(2);
+      const [first, second] = await Promise.all([
+        AvatarService.setAvatar('caver', caverId, await makeImage(50, 50)),
+        AvatarService.setAvatar('caver', caverId, await makeImage(60, 60)),
+      ]);
+      const caver = await TCaver.findOne({ id: caverId });
+      should([first, second]).containEql(caver.avatarPath);
+      // The image that lost the race is deleted, the one recorded is kept
+      should(deletedPaths()).eql(
+        [first, second].filter((p) => p !== caver.avatarPath)
+      );
+
+      should(await AvatarService.removeAvatar('caver', caverId)).be.true();
+      should(deletedPaths().sort()).eql(uploadedPaths().sort());
+      should((await TCaver.findOne({ id: caverId })).avatarPath).be.null();
+    });
+
+    it('leaves no image behind when an upload overlaps a removal', async () => {
+      const initial = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      const [, removed] = await Promise.all([
+        AvatarService.setAvatar('caver', caverId, await makeImage(60, 60)),
+        AvatarService.removeAvatar('caver', caverId),
+      ]);
+      should(removed).be.true();
+      const caver = await TCaver.findOne({ id: caverId });
+      const referenced = caver.avatarPath ? [caver.avatarPath] : [];
+      // Every uploaded image is either still referenced or deleted, once
+      should(deletedPaths().concat(referenced).sort()).eql(
+        uploadedPaths().sort()
+      );
+      should(deletedPaths()).containEql(initial);
+    });
+
+    it('deletes the uploaded image when the record does not exist', async () => {
+      await should(
+        AvatarService.setAvatar('caver', 999999, await makeImage(50, 50))
+      ).be.rejected();
+      should(deletedPaths()).eql(uploadedPaths());
+      should(uploadData.callCount).equal(1);
+    });
+  });
+
   describe('getUrl', () => {
     it('returns null without an avatar', () => {
       should(AvatarService.getUrl(null)).be.null();
