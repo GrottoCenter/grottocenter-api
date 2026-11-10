@@ -1,4 +1,3 @@
-const CommonService = require('../services/CommonService');
 const syncUtils = require('./utils');
 
 const organization = require('./entities/organization');
@@ -34,7 +33,7 @@ function normalizeIds(ids) {
 /**
  * Build the search documents of the given ids with the full rebuild's own
  * query and processRows, so a single update and a rebuild cannot disagree.
- * Ids the rebuild would not index (deleted, missing, not validated…) are absent.
+ * Ids the rebuild would not index (deleted, missing, refused…) are absent.
  * The documents are not formatted yet: the collection's importFormater does it
  * on import.
  *
@@ -55,29 +54,19 @@ async function buildDocuments(collectionName, ids) {
 
 /**
  * Work out how to bring the given ids of a collection up to date: the
- * documents to upsert, and the ids to remove from the index.
- * An id that is not built is removed, unless the collection retains it (a
- * document pending re-validation keeps its last validated version).
+ * documents to upsert, and the ids to remove from the index: an id that is not
+ * built is removed.
  *
  * @param {string} collectionName
  * @param {Array<number|string>} ids
  * @returns {Promise<{documents: Object[], removedIds: number[]}>}
  */
 async function planSync(collectionName, ids) {
-  const entity = getEntity(collectionName);
   const uniqueIds = normalizeIds(ids);
   const documents = await buildDocuments(collectionName, uniqueIds);
 
   const builtIds = new Set(documents.map((e) => e.id));
-  let removedIds = uniqueIds.filter((id) => !builtIds.has(id));
-
-  const { retainedIdsQuery } = entity.search;
-  if (removedIds.length > 0 && retainedIdsQuery) {
-    const { rows } = await CommonService.query(retainedIdsQuery, [removedIds]);
-    const retainedIds = new Set(rows.map((e) => e.id));
-    removedIds = removedIds.filter((id) => !retainedIds.has(id));
-  }
-
+  const removedIds = uniqueIds.filter((id) => !builtIds.has(id));
   return { documents, removedIds };
 }
 

@@ -381,7 +381,11 @@ describe('Document multiple-validate', () => {
           pending.id,
         ]);
 
-        should(documents).eql([]);
+        // The accepted document is indexed with its accepted content, labelled
+        // as awaiting the approval of its modification (#1561)
+        should(documents.map((d) => [d.id, d.validationStatus, d.title])).eql([
+          [pending.id, 'modificationPending', 'Original'],
+        ]);
         should(removedIds).eql([refused.id]);
       });
     });

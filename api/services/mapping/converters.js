@@ -1195,6 +1195,11 @@ const c = {
         if (typeof item.document.hasFiles === 'boolean') {
           data.hasFiles = item.document.hasFiles;
         }
+        // validated, pending or modificationPending (#1561); absent from an
+        // index built before the field existed
+        if (typeof item.document.validationStatus === 'string') {
+          data.validationStatus = item.document.validationStatus;
+        }
       } else if (_type === 'caves')
         data = c.toSimpleCave(item.document, meta); // Only used in quick search
       else if (_type === 'entrances') {

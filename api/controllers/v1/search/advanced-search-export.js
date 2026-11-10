@@ -155,6 +155,14 @@ module.exports = async (req, res) => {
     res.badRequest(matchAllFieldsError);
     return;
   }
+  const {
+    value: includePendingDocuments,
+    error: includePendingDocumentsError,
+  } = readBoolParam(req, 'includePendingDocuments', false);
+  if (includePendingDocumentsError) {
+    res.badRequest(includePendingDocumentsError);
+    return;
+  }
   const { filter, error: filterError } = normalizeBoolFilter(
     req.param('filter') ?? {},
     'hasFiles'
@@ -213,6 +221,7 @@ module.exports = async (req, res) => {
       sort: req.param('sort'),
       filter,
       isLogicalCompareAnd: matchAllFields,
+      includePendingDocuments,
     };
 
     let hasSentHeader = false;
@@ -316,6 +325,7 @@ module.exports = async (req, res) => {
     sort: req.param('sort'),
     filter,
     isLogicalCompareAnd: matchAllFields,
+    includePendingDocuments,
     fields: columns,
   };
 

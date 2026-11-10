@@ -605,9 +605,10 @@ describe('searchDocuments', () => {
 
     afterEach(async () => {
       await CommonService.query(
-        'UPDATE t_document SET is_validated = true, is_deleted = false WHERE id = ANY($1::int[])',
+        'UPDATE t_document SET is_validated = true, is_deleted = false, modified_doc_json = NULL WHERE id = ANY($1::int[])',
         [[2, 3]]
       );
+      await CommonService.query('DELETE FROM h_document WHERE id = 2');
       await Promise.all(
         dateValidations.map(({ id, date_validation: date }) =>
           CommonService.query(
@@ -633,16 +634,167 @@ describe('searchDocuments', () => {
       should(removedIds).eql([2]);
     });
 
-    it('keeps a document pending re-validation in the index', async () => {
-      // What DocumentService.updateDocument writes for a modification
+    // Pending submissions are indexed, searches leave them out unless asked (#1561)
+    const statusOf = (documents, id) =>
+      documents.find((d) => d.id === id)?.validationStatus;
+
+    it('indexes an accepted document as validated', async () => {
+      const { documents, removedIds } = await planSync('documents', [2, 4]);
+
+      should(statusOf(documents, 2)).equal('validated');
+      should(statusOf(documents, 4)).equal('validated');
+      should(removedIds).eql([]);
+    });
+
+    it('indexes a new submission awaiting validation as pending', async () => {
+      // A never-accepted document: no decision date, no accepted history
       await CommonService.query(
         'UPDATE t_document SET is_validated = false, date_validation = NULL WHERE id = 2'
       );
 
       const { documents, removedIds } = await planSync('documents', [2, 4]);
 
-      should(documents.map((d) => d.id)).eql([4]);
+      should(documents.map((d) => d.id)).eql([2, 4]);
+      should(statusOf(documents, 2)).equal('pending');
       should(removedIds).eql([]);
+    });
+
+    it('keeps the accepted content of a document awaiting re-validation', async () => {
+      const [accepted] = await buildDocuments('documents', [2]);
+      // What DocumentService.updateDocument writes for a modification: the
+      // proposed changes wait in modified_doc_json
+      await CommonService.query(
+        `UPDATE t_document SET is_validated = false, date_validation = NULL,
+           modified_doc_json = $1 WHERE id = 2`,
+        [
+          JSON.stringify({
+            wasValidated: true,
+            documentData: { pages: '1-999' },
+            descriptionData: { title: 'Proposed title', body: 'Proposed' },
+          }),
+        ]
+      );
+
+      const { documents, removedIds } = await planSync('documents', [2]);
+
+      should(removedIds).eql([]);
+      should(documents).have.length(1);
+      // Only the status and the cleared decision date change: the title,
+      // description and pages stay the accepted ones
+      should(documents[0]).eql({
+        ...accepted,
+        dateValidation: null,
+        validationStatus: 'modificationPending',
+      });
+    });
+
+    it('keeps a modification of a pending submission pending', async () => {
+      await CommonService.query(
+        `UPDATE t_document SET is_validated = false, date_validation = NULL,
+           modified_doc_json = $1 WHERE id = 2`,
+        [JSON.stringify({ wasValidated: false })]
+      );
+
+      const { documents } = await planSync('documents', [2]);
+
+      should(statusOf(documents, 2)).equal('pending');
+    });
+
+    it('falls back on the history for a modification stored without the flag', async () => {
+      await CommonService.query(
+        `UPDATE t_document SET is_validated = false, date_validation = NULL,
+           modified_doc_json = '{}' WHERE id = 2`
+      );
+      await CommonService.query(
+        'INSERT INTO h_document (id, date_reviewed, is_validated) VALUES (2, now(), true)'
+      );
+
+      const { documents } = await planSync('documents', [2]);
+
+      should(statusOf(documents, 2)).equal('modificationPending');
+    });
+
+    it('indexes a pending submission as validated once accepted', async () => {
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = false, date_validation = NULL WHERE id = 2'
+      );
+      should(statusOf((await planSync('documents', [2])).documents, 2)).equal(
+        'pending'
+      );
+
+      // What validating it writes
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = true, date_validation = now() WHERE id = 2'
+      );
+      const { documents, removedIds } = await planSync('documents', [2]);
+
+      should(statusOf(documents, 2)).equal('validated');
+      should(removedIds).eql([]);
+    });
+
+    it('removes a pending submission once refused', async () => {
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = false, date_validation = NULL WHERE id = 2'
+      );
+      should(statusOf((await planSync('documents', [2])).documents, 2)).equal(
+        'pending'
+      );
+
+      await CommonService.query(
+        'UPDATE t_document SET date_validation = now() WHERE id = 2'
+      );
+      const { documents, removedIds } = await planSync('documents', [2]);
+
+      should(documents).eql([]);
+      should(removedIds).eql([2]);
+    });
+
+    it('indexes a document awaiting re-validation as validated once accepted', async () => {
+      await CommonService.query(
+        `UPDATE t_document SET is_validated = false, date_validation = NULL,
+           modified_doc_json = '{"wasValidated": true}' WHERE id = 2`
+      );
+      should(statusOf((await planSync('documents', [2])).documents, 2)).equal(
+        'modificationPending'
+      );
+
+      await CommonService.query(
+        `UPDATE t_document SET is_validated = true, date_validation = now(),
+           modified_doc_json = NULL WHERE id = 2`
+      );
+      const { documents } = await planSync('documents', [2]);
+
+      should(statusOf(documents, 2)).equal('validated');
+    });
+
+    it('removes a pending submission once deleted', async () => {
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = false, date_validation = NULL, is_deleted = true WHERE id = 2'
+      );
+
+      const { documents, removedIds } = await planSync('documents', [2]);
+
+      should(documents).eql([]);
+      should(removedIds).eql([2]);
+    });
+
+    it('leaves the pending submissions out of the file export', async () => {
+      await CommonService.query(
+        'UPDATE t_document SET is_validated = false, date_validation = NULL WHERE id = 2'
+      );
+      const entity = getEntity('documents');
+      const rows = [];
+      const pages = syncUtils.idsQuery(
+        entity.name,
+        entity.export.query,
+        [2, 4]
+      );
+      for await (const row of entity.processRows(pages)) {
+        rows.push(entity.export.transform(row));
+      }
+
+      should(rows.map((d) => d.id)).eql([4]);
+      should(rows[0]).not.have.property('validationStatus');
     });
 
     it('removes an indexed document refused as a new submission (#1907)', async () => {

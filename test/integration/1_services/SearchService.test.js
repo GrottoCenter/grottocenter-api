@@ -297,7 +297,9 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal('hasFiles:=false && type:`Article`');
+      should(call.args[1].filter_by).equal(
+        '(hasFiles:=false && type:`Article`) && validationStatus:!=pending'
+      );
       should(call.args[1].sort_by).equal('hasFiles:desc,_text_match:desc');
     });
 
@@ -828,7 +830,9 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal('datePublication:=2025*');
+      should(call.args[1].filter_by).equal(
+        '(datePublication:=2025*) && validationStatus:!=pending'
+      );
     });
 
     it('should use prefix filter for datePublication with year-month', async () => {
@@ -842,7 +846,9 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal('datePublication:=2025-01*');
+      should(call.args[1].filter_by).equal(
+        '(datePublication:=2025-01*) && validationStatus:!=pending'
+      );
     });
 
     it('should use prefix filter for datePublication with full date', async () => {
@@ -856,7 +862,9 @@ describe('SearchService', () => {
       });
 
       const call = typesenseStub.search.getCall(0);
-      should(call.args[1].filter_by).equal('datePublication:=2025-01-15*');
+      should(call.args[1].filter_by).equal(
+        '(datePublication:=2025-01-15*) && validationStatus:!=pending'
+      );
     });
 
     it('should set max_filter_by_candidates when datePublication prefix filter is used', async () => {
@@ -970,6 +978,107 @@ describe('SearchService', () => {
 
       const call = typesenseStub.search.getCall(0);
       should(call.args[1].filter_by).be.undefined();
+    });
+  });
+
+  // Pending submissions are searchable on request only (#1561)
+  describe('document validation scope', () => {
+    const SCOPE = 'validationStatus:!=pending';
+
+    beforeEach(() => {
+      typesenseStub.search = sinon
+        .stub(typesense, 'search')
+        .resolves({ hits: [], facet_counts: [], page: 1 });
+      typesenseStub.multiSearch = sinon
+        .stub(typesense, 'multiSearch')
+        .resolves({ results: [] });
+    });
+
+    const searchParams = () => typesenseStub.search.getCall(0).args[1];
+
+    it('leaves the pending documents out by default', async () => {
+      await SearchService.collectionSearch({ entity: 'documents' });
+      should(searchParams().filter_by).equal(SCOPE);
+    });
+
+    it('includes the pending documents on request', async () => {
+      await SearchService.collectionSearch({
+        entity: 'documents',
+        includePendingDocuments: true,
+      });
+      should(searchParams().filter_by).be.undefined();
+    });
+
+    it('keeps the business filter unchanged on request', async () => {
+      await SearchService.collectionSearch({
+        entity: 'documents',
+        filter: { type: 'Article', hasFiles: true },
+        includePendingDocuments: true,
+      });
+      should(searchParams().filter_by).equal(
+        'type:`Article` && hasFiles:=true'
+      );
+    });
+
+    it('cannot be widened by matching any filter', async () => {
+      await SearchService.collectionSearch({
+        entity: 'documents',
+        filter: { type: 'Article', hasFiles: true },
+        isLogicalCompareAnd: false,
+      });
+      should(searchParams().filter_by).equal(
+        `(type:\`Article\` || hasFiles:=true) && ${SCOPE}`
+      );
+    });
+
+    it('does not scope the other entities', async () => {
+      await SearchService.collectionSearch({
+        entity: 'entrances',
+        filter: { country: 'FR' },
+      });
+      should(searchParams().filter_by).equal('country:`FR`');
+    });
+
+    it('scopes the field suggestions', async () => {
+      await SearchService.fieldSearch({
+        entity: 'documents',
+        field: 'type',
+        filter: { language: 'fra' },
+        isLogicalCompareAnd: false,
+      });
+      should(searchParams().filter_by).equal(`(language:\`fra\`) && ${SCOPE}`);
+    });
+
+    it('includes the pending documents in the field suggestions on request', async () => {
+      await SearchService.fieldSearch({
+        entity: 'documents',
+        field: 'type',
+        includePendingDocuments: true,
+      });
+      should(searchParams().filter_by).be.undefined();
+    });
+
+    it('only scopes the documents of a multi-collection search', async () => {
+      await SearchService.multiCollectionsSearch({
+        query: 'karst',
+        entities: ['entrances', 'documents'],
+      });
+      const [collections] = typesenseStub.multiSearch.getCall(0).args;
+      should(collections.map((c) => [c.collection, c.filter_by])).eql([
+        ['entrances', undefined],
+        ['documents', SCOPE],
+      ]);
+    });
+
+    it('includes the pending documents of a multi-collection search on request', async () => {
+      await SearchService.multiCollectionsSearch({
+        query: 'karst',
+        entities: ['entrances', 'documents'],
+        filter: { name: 'x' },
+        includePendingDocuments: true,
+      });
+      const [collections] = typesenseStub.multiSearch.getCall(0).args;
+      should(collections.map((c) => c.filter_by)).eql(['name:`x`', 'name:`x`']);
     });
   });
 });

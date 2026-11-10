@@ -7359,6 +7359,8 @@ paths:
                 filter:
                   type: object
                   description: Filter to specify the request, the keys are field in the entities
+                includePendingDocuments:
+                  $ref: '#/components/schemas/IncludePendingDocuments'
       responses:
         '200':
           description: Successful operation
@@ -7366,6 +7368,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Search'
+        '400':
+          description: >-
+            The query is missing, or `includePendingDocuments` is not a
+            `BooleanLike` value.
         '404':
           description: Resource not found
 
@@ -7449,6 +7455,8 @@ paths:
                     - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
+                includePendingDocuments:
+                  $ref: '#/components/schemas/IncludePendingDocuments'
                 page:
                   type: integer
                   description: The page number, start at 1
@@ -7465,7 +7473,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Search'
         '400':
-          description: Invalid sort parameter (unknown field, non-sortable field, or bad format), or `matchAllFields` or `filter.hasFiles` is not a `BooleanLike` value.
+          description: Invalid sort parameter (unknown field, non-sortable field, or bad format), or `matchAllFields`, `includePendingDocuments` or `filter.hasFiles` is not a `BooleanLike` value.
         '404':
           description: Resource not found
 
@@ -7536,6 +7544,8 @@ paths:
                     - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
+                includePendingDocuments:
+                  $ref: '#/components/schemas/IncludePendingDocuments'
                 columns:
                   type: array
                   description: |
@@ -7580,7 +7590,7 @@ paths:
             - Geographic format requested for non-entrance entity
             - Missing or invalid columns/columnsName (CSV format only)
             - Search results exceed 10,000 row limit
-            - `matchAllFields` or `filter.hasFiles` is not a `BooleanLike` value
+            - `matchAllFields`, `includePendingDocuments` or `filter.hasFiles` is not a `BooleanLike` value
 
   '/field-search':
     post:
@@ -7631,6 +7641,8 @@ paths:
                     - $ref: '#/components/schemas/BooleanLike'
                   description: Specify if the provided filters are added using the logical comparator "And" or "Or"
                   default: true
+                includePendingDocuments:
+                  $ref: '#/components/schemas/IncludePendingDocuments'
       responses:
         '400':
           $ref: '#/components/responses/InvalidBoolean'
@@ -11584,6 +11596,24 @@ components:
           nullable: true
         - type: string
           enum: ['true', 'false', '1', '0', '']
+    IncludePendingDocuments:
+      allOf:
+        - $ref: '#/components/schemas/BooleanLike'
+      default: false
+      description: >-
+        Also return the documents awaiting their first validation (new
+        submissions), whoever created them, so a document can be found, for
+        instance to link it to an entrance, before a moderator validates it.
+        Open to anonymous callers. Omitted or `false`, a search returns the
+        accepted documents only, as before. Refused and deleted documents
+        are never returned. An accepted document whose modification awaits
+        approval is always returned with its accepted content, never the
+        proposed modification. Only documents are affected: other entities
+        ignore it. It applies to the results, the totals, the field
+        suggestions and the exports, on top of the `filter` (whatever
+        `matchAllFields` says). Read `validationStatus` on each document to
+        label the pending ones. Returns 400 when the value is not a
+        `BooleanLike` value.
     DocumentValidationResult:
       type: object
       description: Outcome of one entry of `PUT /documents/validate`.
@@ -12261,6 +12291,17 @@ components:
             Only in search results (`/search`, `/advanced-search`): whether the
             document has at least one validated file. Absent until the search
             index is rebuilt with this field.
+        validationStatus:
+          type: string
+          enum: [validated, pending, modificationPending]
+          description: >-
+            Only in search results (`/search`, `/advanced-search`):
+            `validated` for an accepted document, `pending` for a new
+            submission awaiting its first validation (returned only with
+            `includePendingDocuments`), `modificationPending` for an accepted
+            document whose modification awaits approval (its accepted content
+            is shown). Absent until the search index is rebuilt with this
+            field.
         authorsOrganization:
           type: array
           items:
