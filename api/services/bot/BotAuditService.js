@@ -95,6 +95,7 @@ const REASONS = Object.freeze({
   DELETED_RECORD: 'deleted-record',
   MISSING_RECORD: 'missing-record',
   TOO_LARGE: 'too-large',
+  UNREADABLE_MARKUP: 'unreadable-markup',
   VARIANT_LEAK: 'variant-leak',
 });
 const RECORD_REASON_PRIORITY = [
@@ -182,8 +183,8 @@ async function badRecords(wanted) {
 // ---- one page --------------------------------------------------------------
 
 // The records a page must be fit for: what it links to or carries, and its own
-const refsOfPage = (html, row) => {
-  const refs = botAuditPage.recordRefs(html);
+const refsOfPage = (html, row, baseUrl, page) => {
+  const refs = botAuditPage.recordRefs(html, baseUrl, page);
   if (row.redirect_to === null || row.redirect_to === undefined) {
     const own = botPagePaths.fromKey(row.path);
     if (own && own.entityType !== 'hub') {
@@ -194,8 +195,8 @@ const refsOfPage = (html, row) => {
 };
 
 // A reason when the page's text holds coordinates, with the family that matched
-const coordinateFailure = (html) => {
-  const { body, jsonLd } = botAuditPage.detectionText(html);
+const coordinateFailure = (html, page) => {
+  const { body, jsonLd } = botAuditPage.detectionText(html, page);
   const inBody = detect(body);
   if (inBody.matched) {
     return { reason: REASONS.COORDINATES_BODY, detail: inBody.patternId };
@@ -211,7 +212,10 @@ const coordinateFailure = (html) => {
  * Reads, checks (a) and collects the references (b) of every page of `rows`.
  * Only the failure and the reference ids of each page are kept, not its HTML.
  */
-async function readPages(rows, { adapter, concurrency, maxPageBytes }) {
+async function readPages(
+  rows,
+  { adapter, concurrency, maxPageBytes, baseUrl }
+) {
   const results = [];
   await mapLimit(rows, concurrency, async (row) => {
     let body;
@@ -227,10 +231,19 @@ async function readPages(rows, { adapter, concurrency, maxPageBytes }) {
       return;
     }
     const html = body.toString('utf8');
+    // One pass for all three checks (coordinate, record references, unreadable):
+    // scan is linear and a 2 MiB page would otherwise be walked three times
+    const page = botAuditPage.scan(html);
+    // A tag, a comment or a script still open at the end of the page: the
+    // generator never writes one, and what it holds cannot be told
+    if (page.unreadable) {
+      results.push({ row, failure: { reason: REASONS.UNREADABLE_MARKUP } });
+      return;
+    }
     results.push({
       row,
-      failure: coordinateFailure(html),
-      refs: refsOfPage(html, row),
+      failure: coordinateFailure(html, page),
+      refs: refsOfPage(html, row, baseUrl, page),
     });
   });
   return results;
@@ -281,6 +294,34 @@ const addressOf = (row, baseUrl) => {
     : botPagePaths.toUrl(page.entityType, page.id, baseUrl);
 };
 
+// The first `limit` bytes of the body, read chunk by chunk: the request is
+// aborted once the limit is reached, so a huge answer is never buffered
+async function readCapped(response, limit, controller) {
+  if (!response.body || typeof response.body.getReader !== 'function') {
+    return (await response.text()).slice(0, limit);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let text = '';
+  let bytes = 0;
+  for (;;) {
+    // Sequential by nature
+    // eslint-disable-next-line no-await-in-loop
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytes += value.byteLength;
+    text += decoder.decode(value, { stream: true });
+    // The marker is enough: no need to read the rest of the answer
+    if (GENERATOR_MARKER.test(text) || bytes >= limit) {
+      controller.abort();
+      // eslint-disable-next-line no-await-in-loop
+      await reader.cancel().catch(() => {});
+      break;
+    }
+  }
+  return text;
+}
+
 // 'leak', 'ok' or 'unreachable'
 async function requestVariant(url, { fetchFn, timeoutMs }) {
   const controller = new AbortController();
@@ -293,7 +334,7 @@ async function requestVariant(url, { fetchFn, timeoutMs }) {
       headers: { 'User-Agent': BROWSER_USER_AGENT, Accept: 'text/html' },
     });
     if (!response || !response.ok) return 'unreachable';
-    const text = (await response.text()).slice(0, VARIANT_BODY_LIMIT);
+    const text = await readCapped(response, VARIANT_BODY_LIMIT, controller);
     return GENERATOR_MARKER.test(text) ? 'leak' : 'ok';
   } catch {
     // A network error or a timeout: nothing is known about the page
@@ -396,6 +437,7 @@ module.exports = {
       failuresByReason: {},
       variantChecked: 0,
       variantUnreachable: 0,
+      foreignRefs: 0,
       truncated: false,
       publishingStopped: false,
     };
@@ -410,12 +452,35 @@ module.exports = {
       );
     };
 
+    // Stops publishing, once, with the reason on the state row and in the logs
+    const stopPublishing = async (reason, line) => {
+      if (counts.publishingStopped) return;
+      await BotSurfaceStateService.stopPublishing(reason);
+      counts.publishingStopped = true;
+      sails.log.error(`${line}: ${reason}`);
+    };
+
+    // As soon as the failures cross the limit, and not only at the end: an
+    // error later in the run (the page lock never frees, an adapter or database
+    // error) must not leave publishing on after the audit found the most
+    const stopIfOverLimit = async () => {
+      if (counts.failures <= failureLimit) return;
+      const summary = Object.entries(counts.failuresByReason)
+        .map(([reason, n]) => `${reason}=${n}`)
+        .join(' ');
+      await stopPublishing(
+        `nightly audit ${counts.runAt}: ${counts.failures} pages failed (limit ${failureLimit}): ${summary}`,
+        'bot-surface-audit publishing stopped'
+      );
+    };
+
     // Checks one batch of manifest rows; returns nothing, handles the failures
     const auditBatch = async (rows, phase) => {
       const results = await readPages(rows, {
         adapter,
         concurrency,
         maxPageBytes,
+        baseUrl,
       });
       const wanted = {
         cave: new Set(),
@@ -424,6 +489,7 @@ module.exports = {
         entrance: new Set(),
       };
       results.forEach(({ failure, refs }) => {
+        if (refs) counts.foreignRefs += refs.foreign;
         if (failure || !refs) return;
         Object.keys(wanted).forEach((type) =>
           refs[type].forEach((id) => wanted[type].add(id))
@@ -460,6 +526,9 @@ module.exports = {
           failing.push(result.row.path);
         }
       });
+      // Before the deletes, which can wait for the page lock for minutes or
+      // fail: the switch must already be off by then
+      await stopIfOverLimit();
       if (failing.length > 0) {
         await deleteFailed(failing, { adapter, retry, sleep, signal });
       }
@@ -478,78 +547,98 @@ module.exports = {
       return true;
     };
 
-    // 1. Everything uploaded tonight, by keyset on the path
-    let cursor = '';
-    let more = true;
-    while (more) {
-      if (now() > deadline) {
-        counts.truncated = true;
-        break;
-      }
-      // eslint-disable-next-line no-await-in-loop
-      const { rows } = await query(
-        `SELECT path, redirect_to FROM t_bot_page_manifest
-          WHERE entity_type <> 'static' AND published_at >= $1 AND path > $2
-          ORDER BY path LIMIT $3`,
-        [since, cursor, batchSize]
-      );
-      if (rows.length === 0) break;
-      // eslint-disable-next-line no-await-in-loop
-      await auditBatch(rows, 'uploadedChecked');
-      cursor = rows[rows.length - 1].path;
-      more = rows.length === batchSize;
-    }
-
-    // 2. A random sample of the others
-    if (sampleSize > 0 && !counts.truncated) {
-      const { rows } = await query(
-        `SELECT path, redirect_to FROM t_bot_page_manifest
-          WHERE entity_type <> 'static' AND published_at < $1
-          ORDER BY random() LIMIT $2`,
-        [since, sampleSize]
-      );
-      await auditRows(rows, 'sampled');
-    }
-
-    // 3. The variant check on a sample of addresses that are still online
-    if (variantSample > 0) {
-      const { rows } = await query(
-        `SELECT path FROM t_bot_page_manifest
-          WHERE entity_type <> 'static' AND redirect_to IS NULL
-          ORDER BY random() LIMIT $1`,
-        [variantSample]
-      );
-      const leaking = [];
-      await mapLimit(rows, VARIANT_CONCURRENCY, async (row) => {
-        const url = addressOf(row, baseUrl);
-        if (!url) return;
-        const outcome = await requestVariant(url, {
-          fetchFn,
-          timeoutMs: variantTimeoutMs,
-        });
-        counts.variantChecked += 1;
-        if (outcome === 'unreachable') counts.variantUnreachable += 1;
-        if (outcome === 'leak') {
-          fail(row.path, { reason: REASONS.VARIANT_LEAK });
-          leaking.push(row.path);
+    let failure = null;
+    try {
+      // 1. Everything uploaded tonight, by keyset on the path
+      let cursor = '';
+      let more = true;
+      while (more) {
+        if (now() > deadline) {
+          counts.truncated = true;
+          break;
         }
-        // Spread the requests out
-        await sleep(variantSpacingMs);
-      });
-      if (leaking.length > 0) {
-        await deleteFailed(leaking, { adapter, retry, sleep, signal });
+        // eslint-disable-next-line no-await-in-loop
+        const { rows } = await query(
+          `SELECT path, redirect_to FROM t_bot_page_manifest
+            WHERE entity_type <> 'static' AND published_at >= $1 AND path > $2
+            ORDER BY path LIMIT $3`,
+          [since, cursor, batchSize]
+        );
+        if (rows.length === 0) break;
+        // eslint-disable-next-line no-await-in-loop
+        await auditBatch(rows, 'uploadedChecked');
+        cursor = rows[rows.length - 1].path;
+        more = rows.length === batchSize;
       }
-    }
 
-    // 4. The threshold
-    if (counts.failures > failureLimit) {
-      const summary = Object.entries(counts.failuresByReason)
-        .map(([reason, n]) => `${reason}=${n}`)
-        .join(' ');
-      const reason = `nightly audit ${counts.runAt}: ${counts.failures} pages failed (limit ${failureLimit}): ${summary}`;
-      await BotSurfaceStateService.stopPublishing(reason);
-      counts.publishingStopped = true;
-      sails.log.error(`bot-surface-audit publishing stopped: ${reason}`);
+      // 2. A random sample of the others
+      if (sampleSize > 0 && !counts.truncated) {
+        const { rows } = await query(
+          `SELECT path, redirect_to FROM t_bot_page_manifest
+            WHERE entity_type <> 'static' AND published_at < $1
+            ORDER BY random() LIMIT $2`,
+          [since, sampleSize]
+        );
+        await auditRows(rows, 'sampled');
+      }
+
+      // 3. The variant check on a sample of addresses that are still online
+      if (variantSample > 0) {
+        const { rows } = await query(
+          `SELECT path FROM t_bot_page_manifest
+            WHERE entity_type <> 'static' AND redirect_to IS NULL
+            ORDER BY random() LIMIT $1`,
+          [variantSample]
+        );
+        const leaking = [];
+        await mapLimit(rows, VARIANT_CONCURRENCY, async (row) => {
+          const url = addressOf(row, baseUrl);
+          if (!url) return;
+          const outcome = await requestVariant(url, {
+            fetchFn,
+            timeoutMs: variantTimeoutMs,
+          });
+          counts.variantChecked += 1;
+          if (outcome === 'unreachable') counts.variantUnreachable += 1;
+          if (outcome === 'leak') {
+            fail(row.path, { reason: REASONS.VARIANT_LEAK });
+            leaking.push(row.path);
+          }
+          // Spread the requests out
+          await sleep(variantSpacingMs);
+        });
+        // A leak is a cache or rewrite layer serving the crawler page to
+        // browsers: the blob is fine and every page is concerned, not only the
+        // ones sampled. Deleting the sampled pages would fix nothing (the cache
+        // keeps its copy, the next night uploads them again), so publishing stops
+        // at the first one, whatever the limit, and the pages stay: it is fixed
+        // in the CDN or cache configuration, not in the data
+        if (leaking.length > 0) {
+          await stopPublishing(
+            `nightly audit ${counts.runAt}: ${leaking.length} sampled address(es) answered a browser with the crawler page (${leaking.slice(0, 3).join(', ')}); fix the cache or CDN rule, then re-enable publishing`,
+            'bot-surface-audit variant leak, publishing stopped'
+          );
+        }
+      }
+    } catch (err) {
+      failure = err;
+    }
+    // The limit, even when the run ends on an error of its own
+    try {
+      await stopIfOverLimit();
+    } catch (err) {
+      sails.log.error(
+        'bot-surface-audit: could not stop publishing after the failures found',
+        err
+      );
+      failure = failure ?? err;
+    }
+    if (failure) throw failure;
+
+    if (counts.foreignRefs > 0) {
+      sails.log.warn(
+        `bot-surface-audit: ${counts.foreignRefs} reference(s) of the pages checked point at the SPA path on another origin than ${baseUrl}; the base URL was probably changed since those pages were rendered (they were checked all the same)`
+      );
     }
     counts.publishing = (await BotSurfaceStateService.read()).publishing;
     counts.durationMs = now() - startedAt;
