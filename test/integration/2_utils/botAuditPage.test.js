@@ -144,6 +144,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         massif: [3],
         organization: [8],
         entrance: [77],
+        foreign: 0,
       });
     });
 
@@ -158,6 +159,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         massif: [],
         organization: [],
         entrance: [],
+        foreign: 0,
       });
     });
 
@@ -170,6 +172,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         massif: [6],
         organization: [7],
         entrance: [8],
+        foreign: 0,
       });
     });
 
@@ -180,6 +183,46 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(botAuditPage.recordRefs(html, BASE).cave).eql([1, 2, 3]);
     });
 
+    it('matches a reference on its path, whatever the host, and counts the ones on another origin: a base URL that changed does not blind the check', () => {
+      const html = page({
+        body: '<a href="https://grottocenter.org/ui/caves/1">same</a><a href="https://www.grottocenter.org/ui/caves/2">www</a><a href="http://grottocenter.org/ui/massifs/3">http</a><a href="https://old.example.org/ui/organizations/4">old host</a><a href="/ui/entrances/5">relative</a>',
+        jsonLd: '{"@id":"https://old.example.org/ui/caves/6"}',
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [1, 2, 6],
+        massif: [3],
+        organization: [4],
+        entrance: [5],
+        foreign: 4,
+      });
+    });
+
+    it("does not match a path that is not the SPA's, on any host", () => {
+      const html = page({
+        body: '<a href="https://some-club.fr/caves/79">club</a><a href="https://grottocenter.org/api/caves/80">api</a><a href="https://some-club.fr/ui/countries/FR">hub</a><a href="mailto:a@b.fr">mail</a><a href="javascript:void(0)">js</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [],
+        massif: [],
+        organization: [],
+        entrance: [],
+        foreign: 0,
+      });
+    });
+
+    it('skips the links a contributor typed, marked rel="nofollow ugc": the website of an organization', () => {
+      const html = page({
+        body: '<a href="https://grottocenter.org/ui/organizations/9">own</a><a href="https://grottocenter.org/ui/caves/12" rel="nofollow ugc">website</a><a rel="ugc nofollow" href="/ui/caves/13">other order</a><a href="/ui/caves/14" rel="noopener">not ugc</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [14],
+        massif: [],
+        organization: [9],
+        entrance: [],
+        foreign: 0,
+      });
+    });
+
     it('reads the snapshot pages: the cave and the massif of the cave page', () => {
       const html = fs.readFileSync(path.join(SNAPSHOTS, 'cave.html'), 'utf8');
       should(botAuditPage.recordRefs(html, 'https://example.test/ui')).eql({
@@ -187,6 +230,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         massif: [3],
         organization: [],
         entrance: [],
+        foreign: 0,
       });
     });
 
@@ -199,6 +243,7 @@ describe('botAuditPage - what the audit reads out of a page', () => {
         massif: [],
         organization: [],
         entrance: [],
+        foreign: 0,
       });
     });
   });

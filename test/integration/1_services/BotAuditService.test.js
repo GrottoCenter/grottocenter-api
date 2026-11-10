@@ -508,6 +508,73 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(counts.failuresByReason).eql({ 'merged-record': 1 });
     });
 
+    it('still checks the links of a page rendered under another base URL, and counts them as foreign', async () => {
+      const subject = await mkPublicCave();
+      const secret = await fixtures.mkEntrance(subject.cave.id, 'Secret');
+      await query('UPDATE t_entrance SET is_sensitive = true WHERE id = $1', [
+        secret.id,
+      ]);
+      // Rendered when the setting was another host
+      await publish(
+        caveKey(subject.cave.id),
+        html({
+          body: `<a href="https://old.example.org/ui/entrances/${secret.id}">x</a>`,
+        })
+      );
+
+      const counts = await audit({ baseUrl: BASE_URL });
+
+      should(counts.failuresByReason).eql({ 'sensitive-entrance': 1 });
+      should(counts.foreignRefs).equal(1);
+      should(isOnline(caveKey(subject.cave.id))).be.false();
+    });
+
+    it('warns once about references on another origin, and counts none when the base URL is the same', async () => {
+      const subject = await mkPublicCave();
+      await publish(
+        caveKey(subject.cave.id),
+        html({ body: link('caves', subject.cave.id) })
+      );
+      const same = await audit({ baseUrl: BASE_URL });
+      should(same.foreignRefs).equal(0);
+      should(
+        logWarn.getCalls().some((c) => /another origin/.test(c.args[0]))
+      ).be.false();
+
+      await publish(
+        caveKey(subject.cave.id),
+        html({
+          body: `<a href="https://old.example.org/ui/caves/${subject.cave.id}">x</a>`,
+        })
+      );
+      const moved = await audit({ baseUrl: BASE_URL });
+      should(moved.foreignRefs).equal(1);
+      should(moved.failures).equal(0);
+      should(
+        logWarn.getCalls().filter((c) => /another origin/.test(c.args[0]))
+      ).have.length(1);
+    });
+
+    it('does not fail a page for the website of an organization that is an address of the SPA', async () => {
+      const merged = await fixtures.mkCave('Gouffre Fusionne Site');
+      const target = await mkPublicCave();
+      await query('UPDATE t_cave SET redirect_to = $2 WHERE id = $1', [
+        merged.id,
+        target.cave.id,
+      ]);
+      const organization = await fixtures.mkOrganization('Club Site');
+      await publish(
+        `organizations/${organization.id}.html`,
+        html({
+          body: `<a href="${BASE_URL}/caves/${merged.id}" rel="nofollow ugc">website</a>`,
+        })
+      );
+
+      const counts = await audit();
+
+      should(counts.failures).equal(0);
+    });
+
     it('leaves the clean pages of the same run alone', async () => {
       const bad = await mkPublicCave('Gouffre Mauvais');
       const good = await mkPublicCave('Gouffre Bon');
@@ -928,7 +995,31 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(cancelled).be.true();
     });
 
-    it('finds the marker at the start of a long body without reading it all', async () => {
+    it('stops reading as soon as the marker is seen, even when it straddles two chunks', async () => {
+      const { cave } = await mkPublicCave();
+      await publish(caveKey(cave.id), html());
+      const encoder = new TextEncoder();
+      const marker = encoder.encode(LEAKED_PAGE);
+      const middle = Math.floor(marker.length / 2);
+      let pulled = 0;
+      const body = new ReadableStream({
+        pull(controller) {
+          pulled += 1;
+          if (pulled === 1) controller.enqueue(marker.slice(0, middle));
+          else if (pulled === 2) controller.enqueue(marker.slice(middle));
+          else controller.enqueue(new Uint8Array(512 * 1024).fill(32));
+        },
+      });
+      const counts = await variant({
+        fetch: async () => ({ ok: true, status: 200, body }),
+      });
+
+      should(counts.failuresByReason).eql({ 'variant-leak': 1 });
+      // Two chunks hold the marker; the stream may have been read ahead by one
+      should(pulled).be.belowOrEqual(3);
+    });
+
+    it('finds the marker at the start of a body larger than the limit', async () => {
       const { cave } = await mkPublicCave();
       await publish(caveKey(cave.id), html());
       const encoder = new TextEncoder();
@@ -1175,6 +1266,7 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
           'durationMs',
           'failures',
           'failuresByReason',
+          'foreignRefs',
           'missing',
           'pagesChecked',
           'publishing',
@@ -1197,6 +1289,7 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
         publishing: true,
         variantChecked: 0,
         variantUnreachable: 0,
+        foreignRefs: 0,
         missing: 0,
       });
       should(counts.failuresByReason).eql({ 'coordinates-body': 1 });

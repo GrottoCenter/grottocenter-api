@@ -21,12 +21,14 @@
  *   recordRefs(html, baseUrl)
  *                        the cave, massif, organization and entrance ids the
  *                        page links to or carries: the `href` values and the
- *                        JSON-LD `@id` values that point at the SPA's own
- *                        address (`baseUrl`, or its path alone), which are
- *                        what the generator emits. Free text is left out: a
- *                        contributor can write "/caves/12", or a link to
- *                        another site, in a description, and that is not a
- *                        reference of the page.
+ *                        JSON-LD `@id` values whose PATH is the SPA's
+ *                        (`/ui/caves/12`), whatever the host, plus how many
+ *                        of them are on another origin than `baseUrl` (a base
+ *                        URL that changed). These are what the generator
+ *                        emits. Left out: free text (a contributor can write
+ *                        "/caves/12" in a description) and the links marked
+ *                        rel="nofollow ugc", which a contributor typed (the
+ *                        website of an organization).
  */
 
 const NAMED_ENTITIES = Object.freeze({
@@ -125,18 +127,37 @@ const TYPE_BY_DIRECTORY = Object.freeze({
   entrances: 'entrance',
 });
 const MAX_ID = 2147483647;
-const HREF_RE = /\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
 const ID_KEY = '@id';
+const TAG_WITH_HREF_RE = /<[a-z][^>]*\shref\s*=[^>]*>/gi;
+const NAME_VALUE_RE =
+  /\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
 
-// Every `href` value of the page's tags, entities decoded
+// The attributes of a tag as { name: decoded value }, names in lower case
+const attributesOf = (tag) => {
+  const found = {};
+  NAME_VALUE_RE.lastIndex = 0;
+  let match = NAME_VALUE_RE.exec(tag);
+  while (match) {
+    found[match[1].toLowerCase()] = decodeEntities(
+      match[2] ?? match[3] ?? match[4]
+    );
+    match = NAME_VALUE_RE.exec(tag);
+  }
+  NAME_VALUE_RE.lastIndex = 0;
+  return found;
+};
+
+// The `href` of every tag of the page, except the links a contributor wrote:
+// the generator marks those rel="nofollow ugc" (the website of an
+// organization is typed by a user and may well be an address of the SPA)
 const hrefs = (html) => {
   const found = [];
-  let match = HREF_RE.exec(html);
-  while (match) {
-    found.push(decodeEntities(match[1] ?? match[2] ?? match[3]));
-    match = HREF_RE.exec(html);
-  }
-  HREF_RE.lastIndex = 0;
+  (html.match(TAG_WITH_HREF_RE) || []).forEach((tag) => {
+    const { href, rel } = attributesOf(tag);
+    if (href === undefined) return;
+    if (/(^|\s)ugc(\s|$)/i.test(rel ?? '')) return;
+    found.push(href);
+  });
   return found;
 };
 
@@ -160,33 +181,45 @@ const jsonLdIds = (html) => {
   return found;
 };
 
-const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 /**
  * @param {string} html
  * @param {string} baseUrl the SPA's address, `https://grottocenter.org/ui`
- * @returns {{cave: number[], massif: number[], organization: number[], entrance: number[]}}
- *   the distinct ids, sorted
+ * @returns {{cave: number[], massif: number[], organization: number[], entrance: number[], foreign: number}}
+ *   the distinct ids, sorted; and `foreign`, how many of the references are on
+ *   another origin than `baseUrl`. A reference is matched on its PATH
+ *   (`/ui/caves/12`), whatever the host: a page rendered under another base URL
+ *   (the setting changed, http against https, www against the apex) still has
+ *   its links checked, and `foreign` shows the mismatch in the run record
+ *   instead of letting it pass unseen.
  */
 const recordRefs = (html, baseUrl) => {
-  const base = String(baseUrl).replace(/\/+$/, '');
-  const path = new URL(base).pathname.replace(/\/+$/, '');
-  // The absolute address, or the same path alone
-  const prefixes = [base, path].filter(Boolean).map(escapeRegExp).join('|');
+  const base = new URL(String(baseUrl).replace(/\/+$/, '/'));
+  const spaPath = base.pathname.replace(/\/+$/, '');
   const refRe = new RegExp(
-    `^(?:${prefixes})/(caves|massifs|organizations|entrances)/([1-9][0-9]{0,9})(?:[/?#].*)?$`
+    `^${spaPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(caves|massifs|organizations|entrances)/([1-9][0-9]{0,9})(?:/.*)?$`
   );
   const found = { cave: [], massif: [], organization: [], entrance: [] };
-  [...hrefs(html), ...jsonLdIds(html)].forEach((url) => {
-    const match = refRe.exec(url);
+  let foreign = 0;
+  [...hrefs(html), ...jsonLdIds(html)].forEach((value) => {
+    let url;
+    try {
+      url = new URL(value, base);
+    } catch {
+      return;
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+    const match = refRe.exec(url.pathname);
     if (!match) return;
     const id = Number(match[2]);
-    if (id <= MAX_ID) found[TYPE_BY_DIRECTORY[match[1]]].push(id);
+    if (id > MAX_ID) return;
+    if (url.origin !== base.origin) foreign += 1;
+    found[TYPE_BY_DIRECTORY[match[1]]].push(id);
   });
-  Object.keys(found).forEach((type) => {
+  Object.keys(TYPE_BY_DIRECTORY).forEach((directory) => {
+    const type = TYPE_BY_DIRECTORY[directory];
     found[type] = [...new Set(found[type])].sort((a, b) => a - b);
   });
-  return found;
+  return { ...found, foreign };
 };
 
 module.exports = { detectionText, recordRefs, decodeEntities };

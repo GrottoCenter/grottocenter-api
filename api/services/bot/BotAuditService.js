@@ -301,7 +301,8 @@ async function readCapped(response, limit, controller) {
     if (done) break;
     bytes += value.byteLength;
     text += decoder.decode(value, { stream: true });
-    if (bytes >= limit) {
+    // The marker is enough: no need to read the rest of the answer
+    if (GENERATOR_MARKER.test(text) || bytes >= limit) {
       controller.abort();
       // eslint-disable-next-line no-await-in-loop
       await reader.cancel().catch(() => {});
@@ -426,6 +427,7 @@ module.exports = {
       failuresByReason: {},
       variantChecked: 0,
       variantUnreachable: 0,
+      foreignRefs: 0,
       truncated: false,
       publishingStopped: false,
     };
@@ -477,6 +479,7 @@ module.exports = {
         entrance: new Set(),
       };
       results.forEach(({ failure, refs }) => {
+        if (refs) counts.foreignRefs += refs.foreign;
         if (failure || !refs) return;
         Object.keys(wanted).forEach((type) =>
           refs[type].forEach((id) => wanted[type].add(id))
@@ -622,6 +625,11 @@ module.exports = {
     }
     if (failure) throw failure;
 
+    if (counts.foreignRefs > 0) {
+      sails.log.warn(
+        `bot-surface-audit: ${counts.foreignRefs} reference(s) of the pages checked point at the SPA path on another origin than ${baseUrl}; the base URL was probably changed since those pages were rendered (they were checked all the same)`
+      );
+    }
     counts.publishing = (await BotSurfaceStateService.read()).publishing;
     counts.durationMs = now() - startedAt;
     return counts;
