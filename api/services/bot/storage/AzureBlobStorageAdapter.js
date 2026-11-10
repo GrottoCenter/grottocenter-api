@@ -58,6 +58,40 @@ class AzureBlobStorageAdapter {
     await this.container.getBlockBlobClient(key).deleteIfExists();
   }
 
+  // The bytes of a page, or null when there is none. The size is known from
+  // the response headers before the body is read: a page over `maxBytes`
+  // rejects with E_BOT_PAGE_TOO_LARGE and the stream is dropped unread.
+  async get(key, { maxBytes = Infinity } = {}) {
+    let response;
+    try {
+      response = await this.container.getBlockBlobClient(key).download(0);
+    } catch (error) {
+      if (error.statusCode === 404) return null;
+      throw error;
+    }
+    const stream = response.readableStreamBody;
+    if (response.contentLength > maxBytes) {
+      stream?.destroy();
+      throw Object.assign(new Error(`${key} is over ${maxBytes} bytes`), {
+        code: 'E_BOT_PAGE_TOO_LARGE',
+      });
+    }
+    const chunks = [];
+    let size = 0;
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const chunk of stream) {
+      size += chunk.length;
+      if (size > maxBytes) {
+        stream.destroy();
+        throw Object.assign(new Error(`${key} is over ${maxBytes} bytes`), {
+          code: 'E_BOT_PAGE_TOO_LARGE',
+        });
+      }
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
   async *list() {
     // eslint-disable-next-line no-restricted-syntax
     for await (const blob of this.container.listBlobsFlat()) {

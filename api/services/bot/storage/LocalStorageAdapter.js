@@ -12,6 +12,11 @@
  *                    content type to store and ignores it)
  *   delete(key)      remove one page and its metadata; resolves when it is
  *                    already gone
+ *   get(key, { maxBytes })
+ *                    the bytes of one page (a Buffer), or null when there is
+ *                    none. Rejects with code E_BOT_PAGE_TOO_LARGE, without
+ *                    reading the body, when the page is over `maxBytes` (the
+ *                    audit, #1887, reads pages back as crawlers see them)
  *   list()           async iterable of every key held
  */
 
@@ -80,6 +85,30 @@ class LocalStorageAdapter {
     const target = this.resolve(key);
     await fs.promises.rm(target, { force: true });
     await fs.promises.rm(`${target}${METADATA_SUFFIX}`, { force: true });
+  }
+
+  async get(key, { maxBytes = Infinity } = {}) {
+    const target = this.resolve(key);
+    let stat;
+    try {
+      stat = await fs.promises.stat(target);
+    } catch (error) {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    }
+    if (stat.size > maxBytes) throw LocalStorageAdapter.tooLarge(key, maxBytes);
+    try {
+      return await fs.promises.readFile(target);
+    } catch (error) {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    }
+  }
+
+  static tooLarge(key, maxBytes) {
+    return Object.assign(new Error(`${key} is over ${maxBytes} bytes`), {
+      code: 'E_BOT_PAGE_TOO_LARGE',
+    });
   }
 
   async *list() {

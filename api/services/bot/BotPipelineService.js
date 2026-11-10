@@ -14,7 +14,9 @@
  *                                                  consistent with what is online)
  *   5     sitemaps      BotSitemapService          the previous sitemaps stay;
  *                                                  step 6 still runs
- *   6     audit         #1887 (not built)          handled by #1887
+ *   6     audit         BotAuditService            fails on its own errors only;
+ *                                                  bad pages are deleted and
+ *                                                  counted, not a failure
  *
  * The order is the contract. The scan runs before admission because the content
  * rule reads the verdicts (a description written 30 days ago and scanned tonight
@@ -22,9 +24,12 @@
  * old tonight is published tonight. Steps 1 and 2 failing means nothing is
  * uploaded or deleted: the run stops before step 4.
  *
- * Step 6 is a hook: `steps.audit`. Until #1887 replaces its body it records
- * `{ skipped: 'not implemented' }` in the run record, and the orchestrator does
- * not change.
+ * Step 6 (#1887) reads the pages back from the adapter and deletes the bad
+ * ones (BotAuditService). It always runs, whether or not publishing is on
+ * (t_bot_surface_state), and may set publishing to false. Pages it deletes are
+ * not a failure of the run; an error of its own (adapter or database
+ * unreadable) is. The run's start time, read from the database when the record
+ * is opened, goes to it as `since`: every page uploaded since then is audited.
  *
  * Allow-list: `entityTypes` (BOT_SURFACE_ENTITY_TYPES, #1888) goes to the
  * generator and to the sitemaps. An empty list is refused: nothing is generated.
@@ -51,6 +56,7 @@ const {
   ENTITY_TYPES: LISTABLE_TYPES,
 } = require('../../utils/botSurfaceConfig');
 const BotPageGeneratorService = require('./BotPageGeneratorService');
+const BotSurfaceStateService = require('./BotSurfaceStateService');
 
 // Any key no other advisory lock uses (1758 pages, 1871 search write lock)
 const PIPELINE_LOCK_KEY = 1760;
@@ -243,12 +249,21 @@ const steps = {
   },
 
   /**
-   * Step 6, the hook for the audit (#1887): replace this body with the audit
-   * and return its counts (pages audited, failures); throw to fail the run.
-   * The orchestrator needs no change.
+   * Step 6 (#1887). Reads pages back from the adapter, deletes the bad ones,
+   * stops publishing past the failure limit. See BotAuditService.
    */
-  async audit() {
-    return { skipped: 'not implemented' };
+  async audit({ adapter, startedAt, retry, sleep, signal, audit }) {
+    // Required here: see BotPipelineQueueService (stale copies after a relift)
+    // eslint-disable-next-line global-require
+    const BotAuditService = require('./BotAuditService');
+    return BotAuditService.run({
+      ...audit,
+      adapter,
+      since: startedAt,
+      retry: { intervalMs: retry.intervalMs, maxAttempts: retry.maxAttempts },
+      sleep,
+      signal,
+    });
   },
 };
 
@@ -267,12 +282,12 @@ async function openRecord(counts) {
     `DELETE FROM t_bot_pipeline_run WHERE started_at < now() - interval '${RETENTION}'`
   );
   const {
-    rows: [{ id }],
+    rows: [{ id, started_at: startedAt }],
   } = await query(
-    'INSERT INTO t_bot_pipeline_run (counts) VALUES ($1) RETURNING id',
+    'INSERT INTO t_bot_pipeline_run (counts) VALUES ($1) RETURNING id, started_at',
     [JSON.stringify(counts)]
   );
-  return id;
+  return { id, startedAt };
 }
 
 // A record that cannot be written must not undo a run that has published
@@ -305,17 +320,19 @@ const saveRecord = async (id, fields) => {
   }
 };
 
-const summaryLine = (counts, durationMs) => {
+const summaryLine = (counts, durationMs, publishing) => {
   const sum = (object = {}) =>
     Object.values(object).reduce((total, n) => total + n, 0);
   const audit = counts.audit?.skipped ? 'skipped' : 'done';
+  const auditFailures = counts.audit?.failures ?? 0;
   return (
     `admitted=${counts.admission?.total ?? 0} ` +
     `scanned=${sum(counts.scan?.scanned)} quarantined=${sum(counts.scan?.quarantined)} ` +
     `uploaded=${counts.generation?.uploaded ?? 0} deleted=${counts.generation?.deleted ?? 0} ` +
     `unchanged=${counts.generation?.unchanged ?? 0} ` +
     `sitemapUrls=${counts.sitemaps?.urls ?? 0} shards=${counts.sitemaps?.shards ?? 0} ` +
-    `audit=${audit} peakRssMb=${counts.peakRssMb} durationMs=${durationMs}`
+    `audit=${audit} auditChecked=${counts.audit?.pagesChecked ?? 0} auditFailures=${auditFailures} ` +
+    `publishing=${publishing} peakRssMb=${counts.peakRssMb} durationMs=${durationMs}`
   );
 };
 
@@ -333,7 +350,7 @@ async function execute(options) {
 
   // Before the sampler starts: if the record cannot be opened (migration not
   // applied, database unreachable) nothing is left running
-  const id = await openRecord(counts);
+  const { id, startedAt: runStartedAt } = await openRecord(counts);
   const sampler = setInterval(sample, 1000);
   sampler.unref();
   sails.log.info(
@@ -355,6 +372,8 @@ async function execute(options) {
           retry,
           sleep,
           signal,
+          startedAt: runStartedAt,
+          audit: options.audit,
         });
       } catch (err) {
         failure = failure || { step: n, error: err };
@@ -396,8 +415,11 @@ async function execute(options) {
     durations,
     counts,
   });
+  // After the audit, which may have stopped publishing. An unreadable state
+  // reads as off, as it does for the steps
+  const { publishing } = await BotSurfaceStateService.read();
   sails.log.info(
-    `bot-surface-nightly succeeded (run ${id}): ${summaryLine(counts, durationMs)}`
+    `bot-surface-nightly succeeded (run ${id}): ${summaryLine(counts, durationMs, publishing ? 'on' : 'OFF')}`
   );
   return { id, counts, durations, durationMs };
 }
@@ -420,6 +442,8 @@ module.exports = {
    *   lock wait of steps 4 and 5
    * @param {Function} [options.sleep] (ms) => Promise, for tests
    * @param {AbortSignal} [options.signal] the signal of the pg-boss job
+   * @param {object} [options.audit] options for BotAuditService.run (sample
+   *   sizes, an injected fetch, ...), for tests and one-off runs
    * @param {string} [options.trigger] 'schedule' or 'manual', recorded
    * @returns {Promise<{id: number, counts: object, durations: object, durationMs: number}>}
    * @throws the error of the failed step, with `failedStep` and `runId`;
@@ -453,6 +477,7 @@ module.exports = {
         sleep: options.sleep ?? defaultSleep,
         signal: options.signal,
         trigger: options.trigger ?? 'schedule',
+        audit: options.audit,
       })
     );
   },

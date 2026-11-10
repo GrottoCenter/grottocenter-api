@@ -28,6 +28,10 @@ module.exports = {
     // MFA test configuration — deterministic values for reproducible tests.
     mfaDevSecret: 'JBSWY3DPEHPK3PXP',
     mfaIssuerName: 'Grottocenter (test)',
+    // The bot-surface audit's variant check requests the public site: never
+    // from a test run, unless a test injects its own fetch
+    botSurface: { audit: { variantSample: 0 } },
+
     mfaEncryptionKey:
       '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
   },
