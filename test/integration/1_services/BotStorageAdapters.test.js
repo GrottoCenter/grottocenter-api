@@ -1,6 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { Readable } = require('stream');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -96,6 +97,37 @@ describe('Bot storage adapters', () => {
       await adapter.delete('caves/1.html');
       await adapter.delete('caves/1.html');
       should(await collect(adapter.list())).deepEqual([]);
+    });
+
+    describe('get', () => {
+      it('returns the bytes of a page, byte for byte', async () => {
+        const bytes = Buffer.from([0x1f, 0x8b, 0x00, 0xff, 0xfe]);
+        await adapter.put('a.bin', bytes);
+        await adapter.put('caves/1.html', '<p>é</p>');
+        should(await adapter.get('a.bin')).deepEqual(bytes);
+        should((await adapter.get('caves/1.html')).toString('utf8')).equal(
+          '<p>é</p>'
+        );
+      });
+
+      it('returns null for a page that is not there', async () => {
+        should(await adapter.get('caves/404.html')).be.null();
+      });
+
+      it('rejects with E_BOT_PAGE_TOO_LARGE, unread, over the size cap, and reads a page exactly at the cap', async () => {
+        await adapter.put('caves/1.html', 'x'.repeat(10));
+        const err = await adapter
+          .get('caves/1.html', { maxBytes: 9 })
+          .should.be.rejected();
+        should(err.code).equal('E_BOT_PAGE_TOO_LARGE');
+        should(
+          (await adapter.get('caves/1.html', { maxBytes: 10 })).length
+        ).equal(10);
+      });
+
+      it('refuses a key that leaves the root', async () => {
+        await adapter.get('../x.html').should.be.rejectedWith(RangeError);
+      });
     });
 
     it('refuses a key that leaves the root', async () => {
@@ -242,6 +274,71 @@ describe('Bot storage adapters', () => {
         container.getBlockBlobClient.calledOnceWithExactly('caves/1.html')
       ).be.true();
       should(container.blob.deleteIfExists.calledOnce).be.true();
+    });
+
+    describe('get', () => {
+      const downloadOf = (text, contentLength = Buffer.byteLength(text)) => {
+        const stream = Readable.from([Buffer.from(text, 'utf8')]);
+        sinon.spy(stream, 'destroy');
+        return { contentLength, readableStreamBody: stream };
+      };
+
+      it('downloads the blob from the start and returns its bytes', async () => {
+        const container = makeContainer();
+        container.blob.download = sinon.stub().resolves(downloadOf('<p>é</p>'));
+        const body = await new AzureBlobStorageAdapter(container).get(
+          'caves/1.html'
+        );
+        should(body.toString('utf8')).equal('<p>é</p>');
+        should(
+          container.getBlockBlobClient.calledOnceWithExactly('caves/1.html')
+        ).be.true();
+        should(container.blob.download.calledOnceWithExactly(0)).be.true();
+      });
+
+      it('returns null on a 404', async () => {
+        const container = makeContainer();
+        container.blob.download = sinon
+          .stub()
+          .rejects(
+            Object.assign(new Error('BlobNotFound'), { statusCode: 404 })
+          );
+        should(
+          await new AzureBlobStorageAdapter(container).get('caves/1.html')
+        ).be.null();
+      });
+
+      it('lets any other error through', async () => {
+        const container = makeContainer();
+        container.blob.download = sinon
+          .stub()
+          .rejects(Object.assign(new Error('boom'), { statusCode: 503 }));
+        await new AzureBlobStorageAdapter(container)
+          .get('caves/1.html')
+          .should.be.rejectedWith('boom');
+      });
+
+      it('rejects with E_BOT_PAGE_TOO_LARGE from the announced length, without reading the body', async () => {
+        const container = makeContainer();
+        const download = downloadOf('x'.repeat(10));
+        container.blob.download = sinon.stub().resolves(download);
+        const err = await new AzureBlobStorageAdapter(container)
+          .get('caves/1.html', { maxBytes: 9 })
+          .should.be.rejected();
+        should(err.code).equal('E_BOT_PAGE_TOO_LARGE');
+        should(download.readableStreamBody.destroy.calledOnce).be.true();
+        should(download.readableStreamBody.readableDidRead).be.false();
+      });
+
+      it('also stops a body longer than the length it announced', async () => {
+        const container = makeContainer();
+        const download = downloadOf('x'.repeat(10), 1);
+        container.blob.download = sinon.stub().resolves(download);
+        const err = await new AzureBlobStorageAdapter(container)
+          .get('caves/1.html', { maxBytes: 9 })
+          .should.be.rejected();
+        should(err.code).equal('E_BOT_PAGE_TOO_LARGE');
+      });
     });
 
     it('lists the names of the blobs', async () => {

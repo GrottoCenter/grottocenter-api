@@ -24,6 +24,7 @@ describe('BotPipelineService - the order, the stop rules and the run record', ()
   let BotPipelineService;
   let BotPageGeneratorService;
   let BotSitemapService;
+  let BotAuditService;
   let LocalStorageAdapter;
   let root;
   let adapter;
@@ -37,6 +38,7 @@ describe('BotPipelineService - the order, the stop rules and the run record', ()
     BotPipelineService = require('../../../api/services/bot/BotPipelineService');
     BotPageGeneratorService = require('../../../api/services/bot/BotPageGeneratorService');
     BotSitemapService = require('../../../api/services/bot/BotSitemapService');
+    BotAuditService = require('../../../api/services/bot/BotAuditService');
     ({ LocalStorageAdapter } = require('../../../api/services/bot/storage'));
     /* eslint-enable global-require */
   });
@@ -147,23 +149,72 @@ describe('BotPipelineService - the order, the stop rules and the run record', ()
       );
     });
 
-    it('records the audit as skipped while it is not implemented', async () => {
+    it('runs the real audit at step 6 with the start of the run, the adapter and the lock wait, and records its counts', async () => {
       stubSteps();
       BotPipelineService.steps.audit.restore();
+      const audit = sinon
+        .stub(BotAuditService, 'run')
+        .resolves({ pagesChecked: 4, failures: 1, publishing: true });
 
-      await run();
+      const result = await run({ audit: { variantSample: 3 } });
 
+      should(audit.calledOnce).be.true();
+      const [options] = audit.firstCall.args;
+      should(options.adapter).equal(adapter);
+      should(options.variantSample).equal(3);
+      should(options.retry).eql(RETRY);
+      should(options.sleep).equal(sleep);
       const record = await lastRecord();
-      should(record.counts.audit).eql({ skipped: 'not implemented' });
+      should(options.since).eql(record.started_at);
+      should(record.counts.audit).eql({
+        pagesChecked: 4,
+        failures: 1,
+        publishing: true,
+      });
+      should(result.counts.audit.failures).equal(1);
+    });
+
+    it('logs the publishing state and the audit totals in the final line', async () => {
+      stubSteps({ audit: { pagesChecked: 12, failures: 2 } });
       const info = sinon.spy(sails.log, 'info');
+
       await run();
-      should(
-        info
-          .getCalls()
-          .some((c) =>
-            /^bot-surface-nightly succeeded.*audit=skipped/.test(c.args[0])
-          )
-      ).be.true();
+
+      const line = info
+        .getCalls()
+        .map((c) => c.args[0])
+        .find((text) => text.startsWith('bot-surface-nightly succeeded'));
+      should(line).match(/auditChecked=12 auditFailures=2 publishing=on /);
+    });
+
+    it('shows publishing=OFF in the final line when the audit stopped it', async () => {
+      stubSteps();
+      await query(
+        "UPDATE t_bot_surface_state SET publishing = false, reason = 'test' WHERE id = 1"
+      );
+      const info = sinon.spy(sails.log, 'info');
+
+      try {
+        await run();
+      } finally {
+        await query(
+          'UPDATE t_bot_surface_state SET publishing = true, reason = NULL WHERE id = 1'
+        );
+      }
+
+      const line = info
+        .getCalls()
+        .map((c) => c.args[0])
+        .find((text) => text.startsWith('bot-surface-nightly succeeded'));
+      should(line).match(/publishing=OFF /);
+    });
+
+    it('does not fail the run for pages the audit deleted: only its own error does', async () => {
+      stubSteps({
+        audit: { pagesChecked: 3, failures: 3, publishingStopped: true },
+      });
+      await run();
+      should((await lastRecord()).status).equal('succeeded');
     });
   });
 

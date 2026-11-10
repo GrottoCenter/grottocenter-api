@@ -33,6 +33,8 @@ A violation is fixed by finding why the flag is wrong (a bulk write that moved c
 
 Production does not run migrations on deploy: apply the file by hand. It is idempotent and never resets `t_bot_config`.
 
+A fourth table, `t_bot_surface_state` (`sql/9_40_2026_11_09_bot_surface_state.sql`), is the publishing switch: one row (`id = 1`), `publishing`, `reason`, `updated_at`. See [Audit and the publishing stop](#audit-and-the-publishing-stop).
+
 ## Admission
 
 `bot_admit_pages()` (`sql/9_29_2026_10_29_bot_admit_pages.sql`) is step 3 of the nightly pipeline, after the text scan: the content rule reads the verdicts, so a description written or edited yesterday counts tonight, not tomorrow. It inserts into `t_bot_admission` the records that qualify for the first time and returns the number admitted per type. It runs entrances first, so a cave qualifies the night its entrance does. Every record must be live (not deleted, not merged) and at least `min_age_days` old, judged on the later of its inscription and review dates.
@@ -138,9 +140,9 @@ There is no name slug. The base URL is `sails.config.custom.botSurface.publicBas
 5. It publishes the static extras, and deletes static paths it no longer produces, except the sitemap files (`sitemap.xml`, `sitemap-*.xml.gz`): they are static rows too, owned by the sitemap step.
 6. The manifest is written **after** each successful upload or delete. A delete is `adapter.delete` then the manifest row removal, and deleting a path that is already gone is not an error. So a crash at any point leaves the manifest consistent with what is online, and at worst a page is uploaded again. When a call fails, nothing new is started and the calls in flight finish first, so the manifest also matches the adapter when the run rejects.
 
-It returns `{ uploaded, unchanged, deleted, byType }`. A blob deleted by hand while its manifest row remains is not noticed (the hash still matches): the audit (#1887) compares the adapter with the manifest.
+It returns `{ uploaded, unchanged, deleted, withheld, publishing, byType }`. A blob deleted by hand while its manifest row remains is not noticed by the generator (the hash still matches): the audit (#1887) reads the manifest's pages back and counts such a page as `missing`. With publishing off nothing is uploaded, see [Audit and the publishing stop](#audit-and-the-publishing-stop).
 
-**Storage adapters** (`api/services/bot/storage/`): one interface, `put(key, body, { metadata, contentType })`, `delete(key)`, `list()`. `body` is a string (written as UTF-8) or a `Buffer` (written as is: a gzip sitemap shard). `metadata` is an optional flat object of strings (`redirectto` on a redirect page) and replaces the page's previous metadata: a page put without any has none. `contentType` defaults to `text/html; charset=utf-8`; the local adapter has nowhere to keep it and ignores it.
+**Storage adapters** (`api/services/bot/storage/`): one interface, `put(key, body, { metadata, contentType })`, `get(key, { maxBytes })`, `delete(key)`, `list()`. `get` returns the page's bytes (a `Buffer`), `null` when there is none, and rejects with `E_BOT_PAGE_TOO_LARGE`, before reading the body, when it is over `maxBytes` (the audit reads pages back with it). `body` is a string (written as UTF-8) or a `Buffer` (written as is: a gzip sitemap shard). `metadata` is an optional flat object of strings (`redirectto` on a redirect page) and replaces the page's previous metadata: a page put without any has none. `contentType` defaults to `text/html; charset=utf-8`; the local adapter has nowhere to keep it and ignores it.
 
 - `LocalStorageAdapter`: a directory, for dev and tests. The metadata of `caves/1.html` is kept in the sidecar `caves/1.html.metadata.json`, which `list()` does not report and `delete()` removes. Writes through a temporary file (`*.part`) and a rename, and refuses a key outside the root. `list()` skips the temporary files a killed process can leave behind.
 - `AzureBlobStorageAdapter`: the `$web` container of an Azure Blob static website, through `@azure/storage-blob` (as `FileService`). It uploads with `Content-Type: text/html; charset=utf-8` (or the `contentType` given: `application/xml; charset=utf-8` for `sitemap.xml`, `application/gzip` for a shard) and the metadata as the blob's metadata (a Put Blob replaces the blob's metadata as a whole, so a page uploaded without any drops the `redirectto` it had; verified against a stubbed container only). The edge Worker forwards the blob's ETag and Last-Modified; the Worker never caches these pages, so no CDN purge is needed.
@@ -248,29 +250,30 @@ Hub pages (#1935) give every cave a crawlable parent at the SPA's own addresses:
 
 One pg-boss job, `bot-surface-nightly` (#1760), runs the six steps in order. `BotPipelineQueueService` (`api/services/BotPipelineQueueService.js`) schedules it, next to the other Node-side schedules (`SearchOutboxQueueService`, `DbExportQueueService`), and `BotPipelineService` (`api/services/bot/BotPipelineService.js`) holds the steps, the stop rules and the run record. `pg_cron` could not do this: one independent job per step cannot stop the next one, and several steps are Node code.
 
-| Step | Name         | What                                                                        | On failure                                                                                 |
-| ---- | ------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 1    | `invariant`  | `bot_cascade_check()`; a violation is a failure                             | **stop**; nothing is uploaded or deleted                                                   |
-| 2    | `scan`       | `BotTextScanService.run()`                                                  | **stop**                                                                                   |
-| 3    | `admission`  | `bot_admit_pages()`                                                         | **stop**                                                                                   |
-| 4    | `generation` | `BotPageGeneratorService.run({ adapter, entityTypes })`                     | **stop**; the manifest stays consistent with what is online                                |
-| 5    | `sitemaps`   | `BotSitemapService.run({ adapter, entityTypes })`                           | the previous sitemaps stay; the run is recorded as failed at step 5, and step 6 still runs |
-| 6    | `audit`      | **hook, not built yet** (#1887): records `{ "skipped": "not implemented" }` | handled by #1887                                                                           |
+| Step | Name         | What                                                                                                                             | On failure                                                                                 |
+| ---- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1    | `invariant`  | `bot_cascade_check()`; a violation is a failure                                                                                  | **stop**; nothing is uploaded or deleted                                                   |
+| 2    | `scan`       | `BotTextScanService.run()`                                                                                                       | **stop**                                                                                   |
+| 3    | `admission`  | `bot_admit_pages()`                                                                                                              | **stop**                                                                                   |
+| 4    | `generation` | `BotPageGeneratorService.run({ adapter, entityTypes })`                                                                          | **stop**; the manifest stays consistent with what is online                                |
+| 5    | `sitemaps`   | `BotSitemapService.run({ adapter, entityTypes })`                                                                                | the previous sitemaps stay; the run is recorded as failed at step 5, and step 6 still runs |
+| 6    | `audit`      | `BotAuditService.run({ adapter, since })`: reads pages back, see [Audit and the publishing stop](#audit-and-the-publishing-stop) | its own errors only; bad pages are deleted and counted, not a failure                      |
 
 **The order is the contract.** The scan runs before admission because the content rule reads the verdicts: a description written 30 days ago and scanned tonight counts for admission tonight. Admission runs before generation: a record that turns 30 days old tonight is published tonight. Both are tested end to end over real rows.
 
-**The audit hook.** Step 6 is `BotPipelineService.steps.audit`. #1887 replaces its body, returns its counts (pages audited, failures) and throws to fail the run; the orchestrator, the run table and the alert do not change.
+**The audit.** Step 6 is `BotPipelineService.steps.audit` (#1887). It always runs, whether or not publishing is on. It receives the start of the run (`t_bot_pipeline_run.started_at`, from the database clock) and audits every page uploaded since then. Pages it deletes are not a failure of the run; an error of its own (the adapter or the database cannot be read, the page lock stays held) is, and the usual stop rules apply.
 
 ### Configuration
 
-| Variable                   | Default      | Meaning                                                                                                                                                        |
-| -------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BOT_SURFACE_ENTITY_TYPES` | empty        | The allow-list, comma-separated among `cave`, `massif`, `organization`, `hub` (any case, any order). An unknown name stops the startup with the accepted ones. |
-| `BOT_SURFACE_ENABLED`      | `false`      | Turns on the **schedule** of the pipeline and the withdrawal worker. A manual run does not need it.                                                            |
-| `BOT_SURFACE_SCHEDULE`     | `30 1 * * *` | Cron expression, five fields, read in **UTC**. Validated at startup. **The default is provisional**: the real time is chosen from the traffic measurements.    |
-| `BOT_PAGES_STORAGE` et al. | `local`      | The storage adapter (see [The page generator](#the-page-generator)). The local driver is refused in production.                                                |
+| Variable                   | Default      | Meaning                                                                                                                                                                                             |
+| -------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BOT_SURFACE_ENTITY_TYPES` | empty        | The allow-list, comma-separated among `cave`, `massif`, `organization`, `hub` (any case, any order). An unknown name stops the startup with the accepted ones.                                      |
+| `BOT_SURFACE_ENABLED`      | `false`      | Turns on the **schedule** of the pipeline and the withdrawal worker. A manual run does not need it.                                                                                                 |
+| `BOT_SURFACE_SCHEDULE`     | `30 1 * * *` | Cron expression, five fields, read in **UTC**. Validated at startup. **The default is provisional**: the real time is chosen from the traffic measurements.                                         |
+| `BOT_PAGES_STORAGE` et al. | `local`      | The storage adapter (see [The page generator](#the-page-generator)). The local driver is refused in production.                                                                                     |
+| `BOT_AUDIT_*`              | see below    | The nightly audit: `BOT_AUDIT_SAMPLE_SIZE`, `BOT_AUDIT_FAILURE_LIMIT`, `BOT_AUDIT_VARIANT_SAMPLE`, `BOT_AUDIT_TIME_BUDGET_MS`. See [Audit and the publishing stop](#audit-and-the-publishing-stop). |
 
-`sails.config.custom.botSurface` holds them (`enabled`, `entityTypes`, `schedule`, `storage`), parsed by `api/utils/botSurfaceConfig.js`.
+`sails.config.custom.botSurface` holds them (`enabled`, `entityTypes`, `schedule`, `storage`, `audit`), parsed by `api/utils/botSurfaceConfig.js`.
 
 **Schedule.** The default, 01:30 UTC every day, avoids the other heavy jobs: `pg_cron` at 04:20 daily, 04:30 (bot outbox trim) and 04:40, 04:45, 04:50 every 3 days, and the database export on Sundays at 03:00. With `missed: 'once'`, a night the API was down is run once when it comes back, like the weekly export.
 
@@ -324,7 +327,7 @@ The queue has the `exclusive` policy: pg-boss keeps at most one `bot-surface-nig
 | `counts`         | jsonb, below                                                                                           |
 | `error`          | the code and message of the failure; `NULL` otherwise                                                  |
 
-`counts` holds: `trigger` (`schedule` or `manual`), `entityTypes`; `invariant` (`violations`, `overrides`); `scan` (`patternVersion`, **`scanned` and `quarantined` per source**, `t_description` and `t_name`, `errors`, `passes`); `admission` (**admitted tonight** per type, and `total`); `generation` (`uploaded`, `unchanged`, `deleted`, `byType`, and the pages online after the run: **`pages` and `redirects` per type**); `sitemaps` (`uploaded`, `unchanged`, `deleted`, `shards`, `urls`); `audit` (`{ "skipped": "not implemented" }` until #1887); `peakRssMb` (the API process's resident set, sampled every second during the run and after each step). A failed step holds `{ "failed": true }`, and the steps after a stop are absent.
+`counts` holds: `trigger` (`schedule` or `manual`), `entityTypes`; `invariant` (`violations`, `overrides`); `scan` (`patternVersion`, **`scanned` and `quarantined` per source**, `t_description` and `t_name`, `errors`, `passes`); `admission` (**admitted tonight** per type, and `total`); `generation` (`uploaded`, `unchanged`, `deleted`, `byType`, and the pages online after the run: **`pages` and `redirects` per type**); `sitemaps` (`uploaded`, `unchanged`, `deleted`, `shards`, `urls`); `audit` (see [Audit and the publishing stop](#audit-and-the-publishing-stop)); `peakRssMb` (the API process's resident set, sampled every second during the run and after each step). A failed step holds `{ "failed": true }`, and the steps after a stop are absent.
 
 **Retention.** Each run deletes the rows older than **one year** when it starts: about 365 small rows are kept, enough to see a trend, and the table needs no cron job.
 
@@ -340,7 +343,7 @@ SELECT coalesce(max(finished_at) < now() - interval '26 hours', true) AS stale
 
 ### Logs and the alert
 
-- Success, `info`: `bot-surface-nightly succeeded (run 42): admitted=17 scanned=212 quarantined=3 uploaded=120 deleted=4 unchanged=11050 sitemapUrls=11170 shards=5 audit=skipped peakRssMb=612.4 durationMs=184233`.
+- Success, `info`: `bot-surface-nightly succeeded (run 42): admitted=17 scanned=212 quarantined=3 uploaded=120 deleted=4 unchanged=11050 sitemapUrls=11170 shards=5 audit=done auditChecked=1120 auditFailures=0 publishing=on peakRssMb=612.4 durationMs=184233`. `publishing=OFF` after the audit stopped it (or when the state row is missing or unreadable).
 - Failure, one `error` line per failed step: `bot-surface-nightly failed at step <n> (<step label>): <message>`, with the error and its stack. `BotTextScanService` and the steps keep their own lines.
 - A run that waits for the lock logs an `info` line per attempt: `bot-surface-nightly: generation waits for the page lock (attempt 3 of 60)`.
 
@@ -393,6 +396,123 @@ The tables are empty in production until the first run, so the baseline **cannot
 
 If a full read of `v_bot_page` is too slow, materialize it: that changes how the pipeline reads, not the policy. If the first run comes close to `expireInSeconds`, raise it.
 
+## Audit and the publishing stop
+
+Every protection above sits on the input side and is tested on fixtures. Step 6 of the pipeline, `BotAuditService` (`api/services/bot/BotAuditService.js`, #1887), checks what is actually **online**: it reads pages **back from the storage adapter** (`adapter.get`), as crawlers see them, and judges them independently of how they were built. It also owns the **publishing switch**, `t_bot_surface_state`.
+
+### Which pages
+
+From `t_bot_page_manifest`, never the static rows (the sitemap files and `404.html`):
+
+1. **Every page uploaded tonight**: `published_at >=` the start of the run, redirect pages and hubs included, read by keyset on the path, 100 at a time.
+2. **A random sample of others** (`ORDER BY random() LIMIT`), `BOT_AUDIT_SAMPLE_SIZE` of them, 1,000 by default; as many as exist when there are fewer.
+
+Bounds: 4 pages in flight; each page capped at 2 MiB (a bigger one fails closed, reason `too-large`, without being read into memory); only the ids a batch refers to are held, never the HTML of a batch; a total **time budget** (`BOT_AUDIT_TIME_BUDGET_MS`, 30 minutes) after which no new batch starts and `truncated: true` is recorded instead of failing the run. The variant check has its own bound (below). The first night can upload about 12,000 pages: the duration of that first audit is **not measured** yet.
+
+### What is checked
+
+| Check             | Reason in the counts                                                      | How                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Coordinates       | `coordinates-body`, `coordinates-json-ld`                                 | `coordinateDetector.detect` (unchanged) over the page's text and over its JSON-LD. `api/utils/botAuditPage.js` shapes the input: tags dropped but **attribute values kept** (the meta description), comments kept, `<style>` dropped, **script contents kept**, entities decoded (`46°06&#39;08&quot;` is what the templates write), and each JSON-LD block read both as written and flattened to `key: value` lines so a `\u00b0` escape cannot hide a position and a labelled number keeps its label. |
+| Sensitive records | `sensitive-entrance`, `sensitive-massif`                                  | Every cave, massif, organization and entrance the page links to or carries (`/ui/caves/<id>`, a JSON-LD `@id`, ...) **and the page's own record** is looked up by id in the base tables, in batches.                                                                                                                                                                                                                                                                                                    |
+| Unfit records     | `no-public-entrance`, `merged-record`, `deleted-record`, `missing-record` | A cave with no public entrance (not sensitive, not deleted, not merged), a record merged, deleted or missing. A **redirect page** is about a merged record by definition: its own record is not checked, its target (the only record it links) is.                                                                                                                                                                                                                                                      |
+| Variant           | `variant-leak`                                                            | See below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+A page with several problems is reported once, by the first that applies (coordinates, then the most severe record reason).
+
+**The variant check** (`BOT_AUDIT_VARIANT_SAMPLE` addresses, 20 by default, `0` disables). The public SPA address of a random sample of published pages (redirect pages excluded) is requested with an **ordinary browser User-Agent**, two requests at a time, 500 ms apart, 10 s timeout each. The response must be the SPA shell: `<meta name="generator" content="gc-static-pages">` in it means a cache layer served the crawler variant to humans (the edge Worker, GrottoCenter/grottocenter-api#1933, exists to prevent exactly that), a failure. A **network error, a timeout or a non-2xx answer** says nothing about the page: it is counted in `variantUnreachable`, not logged as an error, and nothing is deleted for it. Not verified against the real site before launch. The test suite never reaches the network (`config/env/test.js` sets the sample to 0).
+
+### What a failure does
+
+1. The page is **deleted at once** through the adapter and its **manifest row removed** (a redirect page too), under the page lock (the withdrawal worker holds it for up to about 45 s per run; the audit waits, 2 s apart, up to 150 attempts). The sitemaps keep naming the page until the next night's step 5.
+2. One distinct `error` line, naming the page and the reason, never the matched text: `bot-surface-audit failure caves/123.html: coordinates-body (dms)`.
+3. **More than `BOT_AUDIT_FAILURE_LIMIT` failures in one run** (10 by default, `0` stops at the first) set `t_bot_surface_state.publishing = false` with a `reason` and `updated_at`, and log `bot-surface-audit publishing stopped: nightly audit <time>: 11 pages failed (limit 10): coordinates-body=11`. Exactly the limit does not stop publishing.
+
+### The run record
+
+`t_bot_pipeline_run.counts.audit`:
+
+```json
+{
+  "runAt": "2026-11-10T01:48:03.512Z",
+  "pagesChecked": 1120,
+  "uploadedChecked": 120,
+  "sampled": 1000,
+  "missing": 0,
+  "failures": 0,
+  "failuresByReason": {},
+  "variantChecked": 20,
+  "variantUnreachable": 0,
+  "truncated": false,
+  "publishingStopped": false,
+  "publishing": true,
+  "durationMs": 61234
+}
+```
+
+`missing` counts manifest rows with no file online (a warning, not a failure: nothing leaks). `publishing` is the state after the audit.
+
+### Publishing off
+
+`t_bot_surface_state` (`sql/9_40_2026_11_09_bot_surface_state.sql`): one row, `id = 1` enforced, `publishing boolean NOT NULL DEFAULT true`, `reason text`, `updated_at timestamptz`. **A missing row, or a table that cannot be read, counts as `publishing = false` (fail closed) and is logged** (`bot-surface-state: ... publishing is treated as OFF`). The migration is applied by hand in production (**production does not run migrations on deploy**) and must be applied before this code runs, or every step runs with publishing off.
+
+With `publishing = false` the generator (step 4), the sitemaps (step 5) and the withdrawal worker **upload nothing; deleting still works**:
+
+- **A page that would need an upload is deleted instead**: a new page is not uploaded; a page whose hash differs from the manifest's is **deleted** (file, then manifest row), because a changed page may be the reduced version of a withdrawal and the stale one must not stay online; an unchanged page stays. Records and types that left the view or the allow-list are deleted as always.
+- **404.html** carries no record data: a changed one is left as it is.
+- **Sitemaps**: a shard or an index whose content would change is not produced and is therefore **deleted** (the index first), so a sitemap never keeps naming a page that was deleted; a new shard is not uploaded; unchanged files stay. With nothing withdrawn, a stop leaves the sitemaps as they are.
+- **The audit itself always runs** and may delete.
+- The summaries of the generator, the sitemaps and the worker carry `publishing` and `withheld`; the pipeline's last log line shows `publishing=OFF`.
+
+An operator also uses it as the **off switch** of the launch runbook (#1888 links here): `UPDATE t_bot_surface_state SET publishing = false, reason = 'manual', updated_at = now() WHERE id = 1;`.
+
+### Resuming after an audit stop
+
+Read the reason and the failing pages first (below). Once the cause is fixed:
+
+```sql
+-- Why publishing stopped, and when
+SELECT publishing, reason, updated_at FROM t_bot_surface_state;
+-- The audit of the last runs
+SELECT id, started_at, counts->'audit' FROM t_bot_pipeline_run ORDER BY id DESC LIMIT 5;
+
+-- Resume
+UPDATE t_bot_surface_state SET publishing = true, reason = NULL, updated_at = now() WHERE id = 1;
+```
+
+The next nightly run (or the worker, within a minute) uploads again. The pages the audit deleted come back at the next run if they are still produced by the view, so **a template bug that is not fixed fails the audit again** the same night. The full launch runbook is #1888, which links to this section.
+
+### Logs and the alerts
+
+Both lines are `error` level, distinct and stable, to alert on (create the alerts in the infrastructure repository, like the other ones above):
+
+```kusto
+// Alert 3: the audit deleted a page. Fire when the result has a row. Evaluate every 15 minutes.
+AppServiceConsoleLogs
+| where TimeGenerated > ago(15m)
+| where ResultDescription has "bot-surface-audit failure"
+| project TimeGenerated, ResultDescription
+
+// Alert 4: publishing was stopped, by the audit or because the state row cannot be read.
+// Fire when the result has a row. Evaluate every 15 minutes.
+AppServiceConsoleLogs
+| where TimeGenerated > ago(15m)
+| where ResultDescription has "bot-surface-audit publishing stopped"
+    or ResultDescription has "bot-surface-state:"
+| project TimeGenerated, ResultDescription
+```
+
+### Configuration
+
+| Variable                   | Default   | Meaning                                                                         |
+| -------------------------- | --------- | ------------------------------------------------------------------------------- |
+| `BOT_AUDIT_SAMPLE_SIZE`    | `1000`    | Random pages audited besides tonight's uploads. Integer, 0 to 100000.           |
+| `BOT_AUDIT_FAILURE_LIMIT`  | `10`      | More failures than this in one run stop publishing. Integer, 0 or more.         |
+| `BOT_AUDIT_VARIANT_SAMPLE` | `20`      | Addresses requested as a browser. Integer, 0 (disabled) to 1000.                |
+| `BOT_AUDIT_TIME_BUDGET_MS` | `1800000` | Milliseconds after which the audit starts no new batch and records `truncated`. |
+
+An invalid value stops the startup, naming the variable.
+
 ## Withdrawals
 
 Pages are generated once a night. A change that must take a page down (an entrance marked sensitive, a massif turned sensitive, a record deleted or merged) cannot wait for it, so a worker removes or re-renders the affected pages within minutes (#1886). Publishing new pages stays nightly by design (admission, the text scan and the 30-day age gate).
@@ -412,6 +532,8 @@ Pages are generated once a night. A change that must take a page down (an entran
 4. **Per page**, re-reads `v_bot_page` by `(entity_type, entity_id)` (the same view as the nightly run), through the code the generator uses (`BotPublishService`): **row present** → render and upload when the hash differs from the manifest's; **no row but merged into a publishable target** (`v_bot_redirect`) → publish the redirect page like the generator; **neither** → delete the file, then the manifest row. It can never publish what the nightly run would not: same views, same renderer, same gates.
 5. **Delete the rows**, by the exact ids it read, only after every page of the batch is handled. A failure anywhere (storage down, database error, job aborted) leaves the batch in the outbox and the next run starts it again; everything above is idempotent. No new batch starts once the time budget is spent (the first batch of a run always completes).
 
+**Publishing off.** With `t_bot_surface_state.publishing = false` (or an unreadable state, which fails closed) the worker uploads nothing and still deletes: a page it would re-render is deleted when its hash differs from the manifest's, stays when unchanged, and is not uploaded when new; the outbox rows are handled and removed as usual. The state is read once per run, when the first batch is found. See [Audit and the publishing stop](#audit-and-the-publishing-stop).
+
 **Same bytes as the nightly run.** The render options (`languageTags`, `countryNames`, `hubLinks`, and `massifExtras` for a massif) and the page and manifest code are shared with the generator (`BotPublishService`, `BotHubService`), and a test compares the files the worker writes with the generator's byte for byte, breadcrumb links to a published hub included.
 
 **Hubs are left to the nightly run.** The worker never re-renders or deletes a hub page and never reads `v_bot_hub`, which rebuilds every published cave (far too heavy every minute). It only needs the hub KEYS, to link a page to the same hubs the nightly run does: it reads them from the manifest (`entity_type = 'hub'`), and finds the region hubs of a massif from the pages of its caves (`BotHubService.regionsOfMassifs`). So a hub may list a withdrawn cave's name until the next night; the cave's page and details are gone within minutes. The same goes for the sitemap shards (see [Sitemaps](#sitemaps)).
@@ -426,7 +548,7 @@ BotOutboxQueueService: run failed pending=12 oldestSeconds=95 durationMs=40 <err
 
 `pending` and `oldestSeconds` are what the outbox holds after the run (-1 when it could not be read): an `oldestSeconds` that keeps growing means the worker is stuck or skipping.
 
-**Known limit.** A crash between a page's upload and its manifest row leaves a page online that no manifest row names; neither the worker nor the nightly run removes it. The audit (#1887) compares the adapter with the manifest.
+**Known limit.** A crash between a page's upload and its manifest row leaves a page online that no manifest row names; neither the worker nor the nightly run removes it. The audit (#1887) starts from the manifest and does not list the adapter, so it does not find such an orphan either.
 
 ### Asking search engines to drop a page
 
