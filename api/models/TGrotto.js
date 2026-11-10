@@ -170,6 +170,15 @@ module.exports = {
       maxLength: 100,
     },
 
+    // Blob path of the uploaded avatar (#1730), set through
+    // PUT /organizations/:id/avatar only
+    avatarPath: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'avatar_path',
+      maxLength: 200,
+    },
+
     type: {
       type: 'string',
       allowNull: true,

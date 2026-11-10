@@ -1,0 +1,229 @@
+const should = require('should');
+const sinon = require('sinon');
+const sharp = require('sharp');
+
+const makeImage = (width, height, format = 'png') =>
+  sharp({
+    create: {
+      width,
+      height,
+      channels: 3,
+      background: { r: 10, g: 120, b: 200 },
+    },
+  })
+    [format]()
+    .toBuffer();
+
+describe('AvatarService', () => {
+  let AvatarService;
+  let FileService;
+  let originalCredentials;
+  let uploadData;
+  let deleteBlob;
+
+  before(() => {
+    // eslint-disable-next-line global-require
+    AvatarService = require('../../../api/services/AvatarService');
+    // The global is the instance the services call
+    ({ FileService } = global);
+    originalCredentials = FileService.getCredentialsForTest();
+    uploadData = sinon.stub().resolves();
+    deleteBlob = sinon.stub().resolves();
+    FileService.setCredentialsForTest({
+      documentsBlobClient: {
+        getBlockBlobClient: (blobPath) => ({
+          uploadData: async (buffer, options) =>
+            uploadData(blobPath, buffer, options),
+          delete: async (options) => deleteBlob(blobPath, options),
+        }),
+      },
+    });
+  });
+
+  beforeEach(() => {
+    uploadData.resetHistory();
+    deleteBlob.resetHistory();
+  });
+
+  after(() => {
+    FileService.setCredentialsForTest(originalCredentials);
+  });
+
+  describe('validateUpload', () => {
+    it('rejects a missing file', () => {
+      should(AvatarService.validateUpload(undefined)).be.a.String();
+    });
+
+    it('rejects an empty file', () => {
+      should(
+        AvatarService.validateUpload({ size: 0, buffer: Buffer.alloc(0) })
+      ).be.a.String();
+    });
+
+    it('rejects a file over the size limit', () => {
+      should(
+        AvatarService.validateUpload({
+          size: AvatarService.MAX_AVATAR_BYTES + 1,
+          buffer: Buffer.from('x'),
+        })
+      ).match(/5 MB/);
+    });
+
+    it('accepts a file within the size limit', () => {
+      should(
+        AvatarService.validateUpload({ size: 3, buffer: Buffer.from('abc') })
+      ).be.null();
+    });
+  });
+
+  describe('encode', () => {
+    it('re-encodes a large image as a square WebP', async () => {
+      const encoded = await AvatarService.encode(await makeImage(1200, 800));
+      const meta = await sharp(encoded).metadata();
+      should(meta.format).equal('webp');
+      should(meta.width).equal(AvatarService.AVATAR_SIZE);
+      should(meta.height).equal(AvatarService.AVATAR_SIZE);
+    });
+
+    it('does not enlarge a small image', async () => {
+      const encoded = await AvatarService.encode(
+        await makeImage(100, 80, 'jpeg')
+      );
+      const meta = await sharp(encoded).metadata();
+      should(meta.format).equal('webp');
+      should(meta.width).be.belowOrEqual(100);
+    });
+
+    it('rejects a file that is not an image', async () => {
+      await should(
+        AvatarService.encode(Buffer.from('not an image'))
+      ).be.rejectedWith({ code: AvatarService.INVALID_IMAGE });
+    });
+
+    it('rejects an SVG image', async () => {
+      const svg = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><script>alert(1)</script></svg>'
+      );
+      await should(AvatarService.encode(svg)).be.rejectedWith({
+        code: AvatarService.INVALID_IMAGE,
+      });
+    });
+
+    it('rejects a TIFF image', async () => {
+      await should(
+        AvatarService.encode(await makeImage(20, 20, 'tiff'))
+      ).be.rejectedWith({ code: AvatarService.INVALID_IMAGE });
+    });
+  });
+
+  describe('setAvatar / removeAvatar', () => {
+    const caverId = 1;
+
+    afterEach(async () => {
+      await TCaver.updateOne({ id: caverId }).set({ avatarPath: null });
+    });
+
+    it('stores the image and records its path', async () => {
+      const avatarPath = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(600, 600)
+      );
+      should(avatarPath).match(/^avatars\/cavers\/1-[0-9a-f]{16}\.webp$/);
+      should(uploadData.callCount).equal(1);
+      should(uploadData.firstCall.args[0]).equal(avatarPath);
+      should(
+        uploadData.firstCall.args[2].blobHTTPHeaders.blobContentType
+      ).equal('image/webp');
+      const caver = await TCaver.findOne({ id: caverId });
+      should(caver.avatarPath).equal(avatarPath);
+      should(deleteBlob.callCount).equal(0);
+    });
+
+    it('removes the previous image when it is replaced', async () => {
+      const first = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      const second = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      should(second).not.equal(first);
+      should(deleteBlob.callCount).equal(1);
+      should(deleteBlob.firstCall.args[0]).equal(first);
+    });
+
+    it('stores nothing when the image is rejected', async () => {
+      await should(
+        AvatarService.setAvatar('caver', caverId, Buffer.from('nope'))
+      ).be.rejectedWith({ code: AvatarService.INVALID_IMAGE });
+      should(uploadData.callCount).equal(0);
+    });
+
+    it('does not record a path when the upload fails', async () => {
+      uploadData.rejects(new Error('storage down'));
+      try {
+        await should(
+          AvatarService.setAvatar('caver', caverId, await makeImage(50, 50))
+        ).be.rejected();
+      } finally {
+        uploadData.resolves();
+      }
+      const caver = await TCaver.findOne({ id: caverId });
+      should(caver.avatarPath).be.null();
+    });
+
+    it('stores an organization avatar with the extra values', async () => {
+      const original = await TGrotto.findOne({ id: 1 });
+      try {
+        const avatarPath = await AvatarService.setAvatar(
+          'organization',
+          1,
+          await makeImage(50, 50),
+          { reviewer: 2 }
+        );
+        should(avatarPath).startWith('avatars/organizations/1-');
+        const organization = await TGrotto.findOne({ id: 1 });
+        should(organization.avatarPath).equal(avatarPath);
+        should(organization.reviewer).equal(2);
+      } finally {
+        await TGrotto.updateOne({ id: 1 }).set({
+          avatarPath: null,
+          reviewer: original.reviewer,
+        });
+      }
+    });
+
+    it('clears the path and removes the image', async () => {
+      const avatarPath = await AvatarService.setAvatar(
+        'caver',
+        caverId,
+        await makeImage(50, 50)
+      );
+      should(await AvatarService.removeAvatar('caver', caverId)).be.true();
+      should(deleteBlob.firstCall.args[0]).equal(avatarPath);
+      const caver = await TCaver.findOne({ id: caverId });
+      should(caver.avatarPath).be.null();
+    });
+
+    it('does nothing when there is no avatar to remove', async () => {
+      should(await AvatarService.removeAvatar('caver', caverId)).be.false();
+      should(deleteBlob.callCount).equal(0);
+    });
+  });
+
+  describe('getUrl', () => {
+    it('returns null without an avatar', () => {
+      should(AvatarService.getUrl(null)).be.null();
+    });
+
+    it('returns the public URL of the image', () => {
+      should(AvatarService.getUrl('avatars/cavers/1-ab.webp')).endWith(
+        '/documents/avatars/cavers/1-ab.webp'
+      );
+    });
+  });
+});

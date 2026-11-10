@@ -790,6 +790,14 @@ paths:
                     type: boolean
                   sendNotificationByEmail:
                     type: boolean
+                  customMessage:
+                    type: string
+                    nullable: true
+                    description: Short free-text message shown on the profile.
+                  avatarUrl:
+                    type: string
+                    nullable: true
+                    description: Public URL of the avatar, null when there is none.
         '401':
           description: Unauthorized — valid JWT required.
         '404':
@@ -830,6 +838,15 @@ paths:
                 nickname:
                   type: string
                   description: Nickname (display name, must be unique)
+                customMessage:
+                  type: string
+                  nullable: true
+                  maxLength: 500
+                  description: >
+                    Short free-text message shown on the profile. Line breaks
+                    are kept, other control characters are removed and the
+                    value is trimmed; the 500-character limit applies to the
+                    result. An empty string or `null` clears it.
                 sendNotificationByEmail:
                   allOf:
                     - $ref: '#/components/schemas/BooleanLike'
@@ -5794,6 +5811,67 @@ paths:
                 $ref: '#/components/schemas/Name'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  '/account/avatar':
+    put:
+      tags:
+        - account
+      summary: Set the authenticated user's avatar
+      description: >
+        Upload a new avatar for the authenticated user. It replaces the
+        previous one, which is removed. Each upload gets a new URL.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: >
+                    A JPEG, PNG, WebP or GIF image of at most 5 MB. It is
+                    re-encoded as a WebP image of at most 512×512 pixels
+                    (center-cropped to a square, first frame only, metadata
+                    removed).
+      responses:
+        '200':
+          description: The avatar is stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avatarUrl:
+                    type: string
+                    description: Public URL of the new avatar.
+        '400':
+          description: >
+            No file, an empty file, a file over 5 MB, or a file that is not a
+            JPEG, PNG, WebP or GIF image.
+        '401':
+          description: Unauthorized — valid JWT required.
+        '500':
+          description: The image could not be stored.
+    delete:
+      tags:
+        - account
+      summary: Remove the authenticated user's avatar
+      description: Remove the avatar of the authenticated user. Answers 204 whether or not there was one.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: The user has no avatar.
+        '401':
+          description: Unauthorized — valid JWT required.
+        '500':
+          description: The avatar could not be removed.
+
   '/account/password':
     patch:
       tags:
@@ -9182,6 +9260,86 @@ paths:
         404:
           description: Organization not found.
 
+  '/organizations/{id}/avatar':
+    put:
+      tags:
+        - organizations
+      summary: Set an organization's avatar
+      description: >
+        Upload a new avatar (logo) for an organization. Same rights as
+        updating the organization: any authenticated user. It replaces the
+        previous one, which is removed. Each upload gets a new URL.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: >
+                    A JPEG, PNG, WebP or GIF image of at most 5 MB. It is
+                    re-encoded as a WebP image of at most 512×512 pixels
+                    (center-cropped to a square, first frame only, metadata
+                    removed).
+      responses:
+        '200':
+          description: The avatar is stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avatarUrl:
+                    type: string
+                    description: Public URL of the new avatar.
+        '400':
+          description: >
+            No file, an empty file, a file over 5 MB, or a file that is not a
+            JPEG, PNG, WebP or GIF image.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Invalid id, or no non-deleted organization has this id.
+        '500':
+          description: The image could not be stored.
+    delete:
+      tags:
+        - organizations
+      summary: Remove an organization's avatar
+      description: >
+        Remove the avatar of an organization. Same rights as updating the
+        organization. Answers 204 whether or not there was one.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: The organization has no avatar.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Invalid id, or no non-deleted organization has this id.
+        '500':
+          description: The avatar could not be removed.
+
   '/organizations/{id}/restore':
     post:
       tags:
@@ -12145,6 +12303,14 @@ components:
             $ref: '#/components/schemas/Organization'
         surname:
           type: string
+        customMessage:
+          type: string
+          nullable: true
+          description: Short free-text message shown on the profile. Absent from search results.
+        avatarUrl:
+          type: string
+          nullable: true
+          description: Public URL of the avatar, null when there is none. Absent from search results.
 
     Comment:
       type: object
@@ -14132,6 +14298,12 @@ components:
             $ref: '#/components/schemas/Cave'
         pictureFileName:
           type: 'string'
+        avatarUrl:
+          type: string
+          nullable: true
+          description: >-
+            Public URL of the avatar set through PUT /organizations/{id}/avatar,
+            null when there is none. Absent from search results.
         postalCode:
           type: 'string'
         publishedCount:

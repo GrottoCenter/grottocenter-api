@@ -106,6 +106,23 @@ module.exports = {
       maxLength: 68,
     },
 
+    // Short free-text bio shown on the profile (#1730)
+    customMessage: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'custom_message',
+      maxLength: 500,
+    },
+
+    // Blob path of the uploaded avatar (#1730), set through
+    // PUT /account/avatar only
+    avatarPath: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'avatar_path',
+      maxLength: 200,
+    },
+
     mail: {
       type: 'string',
       allowNull: false,

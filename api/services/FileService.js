@@ -370,6 +370,60 @@ module.exports = {
     },
   },
 
+  // Avatars of cavers and organizations (#1730). They are stored in the
+  // documents container, which allows anonymous reads, under `avatars/`.
+  avatar: {
+    getUrl(filePath) {
+      return module.exports.document.getUrl(filePath);
+    },
+
+    /**
+     * Store an already encoded avatar image.
+     * @param {Buffer} buffer - The image to store
+     * @param {string} blobPath - e.g. 'avatars/cavers/12-abcd.webp'
+     * @param {string} mimeType - The content type served with the image
+     * @throws {FileError} ERROR_DURING_UPLOAD_TO_AZURE
+     */
+    async upload(buffer, blobPath, mimeType) {
+      if (!credentials) {
+        const localPath = path.join(LOCAL_DOCUMENTS_DIR, blobPath);
+        fs.mkdirSync(path.dirname(localPath), { recursive: true });
+        fs.writeFileSync(localPath, buffer);
+        sails.log.info(`[Local Storage] Avatar saved: ${localPath}`);
+        return;
+      }
+      try {
+        await credentials.documentsBlobClient
+          .getBlockBlobClient(blobPath)
+          .uploadData(buffer, {
+            blobHTTPHeaders: { blobContentType: mimeType },
+          });
+      } catch (err) {
+        sails.log.error(`Avatar upload of ${blobPath} failed:`, err);
+        throw new FileError(ERROR_DURING_UPLOAD_TO_AZURE, blobPath);
+      }
+    },
+
+    /**
+     * Remove a stored avatar. Best effort: a failure is logged, not thrown,
+     * as the database no longer references the image.
+     * @param {string} blobPath
+     */
+    async delete(blobPath) {
+      try {
+        if (!credentials) {
+          fs.rmSync(path.join(LOCAL_DOCUMENTS_DIR, blobPath), { force: true });
+          return;
+        }
+        await credentials.documentsBlobClient
+          .getBlockBlobClient(blobPath)
+          .delete({ deleteSnapshots: 'include' });
+      } catch (err) {
+        sails.log.error(`Failed to delete avatar blob ${blobPath}:`, err);
+      }
+    },
+  },
+
   dbExport: {
     getUrl(filePath, expiresOnMs) {
       if (!credentials) {

@@ -1,3 +1,4 @@
+const AvatarService = require('../../../services/AvatarService');
 const ControllerService = require('../../../services/ControllerService');
 
 module.exports = async (req, res) => {
@@ -19,6 +20,8 @@ module.exports = async (req, res) => {
     mailIsValid: caver.mailIsValid,
     sendNotificationByEmail: caver.sendNotificationByEmail,
     mfaEnabled: caver.mfaEnabled || false,
+    customMessage: caver.customMessage ?? null,
+    avatarUrl: AvatarService.getUrl(caver.avatarPath),
   };
 
   const params = { controllerMethod: 'AccountController.find' };

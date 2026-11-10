@@ -35,6 +35,16 @@ const extractCountryId = (regionId) => {
   return dash > 0 ? regionId.slice(0, dash) : null;
 };
 
+// Public URL of an avatar (#1730): null when there is none, undefined when
+// the source does not carry the field (e.g. a search result), so the key is
+// left out of the response rather than reported as "no avatar".
+const avatarUrlOf = (source) => {
+  if (source.avatarPath === undefined) return undefined;
+  return source.avatarPath
+    ? FileService.avatar.getUrl(source.avatarPath)
+    : null;
+};
+
 const c = {
   toCave: (source, meta) => {
     const result = {
@@ -106,6 +116,10 @@ const c = {
       nickname: source.nickname,
       surname: source.surname,
       name: source.name,
+      // Profile personalization (#1730): only set when the source carries
+      // them (a search result does not)
+      customMessage: source.customMessage,
+      avatarUrl: avatarUrlOf(source),
       // Real total behind the capped `documents` preview below. Cavers cannot
       // be a document's editor (that relation is organization-only), so there
       // is no publishedCount counterpart.
@@ -887,6 +901,7 @@ const c = {
     customMessage: source.customMessage,
     isOfficialPartner: source.isOfficialPartner,
     pictureFileName: source.pictureFileName,
+    avatarUrl: avatarUrlOf(source),
     yearBirth: source.yearBirth,
     nbCavers: source.nbCavers, // From search
     cavers: toList('cavers', source, c.toSimpleCaver),

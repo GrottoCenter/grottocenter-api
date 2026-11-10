@@ -30,6 +30,8 @@ module.exports.policies = {
   'v1/account/find': 'tokenAuth',
   'v1/account/update': 'tokenAuth',
   'v1/account/change-password': true,
+  'v1/account/update-avatar': 'tokenAuth',
+  'v1/account/delete-avatar': 'tokenAuth',
   'v1/account/forgot-password': true,
   'v1/account/get-notifications': 'tokenAuth',
   'v1/account/update-notifications': 'tokenAuth',
@@ -284,6 +286,8 @@ module.exports.policies = {
   'v1/organization/delete': ['validateId', 'tokenAuth'],
   'v1/organization/restore': 'tokenAuth',
   'v1/organization/update': 'tokenAuth',
+  'v1/organization/update-avatar': ['validateId', 'tokenAuth'],
+  'v1/organization/delete-avatar': ['validateId', 'tokenAuth'],
 
   // Device
   'v1/device/find': ['validateId'],

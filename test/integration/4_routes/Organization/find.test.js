@@ -12,6 +12,7 @@ const ORGANIZATION_PROPERTIES = [
   'id',
   'address',
   'authoredCount',
+  'avatarUrl',
   'authoredDocuments',
   'publishedCount',
   'publishedDocuments',

@@ -64,6 +64,8 @@ module.exports.routes = {
   'GET /api/v1/account': 'v1/account/find',
   'PATCH /api/v1/account': 'v1/account/update',
   'PATCH /api/v1/account/password': 'v1/account/change-password',
+  'PUT /api/v1/account/avatar': 'v1/account/update-avatar',
+  'DELETE /api/v1/account/avatar': 'v1/account/delete-avatar',
   'GET /api/v1/account/notifications': 'v1/account/get-notifications',
   'PATCH /api/v1/account/notifications': 'v1/account/update-notifications',
   'POST /api/v1/forgotPassword': 'v1/account/forgot-password',
@@ -237,6 +239,8 @@ module.exports.routes = {
   'PUT /api/v1/organizations/:id': 'v1/organization/update',
   'DELETE /api/v1/organizations/:id': 'v1/organization/delete',
   'POST /api/v1/organizations/:id/restore': 'v1/organization/restore',
+  'PUT /api/v1/organizations/:id/avatar': 'v1/organization/update-avatar',
+  'DELETE /api/v1/organizations/:id/avatar': 'v1/organization/delete-avatar',
 
   /**
    * @deprecated use /v1/organizations route above instead
