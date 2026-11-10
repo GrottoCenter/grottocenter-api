@@ -1073,6 +1073,13 @@ const BOT_PIPELINE_RUN_MIGRATION = forTestDatabase(
   )
 );
 
+const BOT_SURFACE_STATE_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_40_2026_11_09_bot_surface_state.sql'),
+    'utf8'
+  )
+);
+
 // t_avatar_pending_deletion (the t_caver and t_grotto columns of the same file
 // already come from the models). The test DB has no gc_app role either.
 const PROFILE_PERSONALIZATION_MIGRATION = forTestDatabase(
@@ -1204,6 +1211,7 @@ module.exports = {
   BOT_HUB_MIGRATION,
   BOT_OUTBOX_MIGRATION,
   BOT_PIPELINE_RUN_MIGRATION,
+  BOT_SURFACE_STATE_MIGRATION,
   PROFILE_PERSONALIZATION_MIGRATION,
   POINT_GEOM_MIGRATION,
   ATTACH_GROTTO_HISTO_TRIGGER,
