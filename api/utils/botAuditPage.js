@@ -14,10 +14,16 @@
  *                                  46°06&#39;08&quot;). The <style> blocks are
  *                                  dropped (CSS is not content);
  *                          jsonLd  every JSON-LD block (and any other script),
- *                                  as written AND flattened to `key: value`
- *                                  lines, so a JSON escape (°) cannot hide
+ *                                  flattened to `key: value` lines, one per
+ *                                  value, so a JSON escape (°) cannot hide
  *                                  a coordinate and a labelled number keeps its
- *                                  label. The detector itself is untouched.
+ *                                  label (a list of numbers, a GeoJSON pair, on
+ *                                  one line). Not the JSON as written, which
+ *                                  would join unrelated fields with quotes and
+ *                                  commas into text that is nowhere on the page
+ *                                  (`utm`, then a name, a city and a region).
+ *                                  A script that is not JSON is read as text.
+ *                                  The detector itself is untouched.
  *   recordRefs(html, baseUrl)
  *                        the cave, massif, organization and entrance ids the
  *                        page links to or carries: the `href` values and the
@@ -29,6 +35,20 @@
  *                        "/caves/12" in a description) and the links marked
  *                        rel="nofollow ugc", which a contributor typed (the
  *                        website of an organization).
+ *   scan(html)           the one pass both of them read from.
+ *
+ * The markup is read by ONE hand-written pass (`scan`), the way the HTML
+ * specification's tokenizer reads it: a quote opens an attribute value only
+ * right after `=`, a `>` inside a quoted value does not end the tag, an
+ * apostrophe in an unquoted value is part of it, the first occurrence of an
+ * attribute is the one that counts, and `<script>` and `<style>` hold raw text
+ * up to their end tag. It is linear: every character is looked at a bounded
+ * number of times, whatever the page, so a page that is not well formed (many
+ * `<` and no `>`, quotes that never close) cannot take the audit's time, which a
+ * synchronous regular expression would not let `BOT_AUDIT_TIME_BUDGET_MS`
+ * interrupt. A tag or a script that is still open at the end of the page is
+ * reported as `unreadable`: the generator never writes one, and the audit
+ * fails such a page (`unreadable-markup`) rather than guess what it holds.
  */
 
 const NAMED_ENTITIES = Object.freeze({
@@ -58,18 +78,21 @@ const decodeEntities = (text) =>
       : whole;
   });
 
-// A closing tag is `</script` followed by anything up to `>` (`</script\t\n bar>`
-// closes a script for a browser)
-const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script[^>]*>/gi;
-const STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi;
-const COMMENT_RE = /<!--([\s\S]*?)-->/g;
-const TAG_RE = /<[a-z!/?][^>]*>/gi;
-const ATTRIBUTE_RE = /\s[^\s=/>]+\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
+// Case-insensitive end tags of the raw text elements; the search starts at
+// lastIndex, so each element costs the distance it spans, once
+const SCRIPT_END_RE = /<\/script/gi;
+const STYLE_END_RE = /<\/style/gi;
+const WHITESPACE = /[\t\n\f\r ]/;
 
-// `key: value` for each leaf of a parsed JSON document, one per line
+// `key: value` for each leaf of a parsed JSON document, one per line. A list of
+// numbers is one line, so a pair written as an array ([6.5, 46.1]) stays a pair
 const flatten = (value, key, lines) => {
   if (Array.isArray(value)) {
-    value.forEach((item) => flatten(item, key, lines));
+    if (value.length > 1 && value.every((item) => typeof item === 'number')) {
+      lines.push(`${key}: ${value.join(', ')}`);
+    } else {
+      value.forEach((item) => flatten(item, key, lines));
+    }
   } else if (value !== null && typeof value === 'object') {
     Object.entries(value).forEach(([k, v]) => flatten(v, k, lines));
   } else if (value !== null && value !== undefined) {
@@ -77,27 +100,178 @@ const flatten = (value, key, lines) => {
   }
 };
 
+// The lines of a JSON script, or null when it is not JSON
 const flattenedJson = (raw) => {
   try {
     const lines = [];
     flatten(JSON.parse(raw), '', lines);
     return lines.join('\n');
   } catch {
-    // Not JSON: the raw text is checked anyway
-    return '';
+    return null;
   }
 };
 
-// The text of a tag: a space, then the values of its attributes
-const tagText = (tag) => {
-  const values = [];
-  let match = ATTRIBUTE_RE.exec(tag);
-  while (match) {
-    values.push(match[1] ?? match[2] ?? match[3]);
-    match = ATTRIBUTE_RE.exec(tag);
+/**
+ * Reads the attributes of a tag whose name ended at `from` (the character there
+ * is whitespace, `/` or `>`). Returns where the tag ends (the index after `>`),
+ * the attributes in order, and whether the page ended inside the tag.
+ */
+const readAttributes = (html, from) => {
+  const n = html.length;
+  const attributes = [];
+  let i = from;
+  for (;;) {
+    while (i < n && (WHITESPACE.test(html[i]) || html[i] === '/')) i += 1;
+    if (i >= n) return { end: n, attributes, unreadable: true };
+    if (html[i] === '>') return { end: i + 1, attributes, unreadable: false };
+    // The name: up to whitespace, `/`, `>` or `=` (a leading `=` is part of it)
+    const nameStart = i;
+    i += 1;
+    while (
+      i < n &&
+      !WHITESPACE.test(html[i]) &&
+      html[i] !== '/' &&
+      html[i] !== '>' &&
+      html[i] !== '='
+    ) {
+      i += 1;
+    }
+    const name = html.slice(nameStart, i).toLowerCase();
+    while (i < n && WHITESPACE.test(html[i])) i += 1;
+    let value = '';
+    if (html[i] === '=') {
+      i += 1;
+      while (i < n && WHITESPACE.test(html[i])) i += 1;
+      const quote = html[i];
+      if (quote === '"' || quote === "'") {
+        const close = html.indexOf(quote, i + 1);
+        if (close === -1) {
+          attributes.push([name, decodeEntities(html.slice(i + 1))]);
+          return { end: n, attributes, unreadable: true };
+        }
+        value = html.slice(i + 1, close);
+        i = close + 1;
+      } else {
+        const valueStart = i;
+        while (i < n && !WHITESPACE.test(html[i]) && html[i] !== '>') i += 1;
+        value = html.slice(valueStart, i);
+      }
+    }
+    attributes.push([name, decodeEntities(value)]);
   }
-  ATTRIBUTE_RE.lastIndex = 0;
-  return ` ${values.join(' ')} `;
+};
+
+const firstOf = (attributes, name) => {
+  const found = attributes.find(([attribute]) => attribute === name);
+  return found ? found[1] : undefined;
+};
+
+/**
+ * One linear pass over a page.
+ *
+ * @param {string} html
+ * @returns {{
+ *   text: string,        the text of the page and the values of its attributes,
+ *                        comments kept, <script> and <style> left out, entities
+ *                        not decoded yet
+ *   scripts: string[],   the content of every <script>
+ *   hrefs: string[],     the href of every tag, except rel="nofollow ugc" ones
+ *   unreadable: boolean  markup that cannot be trusted: a tag, a comment or a
+ *                        script still open at the end, or a bogus comment
+ * }}
+ */
+const scan = (html) => {
+  const n = html.length;
+  const text = [];
+  const scripts = [];
+  const links = [];
+  let unreadable = false;
+  let i = 0;
+  while (i < n) {
+    const lt = html.indexOf('<', i);
+    if (lt === -1) {
+      text.push(html.slice(i));
+      break;
+    }
+    text.push(html.slice(i, lt));
+    const next = html[lt + 1];
+    if (html.startsWith('<!--', lt)) {
+      const end = html.indexOf('-->', lt + 4);
+      text.push(`\n${html.slice(lt + 4, end === -1 ? n : end)}\n`);
+      if (end === -1) unreadable = true;
+      i = end === -1 ? n : end + 3;
+    } else if (next !== undefined && /[a-zA-Z]/.test(next)) {
+      let nameEnd = lt + 1;
+      while (
+        nameEnd < n &&
+        !WHITESPACE.test(html[nameEnd]) &&
+        html[nameEnd] !== '/' &&
+        html[nameEnd] !== '>'
+      ) {
+        nameEnd += 1;
+      }
+      const name = html.slice(lt + 1, nameEnd).toLowerCase();
+      const tag = readAttributes(html, nameEnd);
+      if (tag.unreadable) unreadable = true;
+      i = tag.end;
+      if ((name === 'script' || name === 'style') && !tag.unreadable) {
+        // Raw text up to the end tag, or to the end of the page
+        const endRe = name === 'script' ? SCRIPT_END_RE : STYLE_END_RE;
+        endRe.lastIndex = i;
+        const found = endRe.exec(html);
+        const contentEnd = found ? found.index : n;
+        if (name === 'script') scripts.push(html.slice(i, contentEnd));
+        text.push('\n');
+        if (found) {
+          const close = html.indexOf('>', found.index);
+          if (close === -1) unreadable = true;
+          i = close === -1 ? n : close + 1;
+        } else {
+          unreadable = true;
+          i = n;
+        }
+      } else {
+        const values = tag.attributes.map(([, value]) => value);
+        text.push(` ${values.join(' ')} `);
+        const href = firstOf(tag.attributes, 'href');
+        const rel = firstOf(tag.attributes, 'rel');
+        if (href !== undefined && !/(^|\s)ugc(\s|$)/i.test(rel ?? '')) {
+          links.push(href);
+        }
+      }
+    } else if (next === '/' && /[a-zA-Z]/.test(html[lt + 2] ?? '')) {
+      // An end tag: read like a start tag (a `>` inside a quoted value does not
+      // end it), nothing to keep
+      let nameEnd = lt + 2;
+      while (
+        nameEnd < n &&
+        !WHITESPACE.test(html[nameEnd]) &&
+        html[nameEnd] !== '/' &&
+        html[nameEnd] !== '>'
+      ) {
+        nameEnd += 1;
+      }
+      const tag = readAttributes(html, nameEnd);
+      if (tag.unreadable) unreadable = true;
+      text.push(' ');
+      i = tag.end;
+    } else if (next === '!' || next === '/' || next === '?') {
+      // A doctype is fine. Anything else here is a "bogus comment" (`<!x>`,
+      // `<?x?>`, `</ >`): a browser drops it up to the next `>`, which can be
+      // the start of a real tag, and other readers disagree about it. The
+      // generator never writes one: it is unreadable
+      const close = html.indexOf('>', lt + 2);
+      if (!/^<!doctype[\s>]/i.test(html.slice(lt, lt + 10))) unreadable = true;
+      text.push(' ');
+      if (close === -1) unreadable = true;
+      i = close === -1 ? n : close + 1;
+    } else {
+      // A `<` that opens nothing is text
+      text.push('<');
+      i = lt + 1;
+    }
+  }
+  return { text: text.join(''), scripts, hrefs: links, unreadable };
 };
 
 /**
@@ -105,19 +279,16 @@ const tagText = (tag) => {
  * @returns {{ body: string, jsonLd: string }}
  */
 const detectionText = (html) => {
-  const scripts = [];
-  const withoutScripts = html.replace(SCRIPT_RE, (whole, attributes, code) => {
-    scripts.push(code);
-    scripts.push(flattenedJson(code));
-    return '\n';
+  const page = scan(html);
+  // JSON as its lines; anything else as the text it is
+  const jsonLd = page.scripts.map((code) => {
+    const lines = flattenedJson(code);
+    return lines === null ? code : lines;
   });
-  const body = decodeEntities(
-    withoutScripts
-      .replace(STYLE_RE, '\n')
-      .replace(COMMENT_RE, '\n$1\n')
-      .replace(TAG_RE, tagText)
-  );
-  return { body, jsonLd: scripts.map(decodeEntities).join('\n') };
+  return {
+    body: decodeEntities(page.text),
+    jsonLd: jsonLd.map(decodeEntities).join('\n'),
+  };
 };
 
 const TYPE_BY_DIRECTORY = Object.freeze({
@@ -128,63 +299,9 @@ const TYPE_BY_DIRECTORY = Object.freeze({
 });
 const MAX_ID = 2147483647;
 const ID_KEY = '@id';
-// Three scans of the page for tags, whose hrefs are UNIONED, because each fails
-// on a case the others read:
-//   - OPENING_TAG_RE treats a quote anywhere as a delimiter, so a raw `>` in
-//     `title="a > b"` does not end the tag; with an unbalanced quote in an
-//     unquoted value (`title=don't`, accepted by browsers) it fails to match or
-//     swallows tags up to the next quote;
-//   - SIMPLE_TAG_RE ends a tag at the first `>`: right for a stray quote, wrong
-//     for a `>` in a value;
-//   - VALUE_TAG_RE is how a browser reads it: a quote opens a value only right
-//     after `=`, and a `=` not followed by a closed quote is a plain character.
-//     It reads a tag that has both problems. Its alternatives are disjoint (the
-//     lookahead keeps a `=` out of the last one when a quoted value follows),
-//     so it cannot backtrack exponentially on a page that is not well formed.
-// The union can only add a reference (a false positive deletes a page), never
-// hide one. Tags without an href are dropped by hrefs().
-const OPENING_TAG_RE = /<[a-z](?:[^>"']|"[^"]*"|'[^']*')*>/gi;
-const SIMPLE_TAG_RE = /<[a-z][^>]*>/gi;
-const VALUE_TAG_RE =
-  /<[a-z](?:=\s*"[^"]*"|=\s*'[^']*'|[^>=]|=(?!\s*(?:"[^"]*"|'[^']*')))*>/gi;
-const NAME_VALUE_RE =
-  /\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
-
-// The attributes of a tag as { name: decoded value }, names in lower case
-const attributesOf = (tag) => {
-  const found = {};
-  NAME_VALUE_RE.lastIndex = 0;
-  let match = NAME_VALUE_RE.exec(tag);
-  while (match) {
-    const name = match[1].toLowerCase();
-    // The first occurrence of an attribute is the one a browser uses
-    if (!(name in found)) {
-      found[name] = decodeEntities(match[2] ?? match[3] ?? match[4]);
-    }
-    match = NAME_VALUE_RE.exec(tag);
-  }
-  NAME_VALUE_RE.lastIndex = 0;
-  return found;
-};
-
-// The `href` of every tag of the page, except the links a contributor wrote:
-// the generator marks those rel="nofollow ugc" (the website of an
-// organization is typed by a user and may well be an address of the SPA)
-const hrefs = (html) => {
-  const found = [];
-  [OPENING_TAG_RE, SIMPLE_TAG_RE, VALUE_TAG_RE].forEach((tagRe) => {
-    (html.match(tagRe) || []).forEach((tag) => {
-      const { href, rel } = attributesOf(tag);
-      if (href === undefined) return;
-      if (/(^|\s)ugc(\s|$)/i.test(rel ?? '')) return;
-      found.push(href);
-    });
-  });
-  return found;
-};
 
 // Every `@id` string of the JSON-LD blocks
-const jsonLdIds = (html) => {
+const jsonLdIds = (scripts) => {
   const found = [];
   const walk = (value, key) => {
     if (Array.isArray(value)) value.forEach((item) => walk(item, key));
@@ -192,13 +309,12 @@ const jsonLdIds = (html) => {
       Object.entries(value).forEach(([k, v]) => walk(v, k));
     } else if (key === ID_KEY && typeof value === 'string') found.push(value);
   };
-  html.replace(SCRIPT_RE, (whole, attributes, code) => {
+  scripts.forEach((code) => {
     try {
       walk(JSON.parse(code), '');
     } catch {
       // Not JSON: no reference to read (the text is still checked for coordinates)
     }
-    return whole;
   });
   return found;
 };
@@ -222,8 +338,9 @@ const recordRefs = (html, baseUrl) => {
   );
   const found = { cave: [], massif: [], organization: [], entrance: [] };
   let foreign = 0;
-  // Distinct values: the two scans of the tags can read the same href twice
-  new Set([...hrefs(html), ...jsonLdIds(html)]).forEach((value) => {
+  const page = scan(html);
+  // Distinct values: a link can be written twice
+  new Set([...page.hrefs, ...jsonLdIds(page.scripts)]).forEach((value) => {
     let url;
     try {
       url = new URL(value, base);
@@ -245,4 +362,4 @@ const recordRefs = (html, baseUrl) => {
   return { ...found, foreign };
 };
 
-module.exports = { detectionText, recordRefs, decodeEntities };
+module.exports = { detectionText, recordRefs, decodeEntities, scan };

@@ -95,6 +95,7 @@ const REASONS = Object.freeze({
   DELETED_RECORD: 'deleted-record',
   MISSING_RECORD: 'missing-record',
   TOO_LARGE: 'too-large',
+  UNREADABLE_MARKUP: 'unreadable-markup',
   VARIANT_LEAK: 'variant-leak',
 });
 const RECORD_REASON_PRIORITY = [
@@ -230,6 +231,12 @@ async function readPages(
       return;
     }
     const html = body.toString('utf8');
+    // A tag, a comment or a script still open at the end of the page: the
+    // generator never writes one, and what it holds cannot be told
+    if (botAuditPage.scan(html).unreadable) {
+      results.push({ row, failure: { reason: REASONS.UNREADABLE_MARKUP } });
+      return;
+    }
     results.push({
       row,
       failure: coordinateFailure(html),

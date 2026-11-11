@@ -128,6 +128,31 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(shaped.body).containEql('text');
     });
 
+    it('keeps a pair written as an array on one line, so GeoJSON coordinates are still found', () => {
+      const html = page({
+        jsonLd: '{"geo":{"coordinates":[6.51234,46.10222]}}',
+      });
+      should(botAuditPage.detectionText(html).jsonLd).containEql(
+        'coordinates: 6.51234, 46.10222'
+      );
+      should(verdicts(html).jsonLd.matched).be.true();
+    });
+
+    it('does not join the fields of a JSON-LD block into one text', () => {
+      const html = page({
+        jsonLd:
+          '{"name":"utmà","city":"0.1","county":"aà","region":"10000 aa"}',
+      });
+      const { jsonLd } = botAuditPage.detectionText(html);
+      should(jsonLd.split('\n')).eql([
+        'name: utmà',
+        'city: 0.1',
+        'county: aà',
+        'region: 10000 aa',
+      ]);
+      should(verdicts(html).jsonLd.matched).be.false();
+    });
+
     it('does not throw on JSON-LD that is not JSON, and still reads it as text', () => {
       const html = page({ jsonLd: '{broken, "latitude": 46.1' });
       should(verdicts(html).jsonLd.matched).be.true();
@@ -258,6 +283,47 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(refs.cave).eql([]);
     });
 
+    it('reports markup that cannot be read: a tag, a comment, a script or a style still open at the end of the page, a bogus comment', () => {
+      [
+        '<a href="/ui/caves/1"',
+        '<a href="/ui/caves/1',
+        '<p>text<!-- never closed',
+        '<script>{"a":1}',
+        '<style>a{color:red}',
+        '<a title="x > y" href=/ui/caves/1',
+        '</p',
+        '<!DOCTYPE html',
+        '<!x> <a href="/ui/caves/1">',
+        '<?php echo 1 ?>',
+        '</ ><a href="/ui/caves/1">',
+        '<!-',
+      ].forEach((html) =>
+        should(botAuditPage.scan(html).unreadable).equal(true, html)
+      );
+      [
+        '<a href="/ui/caves/1">x</a>',
+        '<script>{"a":1}</script>',
+        '<script>{"a":1}</SCRIPT\t\n bar>',
+        '<style>a{}</style foo>',
+        '<p>1 < 2 and a<3</p>',
+        '<!-- c -->',
+        '<!DOCTYPE html><html></html>',
+        '<!doctype html>',
+        '</p title=">">',
+      ].forEach((html) =>
+        should(botAuditPage.scan(html).unreadable).equal(false, html)
+      );
+    });
+
+    it('reads a script and a style as raw text up to their end tag, in any case', () => {
+      const html =
+        '<p>a</p><SCRIPT type="application/ld+json">{"x":"<a href=/ui/caves/7>"}</Script ><STYLE>b{}</STYLE><a href="/ui/caves/8">k</a>';
+      const scanned = botAuditPage.scan(html);
+      should(scanned.scripts).eql(['{"x":"<a href=/ui/caves/7>"}']);
+      // The `<a href=/ui/caves/7>` inside the script is text, not a link
+      should(scanned.hrefs).eql(['/ui/caves/8']);
+    });
+
     it('takes the first occurrence of an attribute, as a browser does', () => {
       const html = page({
         body: '<a href="/ui/caves/5" href="/ui/caves/6">a</a>',
@@ -265,32 +331,42 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(botAuditPage.recordRefs(html, BASE).cave).eql([5]);
     });
 
-    it('does not backtrack on a page that is not well formed: a long run of = and quotes is read in linear time', () => {
-      // In a child process with a timeout: a regex that backtracks
-      // exponentially never returns, and in this process it would hang the
-      // whole run instead of failing the test
+    it('reads a page that is not well formed in linear time: many tag starts with no end, quotes that never close, unclosed scripts, styles and comments', () => {
+      // In a child process with a timeout: a scan that goes quadratic (or a
+      // regex that backtracks) would hold the whole run, and nothing in this
+      // process could interrupt it
       const script = `
-        const { recordRefs } = require(${JSON.stringify(
+        const botAuditPage = require(${JSON.stringify(
           path.join(__dirname, '../../../api/utils/botAuditPage')
         )});
-        ['  ="a"', " ='", ' ="', '="="', ' =  "a" =\\'b'].forEach((unit) => {
-          recordRefs('<a' + unit.repeat(20000), 'https://grottocenter.org/ui');
+        const units = [
+          '<a ="a"', '<a href="x', "<a href='x", '<', '<a', '<a =', '<a "="',
+          '<script>', '<style>', '<!--', '<!', '</', '<a title=don\\'t ',
+          '<script type="application/ld+json">{', ' =  "a" =\\'b',
+        ];
+        const started = Date.now();
+        units.forEach((unit) => {
+          const html = unit.repeat(40000);
+          botAuditPage.recordRefs(html, 'https://grottocenter.org/ui');
+          botAuditPage.detectionText(html);
         });
+        console.log(Date.now() - started);
       `;
       const result = childProcess.spawnSync(process.execPath, ['-e', script], {
-        timeout: 10000,
+        timeout: 20000,
+        encoding: 'utf8',
       });
       should(result.error).be.undefined();
       should(result.status).equal(0);
+      // 15 units of about 300 KB each: linear takes about 0.4 s in all
+      should(Number(result.stdout)).be.below(2500);
     });
 
-    it('may read a false reference from a value that looks like an href, never miss a real one', () => {
+    it("does not read an href that is only text inside another attribute's value, as a browser does not", () => {
       const html = page({
         body: '<div title="a href=/ui/caves/8 > b"><a href="/ui/caves/9">k</a></div>',
       });
-      // 8 is a false positive of the second scan (it would delete the page),
-      // 9 is the real link; both are listed
-      should(botAuditPage.recordRefs(html, BASE).cave).eql([8, 9]);
+      should(botAuditPage.recordRefs(html, BASE).cave).eql([9]);
     });
 
     it('does not take an attribute of another tag for an href, and ignores a tag with no href', () => {

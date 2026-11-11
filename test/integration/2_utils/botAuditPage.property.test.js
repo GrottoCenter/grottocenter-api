@@ -32,7 +32,8 @@ describe('botAuditPage - Property: what the audit reads out of any text', () => 
   it('recordRefs gives back exactly the ids a page was built from, whatever the text around them', () => {
     // Covers every record type, ids over the whole integer range and
     // arbitrary surrounding text (which holds no "/<directory>/<id>" itself)
-    const filler = fc.string().map((text) => text.replace(/\//g, ' '));
+    // Page text is HTML-escaped: no raw `<`, and none of the "/<directory>/<id>"
+    const filler = fc.string().map((text) => text.replace(/[/<]/g, ' '));
     fc.assert(
       fc.property(idsByType, filler, filler, (byType, before, after) => {
         const links = Object.entries(byType).flatMap(([type, list]) =>
@@ -165,6 +166,57 @@ describe('botAuditPage - Property: the shaping adds no false positive over real 
     discoveryYear: fc.integer({ min: 1800, max: 2026 }),
   });
 
+  const renderCave = ({ name, depth, length, descriptions, entrances }) =>
+    BotRenderService.render(
+      {
+        entity_type: 'cave',
+        entity_id: 12,
+        language: 'fra',
+        lastmod: new Date('2026-01-01T00:00:00Z'),
+        page: {
+          id: 12,
+          name,
+          language: 'fra',
+          depth,
+          length,
+          descriptions: descriptions.map((d) => ({ ...d, language: 'fra' })),
+          entrances,
+          massifs: [],
+        },
+      },
+      {
+        baseUrl: 'https://example.test/ui',
+        languageTags: new Map(),
+        countryNames: new Map(),
+        hubLinks: BotRenderService.NO_HUB_LINKS,
+      }
+    );
+
+  // Found by this property on CI (seed 461139179): the JSON-LD read as written
+  // joins a name, a city, a county and a region with quotes and commas, so
+  // `utmà","city":"0.1","county":"aà","region":"10000` looked like a UTM
+  // position, which is nowhere on the page. The JSON-LD is read as lines now.
+  it('does not read the fields of the JSON-LD as one text: a name ending in a label, then numbers in other fields, is not a position', () => {
+    const html = renderCave({
+      name: 'm',
+      depth: 0,
+      length: 0,
+      descriptions: [],
+      entrances: [
+        {
+          name: 'utmà',
+          city: '0.1',
+          county: 'aà',
+          region: '10000 aa',
+          discoveryYear: 1800,
+        },
+      ],
+    });
+    const shaped = botAuditPage.detectionText(html);
+    should(detect(shaped.body)).eql({ matched: false });
+    should(detect(shaped.jsonLd)).eql({ matched: false });
+  });
+
   it('a cave page made of texts the detector accepts one by one is accepted as a page, CSS and JSON-LD included', () => {
     fc.assert(
       fc.property(
@@ -180,33 +232,13 @@ describe('botAuditPage - Property: the shaping adds no false positive over real 
             ...entrances.flatMap((e) => [e.name, e.city, e.county, e.region]),
           ];
           fc.pre(sources.every((source) => !detect(source).matched));
-          const html = BotRenderService.render(
-            {
-              entity_type: 'cave',
-              entity_id: 12,
-              language: 'fra',
-              lastmod: new Date('2026-01-01T00:00:00Z'),
-              page: {
-                id: 12,
-                name,
-                language: 'fra',
-                depth,
-                length,
-                descriptions: descriptions.map((d) => ({
-                  ...d,
-                  language: 'fra',
-                })),
-                entrances,
-                massifs: [],
-              },
-            },
-            {
-              baseUrl: 'https://example.test/ui',
-              languageTags: new Map(),
-              countryNames: new Map(),
-              hubLinks: BotRenderService.NO_HUB_LINKS,
-            }
-          );
+          const html = renderCave({
+            name,
+            depth,
+            length,
+            descriptions,
+            entrances,
+          });
           const shaped = botAuditPage.detectionText(html);
           should(detect(shaped.body)).eql({ matched: false });
           should(detect(shaped.jsonLd)).eql({ matched: false });

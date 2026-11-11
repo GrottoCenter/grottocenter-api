@@ -575,6 +575,23 @@ describe('BotAuditService - step 6, the audit of what is online', () => {
       should(counts.failures).equal(0);
     });
 
+    it('fails a page whose markup is still open at its end: it cannot be read, so it is not trusted', async () => {
+      const subject = await mkPublicCave();
+      await publish(
+        caveKey(subject.cave.id),
+        '<!DOCTYPE html><html><body><p>text</p><a href="/ui/caves/1"'
+      );
+
+      const counts = await audit();
+
+      should(counts.failuresByReason).eql({ 'unreadable-markup': 1 });
+      should(isOnline(caveKey(subject.cave.id))).be.false();
+      should(await inManifest(caveKey(subject.cave.id))).be.false();
+      should(errorLines()).containEql(
+        `bot-surface-audit failure ${caveKey(subject.cave.id)}: unreadable-markup`
+      );
+    });
+
     it('leaves the clean pages of the same run alone', async () => {
       const bad = await mkPublicCave('Gouffre Mauvais');
       const good = await mkPublicCave('Gouffre Bon');
