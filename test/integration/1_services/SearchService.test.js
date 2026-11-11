@@ -126,7 +126,7 @@ describe('SearchService', () => {
     it('should search across multiple collections', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       const result = await SearchService.multiCollectionsSearch({
         query: 'test',
@@ -134,7 +134,7 @@ describe('SearchService', () => {
       });
 
       should(typesenseStub.multiSearch.calledOnce).be.true();
-      should(result).have.property('results');
+      should(result).have.property('hits');
     });
 
     it('should handle call with no arguments', async () => {
@@ -154,7 +154,7 @@ describe('SearchService', () => {
     it('should filter out invalid entities', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       await SearchService.multiCollectionsSearch({
         query: 'test',
@@ -168,7 +168,7 @@ describe('SearchService', () => {
     it('should use wildcard query when no query provided', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       await SearchService.multiCollectionsSearch({
         entities: ['organizations'],
@@ -181,7 +181,7 @@ describe('SearchService', () => {
     it('should apply filters correctly', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       await SearchService.multiCollectionsSearch({
         query: 'test',
@@ -196,7 +196,7 @@ describe('SearchService', () => {
     it('should raise max_candidates above the Typesense default', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       await SearchService.multiCollectionsSearch({
         query: 'GZ3',
@@ -205,6 +205,49 @@ describe('SearchService', () => {
 
       const call = typesenseStub.multiSearch.getCall(0);
       should(call.args[1].max_candidates).equal(1000);
+    });
+
+    describe('when a union search fails inside a 200 response (#2001)', () => {
+      it('should throw the Typesense error with its code as httpStatus', async () => {
+        sinon.stub(typesense, 'multiSearch').resolves({
+          code: 404,
+          error: '`documents` collection not found.',
+        });
+        const logStub = sinon.stub(sails.log, 'error');
+
+        const error = await SearchService.multiCollectionsSearch({
+          query: 'No 15 1984*PERDU*',
+          entities: ['documents'],
+        }).then(
+          () => null,
+          (e) => e
+        );
+
+        should(error).be.an.Error();
+        should(error.message).equal('`documents` collection not found.');
+        should(error.httpStatus).equal(404);
+        should(logStub.calledOnce).be.true();
+        should(logStub.firstCall.args[0]).containEql(
+          '"error":"`documents` collection not found."'
+        );
+      });
+
+      it('should throw a server error for a body of unknown shape', async () => {
+        sinon.stub(typesense, 'multiSearch').resolves({ results: [] });
+        const logStub = sinon.stub(sails.log, 'error');
+
+        const error = await SearchService.multiCollectionsSearch({
+          query: 'test',
+          entities: ['documents'],
+        }).then(
+          () => null,
+          (e) => e
+        );
+
+        should(error).be.an.Error();
+        should(error).not.have.property('httpStatus');
+        should(logStub.firstCall.args[0]).containEql('{"results":[]}');
+      });
     });
   });
 
@@ -898,7 +941,7 @@ describe('SearchService', () => {
     it('should set max_filter_by_candidates in multiCollectionsSearch with prefix filter', async () => {
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
 
       await SearchService.multiCollectionsSearch({
         query: 'test',
@@ -991,7 +1034,7 @@ describe('SearchService', () => {
         .resolves({ hits: [], facet_counts: [], page: 1 });
       typesenseStub.multiSearch = sinon
         .stub(typesense, 'multiSearch')
-        .resolves({ results: [] });
+        .resolves({ hits: [] });
     });
 
     const searchParams = () => typesenseStub.search.getCall(0).args[1];

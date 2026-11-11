@@ -137,6 +137,26 @@ async function syncDocuments(
   }
 }
 
+// A union multi-search does not throw when one of its searches fails:
+// Typesense answers HTTP 200 with `{ code, error }` in the body and no `hits`
+// (e.g. `{ code: 404, error: '`documents` collection not found.' }`). Turn
+// that body into the error a single-collection search would have thrown, so
+// callers handle it like any other Typesense error (handleTypesenseError maps
+// a 4xx to a 400) instead of crashing on the missing `hits`.
+function assertUnionResponse(response) {
+  if (Array.isArray(response?.hits)) return response;
+
+  sails.log.error(
+    `Typesense union multi-search returned no hits: ${JSON.stringify(response)}`
+  );
+  const error = new Error(
+    response?.error ?? 'Typesense returned an unexpected search response'
+  );
+  // Without a numeric code the shape is unknown: leave it a server error
+  if (Number.isInteger(response?.code)) error.httpStatus = response.code;
+  throw error;
+}
+
 async function multiCollectionsSearch({
   query,
   entities = [],
@@ -161,7 +181,7 @@ async function multiCollectionsSearch({
     };
   });
 
-  return typesense.multiSearch(collections, {
+  const response = await typesense.multiSearch(collections, {
     per_page: 20,
     q,
     max_candidates: MAX_CANDIDATES,
@@ -170,6 +190,7 @@ async function multiCollectionsSearch({
     // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   });
+  return assertUnionResponse(response);
 }
 
 async function collectionSearch({

@@ -103,6 +103,29 @@ describe('Typesense 4xx errors on search endpoints', () => {
     });
   });
 
+  // A failed union search comes back as HTTP 200 with { code, error } and no
+  // hits; it used to crash toSearchResult with a 500 (#2001).
+  it('POST /api/v1/search returns 400 when the union multi-search answers an error body', async () => {
+    const typesense = require('../../../../config/typesense');
+    sinon.stub(typesense, 'multiSearch').resolves({
+      code: 404,
+      error: '`documents` collection not found.',
+    });
+    sinon.stub(sails.log, 'error');
+
+    const res = await supertest(sails.hooks.http.app)
+      .post('/api/v1/search')
+      .send({ query: 'No 15 1984*PERDU*', entities: ['documents'] })
+      .set('Content-type', 'application/json')
+      .set('Accept', 'application/json');
+
+    should(res.status).equal(400);
+    should(res.body).have.property(
+      'error',
+      '`documents` collection not found.'
+    );
+  });
+
   it('POST /api/v1/advanced-search/export terminates cleanly on mid-stream 4xx error', async () => {
     const error = new Error('mid-stream error');
     error.httpStatus = 400;
