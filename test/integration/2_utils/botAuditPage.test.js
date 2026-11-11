@@ -223,6 +223,39 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       });
     });
 
+    it('reads the hrefs of a tag with an unbalanced quote in an unquoted value, which a browser accepts', () => {
+      // The apostrophe in `don't` opens a quote no `'` closes
+      const alone = page({
+        body: `<a title=don't href="/ui/caves/5">a</a>`,
+      });
+      should(botAuditPage.recordRefs(alone, BASE).cave).eql([5]);
+
+      // And with a later `'`, which would swallow the tags up to it
+      const swallowing = page({
+        body: `<a title=don't href="/ui/caves/6">a</a><a href="/ui/massifs/7">b</a><a href="/ui/organizations/8">c</a><p>it's</p>`,
+      });
+      const refs = botAuditPage.recordRefs(swallowing, BASE);
+      should(refs.cave).eql([6]);
+      should(refs.massif).eql([7]);
+      should(refs.organization).eql([8]);
+    });
+
+    it('takes the first occurrence of an attribute, as a browser does', () => {
+      const html = page({
+        body: '<a href="/ui/caves/5" href="/ui/caves/6">a</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE).cave).eql([5]);
+    });
+
+    it('may read a false reference from a value that looks like an href, never miss a real one', () => {
+      const html = page({
+        body: '<div title="a href=/ui/caves/8 > b"><a href="/ui/caves/9">k</a></div>',
+      });
+      // 8 is a false positive of the second scan (it would delete the page),
+      // 9 is the real link; both are listed
+      should(botAuditPage.recordRefs(html, BASE).cave).eql([8, 9]);
+    });
+
     it('does not take an attribute of another tag for an href, and ignores a tag with no href', () => {
       const html = page({
         body: '<div title="/ui/caves/8"><span>x</span></div><img src="/ui/caves/9"><a href="/ui/caves/10">k</a>',

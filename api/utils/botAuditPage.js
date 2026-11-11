@@ -128,10 +128,19 @@ const TYPE_BY_DIRECTORY = Object.freeze({
 });
 const MAX_ID = 2147483647;
 const ID_KEY = '@id';
-// A tag, skipping over quoted values: a raw `>` inside one (`title="a > b"`)
-// does not end the tag, so the href after it is still read. Tags without an
-// href are dropped by hrefs()
+// Two scans of the page for tags, whose hrefs are UNIONED, because each fails
+// on a case the other reads:
+//   - OPENING_TAG_RE skips quoted values, so a raw `>` inside one
+//     (`title="a > b"`) does not end the tag and the href after it is read;
+//     with an unbalanced quote (`title=don't`, an apostrophe in an unquoted
+//     value, which browsers accept) it either fails to match or swallows
+//     several tags up to the next quote;
+//   - SIMPLE_TAG_RE ends a tag at the first `>`: right for a stray quote, wrong
+//     for a `>` in a value.
+// The union can only add a reference (a false positive deletes a page), never
+// hide one. Tags without an href are dropped by hrefs().
 const OPENING_TAG_RE = /<[a-z](?:[^>"']|"[^"]*"|'[^']*')*>/gi;
+const SIMPLE_TAG_RE = /<[a-z][^>]*>/gi;
 const NAME_VALUE_RE =
   /\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
 
@@ -141,9 +150,11 @@ const attributesOf = (tag) => {
   NAME_VALUE_RE.lastIndex = 0;
   let match = NAME_VALUE_RE.exec(tag);
   while (match) {
-    found[match[1].toLowerCase()] = decodeEntities(
-      match[2] ?? match[3] ?? match[4]
-    );
+    const name = match[1].toLowerCase();
+    // The first occurrence of an attribute is the one a browser uses
+    if (!(name in found)) {
+      found[name] = decodeEntities(match[2] ?? match[3] ?? match[4]);
+    }
     match = NAME_VALUE_RE.exec(tag);
   }
   NAME_VALUE_RE.lastIndex = 0;
@@ -155,11 +166,13 @@ const attributesOf = (tag) => {
 // organization is typed by a user and may well be an address of the SPA)
 const hrefs = (html) => {
   const found = [];
-  (html.match(OPENING_TAG_RE) || []).forEach((tag) => {
-    const { href, rel } = attributesOf(tag);
-    if (href === undefined) return;
-    if (/(^|\s)ugc(\s|$)/i.test(rel ?? '')) return;
-    found.push(href);
+  [OPENING_TAG_RE, SIMPLE_TAG_RE].forEach((tagRe) => {
+    (html.match(tagRe) || []).forEach((tag) => {
+      const { href, rel } = attributesOf(tag);
+      if (href === undefined) return;
+      if (/(^|\s)ugc(\s|$)/i.test(rel ?? '')) return;
+      found.push(href);
+    });
   });
   return found;
 };
@@ -203,7 +216,8 @@ const recordRefs = (html, baseUrl) => {
   );
   const found = { cave: [], massif: [], organization: [], entrance: [] };
   let foreign = 0;
-  [...hrefs(html), ...jsonLdIds(html)].forEach((value) => {
+  // Distinct values: the two scans of the tags can read the same href twice
+  new Set([...hrefs(html), ...jsonLdIds(html)]).forEach((value) => {
     let url;
     try {
       url = new URL(value, base);
