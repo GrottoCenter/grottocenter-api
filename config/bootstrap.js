@@ -164,6 +164,14 @@ module.exports.bootstrap = async function (done) {
     sails.log.warn('The monthly search reconciliation will not run');
   }
 
+  // Hourly retry of the avatar images storage failed to delete
+  try {
+    await sails.services.avatarcleanupqueueservice.start();
+  } catch (err) {
+    sails.log.error('Failed to start AvatarCleanupQueueService:', err.message);
+    sails.log.warn('Avatar images storage failed to delete will be kept');
+  }
+
   // Fire-and-forget: load coordinates snapshot without blocking server startup
   // Must use sails.services to get the same instance Sails loaded (include-all
   // clears the require cache, so a direct require() returns a stale instance).

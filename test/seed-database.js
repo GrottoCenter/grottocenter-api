@@ -108,6 +108,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_HUB_MIGRATION,
                 customSQL.BOT_OUTBOX_MIGRATION,
                 customSQL.BOT_PIPELINE_RUN_MIGRATION,
+                customSQL.PROFILE_PERSONALIZATION_MIGRATION,
                 customSQL.POINT_GEOM_MIGRATION,
               ].join('\n')
             )

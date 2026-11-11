@@ -102,6 +102,8 @@ module.exports = {
       surname: caver.surname,
       nickname: caver.nickname,
       language: caver.language,
+      customMessage: caver.customMessage,
+      avatarPath: caver.avatarPath,
       groups: caver.groups,
       grottos: caver.grottos,
       exploredEntrances: caver.exploredEntrances,

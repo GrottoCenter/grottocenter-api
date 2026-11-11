@@ -7,6 +7,7 @@ const NameService = require('../../../services/NameService');
 const RecentChangeService = require('../../../services/RecentChangeService');
 const CommonService = require('../../../services/CommonService');
 const readBoolParam = require('../../../utils/readBoolParam');
+const AvatarService = require('../../../services/AvatarService');
 
 // Junction tables referencing t_grotto, with the column that completes their
 // (id_grotto, <column>) primary key or unique constraint. Constants only: they
@@ -204,7 +205,11 @@ module.exports = async (req, res) => {
     await NameService.permanentDelete({ grotto: organizationId });
 
     await HGrotto.destroy({ id: organizationId });
-    await TGrotto.destroyOne({ id: organizationId }); // Hard delete
+    // Hard delete. Its avatar goes with it, also on a merge: the target keeps
+    // its own
+    await AvatarService.destroyOwner('organization', organizationId, (db) =>
+      TGrotto.destroyOne({ id: organizationId }).usingConnection(db)
+    );
   }
 
   // A permanent delete still removed the row, whoever flagged it

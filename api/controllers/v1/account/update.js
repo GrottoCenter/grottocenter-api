@@ -1,12 +1,16 @@
 const AccountNotificationService = require('../../../services/AccountNotificationService');
 const AuthService = require('../../../services/AuthService');
 const readBoolParam = require('../../../utils/readBoolParam');
+const {
+  normalizeCaverCustomMessage,
+} = require('../../../utils/caverCustomMessage');
 
 // Fields that can be updated via this endpoint. `currentPassword` is handled
 // as an out-of-band credential (required when changing password) and is not
 // persisted — it is listed here only so it passes the unknown-property guard.
 const UPDATABLE_PROPERTIES = [
   'currentPassword',
+  'customMessage',
   'email',
   'language',
   'name',
@@ -146,6 +150,16 @@ module.exports = async (req, res) => {
 
   if (sendNotificationByEmail !== undefined) {
     updates.sendNotificationByEmail = sendNotificationByEmail;
+  }
+
+  if (req.body.customMessage !== undefined) {
+    const { value, error } = normalizeCaverCustomMessage(
+      req.body.customMessage
+    );
+    if (error) {
+      return res.badRequest(error);
+    }
+    updates.customMessage = value;
   }
 
   if (req.body.nickname !== undefined) {

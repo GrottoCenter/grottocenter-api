@@ -4,6 +4,7 @@ const { toCaver } = require('../../../services/mapping/converters');
 const CaverService = require('../../../services/CaverService');
 const CommonService = require('../../../services/CommonService');
 const DocumentService = require('../../../services/DocumentService');
+const AvatarService = require('../../../services/AvatarService');
 
 const DEFAULT_DELETED_CAVER_ID = 8;
 
@@ -173,7 +174,10 @@ module.exports = async (req, res) => {
     return res.conflict({ message });
   }
 
-  await TCaver.destroyOne({ id: caverId });
+  // Its avatar goes with it, also on a merge: the target keeps its own
+  await AvatarService.destroyOwner('caver', caverId, (db) =>
+    TCaver.destroyOne({ id: caverId }).usingConnection(db)
+  );
 
   const action = shouldMergeInto ? 'delete+merge' : 'delete';
   const audit = {
