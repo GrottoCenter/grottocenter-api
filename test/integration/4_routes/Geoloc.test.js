@@ -18,6 +18,53 @@ describe('Geoloc features', () => {
         .expect(400, done);
     });
 
+    // A link checker sent unexpanded URL templates (#2000). The range check
+    // let them through, and Postgres answered 22P02, sent back as a 500.
+    const templatedBox = {
+      sw_lat: '{t[0]}',
+      sw_lng: '{t[1]}',
+      ne_lat: '{t[0] 1}',
+      ne_lng: '{t[1] 1}',
+    };
+
+    it('should return code 400 naming non-numeric parameters', (done) => {
+      supertest(sails.hooks.http.app)
+        .get('/api/v1/geoloc/entrances')
+        .set('Accept', 'application/json')
+        .query(templatedBox)
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          should(res.text).containEql(
+            'South west latitude value must be a number'
+          );
+          should(res.text).containEql('{t[1] 1}');
+          return done();
+        });
+    });
+
+    it('should return code 400 to HEAD with non-numeric parameters', (done) => {
+      supertest(sails.hooks.http.app)
+        .head('/api/v1/geoloc/entrances')
+        .query(templatedBox)
+        .expect(400, done);
+    });
+
+    // Number() reads these, but Postgres rejects the raw strings (22003
+    // underflow, 22P02 on the non-breaking space): the parsed numbers are bound.
+    [
+      { label: 'an underflowing exponent', sw_lat: '1e-400' },
+      { label: 'a non-breaking space', sw_lat: ' 0' },
+    ].forEach(({ label, sw_lat: swLat }) => {
+      it(`should return code 200 with ${label}`, (done) => {
+        supertest(sails.hooks.http.app)
+          .get('/api/v1/geoloc/entrances')
+          .set('Accept', 'application/json')
+          .query({ sw_lat: swLat, sw_lng: 0, ne_lat: 1, ne_lng: 1 })
+          .expect(200, done);
+      });
+    });
+
     // Kept under the 35000 km² bounding box cap: 0,0 -> 5,5 is ~308700 km².
     it('should return code 200 with entrances', (done) => {
       supertest(sails.hooks.http.app)
@@ -244,6 +291,7 @@ describe('Geoloc features', () => {
       get({ sw_lat: 'abc', sw_lng: 0, ne_lat: 47, ne_lng: 2 }).end(
         (err, res) => {
           if (err) return done(err);
+          should(res.status).equal(400);
           should(res.body.code).not.equal('BBOX_AREA_EXCEEDED');
           return done();
         }

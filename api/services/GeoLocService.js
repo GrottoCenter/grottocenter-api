@@ -420,6 +420,36 @@ const checkAndGetMassifParam = async (req, res) => {
   return { massifId, errorResponse: null };
 };
 
+// Decimal or exponent notation, the subset of the double precision input
+// syntax that Number() also reads. Number() alone would let '0x10' through, and
+// '' or ' ' through as 0, while Postgres rejects the first and Number() hides
+// the rest. The digits after the decimal point need the point itself, so no two
+// digit runs compete for the same characters and a long rejected value is
+// matched in linear time.
+const NUMERIC_COORDINATE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
+
+/**
+ * Convert a raw request parameter to the number to bind as a coordinate.
+ *
+ * Strings outside NUMERIC_COORDINATE, arrays (a repeated query parameter) and
+ * non-finite values ('1e400' overflows in Postgres too) give null, so they
+ * answer 400 rather than fail in the query with a 500. Callers bind the
+ * returned number, never the raw string: Postgres rejects some strings that
+ * Number() reads, such as '1e-400' (underflow) or a value padded with a
+ * non-breaking space.
+ *
+ * @param {*} value - a raw request parameter
+ * @returns {number|null}
+ */
+const parseCoordinate = (value) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!NUMERIC_COORDINATE.test(trimmed)) return null;
+  const number = Number(trimmed);
+  return Number.isFinite(number) ? number : null;
+};
+
 /**
  * Reject a bounding box that covers more ground than MAX_BBOX_AREA_KM2.
  *
@@ -442,8 +472,7 @@ const validateBoundingBoxArea = (southWestBound, northEastBound) => {
   // Non-numeric coordinates give NaN, and NaN > limit is false, so they fall
   // through untouched. That is deliberate: this guards the response size, it is
   // not input validation, and reporting an area problem for ?sw_lat=abc would
-  // be misleading. Such a value fails later in Postgres on an empty result set,
-  // so there is nothing to protect against here.
+  // be misleading. checkAndGetCoordinatesParams rejects such a value first.
   if (!(areaKm2 > MAX_BBOX_AREA_KM2)) return null;
 
   sails.log.warn(
@@ -496,6 +525,16 @@ module.exports = {
     } else {
       // Check valid values
       for (const param of result) {
+        const number = parseCoordinate(param.value);
+        if (number === null) {
+          errors.push(
+            `${param.name} value must be a number (value found: ${param.value})`
+          );
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+        // Bind the parsed number, not the raw string Postgres may reject.
+        param.value = number;
         if (
           param.key.endsWith('lat') &&
           (param.value < -90 || param.value > 90)
