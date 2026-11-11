@@ -420,6 +420,29 @@ const checkAndGetMassifParam = async (req, res) => {
   return { massifId, errorResponse: null };
 };
 
+// Decimal or exponent notation, the subset of the double precision input
+// syntax that Number() also reads. Number() alone would let '0x10' through, and
+// '' or ' ' through as 0, while Postgres rejects the first and Number() hides
+// the rest.
+const NUMERIC_COORDINATE = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+
+/**
+ * True when value can be bound as a double precision query parameter.
+ *
+ * Strings outside NUMERIC_COORDINATE, arrays (a repeated query parameter) and
+ * non-finite values ('1e400' overflows in Postgres too) are rejected, so they
+ * answer 400 rather than fail in the query with a 500.
+ *
+ * @param {*} value - a raw request parameter
+ * @returns {boolean}
+ */
+const isNumericCoordinate = (value) => {
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  return NUMERIC_COORDINATE.test(trimmed) && Number.isFinite(Number(trimmed));
+};
+
 /**
  * Reject a bounding box that covers more ground than MAX_BBOX_AREA_KM2.
  *
@@ -442,8 +465,7 @@ const validateBoundingBoxArea = (southWestBound, northEastBound) => {
   // Non-numeric coordinates give NaN, and NaN > limit is false, so they fall
   // through untouched. That is deliberate: this guards the response size, it is
   // not input validation, and reporting an area problem for ?sw_lat=abc would
-  // be misleading. Such a value fails later in Postgres on an empty result set,
-  // so there is nothing to protect against here.
+  // be misleading. checkAndGetCoordinatesParams rejects such a value first.
   if (!(areaKm2 > MAX_BBOX_AREA_KM2)) return null;
 
   sails.log.warn(
@@ -496,6 +518,13 @@ module.exports = {
     } else {
       // Check valid values
       for (const param of result) {
+        if (!isNumericCoordinate(param.value)) {
+          errors.push(
+            `${param.name} value must be a number (value found: ${param.value})`
+          );
+          // eslint-disable-next-line no-continue
+          continue;
+        }
         if (
           param.key.endsWith('lat') &&
           (param.value < -90 || param.value > 90)

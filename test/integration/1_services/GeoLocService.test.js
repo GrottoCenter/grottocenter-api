@@ -69,6 +69,66 @@ describe('GeoLocService', () => {
     });
   });
 
+  describe('checkAndGetCoordinatesParams() non-numeric values', () => {
+    const withParams = (values) => {
+      Object.entries(values).forEach(([key, value]) =>
+        req.param.withArgs(key).returns(value)
+      );
+      return GeoLocService.checkAndGetCoordinatesParams(req);
+    };
+    const valid = { sw_lat: '40', sw_lng: '5', ne_lat: '45', ne_lng: '10' };
+
+    // Comparing a non-numeric string with a number is always false, so the
+    // range check alone let these through to Postgres (#2000).
+    [
+      '{t[0]}',
+      'abc',
+      '',
+      ' ',
+      '0x10',
+      '1,2',
+      'NaN',
+      'Infinity',
+      '1e400',
+      ['1', '2'],
+    ].forEach((value) => {
+      it(`should reject ${JSON.stringify(value)}`, () => {
+        const result = withParams({ ...valid, sw_lat: value });
+        should(result.errorMessage).containEql(
+          'South west latitude value must be a number'
+        );
+        should(result.errorMessage).not.containEql('-90 & 90');
+      });
+    });
+
+    ['45', '-45.5', '+3', '.5', '5.', '1e1', ' 12 ', 0, -12.5].forEach(
+      (value) => {
+        it(`should accept ${JSON.stringify(value)}`, () => {
+          const result = withParams({ ...valid, ne_lng: value });
+          should(result.errorMessage).be.empty();
+        });
+      }
+    );
+
+    it('should name every non-numeric parameter', () => {
+      const result = withParams({
+        sw_lat: '{t[0]}',
+        sw_lng: '{t[1]}',
+        ne_lat: '{t[0] 1}',
+        ne_lng: '{t[1] 1}',
+      });
+      should(result.errorMessage).containEql('South west latitude');
+      should(result.errorMessage).containEql('South west longitude');
+      should(result.errorMessage).containEql('North east latitude');
+      should(result.errorMessage).containEql('North east longitude');
+    });
+
+    it('should still range-check a numeric string', () => {
+      const result = withParams({ ...valid, ne_lat: '95' });
+      should(result.errorMessage).containEql('-90 & 90');
+    });
+  });
+
   describe('countEntrances()', () => {
     it('should count entrances in bounds', async () => {
       const southWestBound = { lat: 40, lng: 5 };
