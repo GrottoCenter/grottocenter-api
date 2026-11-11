@@ -7484,10 +7484,16 @@ paths:
                 $ref: '#/components/schemas/Search'
         '400':
           description: >-
-            The query is missing, or `includePendingDocuments` is not a
-            `BooleanLike` value.
+            The query is missing, `includePendingDocuments` is not a
+            `BooleanLike` value, or Typesense rejected the search with a 4xx
+            (including a failed search reported inside a successful union
+            multi-search response). The body is then `{ "error": "<Typesense message>" }`.
         '404':
           description: Resource not found
+        '500':
+          description: >-
+            Typesense failed, or answered with a response of an unexpected
+            shape (logged in full on the server).
 
   '/advanced-search':
     post:
