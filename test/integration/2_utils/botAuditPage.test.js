@@ -210,6 +210,26 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       });
     });
 
+    it('reads an href that follows an attribute value holding a raw >, in either quote style', () => {
+      const html = page({
+        body: `<a title="a > b" href="/ui/caves/5">a</a><a data-x='x > y' href='/ui/massifs/6'>b</a><a title="it's > ok" rel="noopener" href="/ui/organizations/7">c</a>`,
+      });
+      should(botAuditPage.recordRefs(html, BASE)).eql({
+        cave: [5],
+        massif: [6],
+        organization: [7],
+        entrance: [],
+        foreign: 0,
+      });
+    });
+
+    it('does not take an attribute of another tag for an href, and ignores a tag with no href', () => {
+      const html = page({
+        body: '<div title="/ui/caves/8"><span>x</span></div><img src="/ui/caves/9"><a href="/ui/caves/10">k</a>',
+      });
+      should(botAuditPage.recordRefs(html, BASE).cave).eql([10]);
+    });
+
     it('skips the links a contributor typed, marked rel="nofollow ugc": the website of an organization', () => {
       const html = page({
         body: '<a href="https://grottocenter.org/ui/organizations/9">own</a><a href="https://grottocenter.org/ui/caves/12" rel="nofollow ugc">website</a><a rel="ugc nofollow" href="/ui/caves/13">other order</a><a href="/ui/caves/14" rel="noopener">not ugc</a>',

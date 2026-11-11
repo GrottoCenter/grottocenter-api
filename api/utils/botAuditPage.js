@@ -128,7 +128,10 @@ const TYPE_BY_DIRECTORY = Object.freeze({
 });
 const MAX_ID = 2147483647;
 const ID_KEY = '@id';
-const TAG_WITH_HREF_RE = /<[a-z][^>]*\shref\s*=[^>]*>/gi;
+// A tag, skipping over quoted values: a raw `>` inside one (`title="a > b"`)
+// does not end the tag, so the href after it is still read. Tags without an
+// href are dropped by hrefs()
+const OPENING_TAG_RE = /<[a-z](?:[^>"']|"[^"]*"|'[^']*')*>/gi;
 const NAME_VALUE_RE =
   /\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
 
@@ -152,7 +155,7 @@ const attributesOf = (tag) => {
 // organization is typed by a user and may well be an address of the SPA)
 const hrefs = (html) => {
   const found = [];
-  (html.match(TAG_WITH_HREF_RE) || []).forEach((tag) => {
+  (html.match(OPENING_TAG_RE) || []).forEach((tag) => {
     const { href, rel } = attributesOf(tag);
     if (href === undefined) return;
     if (/(^|\s)ugc(\s|$)/i.test(rel ?? '')) return;
