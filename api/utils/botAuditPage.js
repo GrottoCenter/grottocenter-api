@@ -128,19 +128,25 @@ const TYPE_BY_DIRECTORY = Object.freeze({
 });
 const MAX_ID = 2147483647;
 const ID_KEY = '@id';
-// Two scans of the page for tags, whose hrefs are UNIONED, because each fails
-// on a case the other reads:
-//   - OPENING_TAG_RE skips quoted values, so a raw `>` inside one
-//     (`title="a > b"`) does not end the tag and the href after it is read;
-//     with an unbalanced quote (`title=don't`, an apostrophe in an unquoted
-//     value, which browsers accept) it either fails to match or swallows
-//     several tags up to the next quote;
+// Three scans of the page for tags, whose hrefs are UNIONED, because each fails
+// on a case the others read:
+//   - OPENING_TAG_RE treats a quote anywhere as a delimiter, so a raw `>` in
+//     `title="a > b"` does not end the tag; with an unbalanced quote in an
+//     unquoted value (`title=don't`, accepted by browsers) it fails to match or
+//     swallows tags up to the next quote;
 //   - SIMPLE_TAG_RE ends a tag at the first `>`: right for a stray quote, wrong
-//     for a `>` in a value.
+//     for a `>` in a value;
+//   - VALUE_TAG_RE is how a browser reads it: a quote opens a value only right
+//     after `=`, and a `=` not followed by a closed quote is a plain character.
+//     It reads a tag that has both problems. Its alternatives are disjoint (the
+//     lookahead keeps a `=` out of the last one when a quoted value follows),
+//     so it cannot backtrack exponentially on a page that is not well formed.
 // The union can only add a reference (a false positive deletes a page), never
 // hide one. Tags without an href are dropped by hrefs().
 const OPENING_TAG_RE = /<[a-z](?:[^>"']|"[^"]*"|'[^']*')*>/gi;
 const SIMPLE_TAG_RE = /<[a-z][^>]*>/gi;
+const VALUE_TAG_RE =
+  /<[a-z](?:=\s*"[^"]*"|=\s*'[^']*'|[^>=]|=(?!\s*(?:"[^"]*"|'[^']*')))*>/gi;
 const NAME_VALUE_RE =
   /\s([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
 
@@ -166,7 +172,7 @@ const attributesOf = (tag) => {
 // organization is typed by a user and may well be an address of the SPA)
 const hrefs = (html) => {
   const found = [];
-  [OPENING_TAG_RE, SIMPLE_TAG_RE].forEach((tagRe) => {
+  [OPENING_TAG_RE, SIMPLE_TAG_RE, VALUE_TAG_RE].forEach((tagRe) => {
     (html.match(tagRe) || []).forEach((tag) => {
       const { href, rel } = attributesOf(tag);
       if (href === undefined) return;

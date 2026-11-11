@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const childProcess = require('child_process');
 const should = require('should');
 
 const SNAPSHOTS = path.join(__dirname, '../../snapshots/bot-pages');
@@ -240,11 +241,47 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(refs.organization).eql([8]);
     });
 
+    it('reads a tag that has both an unbalanced quote and a raw > in a later quoted value', () => {
+      const tag = `<a title=don't data-x="a > b" href="/ui/entrances/12">x</a>`;
+      should(botAuditPage.recordRefs(page({ body: tag }), BASE).entrance).eql([
+        12,
+      ]);
+
+      // Followed by a link a contributor typed and by a later quote: the span
+      // the quoted scan swallows must not hide the href of the first tag
+      const swallowing = page({
+        body: `${tag}<a href="/ui/caves/3" rel="nofollow ugc">w</a><p>it's</p>`,
+      });
+      const refs = botAuditPage.recordRefs(swallowing, BASE);
+      should(refs.entrance).eql([12]);
+      // The typed link is still skipped
+      should(refs.cave).eql([]);
+    });
+
     it('takes the first occurrence of an attribute, as a browser does', () => {
       const html = page({
         body: '<a href="/ui/caves/5" href="/ui/caves/6">a</a>',
       });
       should(botAuditPage.recordRefs(html, BASE).cave).eql([5]);
+    });
+
+    it('does not backtrack on a page that is not well formed: a long run of = and quotes is read in linear time', () => {
+      // In a child process with a timeout: a regex that backtracks
+      // exponentially never returns, and in this process it would hang the
+      // whole run instead of failing the test
+      const script = `
+        const { recordRefs } = require(${JSON.stringify(
+          path.join(__dirname, '../../../api/utils/botAuditPage')
+        )});
+        ['  ="a"', " ='", ' ="', '="="', ' =  "a" =\\'b'].forEach((unit) => {
+          recordRefs('<a' + unit.repeat(20000), 'https://grottocenter.org/ui');
+        });
+      `;
+      const result = childProcess.spawnSync(process.execPath, ['-e', script], {
+        timeout: 10000,
+      });
+      should(result.error).be.undefined();
+      should(result.status).equal(0);
     });
 
     it('may read a false reference from a value that looks like an href, never miss a real one', () => {
