@@ -50,6 +50,21 @@ describe('Geoloc features', () => {
         .expect(400, done);
     });
 
+    // Number() reads these, but Postgres rejects the raw strings (22003
+    // underflow, 22P02 on the non-breaking space): the parsed numbers are bound.
+    [
+      { label: 'an underflowing exponent', sw_lat: '1e-400' },
+      { label: 'a non-breaking space', sw_lat: ' 0' },
+    ].forEach(({ label, sw_lat: swLat }) => {
+      it(`should return code 200 with ${label}`, (done) => {
+        supertest(sails.hooks.http.app)
+          .get('/api/v1/geoloc/entrances')
+          .set('Accept', 'application/json')
+          .query({ sw_lat: swLat, sw_lng: 0, ne_lat: 1, ne_lng: 1 })
+          .expect(200, done);
+      });
+    });
+
     // Kept under the 35000 km² bounding box cap: 0,0 -> 5,5 is ~308700 km².
     it('should return code 200 with entrances', (done) => {
       supertest(sails.hooks.http.app)

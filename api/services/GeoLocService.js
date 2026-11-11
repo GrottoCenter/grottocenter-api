@@ -423,24 +423,31 @@ const checkAndGetMassifParam = async (req, res) => {
 // Decimal or exponent notation, the subset of the double precision input
 // syntax that Number() also reads. Number() alone would let '0x10' through, and
 // '' or ' ' through as 0, while Postgres rejects the first and Number() hides
-// the rest.
-const NUMERIC_COORDINATE = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+// the rest. The digits after the decimal point need the point itself, so no two
+// digit runs compete for the same characters and a long rejected value is
+// matched in linear time.
+const NUMERIC_COORDINATE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 
 /**
- * True when value can be bound as a double precision query parameter.
+ * Convert a raw request parameter to the number to bind as a coordinate.
  *
  * Strings outside NUMERIC_COORDINATE, arrays (a repeated query parameter) and
- * non-finite values ('1e400' overflows in Postgres too) are rejected, so they
- * answer 400 rather than fail in the query with a 500.
+ * non-finite values ('1e400' overflows in Postgres too) give null, so they
+ * answer 400 rather than fail in the query with a 500. Callers bind the
+ * returned number, never the raw string: Postgres rejects some strings that
+ * Number() reads, such as '1e-400' (underflow) or a value padded with a
+ * non-breaking space.
  *
  * @param {*} value - a raw request parameter
- * @returns {boolean}
+ * @returns {number|null}
  */
-const isNumericCoordinate = (value) => {
-  if (typeof value === 'number') return Number.isFinite(value);
-  if (typeof value !== 'string') return false;
+const parseCoordinate = (value) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
   const trimmed = value.trim();
-  return NUMERIC_COORDINATE.test(trimmed) && Number.isFinite(Number(trimmed));
+  if (!NUMERIC_COORDINATE.test(trimmed)) return null;
+  const number = Number(trimmed);
+  return Number.isFinite(number) ? number : null;
 };
 
 /**
@@ -518,13 +525,16 @@ module.exports = {
     } else {
       // Check valid values
       for (const param of result) {
-        if (!isNumericCoordinate(param.value)) {
+        const number = parseCoordinate(param.value);
+        if (number === null) {
           errors.push(
             `${param.name} value must be a number (value found: ${param.value})`
           );
           // eslint-disable-next-line no-continue
           continue;
         }
+        // Bind the parsed number, not the raw string Postgres may reject.
+        param.value = number;
         if (
           param.key.endsWith('lat') &&
           (param.value < -90 || param.value > 90)

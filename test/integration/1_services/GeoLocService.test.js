@@ -110,6 +110,31 @@ describe('GeoLocService', () => {
       }
     );
 
+    it('should return the parsed numbers, not the raw strings', () => {
+      const result = withParams({
+        sw_lat: '1e-400',
+        sw_lng: ' 5',
+        ne_lat: ' 45 ',
+        ne_lng: '+10',
+      });
+      should(result.errorMessage).be.empty();
+      should(result.southWestBound).eql({ lat: 0, lng: 5 });
+      should(result.northEastBound).eql({ lat: 45, lng: 10 });
+    });
+
+    // A regex whose digit runs can share characters backtracks quadratically:
+    // 15000 digits then an invalid character took ~730 ms with the old one.
+    it('should reject a long non-numeric value promptly', () => {
+      const value = `${'1'.repeat(15000)}x`;
+      const start = process.hrtime.bigint();
+      const result = withParams({ ...valid, sw_lat: value });
+      const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+      should(result.errorMessage).containEql(
+        'South west latitude value must be a number'
+      );
+      should(elapsedMs).be.below(50);
+    });
+
     it('should name every non-numeric parameter', () => {
       const result = withParams({
         sw_lat: '{t[0]}',
