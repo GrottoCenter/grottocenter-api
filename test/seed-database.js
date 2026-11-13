@@ -39,6 +39,7 @@ async function dropNonWaterlineTables(testUrl) {
     await client.query('DROP TABLE IF EXISTS t_bot_page_manifest');
     await client.query('DROP TABLE IF EXISTS t_bot_outbox');
     await client.query('DROP TABLE IF EXISTS t_bot_pipeline_run');
+    await client.query('DROP TABLE IF EXISTS t_bot_surface_state');
     await client.query('DROP TABLE IF EXISTS t_bibliographic_metadata');
     await client.query('DROP TYPE IF EXISTS e_metadata_status');
   } finally {
@@ -108,6 +109,7 @@ async function seedDatabase({ testUrl }) {
                 customSQL.BOT_HUB_MIGRATION,
                 customSQL.BOT_OUTBOX_MIGRATION,
                 customSQL.BOT_PIPELINE_RUN_MIGRATION,
+                customSQL.BOT_SURFACE_STATE_MIGRATION,
                 customSQL.PROFILE_PERSONALIZATION_MIGRATION,
                 customSQL.POINT_GEOM_MIGRATION,
               ].join('\n')

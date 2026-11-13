@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 const zlib = require('zlib');
 const should = require('should');
+const sinon = require('sinon');
 const { XMLParser, XMLValidator } = require('fast-xml-parser');
 
 const NAMESPACE = 'http://www.sitemaps.org/schemas/sitemap/0.9';
@@ -200,9 +201,19 @@ describe('BotSitemapService', () => {
     puts = [];
   });
 
+  const setPublishing = (publishing) =>
+    query(
+      'UPDATE t_bot_surface_state SET publishing = $1, reason = $2, updated_at = now() WHERE id = 1',
+      [publishing, publishing ? null : 'test']
+    );
+
   afterEach(async () => {
     fs.rmSync(root, { recursive: true, force: true });
     await query('TRUNCATE t_bot_page_manifest');
+    await query(
+      `INSERT INTO t_bot_surface_state (id, publishing, reason) VALUES (1, true, NULL)
+       ON CONFLICT (id) DO UPDATE SET publishing = true, reason = NULL`
+    );
   });
 
   const EXPECTED_URLS = {
@@ -265,8 +276,10 @@ describe('BotSitemapService', () => {
         uploaded: 6,
         unchanged: 0,
         deleted: 0,
+        withheld: 0,
         shards: 5,
         urls: 10,
+        publishing: true,
       });
     });
 
@@ -562,6 +575,105 @@ describe('BotSitemapService', () => {
       should(
         (await query('SELECT path FROM t_bot_page_manifest')).rows
       ).deepEqual([{ path: '404.html' }]);
+    });
+  });
+
+  describe('publishing off (t_bot_surface_state)', () => {
+    const read = (key) => fs.readFileSync(path.join(root, key));
+
+    it('leaves every file as it is, and uploads and deletes nothing, when nothing changed', async () => {
+      await run();
+      const files = await keys();
+      const bytes = files.map((key) => read(key));
+      puts.length = 0;
+      await setPublishing(false);
+
+      const summary = await run();
+
+      should(puts).deepEqual([]);
+      should(deletes).deepEqual([]);
+      should(summary.publishing).be.false();
+      should(summary.withheld).equal(0);
+      should(summary.deleted).equal(0);
+      should(await keys()).deepEqual(files);
+      files.forEach((key, i) => should(read(key)).deepEqual(bytes[i]));
+    });
+
+    it('deletes a shard that would change and the index that names it, and rewrites no other file', async () => {
+      await run();
+      const untouched = [
+        'sitemap-caves-181.xml.gz',
+        'sitemap-massifs-180.xml.gz',
+      ];
+      const before = untouched.map((key) => read(key));
+      puts.length = 0;
+      // A page of the first cave shard is gone: the shard would lose a URL
+      await query('DELETE FROM t_bot_page_manifest WHERE path = $1', [
+        `caves/${FIRST_RANGE + 2}.html`,
+      ]);
+      await setPublishing(false);
+
+      const summary = await run();
+
+      should(puts).deepEqual([]);
+      should(summary.withheld).equal(2);
+      // The index first, then the shard
+      should(deletes).deepEqual(['sitemap.xml', 'sitemap-caves-180.xml.gz']);
+      should(await manifestRow('sitemap.xml')).be.undefined();
+      should(await manifestRow('sitemap-caves-180.xml.gz')).be.undefined();
+      untouched.forEach((key, i) => should(read(key)).deepEqual(before[i]));
+      should(await keys()).not.containEql('sitemap-caves-180.xml.gz');
+      should(await keys()).not.containEql('sitemap.xml');
+    });
+
+    it('uploads no new shard', async () => {
+      await setPublishing(false);
+
+      const summary = await run();
+
+      should(puts).deepEqual([]);
+      should(summary.uploaded).equal(0);
+      should(summary.withheld).be.above(0);
+      should(await keys()).deepEqual([]);
+    });
+
+    it('keeps the index and the unchanged shards when only a new shard is withheld', async () => {
+      await run();
+      const index = read('sitemap.xml');
+      puts.length = 0;
+      await page('cave', 9100000 + 1, '2026-03-01 00:00:00+00');
+      await setPublishing(false);
+
+      await run();
+
+      should(puts).deepEqual([]);
+      should(read('sitemap.xml')).deepEqual(index);
+      should(await keys()).not.containEql('sitemap-caves-182.xml.gz');
+    });
+
+    it('treats a missing state row as off', async () => {
+      await query('DELETE FROM t_bot_surface_state');
+      sinon.stub(sails.log, 'error');
+      try {
+        const summary = await run();
+        should(summary.publishing).be.false();
+        should(puts).deepEqual([]);
+      } finally {
+        sinon.restore();
+      }
+    });
+
+    it('publishes everything again when it is back on', async () => {
+      await setPublishing(false);
+      await run();
+      await setPublishing(true);
+
+      await run();
+
+      should(await keys()).containEql('sitemap.xml');
+      should(Object.keys(readAll()).length).equal(
+        Object.keys(EXPECTED_URLS).length
+      );
     });
   });
 

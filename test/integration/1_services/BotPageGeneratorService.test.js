@@ -5,6 +5,7 @@ const path = require('path');
 const vm = require('vm');
 const v8 = require('v8');
 const should = require('should');
+const sinon = require('sinon');
 
 // Ids no fixture uses. A cave, a massif and an organization may share an id.
 const FIRST_ID = 9000000;
@@ -112,9 +113,19 @@ describe('BotPageGeneratorService', () => {
     await query('TRUNCATE t_bot_page_manifest');
   });
 
+  const setPublishing = (publishing) =>
+    query(
+      'UPDATE t_bot_surface_state SET publishing = $1, reason = $2, updated_at = now() WHERE id = 1',
+      [publishing, publishing ? null : 'test']
+    );
+
   afterEach(async () => {
     fs.rmSync(root, { recursive: true, force: true });
     await query('TRUNCATE t_bot_page_manifest');
+    await query(
+      `INSERT INTO t_bot_surface_state (id, publishing, reason) VALUES (1, true, NULL)
+       ON CONFLICT (id) DO UPDATE SET publishing = true, reason = NULL`
+    );
   });
 
   const expectedKeys = () =>
@@ -129,6 +140,99 @@ describe('BotPageGeneratorService', () => {
           }/${r.entity_id}.html`
       ),
     ].sort();
+
+  describe('publishing off (t_bot_surface_state)', () => {
+    it('uploads nothing: a new page is withheld, a changed page is deleted, an unchanged page stays', async () => {
+      await run();
+      puts.length = 0;
+      records = records.filter((r) => r.entity_id !== FIRST_ID + 5);
+      records.find(
+        (r) => r.entity_id === FIRST_ID + 1 && r.entity_type === 'cave'
+      ).page.name = 'renamed';
+      records.push(record('cave', FIRST_ID + 6));
+      await setPublishing(false);
+
+      const summary = await run();
+
+      should(puts).deepEqual([]);
+      should(summary.publishing).be.false();
+      should(summary.uploaded).equal(0);
+      should(summary.withheld).equal(1);
+      // FIRST_ID + 1 changed, FIRST_ID + 5 left the view
+      should(summary.deleted).equal(2);
+      should(summary.byType.cave).deepEqual({
+        uploaded: 0,
+        unchanged: 3,
+        deleted: 2,
+        withheld: 1,
+      });
+      should(deletes.sort()).deepEqual([
+        `caves/${FIRST_ID + 1}.html`,
+        `caves/${FIRST_ID + 5}.html`,
+      ]);
+      const online = await keys();
+      should(online).not.containEql(`caves/${FIRST_ID + 6}.html`);
+      should(online).containEql(`caves/${FIRST_ID + 2}.html`);
+      should(await manifestRow(`caves/${FIRST_ID + 1}.html`)).be.undefined();
+      should(await manifestRow(`caves/${FIRST_ID + 6}.html`)).be.undefined();
+    });
+
+    it('publishes everything as usual once it is back on', async () => {
+      await setPublishing(false);
+      await run();
+      should(puts).deepEqual([]);
+      await setPublishing(true);
+
+      const summary = await run();
+
+      should(summary.uploaded).equal(8);
+      should(summary.publishing).be.true();
+      should(await keys()).deepEqual(expectedKeys());
+    });
+
+    it('leaves 404.html as it is when it would change, and uploads it nowhere', async () => {
+      await run();
+      const before = fs.readFileSync(path.join(root, '404.html'), 'utf8');
+      puts.length = 0;
+      await setPublishing(false);
+
+      await run({ baseUrl: 'https://other.test/ui' });
+
+      should(puts).deepEqual([]);
+      should(fs.readFileSync(path.join(root, '404.html'), 'utf8')).equal(
+        before
+      );
+      should(await manifestRow('404.html')).be.ok();
+    });
+
+    it('does not write 404.html when it was never published', async () => {
+      await setPublishing(false);
+      await run();
+      should(await keys()).deepEqual([]);
+      should(await manifestPaths()).deepEqual([]);
+    });
+
+    it('treats a missing state row as off', async () => {
+      await query('DELETE FROM t_bot_surface_state');
+      sinon.stub(sails.log, 'error');
+
+      const summary = await run();
+
+      should(summary.publishing).be.false();
+      should(puts).deepEqual([]);
+    });
+
+    it('still removes the pages of a type that leaves the allow-list', async () => {
+      await run();
+      await setPublishing(false);
+
+      const summary = await run({ entityTypes: ['cave'] });
+
+      should(summary.byType.massif.deleted).equal(1);
+      should(summary.byType.organization.deleted).equal(1);
+      should(await keys()).not.containEql(`massifs/${FIRST_ID + 1}.html`);
+    });
+  });
 
   describe('a run over the fixtures', () => {
     it('writes the expected files, one per record, and 404.html', async () => {
@@ -1076,6 +1180,7 @@ describe('BotPageGeneratorService', () => {
         uploaded: 3,
         unchanged: 0,
         deleted: 0,
+        withheld: 0,
       });
       should(summary.uploaded).equal(6);
       // The hubs come after the records of the three types
@@ -1173,6 +1278,33 @@ describe('BotPageGeneratorService', () => {
       }));
       await run();
       should(puts).deepEqual([]);
+    });
+
+    it('with publishing off, deletes a hub whose page changed, keeps the unchanged ones, and uploads nothing', async () => {
+      await run();
+      puts.length = 0;
+      hubRows = [
+        INDEX(),
+        FRANCE(),
+        hubRow('region', 'FR-01', {
+          ...AIN().page,
+          caves: [cave(FIRST_ID + 1), cave(FIRST_ID + 2)],
+        }),
+      ];
+      await setPublishing(false);
+
+      const summary = await run();
+
+      should(puts).deepEqual([]);
+      should(deletes).deepEqual(['countries/FR/regions/01.html']);
+      should(summary.byType.hub).deepEqual({
+        uploaded: 0,
+        unchanged: 2,
+        deleted: 1,
+        withheld: 0,
+      });
+      should(await manifestRow('countries/FR/regions/01.html')).be.undefined();
+      should(await manifestRow('countries/FR.html')).be.ok();
     });
 
     it('deletes the file and the manifest row of a hub that is no longer published, and touches nothing else', async () => {

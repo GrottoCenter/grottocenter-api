@@ -88,7 +88,87 @@ const parseSchedule = (value) => {
   return fields.join(' ');
 };
 
+// The nightly audit (#1887)
+const AUDIT_DEFAULTS = Object.freeze({
+  sampleSize: 1000,
+  failureLimit: 10,
+  variantSample: 20,
+  timeBudgetMs: 30 * 60 * 1000,
+});
+const AUDIT_MAX_SAMPLE_SIZE = 100000;
+const AUDIT_MAX_VARIANT_SAMPLE = 1000;
+
+// An unset or blank value gives the default; anything but plain digits within
+// [min, max] stops the startup with the name of the variable
+const parseBoundedInteger = (name, value, fallback, min, max) => {
+  const text = String(value ?? '').trim();
+  if (text === '') return fallback;
+  const number = Number(text);
+  if (!/^\d+$/.test(text) || number < min || number > max) {
+    throw new Error(
+      `${name}: expected an integer from ${min} to ${max}, got "${text}"`
+    );
+  }
+  return number;
+};
+
+/** BOT_AUDIT_SAMPLE_SIZE: pages checked besides tonight's uploads. Default 1000, 0 to 100000. */
+const parseAuditSampleSize = (value) =>
+  parseBoundedInteger(
+    'BOT_AUDIT_SAMPLE_SIZE',
+    value,
+    AUDIT_DEFAULTS.sampleSize,
+    0,
+    AUDIT_MAX_SAMPLE_SIZE
+  );
+
+/** BOT_AUDIT_FAILURE_LIMIT: failures one run tolerates before publishing stops. Default 10, 0 or more. */
+const parseAuditFailureLimit = (value) =>
+  parseBoundedInteger(
+    'BOT_AUDIT_FAILURE_LIMIT',
+    value,
+    AUDIT_DEFAULTS.failureLimit,
+    0,
+    Number.MAX_SAFE_INTEGER
+  );
+
+/** BOT_AUDIT_VARIANT_SAMPLE: addresses requested as a browser. Default 20, 0 disables. */
+const parseAuditVariantSample = (value) =>
+  parseBoundedInteger(
+    'BOT_AUDIT_VARIANT_SAMPLE',
+    value,
+    AUDIT_DEFAULTS.variantSample,
+    0,
+    AUDIT_MAX_VARIANT_SAMPLE
+  );
+
+/** BOT_AUDIT_TIME_BUDGET_MS: when the audit stops reading pages. Default 30 minutes, 1000 or more. */
+const parseAuditTimeBudgetMs = (value) =>
+  parseBoundedInteger(
+    'BOT_AUDIT_TIME_BUDGET_MS',
+    value,
+    AUDIT_DEFAULTS.timeBudgetMs,
+    1000,
+    Number.MAX_SAFE_INTEGER
+  );
+
+/** The four settings of the audit, from the environment. */
+const parseAuditConfig = (env = process.env) => ({
+  sampleSize: parseAuditSampleSize(env.BOT_AUDIT_SAMPLE_SIZE),
+  failureLimit: parseAuditFailureLimit(env.BOT_AUDIT_FAILURE_LIMIT),
+  variantSample: parseAuditVariantSample(env.BOT_AUDIT_VARIANT_SAMPLE),
+  timeBudgetMs: parseAuditTimeBudgetMs(env.BOT_AUDIT_TIME_BUDGET_MS),
+});
+
 module.exports = {
+  AUDIT_DEFAULTS,
+  AUDIT_MAX_SAMPLE_SIZE,
+  AUDIT_MAX_VARIANT_SAMPLE,
+  parseAuditSampleSize,
+  parseAuditFailureLimit,
+  parseAuditVariantSample,
+  parseAuditTimeBudgetMs,
+  parseAuditConfig,
   ENTITY_TYPES,
   HUB_TYPE,
   DEFAULT_SCHEDULE,

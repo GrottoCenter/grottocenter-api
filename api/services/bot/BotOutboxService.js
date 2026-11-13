@@ -39,6 +39,13 @@
  * a hub may keep listing a withdrawn cave's name until the next night; the
  * cave's page and details are gone within minutes.
  *
+ * Publishing off (t_bot_surface_state, BotSurfaceStateService; #1887): the
+ * worker uploads nothing, but it still deletes. A page it would have rendered
+ * or re-rendered is deleted when its hash differs from the manifest's (the
+ * change may be a withdrawal's reduced version, the stale page must not stay),
+ * stays when unchanged, and is not uploaded when new. The outbox rows are
+ * handled and removed as always. An unreadable or missing state counts as off.
+ *
  * Bounded work: `batchSize` rows per batch, and no new batch starts once
  * `timeBudgetMs` is spent (the first batch of a run always completes, or the
  * rows of an oversized batch would never be handled). The lock is held for the
@@ -50,6 +57,7 @@ const searchOutbox = require('../../dbSync/searchOutbox');
 const BotPageGeneratorService = require('./BotPageGeneratorService');
 const BotHubService = require('./BotHubService');
 const BotPublishService = require('./BotPublishService');
+const BotSurfaceStateService = require('./BotSurfaceStateService');
 const botPagePaths = require('../../utils/botPagePaths');
 
 const BATCH_SIZE = 500;
@@ -81,7 +89,16 @@ const emptyCounts = () => ({
   redirected: 0,
   deleted: 0,
   unchanged: 0,
+  withheld: 0,
 });
+
+// The counter of each outcome of publishOrWithhold
+const COUNT_OF = {
+  uploaded: 'uploaded',
+  unchanged: 'unchanged',
+  withdrawn: 'deleted',
+  withheld: 'withheld',
+};
 
 const idsOf = (rows, column = 'id') => rows.map((r) => r[column]);
 
@@ -189,7 +206,7 @@ const loadRenderOptions = async () => {
 async function handleChunk(
   type,
   ids,
-  { adapter, renderOptions, hubs, entityTypes }
+  { adapter, renderOptions, hubs, entityTypes, publishing }
 ) {
   const counts = emptyCounts();
   // A type that is not listed (BOT_SURFACE_ENTITY_TYPES) is never published,
@@ -223,15 +240,16 @@ async function handleChunk(
     const row = viewRows.get(id);
     if (row) {
       counts.rendered += 1;
-      const uploaded = await BotPublishService.publishIfChanged(
+      const outcome = await BotPublishService.publishOrWithhold(
         adapter,
         BotPublishService.pagePublication(row, options),
-        known.get(path)
+        known.get(path),
+        { publishing }
       );
-      counts[uploaded ? 'uploaded' : 'unchanged'] += 1;
+      counts[COUNT_OF[outcome]] += 1;
     } else if (redirects.has(id)) {
       counts.rendered += 1;
-      const uploaded = await BotPublishService.publishIfChanged(
+      const outcome = await BotPublishService.publishOrWithhold(
         adapter,
         BotPublishService.redirectPublication(
           type,
@@ -239,9 +257,10 @@ async function handleChunk(
           redirects.get(id),
           renderOptions
         ),
-        known.get(path)
+        known.get(path),
+        { publishing }
       );
-      counts[uploaded ? 'redirected' : 'unchanged'] += 1;
+      counts[outcome === 'uploaded' ? 'redirected' : COUNT_OF[outcome]] += 1;
     } else if (known.has(path)) {
       // The file first, then the manifest row: a crash in between leaves a
       // row whose delete the next run repeats (deleting a gone path is fine)
@@ -264,6 +283,8 @@ async function runLocked({
   const counts = emptyCounts();
   await query('SELECT bot_outbox_trim()');
   let context;
+  // Read when the first batch is found (an idle minute reads nothing), once
+  let publishing;
   for (;;) {
     // eslint-disable-next-line no-await-in-loop
     const { rows } = await query(
@@ -275,6 +296,8 @@ async function runLocked({
     // eslint-disable-next-line no-await-in-loop
     context = context || (await loadRenderOptions());
     // eslint-disable-next-line no-await-in-loop
+    publishing = publishing ?? (await BotSurfaceStateService.isPublishing());
+    // eslint-disable-next-line no-await-in-loop
     const pages = await pagesOf(rows);
     // eslint-disable-next-line no-restricted-syntax
     for (const [type, ids] of Object.entries(pages)) {
@@ -285,6 +308,7 @@ async function runLocked({
         const done = await handleChunk(type, ids.slice(i, i + READ_CHUNK), {
           adapter,
           entityTypes,
+          publishing,
           ...context,
         });
         Object.keys(done).forEach((key) => {
@@ -339,8 +363,14 @@ module.exports = {
     if (!adapter) throw new Error('BotOutboxService.run needs an adapter');
     try {
       const counts = await BotPageGeneratorService.withRunLock(
-        () =>
-          runLocked({ adapter, batchSize, timeBudgetMs, signal, entityTypes }),
+        async () =>
+          runLocked({
+            adapter,
+            batchSize,
+            timeBudgetMs,
+            signal,
+            entityTypes,
+          }),
         'bot-outbox-worker'
       );
       return { skipped: false, ...counts };
