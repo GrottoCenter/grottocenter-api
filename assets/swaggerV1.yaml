@@ -11205,8 +11205,11 @@ paths:
       description: >-
         Issues a short-lived JWT (30-second TTL) for cross-origin authentication with
         an external product. The token is signed with a product-specific secret and
-        includes a synthetic email (no real PII). The front-end submits this token to
-        the target product's SSO login endpoint via a hidden POST form.
+        includes a synthetic email (no real PII). For `superset`, the front-end
+        submits this token to the product's SSO login endpoint via a hidden POST
+        form. For `documents`, the front-end sends it as a bearer token
+        (`Authorization: Bearer <token>`) to the AI documents server, which verifies
+        it locally (HS256, audience `documents`); it is not posted to a login form.
       security:
         - bearerAuth: []
       requestBody:
@@ -11222,7 +11225,8 @@ paths:
                   type: string
                   enum:
                     - superset
-                  description: Target product identifier. Determines which signing secret is used.
+                    - documents
+                  description: Target product identifier. Determines which signing secret is used and the token audience.
       responses:
         '200':
           description: SSO token issued successfully.

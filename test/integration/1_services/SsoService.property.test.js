@@ -31,6 +31,7 @@ const invalidProductArb = fc.oneof(
 describe('SsoService - Property-Based Tests', () => {
   afterEach(() => {
     delete process.env.SSO_SALT_SUPERSET;
+    delete process.env.SSO_SALT_DOCUMENTS;
   });
 
   describe('Property 1: Payload construction correctness', () => {
@@ -106,6 +107,48 @@ describe('SsoService - Property-Based Tests', () => {
           should(result.error).be.a.String();
           should(result.status).equal(400);
         }),
+        { numRuns: 100 }
+      );
+    });
+  });
+
+  describe('Property 6: Product secrets are isolated', () => {
+    it('should never verify a token with another product secret or audience', () => {
+      const saltArb = fc
+        .string({ minLength: 1, maxLength: 64 })
+        .filter((s) => s.trim().length > 0);
+
+      fc.assert(
+        fc.property(
+          caverArb,
+          saltArb,
+          saltArb,
+          (caver, documentsSalt, supersetSalt) => {
+            fc.pre(documentsSalt !== supersetSalt);
+            process.env.SSO_SALT_DOCUMENTS = documentsSalt;
+            process.env.SSO_SALT_SUPERSET = supersetSalt;
+
+            const documentsToken = SsoService.issueToken(
+              caver,
+              'documents'
+            ).token;
+            const supersetToken = SsoService.issueToken(
+              caver,
+              'superset'
+            ).token;
+
+            const decoded = jwt.verify(documentsToken, documentsSalt, {
+              audience: 'documents',
+            });
+            should(decoded.sub).equal(caver.id);
+
+            should(() => jwt.verify(documentsToken, supersetSalt)).throw();
+            should(() => jwt.verify(supersetToken, documentsSalt)).throw();
+            should(() =>
+              jwt.verify(supersetToken, supersetSalt, { audience: 'documents' })
+            ).throw();
+          }
+        ),
         { numRuns: 100 }
       );
     });

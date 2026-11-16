@@ -5,6 +5,7 @@ describe('SsoService', () => {
   describe('resolveSalt()', () => {
     afterEach(() => {
       delete process.env.SSO_SALT_SUPERSET;
+      delete process.env.SSO_SALT_DOCUMENTS;
     });
 
     it('should return error 400 when product is missing', () => {
@@ -68,6 +69,25 @@ describe('SsoService', () => {
       should(result.salt).equal('test-secret-123');
       should(result.error).be.undefined();
     });
+
+    it('should return the documents salt from SSO_SALT_DOCUMENTS', () => {
+      process.env.SSO_SALT_DOCUMENTS = 'documents-secret-456';
+      const result = SsoService.resolveSalt('documents');
+      should(result.salt).equal('documents-secret-456');
+      should(result.error).be.undefined();
+    });
+
+    it('should return error 500 for documents when SSO_SALT_DOCUMENTS is not set', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
+      delete process.env.SSO_SALT_DOCUMENTS;
+      process.env.SSO_SALT_SUPERSET = 'superset-only-secret';
+      const result = SsoService.resolveSalt('documents');
+      should(result.error).be.a.String();
+      should(result.status).equal(500);
+      should(result.salt).be.undefined();
+      process.env.NODE_ENV = originalEnv;
+    });
   });
 
   describe('buildPayload()', () => {
@@ -113,6 +133,7 @@ describe('SsoService', () => {
   describe('issueToken()', () => {
     afterEach(() => {
       delete process.env.SSO_SALT_SUPERSET;
+      delete process.env.SSO_SALT_DOCUMENTS;
     });
 
     it('should return a signed JWT for valid inputs', () => {
@@ -133,6 +154,59 @@ describe('SsoService', () => {
       should(decoded.firstName).equal('Alice');
       should(decoded.lastName).equal('Doe');
       should(decoded.exp - decoded.iat).equal(30);
+    });
+
+    it('should return a JWT for the documents product that verifies with SSO_SALT_DOCUMENTS', () => {
+      process.env.SSO_SALT_DOCUMENTS = 'documents-test-salt';
+      const caver = { id: 7, name: 'Bob', surname: 'Roe' };
+      const result = SsoService.issueToken(caver, 'documents');
+
+      should(result.error).be.undefined();
+      // eslint-disable-next-line global-require
+      const jsonwebtoken = require('jsonwebtoken');
+      const decoded = jsonwebtoken.verify(result.token, 'documents-test-salt', {
+        audience: 'documents',
+        algorithms: ['HS256'],
+      });
+      should(decoded.sub).equal(7);
+      should(decoded.aud).equal('documents');
+      should(decoded.exp - decoded.iat).equal(30);
+    });
+
+    it('should not verify a documents token with the superset secret, nor the reverse', () => {
+      process.env.SSO_SALT_DOCUMENTS = 'documents-salt-A';
+      process.env.SSO_SALT_SUPERSET = 'superset-salt-B';
+      const caver = { id: 8, name: 'Eve', surname: 'Poe' };
+      // eslint-disable-next-line global-require
+      const jsonwebtoken = require('jsonwebtoken');
+
+      const documentsToken = SsoService.issueToken(caver, 'documents').token;
+      const supersetToken = SsoService.issueToken(caver, 'superset').token;
+
+      should(() =>
+        jsonwebtoken.verify(documentsToken, 'superset-salt-B')
+      ).throw(/invalid signature/);
+      should(() =>
+        jsonwebtoken.verify(supersetToken, 'documents-salt-A')
+      ).throw(/invalid signature/);
+      should(() =>
+        jsonwebtoken.verify(supersetToken, 'superset-salt-B', {
+          audience: 'documents',
+        })
+      ).throw(/audience invalid/);
+    });
+
+    it('should return error 500 for documents when SSO_SALT_DOCUMENTS is not configured', () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
+      delete process.env.SSO_SALT_DOCUMENTS;
+      const caver = { id: 1, name: 'Test', surname: 'User' };
+      const result = SsoService.issueToken(caver, 'documents');
+
+      should(result.error).be.a.String();
+      should(result.status).equal(500);
+      should(result.token).be.undefined();
+      process.env.NODE_ENV = originalEnv;
     });
 
     it('should return error for invalid product', () => {
