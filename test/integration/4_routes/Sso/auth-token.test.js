@@ -6,6 +6,7 @@ const TokenService = require('../../../../api/services/TokenService');
 describe('POST /api/v1/sso/auth-token', () => {
   let authToken;
   const testSalt = 'integration-test-superset-salt';
+  const documentsSalt = 'integration-test-documents-salt';
 
   before(() => {
     // Issue a valid GC auth token for an existing caver fixture
@@ -15,10 +16,12 @@ describe('POST /api/v1/sso/auth-token', () => {
       'Authentication'
     );
     process.env.SSO_SALT_SUPERSET = testSalt;
+    process.env.SSO_SALT_DOCUMENTS = documentsSalt;
   });
 
   after(() => {
     delete process.env.SSO_SALT_SUPERSET;
+    delete process.env.SSO_SALT_DOCUMENTS;
   });
 
   describe('Happy path', () => {
@@ -42,6 +45,51 @@ describe('POST /api/v1/sso/auth-token', () => {
       should(decoded).have.property('lastName');
       should(decoded).have.property('jti');
       should(decoded.exp - decoded.iat).equal(30);
+    });
+  });
+
+  describe('Documents product', () => {
+    it('should return 200 with a JWT for product "documents" signed with its own secret', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/sso/auth-token')
+        .set('Authorization', `Bearer ${authToken}`)
+        .set('Content-Type', 'application/json')
+        .send({ product: 'documents' })
+        .expect(200);
+
+      const decoded = jwt.verify(res.body.token, documentsSalt, {
+        audience: 'documents',
+        algorithms: ['HS256'],
+      });
+      should(decoded.sub).equal(1);
+      should(decoded.aud).equal('documents');
+      should(decoded).have.property('jti');
+      should(decoded.exp - decoded.iat).equal(30);
+
+      // The Superset secret must not be able to verify a documents token
+      should(() => jwt.verify(res.body.token, testSalt)).throw(
+        /invalid signature/
+      );
+    });
+
+    it('should return 500 for "documents" when SSO_SALT_DOCUMENTS is not configured', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'test';
+      delete process.env.SSO_SALT_DOCUMENTS;
+
+      try {
+        const res = await supertest(sails.hooks.http.app)
+          .post('/api/v1/sso/auth-token')
+          .set('Authorization', `Bearer ${authToken}`)
+          .set('Content-Type', 'application/json')
+          .send({ product: 'documents' })
+          .expect(500);
+
+        should(res.body).be.an.Object();
+      } finally {
+        process.env.SSO_SALT_DOCUMENTS = documentsSalt;
+        process.env.NODE_ENV = originalNodeEnv;
+      }
     });
   });
 

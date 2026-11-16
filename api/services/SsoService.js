@@ -17,11 +17,13 @@ const jwt = require('jsonwebtoken');
  */
 const PRODUCT_REGISTRY = {
   superset: 'SSO_SALT_SUPERSET',
+  documents: 'SSO_SALT_DOCUMENTS',
 };
 
 const SSO_TOKEN_TTL = 30; // seconds
 
-// Local dev fallback (matches SUPERSET_SSO_SECRET default in superset_config.py).
+// Local dev fallback (matches SUPERSET_SSO_SECRET default in superset_config.py;
+// the AI documents server must use the same value as SSO_SALT_DOCUMENTS in dev).
 // Only used when NODE_ENV=development and the env var is not set.
 const DEV_FALLBACK_SALT = 'aR4nd0mSs0DevSalt_change_in_prod';
 
