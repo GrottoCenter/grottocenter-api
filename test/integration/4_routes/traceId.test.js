@@ -41,4 +41,39 @@ describe('Trace ID middleware', () => {
     should(response.headers).have.property('x-trace-id');
     should(response.headers['x-trace-id']).have.length(36);
   });
+
+  it('should replace an X-Trace-Id that is not a UUID', async () => {
+    const response = await request(sails.hooks.http.app)
+      .get('/api/v1/swagger.yaml')
+      .set('X-Trace-Id', 'not-a-uuid <script>');
+
+    should(response.headers['x-trace-id']).not.equal('not-a-uuid <script>');
+    should(response.headers['x-trace-id']).match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
+  });
+
+  describe('CORS', () => {
+    it('should allow x-trace-id in the preflight answer', async () => {
+      const response = await request(sails.hooks.http.app)
+        .options('/api/v1/swagger.yaml')
+        .set('Origin', 'https://www.grottocenter.org')
+        .set('Access-Control-Request-Method', 'GET')
+        .set('Access-Control-Request-Headers', 'x-trace-id');
+
+      should(response.headers['access-control-allow-headers']).containEql(
+        'x-trace-id'
+      );
+    });
+
+    it('should expose X-Trace-Id on a cross-origin response', async () => {
+      const response = await request(sails.hooks.http.app)
+        .get('/api/v1/swagger.yaml')
+        .set('Origin', 'https://www.grottocenter.org');
+
+      should(response.headers['access-control-expose-headers']).containEql(
+        'X-Trace-Id'
+      );
+    });
+  });
 });

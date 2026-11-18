@@ -8,7 +8,7 @@
  * For more information on configuration, check out:
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
-const { v7: uuidv7 } = require('uuid');
+const { v7: uuidv7, validate: isUuid } = require('uuid');
 const multer = require('multer');
 const responseTime = require('response-time');
 const path = require('path');
@@ -110,7 +110,9 @@ module.exports.http = {
      *************************************************************************** */
 
     traceId(req, res, next) {
-      const traceId = req.get('X-Trace-Id') || uuidv7();
+      // Only a UUID is kept: the value ends up in the logs and in reference_id.
+      const sent = req.get('X-Trace-Id');
+      const traceId = isUuid(sent) ? sent : uuidv7();
       req.traceId = traceId;
       res.set('X-Trace-Id', traceId);
       logger.run(traceId, next);
@@ -120,7 +122,11 @@ module.exports.http = {
     // preflight OPTIONS requests that Sails' built-in CORS may not cover.
     corsHeaders(req, res, next) {
       res.set('Access-Control-Allow-Origin', '*');
-      res.set('Access-Control-Allow-Headers', 'content-type, authorization');
+      res.set(
+        'Access-Control-Allow-Headers',
+        'content-type, authorization, x-trace-id'
+      );
+      res.set('Access-Control-Expose-Headers', 'X-Trace-Id');
       res.set(
         'Access-Control-Allow-Methods',
         'GET, POST, PUT, PATCH, DELETE, OPTIONS'
