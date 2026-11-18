@@ -30,7 +30,7 @@ module.exports.security = {
     allRoutes: true,
     allowOrigins: '*',
     allowCredentials: false,
-    allowRequestHeaders: 'content-type, authorization',
+    allowRequestHeaders: 'content-type, authorization, x-trace-id',
   },
   /** **************************************************************************
    *                                                                           *
