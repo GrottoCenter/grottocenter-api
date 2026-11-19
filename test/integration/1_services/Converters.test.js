@@ -483,6 +483,30 @@ describe('Converters Service', () => {
     });
   });
 
+  describe('Panorama files (#2007)', () => {
+    it('should expose the stored flag on files and featured files', () => {
+      const file = { id: 1, fileName: 'sphere.jpg', path: 'p.jpg' };
+      should(
+        converters.toFile({ ...file, isPanorama: true }).isPanorama
+      ).be.true();
+      should(
+        converters.toFeaturedFile({ ...file, isPanorama: true })
+      ).containEql({ id: 1, fileName: 'sphere.jpg', isPanorama: true });
+      should(
+        converters.toFile({ ...file, isPanorama: false }).isPanorama
+      ).be.false();
+    });
+
+    it('should expose false when the flag is missing', () => {
+      should(converters.toFile({ id: 1 }).isPanorama).be.false();
+      should(converters.toFeaturedFile({ id: 1 }).isPanorama).be.false();
+      should(
+        converters.toParentDocument({ id: 1, files: [{ id: 2 }] }).files[0]
+          .isPanorama
+      ).be.false();
+    });
+  });
+
   describe('toDocument() parent', () => {
     it("should expose the parent's identifier without inheriting it", () => {
       const result = converters.toDocument({

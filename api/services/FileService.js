@@ -167,6 +167,7 @@ module.exports = {
      * @param {*} isValidated
      * @param {*} connection
      * @param {number|null} pdfPageOffset checked by the caller (#1936)
+     * @param {boolean} isPanorama resolved by the caller (#2007)
      * @throws {FileError}
      * @returns
      */
@@ -177,7 +178,8 @@ module.exports = {
       fetchResult = false,
       isValidated = true,
       connection = null,
-      pdfPageOffset = null
+      pdfPageOffset = null,
+      isPanorama = false
     ) {
       const name = file.originalname;
       const pathName = generateName(name);
@@ -243,6 +245,7 @@ module.exports = {
         thumbnailMedium: thumbnailPaths.medium,
         thumbnailLarge: thumbnailPaths.large,
         pdfPageOffset,
+        isPanorama,
       };
       let createQuery = TFile.create(param);
       if (connection) {
@@ -299,14 +302,18 @@ module.exports = {
       );
     },
 
-    // An undefined pdfPageOffset leaves the stored offset unchanged (#1936).
+    // An undefined property leaves the stored value unchanged: fileName,
+    // pdfPageOffset (#1936) and isPanorama (#2007).
     async update(file, connection = null) {
-      let query = TFile.updateOne(file.id).set({
-        fileName: file.fileName,
-        ...(file.pdfPageOffset !== undefined && {
-          pdfPageOffset: file.pdfPageOffset,
-        }),
-      });
+      const values = Object.fromEntries(
+        ['fileName', 'pdfPageOffset', 'isPanorama']
+          .filter((key) => file[key] !== undefined)
+          .map((key) => [key, file[key]])
+      );
+      let query =
+        Object.keys(values).length > 0
+          ? TFile.updateOne(file.id).set(values)
+          : TFile.findOne(file.id);
       if (connection) {
         query = query.usingConnection(connection);
       }

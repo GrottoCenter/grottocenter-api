@@ -15,6 +15,7 @@ const {
 const isValidId = require('../utils/isValidId');
 const { resolveCaveDisplayTarget } = require('../utils/caveDisplayTarget');
 const parsePdfPageOffset = require('../utils/parsePdfPageOffset');
+const panorama = require('../utils/panorama');
 const { validateStringLengths } = require('../utils/stringLengthValidation');
 
 // Normalize a collection value to a plain ID (handles both raw IDs and objects).
@@ -51,6 +52,20 @@ const trimToNull = (value) =>
 
 const invalidOffsetMessage = (field) =>
   `${field} must be an integer between -${parsePdfPageOffset.MAX} and ${parsePdfPageOffset.MAX}, or empty to clear it.`;
+
+// Structured 400 bodies of the panorama checks (#2007), built by
+// toBadRequestBody() once the request is known.
+const invalidPanoramaFlag = (field, value) => ({
+  error: `${field} must be a boolean (true or false).`,
+  code: 'E_INVALID_PANORAMA_FLAG',
+  metadata: { field, value },
+});
+
+const incompatiblePanorama = (field, fileName, reason) => ({
+  error: `${field}: "${fileName}" cannot be displayed as a panorama: ${panorama.REASON_MESSAGES[reason]}.`,
+  code: 'E_INCOMPATIBLE_PANORAMA',
+  metadata: { field, fileName, reason },
+});
 
 // A multipart body turns `files[0][id]` into an array, but a JSON client may
 // send an object keyed by index: accept both, keeping the indexes.
@@ -329,6 +344,77 @@ module.exports = {
   },
 
   /**
+   * Panorama flags of the files uploaded with a create or update (#2007), in
+   * the order of the multipart `files` collection, like readNewFileOffsets.
+   * An omitted newFilesMetadata[i][isPanorama] is detected from the GPano
+   * metadata of the original file; an explicit true is checked against the
+   * image; an explicit false is kept as is.
+   * @param {*} rawMetadata newFilesMetadata as sent by the client
+   * @param {Object[]} files multer files of the request
+   * @returns {Promise<{ panoramas: boolean[] } | { error: string, code?: string, metadata?: Object }>}
+   */
+  async readNewFilePanoramas(rawMetadata, files = []) {
+    const flags = files.map(() => undefined);
+    if (rawMetadata !== undefined) {
+      const entries = toIndexedEntries(rawMetadata);
+      if (!entries)
+        return { error: 'newFilesMetadata must be a list of objects.' };
+      for (const [index, metadata] of entries) {
+        // eslint-disable-next-line no-continue
+        if (metadata == null) continue;
+        if (!Number.isInteger(index) || index >= files.length)
+          return {
+            error: `newFilesMetadata[${index}] does not match an uploaded file: ${files.length} file(s) were sent.`,
+          };
+        if (typeof metadata !== 'object')
+          return { error: `newFilesMetadata[${index}] must be an object.` };
+        const field = `newFilesMetadata[${index}][isPanorama]`;
+        const flag = panorama.parsePanoramaFlag(metadata.isPanorama);
+        if (flag === panorama.parsePanoramaFlag.INVALID)
+          return invalidPanoramaFlag(field, metadata.isPanorama);
+        flags[index] = flag;
+      }
+    }
+
+    const panoramas = [];
+    for (const [index, file] of files.entries()) {
+      const flag = flags[index];
+      if (flag === false) {
+        panoramas.push(false);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      const info = await panorama.readImageInfo(file.buffer);
+      if (flag === true) {
+        const reason = panorama.checkManualPanorama(info);
+        if (reason)
+          return incompatiblePanorama(
+            `newFilesMetadata[${index}][isPanorama]`,
+            file.originalname,
+            reason
+          );
+        panoramas.push(true);
+      } else {
+        panoramas.push(panorama.detectPanorama(info));
+      }
+    }
+    return { panoramas };
+  },
+
+  /**
+   * The body of a 400 for an error returned by the file metadata checks:
+   * structured when the check gives a code, the message otherwise.
+   * @param {Object} req
+   * @param {{ error: string, code?: string, metadata?: Object }} result
+   * @returns {Object|string}
+   */
+  toBadRequestBody(req, { error, code, metadata }) {
+    if (!code) return error;
+    return sails.helpers.formatStructuredError(req, error, code, metadata);
+  },
+
+  /**
    * Files modified and deleted by a document update, checked against the
    * files of that document. A modified file keeps its pdfPageOffset only when
    * the client sent one (null clears it), so an omitted offset is left
@@ -356,6 +442,13 @@ module.exports = {
               error: invalidOffsetMessage(`${field}[${index}][pdfPageOffset]`),
             };
           if (offset !== undefined) file.pdfPageOffset = offset;
+          const flag = panorama.parsePanoramaFlag(entry.isPanorama);
+          if (flag === panorama.parsePanoramaFlag.INVALID)
+            return invalidPanoramaFlag(
+              `${field}[${index}][isPanorama]`,
+              entry.isPanorama
+            );
+          if (flag !== undefined) file.isPanorama = flag;
         }
         changed.push({ index, file });
       }
@@ -396,10 +489,48 @@ module.exports = {
       }
     }
 
+    // A manual panorama is checked against the stored image, never against
+    // client-supplied dimensions (#2007). Keeping a stored true needs no check.
+    for (const { index, file } of modified.changed) {
+      const stored = storedById.get(file.id);
+      if (file.isPanorama === true && stored.isPanorama !== true) {
+        // eslint-disable-next-line no-await-in-loop
+        const reason = await module.exports.checkStoredFilePanorama(stored);
+        if (reason)
+          return incompatiblePanorama(
+            `modifiedFiles[${index}][isPanorama]`,
+            stored.fileName,
+            reason
+          );
+      }
+    }
+
     return {
       modifiedFiles: modified.changed.map((c) => c.file),
       deletedFiles: deleted.changed.map((c) => c.file),
     };
+  },
+
+  /**
+   * Why a stored file cannot be declared a panorama, or null (#2007). Only
+   * images are downloaded.
+   * @param {Object} stored TFile row, its fileFormat populated
+   * @returns {Promise<string|null>} a panorama reason
+   */
+  async checkStoredFilePanorama(stored) {
+    const mimeType = stored.fileFormat?.mimeType?.trim() ?? '';
+    if (!mimeType.startsWith('image/')) return panorama.REASONS.NOT_AN_IMAGE;
+    let buffer;
+    try {
+      buffer = await FileService.document.download(stored.path);
+    } catch (err) {
+      sails.log.error(
+        `Panorama check: file ${stored.id} (${stored.path}) could not be read`,
+        err
+      );
+      return panorama.REASONS.UNREADABLE_FILE;
+    }
+    return panorama.checkManualPanorama(await panorama.readImageInfo(buffer));
   },
 
   // Extract everything from the request body except id and dateInscription

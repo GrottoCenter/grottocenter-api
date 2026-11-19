@@ -2142,10 +2142,12 @@ paths:
           description: >-
             Metadata of the uploaded files: `newFilesMetadata[i]` describes the
             i-th binary of `files`, whatever order the uploads complete in. In
-            multipart/form-data, send `newFilesMetadata[i][pdfPageOffset]`.
-            Entries may be left out for files without metadata.
-            `pdfPageOffset` follows the convention of
+            multipart/form-data, send `newFilesMetadata[i][pdfPageOffset]` or
+            `newFilesMetadata[i][isPanorama]`. Entries may be left out for
+            files without metadata. `pdfPageOffset` follows the convention of
             `identifierPdfPageOffset` and is only allowed for a PDF file.
+            `isPanorama` is described in `NewFileMetadata`: omit it to detect a
+            panorama from the GPano metadata of the uploaded image.
           schema:
             type: array
             items:
@@ -2262,7 +2264,35 @@ paths:
             and `creatorComment` 300, `identifier` 250, `issue` 100, `pages`
             20, `datePublication` 10 characters). Nothing is created in that
             case. A length error answers `{ message, errors }`, where `errors`
-            lists `{ field, message }` for each overlong field.
+            lists `{ field, message }` for each overlong field. A panorama
+            error answers a `StructuredError`: `E_INVALID_PANORAMA_FLAG` for an
+            `isPanorama` that is not `true` or `false` (`null` and an empty
+            value included), with `metadata.field` and `metadata.value`;
+            `E_INCOMPATIBLE_PANORAMA` for an `isPanorama` of `true` on a file
+            that is not a complete equirectangular sphere, with
+            `metadata.field`, `metadata.fileName` and `metadata.reason`
+            (`NOT_AN_IMAGE`, `UNSUPPORTED_FORMAT`, `NOT_A_STILL_IMAGE`,
+            `NOT_A_COMPLETE_SPHERE`, `UNSUPPORTED_PROJECTION`,
+            `PARTIAL_COVERAGE`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: string
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                      errors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            field:
+                              type: string
+                            message:
+                              type: string
+                  - $ref: '#/components/schemas/StructuredError'
         '401':
           $ref: '#/components/responses/Unauthorized'
         403:
@@ -2508,6 +2538,17 @@ paths:
         fields, the offsets are applied once the modification is validated by a
         moderator; the offset of a newly uploaded file is stored with the file,
         which is only published on validation.
+
+
+        **Panorama files** (`newFilesMetadata[i][isPanorama]`,
+        `modifiedFiles[i][isPanorama]`): `true` opens the file in the
+        360-degree viewer, `false` keeps it a regular image. For a newly
+        uploaded file, omit the flag to detect it from the image's GPano
+        metadata. For an existing file, omit the flag to leave it unchanged,
+        including when the file is renamed. A `true` is checked against the
+        stored image, never against client-supplied dimensions. A proposed flag
+        is applied once the modification is validated by a moderator, and
+        shown in the `?requireUpdate=true` preview meanwhile.
       parameters:
         - name: id
           in: path
@@ -2542,11 +2583,15 @@ paths:
         - name: modifiedFiles
           in: query
           description: >-
-            Existing files of the document to rename or whose PDF page offset
-            changes, e.g. `modifiedFiles[0][id]=101`,
+            Existing files of the document to rename, or whose PDF page offset
+            or panorama flag changes, e.g. `modifiedFiles[0][id]=101`,
             `modifiedFiles[0][fileName]=bulletin.pdf`,
-            `modifiedFiles[0][pdfPageOffset]=0`. Every file must belong to the
-            document; `pdfPageOffset` is only allowed for a PDF file.
+            `modifiedFiles[0][pdfPageOffset]=0`,
+            `modifiedFiles[1][id]=102`, `modifiedFiles[1][isPanorama]=true`.
+            Every file must belong to the document; `pdfPageOffset` is only
+            allowed for a PDF file, `isPanorama: true` for a stored image that
+            is a complete equirectangular sphere. An omitted property is left
+            unchanged.
           schema:
             type: array
             items:
@@ -2561,6 +2606,11 @@ paths:
                   minimum: -2147483647
                   maximum: 2147483647
                   nullable: true
+                isPanorama:
+                  type: boolean
+                  description: >-
+                    `true` or `false` (the strings `true` / `false` in
+                    multipart/form-data). Omitted: unchanged.
         - name: deletedFiles
           in: query
           description: >-
@@ -2596,7 +2646,17 @@ paths:
             page offset, an offset for an identifier that is not a URL or for a
             file that is not a PDF, `newFilesMetadata` for a file that was not
             uploaded, or a modified or deleted file that does not belong to the
-            document. Nothing is uploaded or submitted in that case.
+            document. Nothing is uploaded or submitted in that case. Panorama
+            errors answer a `StructuredError` with the codes and metadata
+            described for POST /documents; for an existing file,
+            `metadata.reason` may also be `UNREADABLE_FILE` when the stored
+            image cannot be read.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: string
+                  - $ref: '#/components/schemas/StructuredError'
         '401':
           $ref: '#/components/responses/Unauthorized'
         403:
@@ -13256,6 +13316,25 @@ components:
           description: >-
             `PDF position = printed page number + offset`, for a PDF file only.
             Omitted or empty: no offset.
+        isPanorama:
+          type: boolean
+          description: >-
+            `true` or `false` (the strings `true` / `false` in
+            multipart/form-data). Omitted: detected from the image's GPano XMP
+            metadata, read from the original file: `true` only for a JPEG, PNG
+            or WebP still image whose metadata describes a complete
+            equirectangular sphere (`ProjectionType` equirectangular, full
+            panorama 2:1, and the cropped area size and offsets all present
+            and uncropped) coherent with the image's own 2:1 dimensions, unless
+            `UsePanoramaViewer` is `False`. Missing, malformed (including XMP
+            that is not well-formed XML) or inconsistent metadata gives `false`
+            without rejecting the upload,
+            and a 2:1 ratio alone is never detected. An explicit `true` needs no
+            GPano metadata, but the image must be a 2:1 still image without
+            metadata declaring another projection or a partial panorama (a
+            nonzero offset or a cropped size smaller than the full size is
+            rejected even when the rest of the metadata is missing). An
+            explicit `false` wins over detection.
     File:
       type: object
       properties:
@@ -13276,6 +13355,13 @@ components:
           description: >-
             For a PDF, `PDF position = printed page number + offset`. Null when
             no offset is configured.
+        isPanorama:
+          type: boolean
+          description: >-
+            Open the file in a 360-degree viewer: a complete equirectangular
+            sphere. `false` for regular images, non-images and files stored
+            before the setting existed. `completePath` and `thumbnails` are
+            unchanged for a panorama.
         thumbnails:
           type: object
           nullable: true
@@ -13315,6 +13401,9 @@ components:
         fileName:
           type: string
           example: brudour-entrance.jpg
+        isPanorama:
+          type: boolean
+          description: As in `File.isPanorama`.
         completePath:
           type: string
           description: Full public URL to the original image.

@@ -829,6 +829,7 @@ CREATE TABLE t_file (
 	path varchar(1000) NULL,
 	is_validated bool NOT NULL DEFAULT false,
 	pdf_page_offset int4 NULL,
+	is_panorama bool NOT NULL DEFAULT false,
 	CONSTRAINT t_file_pk PRIMARY KEY (id),
 	CONSTRAINT t_file_t_document_fk FOREIGN KEY (id_document) REFERENCES t_document(id),
 	CONSTRAINT t_file_t_file_format_fk FOREIGN KEY (id_file_format) REFERENCES t_file_format(id)

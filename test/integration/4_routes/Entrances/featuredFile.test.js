@@ -133,6 +133,7 @@ describe('Entrance featured file (#1701)', () => {
       should(featuredFile).have.only.keys(
         'id',
         'fileName',
+        'isPanorama',
         'completePath',
         'thumbnails'
       );

@@ -92,5 +92,13 @@ module.exports = {
       columnName: 'pdf_page_offset',
       columnType: 'integer',
     },
+
+    // Open the file in the 360-degree viewer (#2007): a complete
+    // equirectangular sphere, detected on upload or set by a contributor.
+    isPanorama: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_panorama',
+    },
   },
 };

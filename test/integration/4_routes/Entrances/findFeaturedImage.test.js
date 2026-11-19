@@ -235,6 +235,7 @@ describe('GET /api/v1/entrances/:entranceId/featured-image (#1992)', () => {
     should(body.featuredFile).have.only.keys(
       'id',
       'fileName',
+      'isPanorama',
       'completePath',
       'thumbnails'
     );
