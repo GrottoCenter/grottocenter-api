@@ -56,18 +56,21 @@ async function getModifiedDocumentData(documentId) {
 
   populatedDoc.files = await TFile.find(filesCriterias);
   populatedDoc.newFiles = newFiles;
-  populatedDoc.deletedFiles = deletedFiles;
-  // The pending change only holds what it modifies: complete it with the
-  // stored file, so an omitted pdfPageOffset shows its current value (#1936).
-  const storedModifiedFiles =
-    modifiedFiles?.length > 0
-      ? await TFile.find({ id: modifiedFiles.map((f) => f.id), document: id })
+  // The pending change only holds what it modifies or deletes: complete it
+  // with the stored file, so an omitted pdfPageOffset shows its current value
+  // (#1936) and a deleted file keeps its stored isPanorama (#2007).
+  const changedFiles = [...(modifiedFiles ?? []), ...(deletedFiles ?? [])];
+  const storedChangedFiles =
+    changedFiles.length > 0
+      ? await TFile.find({
+          id: changedFiles.map((f) => Number(f.id)),
+          document: id,
+        })
       : [];
-  const storedById = new Map(storedModifiedFiles.map((f) => [f.id, f]));
-  populatedDoc.modifiedFiles = modifiedFiles?.map((f) => ({
-    ...storedById.get(Number(f.id)),
-    ...f,
-  }));
+  const storedById = new Map(storedChangedFiles.map((f) => [f.id, f]));
+  const withStored = (f) => ({ ...storedById.get(Number(f.id)), ...f });
+  populatedDoc.modifiedFiles = modifiedFiles?.map(withStored);
+  populatedDoc.deletedFiles = deletedFiles?.map(withStored);
 
   return populatedDoc;
 }

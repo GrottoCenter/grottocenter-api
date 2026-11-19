@@ -452,6 +452,20 @@ describe('Document panorama files (#2007)', () => {
       });
     });
 
+    it('should preview a deleted panorama with its stored flag', async () => {
+      await updateRequest(userToken, documentId)
+        .field('title', 'Pending panorama deletion')
+        .field('deletedFiles[0][id]', String(panoramaFileId))
+        .field('deletedFiles[1][id]', String(plainFileId))
+        .expect(200);
+
+      const preview = await getDocument('?requireUpdate=true');
+      should(flagsByName(preview.body.deletedFiles)).eql({
+        'sphere.jpg': true,
+        'plain.jpg': false,
+      });
+    });
+
     it('should keep the flags when the modification is refused', async () => {
       await updateRequest(userToken, documentId)
         .field('title', 'Pending panoramas')
