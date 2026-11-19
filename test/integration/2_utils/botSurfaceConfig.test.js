@@ -74,3 +74,79 @@ describe('botSurfaceConfig - parseSchedule', () => {
     });
   });
 });
+
+const {
+  parseAuditSampleSize,
+  parseAuditFailureLimit,
+  parseAuditVariantSample,
+  parseAuditTimeBudgetMs,
+  parseAuditConfig,
+} = require('../../../api/utils/botSurfaceConfig');
+
+describe('botSurfaceConfig - the audit settings', () => {
+  it('gives the documented defaults when nothing is set', () => {
+    should(parseAuditConfig({})).eql({
+      sampleSize: 1000,
+      failureLimit: 10,
+      variantSample: 20,
+      timeBudgetMs: 1800000,
+    });
+    should(parseAuditConfig({ BOT_AUDIT_SAMPLE_SIZE: '  ' }).sampleSize).equal(
+      1000
+    );
+  });
+
+  it('reads each value from its variable', () => {
+    should(
+      parseAuditConfig({
+        BOT_AUDIT_SAMPLE_SIZE: '5000',
+        BOT_AUDIT_FAILURE_LIMIT: '0',
+        BOT_AUDIT_VARIANT_SAMPLE: '0',
+        BOT_AUDIT_TIME_BUDGET_MS: '60000',
+      })
+    ).eql({
+      sampleSize: 5000,
+      failureLimit: 0,
+      variantSample: 0,
+      timeBudgetMs: 60000,
+    });
+  });
+
+  [
+    [
+      parseAuditSampleSize,
+      'BOT_AUDIT_SAMPLE_SIZE',
+      ['-1', '1.5', 'abc', '1e3', '100001', '0x10'],
+    ],
+    [
+      parseAuditFailureLimit,
+      'BOT_AUDIT_FAILURE_LIMIT',
+      ['-1', '2.5', 'ten', ' 1 2'],
+    ],
+    [
+      parseAuditVariantSample,
+      'BOT_AUDIT_VARIANT_SAMPLE',
+      ['-3', '1001', '1.0', 'x'],
+    ],
+    [
+      parseAuditTimeBudgetMs,
+      'BOT_AUDIT_TIME_BUDGET_MS',
+      ['0', '999', '-5', 'soon'],
+    ],
+  ].forEach(([parse, name, bad]) => {
+    bad.forEach((value) => {
+      it(`rejects ${name}="${value}" naming the variable`, () => {
+        should(() => parse(value)).throw(
+          new RegExp(`^${name}: expected an integer`)
+        );
+      });
+    });
+  });
+
+  it('accepts the bounds', () => {
+    should(parseAuditSampleSize('0')).equal(0);
+    should(parseAuditSampleSize('100000')).equal(100000);
+    should(parseAuditVariantSample('1000')).equal(1000);
+    should(parseAuditTimeBudgetMs('1000')).equal(1000);
+  });
+});

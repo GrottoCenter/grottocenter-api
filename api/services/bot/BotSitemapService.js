@@ -41,6 +41,13 @@
  * valid). The manifest row of a file is written after its upload and removed
  * after its delete, as for the pages.
  *
+ * Publishing off (t_bot_surface_state; #1887): nothing is uploaded. A file whose
+ * content is unchanged stays; a file that would change (a shard that lost or
+ * gained a URL, or an index naming a different set of shards) is not produced
+ * and is therefore DELETED with the other files nobody lists, the index first.
+ * So the sitemaps never keep naming a page the generator deleted, and a stop
+ * with nothing withdrawn leaves them as they are. A new shard is not uploaded.
+ *
  * Memory: the manifest of one type is read by keyset; at most one shard
  * (50,000 URLs) is held at a time, plus the list of shards for the index.
  *
@@ -55,6 +62,7 @@ const zlib = require('zlib');
 const botPagePaths = require('../../utils/botPagePaths');
 const botSitemap = require('../../utils/botSitemap');
 const BotPageGeneratorService = require('./BotPageGeneratorService');
+const BotSurfaceStateService = require('./BotSurfaceStateService');
 
 const gzip = util.promisify(zlib.gzip);
 
@@ -166,7 +174,14 @@ const assertOptions = ({ entityTypes, batchSize }) => {
   }
 };
 
-async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
+async function publish({
+  adapter,
+  baseUrl,
+  siteUrl,
+  entityTypes,
+  batchSize,
+  publishing,
+}) {
   const pageBase = baseUrl || sails.config.custom.botSurface.publicBaseUrl;
   const fileBase = (siteUrl || botSitemap.siteOrigin(pageBase)).replace(
     /\/+$/,
@@ -178,20 +193,27 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
     uploaded: 0,
     unchanged: 0,
     deleted: 0,
+    withheld: 0,
     shards: 0,
     urls: 0,
+    publishing,
   };
   // The shards of this run, in order, for the index: { path, lastmod }
   const shards = [];
 
   // Returns the lastmod of the file: the stored one when it is unchanged, the
-  // one given (the run's time for a shard) when it is uploaded
+  // one given (the run's time for a shard) when it is uploaded, null when
+  // publishing is off and the file would have to change: it is not produced
   const publishFile = async (path, xml, lastmod, contentType) => {
     const hash = sha256(xml);
     const previous = known.get(path);
     if (previous && previous.hash === hash) {
       summary.unchanged += 1;
       return previous.lastmod;
+    }
+    if (!publishing) {
+      summary.withheld += 1;
+      return null;
     }
     const body =
       contentType === SHARD_CONTENT_TYPE
@@ -218,6 +240,7 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
       runAt,
       SHARD_CONTENT_TYPE
     );
+    if (lastmod === null) return;
     shards.push({ path, lastmod });
     summary.shards += 1;
     summary.urls += entries.length;
@@ -280,7 +303,7 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
 
   const produced = new Set(shards.map((shard) => shard.path));
   if (shards.length > 0) {
-    await publishFile(
+    const indexLastmod = await publishFile(
       botSitemap.INDEX_PATH,
       botSitemap.sitemapIndexXml(
         shards.map((shard) => ({
@@ -291,7 +314,7 @@ async function publish({ adapter, baseUrl, siteUrl, entityTypes, batchSize }) {
       latest(shards.map((shard) => shard.lastmod)),
       INDEX_CONTENT_TYPE
     );
-    produced.add(botSitemap.INDEX_PATH);
+    if (indexLastmod !== null) produced.add(botSitemap.INDEX_PATH);
   }
 
   // The index first when it goes too, then the shards nobody lists any more
@@ -340,10 +363,15 @@ module.exports = {
     } = options;
     if (!adapter) throw new Error('BotSitemapService.run needs an adapter');
     assertOptions({ entityTypes, batchSize });
-    return BotPageGeneratorService.withRunLock(
-      () => publish({ ...options, entityTypes, batchSize }),
-      'bot-sitemaps'
-    );
+    return BotPageGeneratorService.withRunLock(async () => {
+      const publishing = await BotSurfaceStateService.isPublishing();
+      if (!publishing) {
+        sails.log.warn(
+          'bot-sitemaps: publishing is OFF (t_bot_surface_state): nothing is uploaded, a sitemap file that would change is deleted'
+        );
+      }
+      return publish({ ...options, entityTypes, batchSize, publishing });
+    }, 'bot-sitemaps');
   },
 
   SITEMAP_TYPES,

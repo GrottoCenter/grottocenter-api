@@ -120,6 +120,11 @@ module.exports.custom = {
    *   local: pages are written under BOT_PAGES_LOCAL_DIR.                    *
    *   azure: BOT_PAGES_AZURE_CONNECTION_STRING and BOT_PAGES_AZURE_CONTAINER *
    *          (the static website container, `$web`); both are required.      *
+   * audit: the nightly audit of what is online (#1887): sampleSize           *
+   *   (BOT_AUDIT_SAMPLE_SIZE, 1000), failureLimit (BOT_AUDIT_FAILURE_LIMIT,  *
+   *   10), variantSample (BOT_AUDIT_VARIANT_SAMPLE, 20, 0 disables) and      *
+   *   timeBudgetMs (BOT_AUDIT_TIME_BUDGET_MS, 30 minutes). An invalid value  *
+   *   stops the startup.                                                     *
    *                                                                          *
    ************************************************************************** */
   botSurface: {
@@ -128,6 +133,9 @@ module.exports.custom = {
       process.env.BOT_SURFACE_ENTITY_TYPES
     ),
     schedule: botSurfaceConfig.parseSchedule(process.env.BOT_SURFACE_SCHEDULE),
+    // The nightly audit (#1887): BOT_AUDIT_SAMPLE_SIZE, BOT_AUDIT_FAILURE_LIMIT,
+    // BOT_AUDIT_VARIANT_SAMPLE, BOT_AUDIT_TIME_BUDGET_MS (see docs/bot-surface.md)
+    audit: botSurfaceConfig.parseAuditConfig(),
     publicBaseUrl:
       process.env.BOT_PAGES_PUBLIC_BASE_URL || 'https://grottocenter.org/ui',
     storage: {
