@@ -13,9 +13,12 @@ info:
 
 
     Tracing: every request may send an `X-Trace-Id` header (a UUID). The API
-    echoes it in the response (lower-cased), or generates a UUID v7 when it is
-    absent, is not a UUID, or is the nil or max UUID. Browsers may send it (CORS
-    allows it) and read it back from the response (CORS exposes it).
+    always generates its own UUID v7 and returns it in `X-Trace-Id`, so
+    concurrent requests that share a client id stay distinguishable. When the
+    client sent a valid UUID (not the nil or max UUID), the response value is
+    `<client UUID, lower-cased>.<generated UUID v7>`. Browsers may send the
+    header (CORS allows it) and read it back from the response (CORS exposes
+    it).
   title: 'Grottocenter API'
   version: 'v1 - 24.0.0'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
@@ -32,11 +35,10 @@ servers:
 
 x-response-headers:
   X-Trace-Id:
-    description: Trace identifier returned in response (either provided by client or generated)
+    description: Trace identifier returned in response. Always a generated UUID v7, prefixed with the client's `X-Trace-Id` and a dot when it sent a valid one.
     schema:
       type: string
-      format: uuid
-      example: '01932e9e-7890-7000-8000-0123456789ab'
+      example: '3b241101-e2bb-4255-8caf-4136c566a962.01932e9e-7890-7000-8000-0123456789ab'
 
 tags:
   - name: account
