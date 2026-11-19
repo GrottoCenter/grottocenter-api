@@ -60,6 +60,15 @@ module.exports = async (req, res) => {
     uploadedFiles
   );
   if (newFileOffsets.error) return res.badRequest(newFileOffsets.error);
+  // Panorama flags are read from the original files, before any write (#2007)
+  const newFilePanoramas = await DocumentService.readNewFilePanoramas(
+    req.body.newFilesMetadata,
+    uploadedFiles
+  );
+  if (newFilePanoramas.error)
+    return res.badRequest(
+      DocumentService.toBadRequestBody(req, newFilePanoramas)
+    );
 
   const cleanedData = {
     ...documentData,
@@ -84,7 +93,8 @@ module.exports = async (req, res) => {
             false,
             true,
             null,
-            newFileOffsets.offsets[index]
+            newFileOffsets.offsets[index],
+            newFilePanoramas.panoramas[index]
           );
         })
       );
