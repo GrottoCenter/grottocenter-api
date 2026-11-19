@@ -288,6 +288,33 @@ const checkManualPanorama = (info) => {
   return null;
 };
 
+const PNG_SIGNATURE = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+
+/**
+ * Frame count of a PNG, from its animation control (acTL) chunk. sharp does
+ * not report the pages of an animated PNG (APNG), which it reads as a still
+ * image. The APNG specification puts acTL before the first IDAT chunk.
+ * @param {Buffer} buffer
+ * @returns {number} the acTL frame count, 1 without acTL
+ */
+const countPngFrames = (buffer) => {
+  if (!buffer.subarray(0, 8).equals(PNG_SIGNATURE)) return 1;
+  let offset = 8;
+  while (offset + 8 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString('latin1', offset + 4, offset + 8);
+    if (type === 'IDAT' || type === 'IEND') return 1;
+    if (type === 'acTL') {
+      if (length < 8 || offset + 12 > buffer.length) return 1;
+      return Math.max(buffer.readUInt32BE(offset + 8), 1);
+    }
+    offset += 12 + length; // length, type, data, CRC
+  }
+  return 1;
+};
+
 /**
  * Facts the panorama checks need, read from the original file. Dimensions are
  * those displayed, after the EXIF orientation.
@@ -304,7 +331,7 @@ const readImageInfo = async (buffer) => {
       format: meta.format,
       width: meta.autoOrient?.width ?? meta.width,
       height: meta.autoOrient?.height ?? meta.height,
-      pages: meta.pages ?? 1,
+      pages: meta.pages ?? (meta.format === 'png' ? countPngFrames(buffer) : 1),
       xmp: meta.xmpAsString ?? meta.xmp?.toString('utf8') ?? null,
     };
   } catch (err) {

@@ -11,6 +11,7 @@ const {
   gpanoXmp,
   sphereGPano,
   makeImage,
+  makeAnimatedPng,
 } = require('../../helpers/panoramaImages');
 
 const infoOf = async (options) => readImageInfo(await makeImage(options));
@@ -217,6 +218,18 @@ describe('panorama utils (#2007)', () => {
         )
       ).be.false();
     });
+
+    it('should not detect an animated PNG with complete GPano metadata', async () => {
+      const info = await readImageInfo(
+        await makeAnimatedPng({
+          width: 64,
+          height: 32,
+          xmp: gpanoXmp(sphereGPano(64, 32)),
+        })
+      );
+      should(info).containEql({ format: 'png', pages: 2 });
+      should(detectPanorama(info)).be.false();
+    });
   });
 
   describe('checkManualPanorama()', () => {
@@ -327,6 +340,17 @@ describe('panorama utils (#2007)', () => {
         )
       ).equal(REASONS.UNSUPPORTED_FORMAT);
     });
+
+    it('should reject an animated PNG', async () => {
+      const info = await readImageInfo(
+        await makeAnimatedPng({
+          width: 64,
+          height: 32,
+          xmp: gpanoXmp(sphereGPano(64, 32)),
+        })
+      );
+      should(checkManualPanorama(info)).equal(REASONS.NOT_A_STILL_IMAGE);
+    });
   });
 
   describe('readImageInfo()', () => {
@@ -346,6 +370,21 @@ describe('panorama utils (#2007)', () => {
         pages: 1,
       });
       should(info.xmp).containEql('equirectangular');
+    });
+
+    it('should count the frames of an animated PNG, which sharp does not', async () => {
+      const apng = await makeAnimatedPng({ width: 64, height: 32 });
+      should(await readImageInfo(apng)).containEql({
+        format: 'png',
+        width: 64,
+        height: 32,
+        pages: 2,
+      });
+      should(
+        await readImageInfo(
+          await makeImage({ width: 64, height: 32, format: 'png' })
+        )
+      ).containEql({ pages: 1 });
     });
   });
 });
