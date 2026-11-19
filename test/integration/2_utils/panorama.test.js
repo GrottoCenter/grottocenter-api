@@ -63,6 +63,29 @@ describe('panorama utils (#2007)', () => {
       should(readGPano(xmp)).be.null();
     });
 
+    it('should resolve the GPano prefix in its scope only', () => {
+      const xmp =
+        '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">' +
+        '<rdf:Description rdf:about="" xmlns:GPano="http://ns.google.com/photos/1.0/panorama/" GPano:FullPanoWidthPixels="64"/>' +
+        '<rdf:Description rdf:about="" GPano:ProjectionType="equirectangular"/>' +
+        '<rdf:Description rdf:about="" xmlns:GPano="http://example.org/other/" GPano:FullPanoHeightPixels="32"/>' +
+        '</rdf:RDF></x:xmpmeta>';
+      should(readGPano(xmp)).eql({ FullPanoWidthPixels: '64' });
+    });
+
+    it('should read a packet wrapped in xpacket processing instructions', () => {
+      const xmp = `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>${gpanoXmp(
+        { ProjectionType: 'equirectangular' }
+      )}<?xpacket end="w"?>`;
+      should(readGPano(xmp)).eql({ ProjectionType: 'equirectangular' });
+    });
+
+    it('should return null for a malformed packet', () => {
+      const xmp = gpanoXmp({ ProjectionType: 'equirectangular' });
+      should(readGPano(xmp.split('/>')[0])).be.null();
+      should(readGPano(xmp.replace('</rdf:RDF>', ''))).be.null();
+    });
+
     it('should return null without XMP', () => {
       should(readGPano(null)).be.null();
       should(readGPano('')).be.null();
@@ -133,6 +156,15 @@ describe('panorama utils (#2007)', () => {
         }),
       ],
       ['a full panorama that is not 2:1', sphereGPano(64, 40)],
+      ...[
+        'CroppedAreaImageWidthPixels',
+        'CroppedAreaImageHeightPixels',
+        'CroppedAreaLeftPixels',
+        'CroppedAreaTopPixels',
+      ].map((name) => [
+        `a missing ${name}`,
+        sphereGPano(64, 32, { [name]: undefined }),
+      ]),
       [
         'malformed dimensions',
         sphereGPano(64, 32, { FullPanoWidthPixels: '64px' }),
@@ -154,6 +186,13 @@ describe('panorama utils (#2007)', () => {
         });
         should(detectPanorama(info)).be.false();
       });
+    });
+
+    it('should not detect a sphere whose XMP packet is truncated', async () => {
+      const truncated = gpanoXmp(sphereGPano(64, 32)).split('/>')[0];
+      const info = await infoOf({ width: 64, height: 32, xmp: truncated });
+      should(info.xmp).containEql('GPano:CroppedAreaTopPixels');
+      should(detectPanorama(info)).be.false();
     });
 
     it('should not detect metadata inconsistent with the image dimensions', async () => {
@@ -227,6 +266,57 @@ describe('panorama utils (#2007)', () => {
         ),
       });
       should(checkManualPanorama(info)).equal(REASONS.PARTIAL_COVERAGE);
+    });
+
+    it('should accept GPano metadata that does not describe the coverage', async () => {
+      const info = await infoOf({
+        width: 64,
+        height: 32,
+        xmp: gpanoXmp({
+          ProjectionType: 'equirectangular',
+          FullPanoWidthPixels: 64,
+          FullPanoHeightPixels: 32,
+        }),
+      });
+      should(checkManualPanorama(info)).be.null();
+    });
+
+    const knownPartial = [
+      [
+        'nonzero offsets without full panorama dimensions',
+        {
+          ProjectionType: 'equirectangular',
+          CroppedAreaLeftPixels: 32,
+          CroppedAreaTopPixels: 16,
+        },
+      ],
+      [
+        'a nonzero offset next to a malformed full width',
+        {
+          ProjectionType: 'equirectangular',
+          FullPanoWidthPixels: '128px',
+          FullPanoHeightPixels: 64,
+          CroppedAreaTopPixels: 16,
+        },
+      ],
+      [
+        'a cropped height smaller than the full height, the width missing',
+        {
+          ProjectionType: 'equirectangular',
+          FullPanoHeightPixels: 64,
+          CroppedAreaImageHeightPixels: 32,
+        },
+      ],
+    ];
+    knownPartial.forEach(([name, properties]) => {
+      it(`should reject ${name}`, async () => {
+        const info = await infoOf({
+          width: 64,
+          height: 32,
+          xmp: gpanoXmp(properties),
+        });
+        should(checkManualPanorama(info)).equal(REASONS.PARTIAL_COVERAGE);
+      });
     });
 
     it('should reject non-images and unsupported formats', async () => {

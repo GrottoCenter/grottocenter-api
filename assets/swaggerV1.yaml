@@ -13322,12 +13322,16 @@ components:
             metadata, read from the original file: `true` only for a JPEG, PNG
             or WebP still image whose metadata describes a complete
             equirectangular sphere (`ProjectionType` equirectangular, full
-            panorama 2:1 and uncropped) coherent with the image's own 2:1
-            dimensions, unless `UsePanoramaViewer` is `False`. Missing or
-            inconsistent metadata gives `false` without rejecting the upload,
+            panorama 2:1, and the cropped area size and offsets all present
+            and uncropped) coherent with the image's own 2:1 dimensions, unless
+            `UsePanoramaViewer` is `False`. Missing, malformed (including XMP
+            that is not well-formed XML) or inconsistent metadata gives `false`
+            without rejecting the upload,
             and a 2:1 ratio alone is never detected. An explicit `true` needs no
             GPano metadata, but the image must be a 2:1 still image without
-            metadata declaring another projection or a partial panorama. An
+            metadata declaring another projection or a partial panorama (a
+            nonzero offset or a cropped size smaller than the full size is
+            rejected even when the rest of the metadata is missing). An
             explicit `false` wins over detection.
     File:
       type: object

@@ -8,18 +8,21 @@
  * Two different checks:
  *
  * - detectPanorama: the default of a new upload without an explicit choice.
- *   It needs Google Photo Sphere (GPano) XMP metadata describing a complete
- *   equirectangular sphere, coherent with the image dimensions. A 2:1 aspect
- *   ratio alone never detects a panorama.
+ *   It needs well-formed Google Photo Sphere (GPano) XMP metadata describing
+ *   a complete equirectangular sphere (full size, cropped size and offsets
+ *   all present), coherent with the image dimensions. A 2:1 aspect ratio
+ *   alone never detects a panorama.
  * - checkManualPanorama: a contributor's explicit `true`. GPano metadata is
  *   optional, but the image must be a still image whose dimensions fit a
- *   complete sphere, and known incompatible metadata is rejected.
+ *   complete sphere, and known incompatible metadata is rejected, even when
+ *   the rest of the metadata is missing or malformed.
  *
  * Both work on the facts readImageInfo() reads from the original file, before
  * any transformation.
  */
 
 const sharp = require('sharp');
+const { XMLParser, XMLValidator } = require('fast-xml-parser');
 
 const INVALID = Symbol('parsePanoramaFlag.INVALID');
 
@@ -76,43 +79,97 @@ const parsePanoramaFlag = (value) => {
 };
 parsePanoramaFlag.INVALID = INVALID;
 
-const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const xmpParser = new XMLParser({
+  preserveOrder: true,
+  ignoreAttributes: false,
+  attributeNamePrefix: '',
+  parseTagValue: false,
+  parseAttributeValue: false,
+  // GPano values never need entities; leave them unexpanded.
+  processEntities: false,
+  ignoreDeclaration: true,
+  ignorePiTags: true,
+});
+
+const ATTRIBUTES = ':@';
+const TEXT = '#text';
+
+const splitName = (qualified) => {
+  const colon = qualified.indexOf(':');
+  return colon === -1
+    ? [null, qualified]
+    : [qualified.slice(0, colon), qualified.slice(colon + 1)];
+};
+
+/**
+ * Walks parsed XML nodes (fast-xml-parser preserveOrder form), resolving
+ * namespace declarations by scope, and yields the GPano properties as
+ * [name, value] pairs in document order.
+ */
+function* gpanoEntries(nodes, scope) {
+  for (const node of nodes) {
+    const tag = Object.keys(node).find((k) => k !== ATTRIBUTES);
+    // eslint-disable-next-line no-continue
+    if (tag === undefined || tag === TEXT) continue;
+    const attributes = node[ATTRIBUTES] ?? {};
+    const nodeScope = { ...scope };
+    for (const [name, value] of Object.entries(attributes)) {
+      if (name === 'xmlns') nodeScope[''] = value;
+      else if (name.startsWith('xmlns:')) nodeScope[name.slice(6)] = value;
+    }
+    for (const [name, value] of Object.entries(attributes)) {
+      const [prefix, local] = splitName(name);
+      // Unprefixed attributes have no namespace.
+      if (
+        prefix !== null &&
+        prefix !== 'xmlns' &&
+        nodeScope[prefix] === GPANO_NAMESPACE
+      )
+        yield [local, String(value).trim()];
+    }
+    const children = node[tag];
+    const [prefix, local] = splitName(tag);
+    if (nodeScope[prefix ?? ''] === GPANO_NAMESPACE) {
+      // A simple property holds text only.
+      if (children.every((c) => TEXT in c))
+        yield [
+          local,
+          children
+            .map((c) => String(c[TEXT]))
+            .join('')
+            .trim(),
+        ];
+    } else {
+      yield* gpanoEntries(children, nodeScope);
+    }
+  }
+}
 
 /**
  * GPano properties of an XMP packet, as raw strings, whatever prefix the
- * packet binds to the GPano namespace. Both the attribute form
+ * packet binds to the GPano namespace, in its scope. Both the attribute form
  * (`GPano:ProjectionType="equirectangular"`) and the element form
  * (`<GPano:ProjectionType>equirectangular</GPano:ProjectionType>`) are read.
+ * A packet that is not well-formed XML gives no property.
  * @param {string|null|undefined} xmp
  * @returns {Object<string, string>|null} null when the packet has no GPano
- *   property
+ *   property or is malformed
  */
 const readGPano = (xmp) => {
-  if (typeof xmp !== 'string' || xmp.length === 0) return null;
-  const prefixes = new Set();
-  const nsRe = new RegExp(
-    `xmlns:([A-Za-z_][\\w.-]*)\\s*=\\s*["']${escapeRegExp(GPANO_NAMESPACE)}["']`,
-    'g'
-  );
-  for (const [, prefix] of xmp.matchAll(nsRe)) prefixes.add(prefix);
-  if (prefixes.size === 0) return null;
-
-  const properties = {};
-  for (const prefix of prefixes) {
-    const p = escapeRegExp(prefix);
-    const attributeRe = new RegExp(
-      `\\b${p}:(\\w+)\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
-      'g'
-    );
-    for (const [, name, dq, sq] of xmp.matchAll(attributeRe))
-      properties[name] ??= (dq ?? sq).trim();
-    const elementRe = new RegExp(
-      `<${p}:(\\w+)(?:\\s[^>]*)?>([^<]*)</${p}:\\1\\s*>`,
-      'g'
-    );
-    for (const [, name, text] of xmp.matchAll(elementRe))
-      properties[name] ??= text.trim();
+  if (typeof xmp !== 'string') return null;
+  // XMP packets may be padded with NUL bytes by some writers.
+  const packet = xmp.replace(/\0+$/, '').trim();
+  if (packet.length === 0) return null;
+  if (XMLValidator.validate(packet) !== true) return null;
+  let nodes;
+  try {
+    nodes = xmpParser.parse(packet);
+  } catch (err) {
+    return null;
   }
+  const properties = {};
+  for (const [name, value] of gpanoEntries(nodes, {}))
+    properties[name] ??= value;
   return Object.keys(properties).length > 0 ? properties : null;
 };
 
@@ -129,12 +186,22 @@ const isTwoToOne = (width, height) =>
   height > 0 &&
   Math.abs(width - 2 * height) <= ASPECT_TOLERANCE_PX;
 
+// A GPano integer that is present and well formed.
+const isKnown = (v) => v !== undefined && !Number.isNaN(v);
+
 /**
  * Projection and coverage declared by GPano metadata.
+ *
+ * complete is:
+ * - false as soon as one known value shows a partial or non-spherical
+ *   coverage (nonzero offset, cropped size different from the full size,
+ *   full size not 2:1), whatever the other values;
+ * - true only when the full size, the cropped size and both offsets are all
+ *   present, well formed and describe an uncropped 2:1 sphere;
+ * - undefined otherwise: the coverage is not fully described.
  * @param {Object<string, string>} gpano
  * @returns {{ projection: string|undefined, malformed: boolean,
- *   complete: boolean|undefined }} complete is undefined when the coverage is
- *   not declared
+ *   complete: boolean|undefined }}
  */
 const readCoverage = (gpano) => {
   const projection = gpano.ProjectionType?.toLowerCase();
@@ -153,15 +220,22 @@ const readCoverage = (gpano) => {
     top,
   ];
   const malformed = values.some((v) => Number.isNaN(v));
-  if (malformed || fullWidth === undefined || fullHeight === undefined)
-    return { projection, malformed, complete: undefined };
 
-  const complete =
-    isTwoToOne(fullWidth, fullHeight) &&
-    (croppedWidth ?? fullWidth) === fullWidth &&
-    (croppedHeight ?? fullHeight) === fullHeight &&
-    (left ?? 0) === 0 &&
-    (top ?? 0) === 0;
+  const partial =
+    (isKnown(left) && left !== 0) ||
+    (isKnown(top) && top !== 0) ||
+    (isKnown(fullWidth) &&
+      isKnown(croppedWidth) &&
+      croppedWidth !== fullWidth) ||
+    (isKnown(fullHeight) &&
+      isKnown(croppedHeight) &&
+      croppedHeight !== fullHeight) ||
+    (isKnown(fullWidth) &&
+      isKnown(fullHeight) &&
+      !isTwoToOne(fullWidth, fullHeight));
+  if (partial) return { projection, malformed, complete: false };
+
+  const complete = values.every(isKnown) ? true : undefined;
   return { projection, malformed, complete };
 };
 
