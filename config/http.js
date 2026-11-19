@@ -8,7 +8,7 @@
  * For more information on configuration, check out:
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.http.html
  */
-const { v7: uuidv7, validate: isUuid } = require('uuid');
+const { v7: uuidv7, validate: isUuid, version: uuidVersion } = require('uuid');
 const multer = require('multer');
 const responseTime = require('response-time');
 const path = require('path');
@@ -111,8 +111,13 @@ module.exports.http = {
 
     traceId(req, res, next) {
       // Only a UUID is kept: the value ends up in the logs and in reference_id.
+      // The nil and max UUIDs (versions 0 and 15) would put every request of a
+      // client under one id; lower-casing keeps one action under one id.
       const sent = req.get('X-Trace-Id');
-      const traceId = isUuid(sent) ? sent : uuidv7();
+      const traceId =
+        isUuid(sent) && ![0, 15].includes(uuidVersion(sent))
+          ? sent.toLowerCase()
+          : uuidv7();
       req.traceId = traceId;
       res.set('X-Trace-Id', traceId);
       logger.run(traceId, next);

@@ -13,9 +13,9 @@ info:
 
 
     Tracing: every request may send an `X-Trace-Id` header (a UUID). The API
-    echoes it in the response, or generates a UUID v7 when it is absent or is not
-    a UUID. Browsers may send it (CORS allows it) and read it back from the
-    response (CORS exposes it).
+    echoes it in the response (lower-cased), or generates a UUID v7 when it is
+    absent, is not a UUID, or is the nil or max UUID. Browsers may send it (CORS
+    allows it) and read it back from the response (CORS exposes it).
   title: 'Grottocenter API'
   version: 'v1 - 24.0.0'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
