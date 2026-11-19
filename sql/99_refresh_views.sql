@@ -1,4 +1,8 @@
 \c grottoce;
+-- Local / fresh-volume init only. Never run this file by hand in production: a
+-- plain REFRESH holds an exclusive lock for the whole refresh (~30 min for
+-- v_data_quality_compute_entrance) and the API's readers time out. In production
+-- use REFRESH MATERIALIZED VIEW CONCURRENTLY (see AGENTS.md, SQL migrations).
 -- refresh v_massif_info
 REFRESH MATERIALIZED VIEW v_massif_info;
 
