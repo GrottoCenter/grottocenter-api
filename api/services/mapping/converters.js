@@ -647,6 +647,8 @@ const c = {
       fileName: source.fileName,
       completePath: FileService.document.getUrl(source.path),
       pdfPageOffset: source.pdfPageOffset ?? null,
+      // Legacy rows and partial objects are regular files (#2007).
+      isPanorama: source.isPanorama === true,
       thumbnails: hasThumbnails
         ? {
             small: source.thumbnailSmall
@@ -666,8 +668,9 @@ const c = {
   // The compact file an entrance features (#1701): enough to display it
   // without another request.
   toFeaturedFile: (source) => {
-    const { id, fileName, completePath, thumbnails } = c.toFile(source);
-    return { id, fileName, completePath, thumbnails };
+    const { id, fileName, isPanorama, completePath, thumbnails } =
+      c.toFile(source);
+    return { id, fileName, isPanorama, completePath, thumbnails };
   },
 
   // Lightweight entrance view for map popups (#1992): main name and featured
