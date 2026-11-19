@@ -28,13 +28,34 @@ describe('Trace ID middleware', () => {
     should(uniqueIds.size).equal(5);
   });
 
-  it('should accept and propagate X-Trace-Id from request', async () => {
+  it('should append a generated UUID v7 to a client X-Trace-Id', async () => {
     const clientTraceId = '01932e9e-1234-7000-8000-abcdef123456';
     const response = await request(sails.hooks.http.app)
       .get('/api/v1/swagger.yaml')
       .set('X-Trace-Id', clientTraceId);
 
-    should(response.headers['x-trace-id']).equal(clientTraceId);
+    const [prefix, generated, ...rest] =
+      response.headers['x-trace-id'].split('.');
+    should(prefix).equal(clientTraceId);
+    should(generated).match(UUID_V7);
+    should(rest).be.empty();
+  });
+
+  it('should tell apart requests that share one client X-Trace-Id', async () => {
+    const clientTraceId = '3b241101-e2bb-4255-8caf-4136c566a962';
+    const responses = await Promise.all(
+      Array(5)
+        .fill()
+        .map(() =>
+          request(sails.hooks.http.app)
+            .get('/api/v1/swagger.yaml')
+            .set('X-Trace-Id', clientTraceId)
+        )
+    );
+
+    const traceIds = responses.map((r) => r.headers['x-trace-id']);
+    should(new Set(traceIds).size).equal(5);
+    traceIds.forEach((id) => should(id).startWith(`${clientTraceId}.`));
   });
 
   it('should generate new trace ID if not provided', async () => {
@@ -46,22 +67,24 @@ describe('Trace ID middleware', () => {
     should(response.headers['x-trace-id']).have.length(36);
   });
 
-  it('should keep a valid X-Trace-Id that is not a UUID v7', async () => {
+  it('should keep a valid client X-Trace-Id that is not a UUID v7 as prefix', async () => {
     const clientTraceId = '3b241101-e2bb-4255-8caf-4136c566a962';
     const response = await request(sails.hooks.http.app)
       .get('/api/v1/swagger.yaml')
       .set('X-Trace-Id', clientTraceId);
 
-    should(response.headers['x-trace-id']).equal(clientTraceId);
+    should(response.headers['x-trace-id']).match(
+      new RegExp(`^${clientTraceId}\\.[0-9a-f-]{36}$`)
+    );
   });
 
-  it('should lower-case an upper-case X-Trace-Id', async () => {
+  it('should lower-case an upper-case client X-Trace-Id prefix', async () => {
     const response = await request(sails.hooks.http.app)
       .get('/api/v1/swagger.yaml')
       .set('X-Trace-Id', '3B241101-E2BB-4255-8CAF-4136C566A962');
 
-    should(response.headers['x-trace-id']).equal(
-      '3b241101-e2bb-4255-8caf-4136c566a962'
+    should(response.headers['x-trace-id']).startWith(
+      '3b241101-e2bb-4255-8caf-4136c566a962.'
     );
   });
 
@@ -74,8 +97,7 @@ describe('Trace ID middleware', () => {
         .get('/api/v1/swagger.yaml')
         .set('X-Trace-Id', value);
 
-      should(response.headers['x-trace-id']).not.equal(value);
-      should(response.headers['x-trace-id']).have.length(36);
+      should(response.headers['x-trace-id']).match(UUID_V7);
     });
   });
 
