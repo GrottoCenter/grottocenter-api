@@ -13897,8 +13897,8 @@ components:
           description: 'Optional additional context about the error.'
         reference_id:
           type: string
-          description: 'Trace ID from the originating request, useful for debugging.'
-          example: 'req-abc-123'
+          description: 'Trace ID from the originating request, useful for debugging. The value matches X-Trace-Id in the response header.'
+          example: '3b241101-e2bb-4255-8caf-4136c566a962.01932e9e-1234-7000-8000-abcdef123456'
 
     ImportError:
       type: object
@@ -13941,7 +13941,7 @@ components:
         reference_id:
           type: string
           description: Trace ID for support and debugging.
-          example: 'e57c9f23-1a80-45fc-a97a-b70a823e57c9'
+          example: '3b241101-e2bb-4255-8caf-4136c566a962.01932e9e-1234-7000-8000-abcdef123456'
 
     ObservationImportProfile:
       type: object
