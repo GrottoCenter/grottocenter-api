@@ -110,14 +110,18 @@ module.exports.http = {
      *************************************************************************** */
 
     traceId(req, res, next) {
-      // Only a UUID is kept: the value ends up in the logs and in reference_id.
-      // The nil and max UUIDs (versions 0 and 15) would put every request of a
-      // client under one id; lower-casing keeps one action under one id.
+      // The API always generates its own id, so concurrent requests of a
+      // client that reuses one X-Trace-Id stay told apart. A client id is kept
+      // in front of it as `<client>.<generated>`. Only a UUID is kept: the
+      // value ends up in the logs and in reference_id. The nil and max UUIDs
+      // (versions 0 and 15) carry no information; lower-casing keeps one
+      // client under one prefix.
       const sent = req.get('X-Trace-Id');
+      const generated = uuidv7();
       const traceId =
         isUuid(sent) && ![0, 15].includes(uuidVersion(sent))
-          ? sent.toLowerCase()
-          : uuidv7();
+          ? `${sent.toLowerCase()}.${generated}`
+          : generated;
       req.traceId = traceId;
       res.set('X-Trace-Id', traceId);
       logger.run(traceId, next);
