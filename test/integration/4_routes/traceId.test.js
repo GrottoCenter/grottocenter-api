@@ -73,19 +73,35 @@ describe('Trace ID middleware', () => {
       .get('/api/v1/swagger.yaml')
       .set('X-Trace-Id', clientTraceId);
 
-    should(response.headers['x-trace-id']).match(
-      new RegExp(`^${clientTraceId}\\.[0-9a-f-]{36}$`)
-    );
+    const [prefix, generated, ...rest] =
+      response.headers['x-trace-id'].split('.');
+    should(prefix).equal(clientTraceId);
+    should(generated).match(UUID_V7);
+    should(rest).be.empty();
   });
 
   it('should lower-case an upper-case client X-Trace-Id prefix', async () => {
+    const clientTraceId = '3b241101-e2bb-4255-8caf-4136c566a962';
     const response = await request(sails.hooks.http.app)
       .get('/api/v1/swagger.yaml')
       .set('X-Trace-Id', '3B241101-E2BB-4255-8CAF-4136C566A962');
 
-    should(response.headers['x-trace-id']).startWith(
-      '3b241101-e2bb-4255-8caf-4136c566a962.'
-    );
+    const [prefix, generated, ...rest] =
+      response.headers['x-trace-id'].split('.');
+    should(prefix).equal(clientTraceId);
+    should(generated).match(UUID_V7);
+    should(rest).be.empty();
+  });
+
+  it('should use the response trace ID in structured errors', async () => {
+    const clientTraceId = '3b241101-e2bb-4255-8caf-4136c566a962';
+    const response = await request(sails.hooks.http.app)
+      .get('/api/v1/entrances/1/all-snapshots?isNetwork=nope')
+      .set('X-Trace-Id', clientTraceId)
+      .expect(400);
+
+    should(response.body.reference_id).equal(response.headers['x-trace-id']);
+    should(response.body.reference_id).startWith(`${clientTraceId}.`);
   });
 
   [
