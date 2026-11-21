@@ -3,6 +3,9 @@ const { postgreIntervalObjectToDbString } = require('../CommentService');
 const CaveModel = require('./models/CaveModel');
 const CaverModel = require('./models/CaverModel');
 const DocumentModel = require('./models/DocumentModel');
+const {
+  resolveDocumentValidationStatus,
+} = require('../../utils/documentValidationStatus');
 const EntranceModel = require('./models/EntranceModel');
 const EntranceDuplicateModel = require('./models/EntranceDuplicateModel');
 const MassifModel = require('./models/MassifModel');
@@ -241,6 +244,18 @@ const c = {
     };
   },
 
+  // The read-only validationStatus of a document (#2005): the one its producer
+  // resolved (DocumentService.setValidationStatuses, the search index),
+  // otherwise the one its row tells. Spread so that the key is left out when
+  // the source cannot tell, rather than set to undefined.
+  toDocumentValidationStatus: (source) => {
+    const validationStatus =
+      typeof source.validationStatus === 'string'
+        ? source.validationStatus
+        : resolveDocumentValidationStatus(source);
+    return validationStatus ? { validationStatus } : {};
+  },
+
   toSimpleDocument: (source) => ({
     id: source.id,
     type: source.type?.name,
@@ -253,6 +268,7 @@ const c = {
     datePublication: source.datePublication,
     isValidated: source.isValidated,
     isDeleted: source.isDeleted,
+    ...c.toDocumentValidationStatus(source),
   }),
 
   // A child listed on its parent's page: a simple document where the file
@@ -339,6 +355,7 @@ const c = {
       isDeleted: source.isDeleted,
       redirectTo: source.redirectTo,
       isValidated: source.isValidated,
+      ...c.toDocumentValidationStatus(source),
 
       creator:
         convertIfObject(source.author, c.toSimpleCaver) ?? source.creator,
@@ -1091,6 +1108,7 @@ const c = {
     type: source.type?.name ?? null,
     title: c.toDocumentDescriptions(source.descriptions).title ?? null,
     files: toList('files', source, c.toFile),
+    ...c.toDocumentValidationStatus(source),
   }),
 
   // A marker to draw on an SVG document, at x/y in its reference frame
@@ -1213,11 +1231,9 @@ const c = {
         if (typeof item.document.hasFiles === 'boolean') {
           data.hasFiles = item.document.hasFiles;
         }
-        // validated, pending or modificationPending (#1561); absent from an
-        // index built before the field existed
-        if (typeof item.document.validationStatus === 'string') {
-          data.validationStatus = item.document.validationStatus;
-        }
+        // validationStatus (validated, pending or modificationPending, #1561)
+        // comes through toDocument; absent from an index built before the
+        // field existed
       } else if (_type === 'caves')
         data = c.toSimpleCave(item.document, meta); // Only used in quick search
       else if (_type === 'entrances') {

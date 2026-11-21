@@ -28,7 +28,10 @@ module.exports = async (req, res) => {
     });
   }
 
-  await DocumentService.setOrganizationNames(documents);
+  await Promise.all([
+    DocumentService.setOrganizationNames(documents),
+    DocumentService.setValidationStatuses(documents),
+  ]);
   for (const document of documents) {
     document.mainLanguage = DocumentService.getMainLanguage(document.languages);
   }

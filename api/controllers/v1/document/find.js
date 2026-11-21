@@ -9,8 +9,9 @@ const {
 const readBoolParam = require('../../../utils/readBoolParam');
 
 async function getModifiedDocumentData(documentId) {
-  const { id, modifiedDocJson, identifierPdfPageOffset, cave } =
-    await TDocument.findOne(documentId);
+  const source = await TDocument.findOne(documentId);
+  if (!source) return null;
+  const { id, modifiedDocJson, identifierPdfPageOffset, cave } = source;
   if (modifiedDocJson === null) return null;
 
   const {
@@ -71,6 +72,11 @@ async function getModifiedDocumentData(documentId) {
   const withStored = (f) => ({ ...storedById.get(Number(f.id)), ...f });
   populatedDoc.modifiedFiles = modifiedFiles?.map(withStored);
   populatedDoc.deletedFiles = deletedFiles?.map(withStored);
+
+  // The proposed snapshot holds no moderation metadata: the preview keeps the
+  // status of the stored document, pending or modificationPending (#2005).
+  await DocumentService.setValidationStatuses([source]);
+  populatedDoc.validationStatus = source.validationStatus;
 
   return populatedDoc;
 }

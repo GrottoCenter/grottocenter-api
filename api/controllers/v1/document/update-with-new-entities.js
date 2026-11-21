@@ -185,5 +185,6 @@ module.exports = async (req, res) => {
     NotificationService.NOTIFICATION_ENTITIES.DOCUMENT
   );
 
+  await DocumentService.setValidationStatuses([updatedDocument]);
   return res.ok(updatedDocument);
 };

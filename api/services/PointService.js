@@ -1,4 +1,5 @@
 const CaveLifecycleService = require('./CaveLifecycleService');
+const DocumentService = require('./DocumentService');
 const isValidId = require('../utils/isValidId');
 
 // Document types a point can be positioned on (sql/2_2021_09_26_1_doc_types.sql):
@@ -409,11 +410,13 @@ module.exports = {
     if (positions.length === 0) return positions;
     const documents = await TDocument.find({
       where: { id: positions.map((p) => p.document) },
-      select: ['id'],
+      // What the validationStatus needs (#2005)
+      select: ['id', 'isValidated', 'dateValidation', 'modifiedDocJson'],
     })
       .populate('type')
       .populate('descriptions')
       .populate('files', { where: { isValidated: true }, sort: 'id ASC' });
+    await DocumentService.setValidationStatuses(documents);
     const documentById = new Map(documents.map((d) => [d.id, d]));
     return positions.map((position) => ({
       ...position,
@@ -447,7 +450,7 @@ module.exports = {
 
     point.positions = positions;
     point.positionCount = total;
-    point.documents = documents;
+    point.documents = await DocumentService.setValidationStatuses(documents);
     return point;
   },
 
