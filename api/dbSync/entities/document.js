@@ -4,18 +4,9 @@ const {
   computeDocumentAuthorsSort,
 } = require('../../utils/computeDocumentAuthorsSort');
 const { computeNameSortKey } = require('../../utils/computeNameSortKey');
-
-// Values of the validationStatus search field (#1561)
-const VALIDATION_STATUS = Object.freeze({
-  // Accepted by a moderator
-  VALIDATED: 'validated',
-  // A new submission awaiting its first validation
-  PENDING: 'pending',
-  // An accepted document whose modification awaits approval: the row still
-  // holds the accepted version, the modification waits in modified_doc_json,
-  // so the index keeps the accepted content
-  MODIFICATION_PENDING: 'modificationPending',
-});
+const {
+  DOCUMENT_VALIDATION_STATUS: VALIDATION_STATUS,
+} = require('../../../config/constants/document');
 
 // The search index holds the accepted documents and the submissions awaiting
 // validation; a refused submission (a date_validation without is_validated,
@@ -25,13 +16,18 @@ const SEARCH_SCOPE =
   'd.is_deleted = false AND (d.is_validated = true OR d.date_validation IS NULL)';
 const EXPORT_SCOPE = 'd.is_deleted = false AND d.is_validated = true';
 
-// Whether a document was accepted before its pending modification: the flag
-// DocumentService.updateDocument stores, or, for a snapshot stored before it
-// existed, an accepted row in the history (see
-// DocumentService.wasValidatedBeforeModification)
+// The validationStatus of api/utils/documentValidationStatus.js, in SQL (#1561,
+// #2005). Whether a document was accepted before its pending modification: the
+// flag DocumentService.updateDocument stores, or, for a snapshot stored before
+// it existed, an accepted row in the history (see
+// DocumentService.wasValidatedBeforeModification); without a pending
+// modification, an unvalidated document was never accepted. The search scope
+// leaves the refused submissions out, so the index never holds `rejected`.
 const VALIDATION_STATUS_COLUMN = `
       CASE
         WHEN d.is_validated THEN '${VALIDATION_STATUS.VALIDATED}'
+        WHEN d.date_validation IS NOT NULL THEN '${VALIDATION_STATUS.REJECTED}'
+        WHEN d.modified_doc_json IS NULL THEN '${VALIDATION_STATUS.PENDING}'
         WHEN COALESCE(
           (d.modified_doc_json->>'wasValidated')::boolean,
           EXISTS (
@@ -279,7 +275,6 @@ function importFormater(d) {
 /* eslint-enable no-param-reassign */
 
 module.exports = {
-  VALIDATION_STATUS,
   name: 'documents',
   sourceTable: 't_document',
   shouldExportToFile: true,

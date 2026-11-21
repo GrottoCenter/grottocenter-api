@@ -1,6 +1,8 @@
 const typesense = require('../../config/typesense');
 const searchDocuments = require('../dbSync/searchDocuments');
-const { VALIDATION_STATUS } = require('../dbSync/entities/document');
+const {
+  DOCUMENT_VALIDATION_STATUS: VALIDATION_STATUS,
+} = require('../../config/constants/document');
 
 const allEntities = Object.fromEntries(
   Object.entries(searchDocuments.ENTITIES).map(([name, e]) => [name, e.search])
