@@ -13083,6 +13083,8 @@ components:
         type:
           type: string
           description: Document type name, e.g. "Issue", "Collection".
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
 
     Entrance:
       type: object

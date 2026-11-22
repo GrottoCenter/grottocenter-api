@@ -1108,7 +1108,12 @@ module.exports = {
     const [parentsById] = await Promise.all([
       resolveCitationParentChain(documents),
       module.exports.setOrganizationNames(documents),
-      module.exports.setValidationStatuses(documents),
+    ]);
+    // The documents and their ancestors carry the read-only validationStatus
+    // (#2005), resolved together so the history fallback stays one query.
+    await module.exports.setValidationStatuses([
+      ...documents,
+      ...parentsById.values(),
     ]);
 
     for (const document of documents) {

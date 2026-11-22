@@ -829,6 +829,18 @@ describe('Converters Service', () => {
         'rejected'
       );
     });
+
+    it('is kept by each ancestor of a citation parent chain', () => {
+      const result = converters.toCitationParent({
+        ...refused,
+        parent: { id: 8, isValidated: true, dateValidation: new Date() },
+      });
+      should(result.validationStatus).equal('rejected');
+      should(result.parent.validationStatus).equal('validated');
+      should(converters.toCitationParent({ id: 9 })).not.have.property(
+        'validationStatus'
+      );
+    });
   });
 
   describe('toDeletedEntity()', () => {

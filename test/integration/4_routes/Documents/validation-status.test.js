@@ -8,6 +8,7 @@ const AuthTokenService = require('../../AuthTokenService');
 // The same read-only validationStatus on every document representation (#2005)
 describe('Document validationStatus', () => {
   let moderatorToken;
+  let grandparent;
   let parent;
   const docs = {};
   const createdIds = [];
@@ -96,9 +97,15 @@ describe('Document validationStatus', () => {
 
   before(async () => {
     moderatorToken = await AuthTokenService.getRawBearerModeratorToken();
+    // A pending collection above the accepted issue every state belongs to
+    grandparent = await createDocument({
+      isValidated: false,
+      dateValidation: null,
+    });
     parent = await createDocument({
       isValidated: true,
       dateValidation: new Date(),
+      parent: grandparent.id,
     });
     for (const [state, fields] of Object.entries(STATES)) {
       // eslint-disable-next-line no-await-in-loop
@@ -265,6 +272,19 @@ describe('Document validationStatus', () => {
         .forEach(([state, expected]) => {
           should(statuses.get(docs[state].id)).equal(expected);
         });
+    });
+
+    it('returns the status of each ancestor in the citation parent chain', async () => {
+      const res = await get('/api/v1/entrances/1').expect(200);
+      const listed = res.body.documents.find((d) => d.id === docs.validated.id);
+      should(listed.parent).have.properties({
+        id: parent.id,
+        validationStatus: 'validated',
+      });
+      should(listed.parent.parent).have.properties({
+        id: grandparent.id,
+        validationStatus: 'pending',
+      });
     });
   });
 

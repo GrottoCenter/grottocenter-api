@@ -307,6 +307,7 @@ const c = {
     title: c.toDocumentDescriptions(source.descriptions).title,
     issue: source.issue,
     datePublication: source.datePublication,
+    ...c.toDocumentValidationStatus(source),
     parent: convertIfObject(source.parent, c.toCitationParent),
   }),
 
