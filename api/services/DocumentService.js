@@ -13,6 +13,12 @@ const {
   TYPES_REQUIRING_PARENT,
 } = require('../../config/constants/document');
 const isValidId = require('../utils/isValidId');
+const {
+  needsHistoryFallback,
+  resolveDocumentValidationStatus,
+  resolveSnapshotValidationStatus,
+  wasValidatedFromRow,
+} = require('../utils/documentValidationStatus');
 const { resolveCaveDisplayTarget } = require('../utils/caveDisplayTarget');
 const parsePdfPageOffset = require('../utils/parsePdfPageOffset');
 const panorama = require('../utils/panorama');
@@ -747,7 +753,10 @@ module.exports = {
       TDocument.findOne(documentId)
     );
     if (!doc) return null;
-    await module.exports.populateFullDocumentSubEntities(doc);
+    await Promise.all([
+      module.exports.populateFullDocumentSubEntities(doc),
+      module.exports.setValidationStatuses([doc]),
+    ]);
     return doc;
   },
 
@@ -786,14 +795,69 @@ module.exports = {
    * @returns {Promise<boolean>}
    */
   async wasValidatedBeforeModification(document) {
-    if (!document.modifiedDocJson) return document.isValidated === true;
-    const { wasValidated } = document.modifiedDocJson;
-    if (typeof wasValidated === 'boolean') return wasValidated;
+    const wasValidated = wasValidatedFromRow(document);
+    if (wasValidated !== undefined) return wasValidated;
     const validatedSnapshots = await HDocument.count({
       t_id: document.id,
       isValidated: true,
     });
     return validatedSnapshots > 0;
+  },
+
+  /**
+   * Set the read-only validationStatus (#2005) of each document, resolved from
+   * its row (see api/utils/documentValidationStatus.js). The legacy pending
+   * modifications, stored before modifiedDocJson.wasValidated existed, fall
+   * back on the history as wasValidatedBeforeModification() does, in one
+   * query for the whole list. A document whose selection cannot tell keeps no
+   * status. Mutates the documents in place.
+   * @param {Object[]} documents t_document rows; other values are skipped
+   * @returns {Promise<Object[]>} the same documents
+   */
+  async setValidationStatuses(documents) {
+    const rows = (documents ?? []).filter((d) => d && typeof d === 'object');
+    const legacyIds = rows.filter(needsHistoryFallback).map((d) => d.id);
+    const acceptedIds = new Set();
+    if (legacyIds.length > 0) {
+      const accepted = await HDocument.find({
+        where: { t_id: [...new Set(legacyIds)], isValidated: true },
+        select: ['t_id'],
+      });
+      accepted.forEach((h) => acceptedIds.add(h.t_id));
+    }
+    for (const document of rows) {
+      const status = resolveDocumentValidationStatus(document, {
+        hasValidatedHistory: acceptedIds.has(document.id),
+      });
+      // eslint-disable-next-line no-param-reassign
+      if (status) document.validationStatus = status;
+    }
+    return documents;
+  },
+
+  /**
+   * Set the validationStatus of the historical versions of one document: each
+   * describes its own version, not the current document. A version holds no
+   * modifiedDocJson, so an unvalidated, undecided one is a pending
+   * modification when an earlier version was accepted. Mutates in place.
+   * @param {Object[]} hDocuments h_document rows of a single document
+   * @returns {Object[]} the same rows
+   */
+  setSnapshotValidationStatuses(hDocuments) {
+    const byDate = [...hDocuments].sort(
+      (a, b) => new Date(a.id).getTime() - new Date(b.id).getTime()
+    );
+    let hasEarlierValidatedVersion = false;
+    for (const snapshot of byDate) {
+      const status = resolveSnapshotValidationStatus(
+        snapshot,
+        hasEarlierValidatedVersion
+      );
+      // eslint-disable-next-line no-param-reassign
+      if (status) snapshot.validationStatus = status;
+      if (snapshot.isValidated === true) hasEarlierValidatedVersion = true;
+    }
+    return hDocuments;
   },
 
   async updateDocument({
@@ -974,8 +1038,14 @@ module.exports = {
       : [];
     doc.massifs = massifs ? await TMassif.find({ id: toIds(massifs) }) : [];
     doc.parent = parent ? await module.exports.getParentDocument(parent) : null;
+    // Through getDocuments(), as the stored document's details resolve it, so
+    // the preview keeps the same validationStatus (#2005).
     doc.authorizationDocument = authorizationDocument
-      ? await TDocument.findOne(authorizationDocument)
+      ? ((
+          await module.exports.getDocuments([
+            normalizeToId(authorizationDocument),
+          ])
+        )[0] ?? null)
       : null;
     return doc;
   },
@@ -988,7 +1058,9 @@ module.exports = {
    */
   getDocuments: async (documentIds) => {
     if (documentIds.length === 0) return [];
-    return findSimpleDocuments(documentIds);
+    return module.exports.setValidationStatuses(
+      await findSimpleDocuments(documentIds)
+    );
   },
 
   /**
@@ -1002,7 +1074,11 @@ module.exports = {
    * @returns {Promise<TDocument|undefined>}
    */
   getParentDocument: async (parentId) =>
-    (await findSimpleDocuments([parentId]).populate('identifierType'))[0],
+    (
+      await module.exports.setValidationStatuses(
+        await findSimpleDocuments([parentId]).populate('identifierType')
+      )
+    )[0],
 
   /**
    * Like getDocuments(), but also populates the citation fields
@@ -1032,6 +1108,12 @@ module.exports = {
     const [parentsById] = await Promise.all([
       resolveCitationParentChain(documents),
       module.exports.setOrganizationNames(documents),
+    ]);
+    // The documents and their ancestors carry the read-only validationStatus
+    // (#2005), resolved together so the history fallback stays one query.
+    await module.exports.setValidationStatuses([
+      ...documents,
+      ...parentsById.values(),
     ]);
 
     for (const document of documents) {
@@ -1078,22 +1160,26 @@ module.exports = {
    * @returns
    */
   getDocumentChildren: async (documentId) =>
-    TDocument.find({ parent: documentId })
-      .populate('descriptions')
-      .populate('type')
-      .populate('files', { where: { isValidated: true }, select: ['id'] }),
+    module.exports.setValidationStatuses(
+      await TDocument.find({ parent: documentId })
+        .populate('descriptions')
+        .populate('type')
+        .populate('files', { where: { isValidated: true }, select: ['id'] })
+    ),
 
   getHDocumentById: async (documentId) =>
-    HDocument.find({ t_id: documentId })
-      .populate('author')
-      .populate('reviewer')
-      .populate('massif')
-      .populate('cave')
-      .populate('editor')
-      .populate('identifierType')
-      .populate('library')
-      .populate('license')
-      .populate('type'),
+    module.exports.setSnapshotValidationStatuses(
+      await HDocument.find({ t_id: documentId })
+        .populate('author')
+        .populate('reviewer')
+        .populate('massif')
+        .populate('cave')
+        .populate('editor')
+        .populate('identifierType')
+        .populate('library')
+        .populate('license')
+        .populate('type')
+    ),
 
   populateHDocumentsWithDescription: async (documentId, hDocuments) => {
     const descriptions =

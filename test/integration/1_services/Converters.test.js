@@ -782,6 +782,67 @@ describe('Converters Service', () => {
     });
   });
 
+  describe('document validationStatus (#2005)', () => {
+    const refused = {
+      id: 7,
+      isValidated: false,
+      dateValidation: new Date('2025-01-01T00:00:00Z'),
+      modifiedDocJson: null,
+    };
+
+    ['toDocument', 'toSimpleDocument', 'toCitationDocument'].forEach(
+      (converter) => {
+        it(`${converter} resolves it from the row`, () => {
+          should(converters[converter](refused).validationStatus).equal(
+            'rejected'
+          );
+        });
+
+        it(`${converter} prefers the one the producer resolved`, () => {
+          should(
+            converters[converter]({
+              ...refused,
+              isValidated: false,
+              dateValidation: null,
+              modifiedDocJson: {},
+              validationStatus: 'modificationPending',
+            }).validationStatus
+          ).equal('modificationPending');
+        });
+
+        it(`${converter} leaves it out when the source cannot tell`, () => {
+          should(converters[converter]({ id: 7 })).not.have.property(
+            'validationStatus'
+          );
+        });
+      }
+    );
+
+    it('is kept by the child, parent and position representations', () => {
+      should(converters.toDocumentChild(refused).validationStatus).equal(
+        'rejected'
+      );
+      should(converters.toParentDocument(refused).validationStatus).equal(
+        'rejected'
+      );
+      should(converters.toPositionDocument(refused).validationStatus).equal(
+        'rejected'
+      );
+    });
+
+    it('is kept by each ancestor of a citation parent chain', () => {
+      const result = converters.toCitationParent({
+        ...refused,
+        parent: { id: 8, isValidated: true, dateValidation: new Date() },
+      });
+      should(result.validationStatus).equal('rejected');
+      should(result.parent.validationStatus).equal('validated');
+      should(converters.toCitationParent({ id: 9 })).not.have.property(
+        'validationStatus'
+      );
+    });
+  });
+
   describe('toDeletedEntity()', () => {
     it('should use title for documents', () => {
       const source = {

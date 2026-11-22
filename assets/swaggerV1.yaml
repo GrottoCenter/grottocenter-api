@@ -11937,6 +11937,29 @@ components:
         `matchAllFields` says). Read `validationStatus` on each document to
         label the pending ones. Returns 400 when the value is not a
         `BooleanLike` value.
+    DocumentValidationStatus:
+      type: string
+      readOnly: true
+      enum: [pending, modificationPending, rejected, validated]
+      description: >-
+        Read-only moderation state of a document, computed by the API (no
+        stored column), the same on every document representation: details,
+        lists, children, embedded parents, documents attached to other
+        entities, create and update responses, and search results.
+        `pending`: never accepted, awaiting validation, including a corrected
+        submission after a refusal. `modificationPending`: previously
+        accepted, its proposed changes await approval (the accepted content is
+        shown, and `requireUpdate=true` keeps this status on the proposed
+        version). `rejected`: the submission was refused; refusing a
+        modification of an accepted document returns it to `validated`
+        instead. `validated`: accepted, with no pending modification.
+        Search results never hold `rejected`, as refused submissions are not
+        indexed, and hold `pending` only with `includePendingDocuments`; an
+        index built before the field existed leaves it out, which is no proof
+        that a document is validated. On a snapshot, it describes that
+        historical version. `isValidated`, the dates, the moderator and the
+        comments keep their meaning.
+
     DocumentValidationResult:
       type: object
       description: Outcome of one entry of `PUT /documents/validate`.
@@ -12657,16 +12680,7 @@ components:
             document has at least one validated file. Absent until the search
             index is rebuilt with this field.
         validationStatus:
-          type: string
-          enum: [validated, pending, modificationPending]
-          description: >-
-            Only in search results (`/search`, `/advanced-search`):
-            `validated` for an accepted document, `pending` for a new
-            submission awaiting its first validation (returned only with
-            `includePendingDocuments`), `modificationPending` for an accepted
-            document whose modification awaits approval (its accepted content
-            is shown). Absent until the search index is rebuilt with this
-            field.
+          $ref: '#/components/schemas/DocumentValidationStatus'
         authorsOrganization:
           type: array
           items:
@@ -12895,6 +12909,8 @@ components:
           type: boolean
         isDeleted:
           type: boolean
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
     ParentDocument:
       type: object
       description: >
@@ -12945,6 +12961,8 @@ components:
           type: boolean
         isDeleted:
           type: boolean
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
     CitationDocument:
       type: object
       description: >
@@ -13030,6 +13048,8 @@ components:
         type:
           type: string
           description: Document type name, e.g. "Article", "Book".
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
 
     CitationParent:
       type: object
@@ -13063,6 +13083,8 @@ components:
         type:
           type: string
           description: Document type name, e.g. "Issue", "Collection".
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
 
     Entrance:
       type: object
@@ -14603,6 +14625,8 @@ components:
           description: The validated files of the document, by id.
           items:
             $ref: '#/components/schemas/File'
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
 
     PointMarker:
       type: object
@@ -14643,6 +14667,8 @@ components:
           type: boolean
         isDeleted:
           type: boolean
+        validationStatus:
+          $ref: '#/components/schemas/DocumentValidationStatus'
 
     PointDetails:
       allOf:

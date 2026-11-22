@@ -54,8 +54,29 @@ const DOCUMENT_M2M_COLLECTIONS = [
   'countries',
 ];
 
+/**
+ * The read-only validationStatus exposed on every document representation
+ * (#2005), computed from the row: no column stores it. The search index holds
+ * the same values (#1561), except `rejected`: a refused submission stays out
+ * of the index (see api/dbSync/entities/document.js).
+ */
+const DOCUMENT_VALIDATION_STATUS = Object.freeze({
+  // Accepted by a moderator, with no modification awaiting approval
+  VALIDATED: 'validated',
+  // Never accepted, awaiting its first validation: a new submission, or a
+  // corrected submission after a refusal
+  PENDING: 'pending',
+  // An accepted document whose modification awaits approval: the row still
+  // holds the accepted version, the modification waits in modified_doc_json
+  MODIFICATION_PENDING: 'modificationPending',
+  // A submission that was never accepted, refused by a moderator (#1907). A
+  // refused modification returns its document to `validated` instead.
+  REJECTED: 'rejected',
+});
+
 module.exports = {
   DOCUMENT_TYPE_IDS,
+  DOCUMENT_VALIDATION_STATUS,
   TYPES_ALLOWING_ISSUE,
   TYPES_ALLOWING_PARENT,
   TYPES_REQUIRING_PARENT,
