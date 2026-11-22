@@ -1038,8 +1038,14 @@ module.exports = {
       : [];
     doc.massifs = massifs ? await TMassif.find({ id: toIds(massifs) }) : [];
     doc.parent = parent ? await module.exports.getParentDocument(parent) : null;
+    // Through getDocuments(), as the stored document's details resolve it, so
+    // the preview keeps the same validationStatus (#2005).
     doc.authorizationDocument = authorizationDocument
-      ? await TDocument.findOne(authorizationDocument)
+      ? ((
+          await module.exports.getDocuments([
+            normalizeToId(authorizationDocument),
+          ])
+        )[0] ?? null)
       : null;
     return doc;
   },

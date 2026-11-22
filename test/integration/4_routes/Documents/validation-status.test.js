@@ -172,6 +172,32 @@ describe('Document validationStatus', () => {
         should(res.body.validationStatus).equal(EXPECTED[state]);
       });
     });
+
+    it('keeps the status of the proposed authorization document', async () => {
+      const doc = await createDocument({
+        isValidated: false,
+        dateValidation: null,
+        modifiedDocJson: modification({
+          wasValidated: true,
+          documentData: {
+            authorizationDocument: docs.legacyModificationPending.id,
+          },
+        }),
+      });
+      const stored = await get(
+        `/api/v1/documents/${docs.legacyModificationPending.id}`
+      ).expect(200);
+      const res = await get(
+        `/api/v1/documents/${doc.id}?requireUpdate=true`
+      ).expect(200);
+      should(res.body.authorizationDocument).have.properties({
+        id: docs.legacyModificationPending.id,
+        validationStatus: 'modificationPending',
+      });
+      should(res.body.authorizationDocument.validationStatus).equal(
+        stored.body.validationStatus
+      );
+    });
   });
 
   describe('GET /documents', () => {
