@@ -47,6 +47,16 @@ module.exports = {
 
     // Only trust `url` if it's a proper connection URI
     if (dsConfig.url && dsConfig.url.startsWith('postgres')) {
+      // The datastore's `ssl` option is not part of the URI, and pg-boss only
+      // sees the string: without this it connects in clear text and a server
+      // that requires TLS refuses it ("no pg_hba.conf entry ... no encryption").
+      // A `rejectUnauthorized: false` datastore keeps skipping verification.
+      if (dsConfig.ssl && !/[?&]sslmode=/.test(dsConfig.url)) {
+        const mode =
+          dsConfig.ssl.rejectUnauthorized === false ? 'no-verify' : 'require';
+        const separator = dsConfig.url.includes('?') ? '&' : '?';
+        return `${dsConfig.url}${separator}sslmode=${mode}`;
+      }
       return dsConfig.url;
     }
 

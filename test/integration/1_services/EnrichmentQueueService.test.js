@@ -39,6 +39,85 @@ describe('EnrichmentQueueService', () => {
     });
   });
 
+  describe('getConnectionString()', () => {
+    const OVERRIDE = 'ENRICHMENT_QUEUE_DATABASE_URL';
+    let savedDefault;
+    let savedOverride;
+
+    beforeEach(() => {
+      savedDefault = sails.config.datastores.default;
+      savedOverride = process.env[OVERRIDE];
+      delete process.env[OVERRIDE];
+    });
+
+    afterEach(() => {
+      sails.config.datastores.default = savedDefault;
+      if (savedOverride === undefined) delete process.env[OVERRIDE];
+      else process.env[OVERRIDE] = savedOverride;
+    });
+
+    const withDatastore = (config) => {
+      sails.config.datastores.default = { ...savedDefault, ...config };
+      return EnrichmentQueueService.getConnectionString();
+    };
+
+    it('should return the override when it is set', () => {
+      process.env[OVERRIDE] = 'postgres://o:o@h:1/d?sslmode=require';
+      should(
+        withDatastore({ url: 'postgres://u:p@h:5432/d', ssl: true })
+      ).equal('postgres://o:o@h:1/d?sslmode=require');
+    });
+
+    it('should add sslmode=require to a full URI when the datastore uses ssl', () => {
+      should(
+        withDatastore({ url: 'postgres://u:p@h:5432/d', ssl: true })
+      ).equal('postgres://u:p@h:5432/d?sslmode=require');
+    });
+
+    it('should append with & when the URI already has a query string', () => {
+      should(
+        withDatastore({ url: 'postgres://u:p@h:5432/d?x=1', ssl: true })
+      ).equal('postgres://u:p@h:5432/d?x=1&sslmode=require');
+    });
+
+    it('should use no-verify when the datastore skips certificate verification', () => {
+      should(
+        withDatastore({
+          url: 'postgres://u:p@h:5432/d',
+          ssl: { rejectUnauthorized: false },
+        })
+      ).equal('postgres://u:p@h:5432/d?sslmode=no-verify');
+    });
+
+    it('should keep an sslmode already present in the URI', () => {
+      should(
+        withDatastore({
+          url: 'postgres://u:p@h:5432/d?sslmode=disable',
+          ssl: true,
+        })
+      ).equal('postgres://u:p@h:5432/d?sslmode=disable');
+    });
+
+    it('should leave a full URI alone when the datastore has no ssl', () => {
+      should(
+        withDatastore({ url: 'postgres://u:p@h:5432/d', ssl: undefined })
+      ).equal('postgres://u:p@h:5432/d');
+    });
+
+    it('should build the string from parts, with sslmode, for a bare hostname', () => {
+      should(
+        withDatastore({
+          url: 'h.example.com',
+          user: 'u',
+          password: 'p@ss',
+          port: 5432,
+          database: 'd',
+          ssl: true,
+        })
+      ).equal('postgres://u:p%40ss@h.example.com:5432/d?sslmode=require');
+    });
+  });
+
   describe('processEntrance()', () => {
     it('should update entrance with region, county, city, iso_3166_2 from Nominatim', async () => {
       const entrance = {
