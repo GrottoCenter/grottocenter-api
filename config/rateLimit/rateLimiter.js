@@ -47,6 +47,23 @@ const LEADER_MAX = parseLimit(process.env.LEADER_RATE_LIMIT, 1000);
 const MODERATOR_MAX = parseLimit(process.env.MODERATOR_RATE_LIMIT, 10000);
 // Administrators are not rate-limited (skip returns true)
 
+// Dedicated limits for GET /api/v1/geoloc/* (map browsing), per 10-minute
+// window, by role. These requests are counted here only, never in the general
+// bucket, so a busy map cannot lock an IP out of login or any other endpoint.
+const GEOLOC_VISITOR_MAX = parseLimit(
+  process.env.GEOLOC_VISITOR_RATE_LIMIT,
+  600
+);
+const GEOLOC_USER_MAX = parseLimit(process.env.GEOLOC_USER_RATE_LIMIT, 1200);
+const GEOLOC_LEADER_MAX = parseLimit(
+  process.env.GEOLOC_LEADER_RATE_LIMIT,
+  2400
+);
+const GEOLOC_MODERATOR_MAX = parseLimit(
+  process.env.GEOLOC_MODERATOR_RATE_LIMIT,
+  10000
+);
+
 // DELETE request limits per 1-hour window, by role
 const USER_DELETE_MAX = parseLimit(process.env.USER_DELETE_RATE_LIMIT, 1);
 const DELETE_MAX = parseLimit(process.env.DELETE_RATE_LIMIT, 20);
@@ -104,22 +121,57 @@ const limitExceededHandler = (limiterName) => (req, res, next, options) => {
 };
 
 /**
- * Returns the general rate limit for a request based on the caller's role.
+ * Builds a `max` function that picks a limit from the caller's role.
  * Unauthenticated visitors get the lowest cap; higher roles get progressively
- * more headroom. Administrators are skipped entirely (see `skip`).
+ * more headroom. Administrators are skipped entirely by each limiter's `skip`.
  */
-const generalMax = (req) => {
-  if (!req.token) return VISITOR_MAX;
+const tierMax =
+  ({ visitor, user, leader, moderator }) =>
+  (req) => {
+    if (!req.token) return visitor;
 
-  const { groups } = req.token;
-  if (RightService.hasGroup(groups, RightService.G.MODERATOR)) {
-    return MODERATOR_MAX;
-  }
-  if (RightService.hasGroup(groups, RightService.G.LEADER)) {
-    return LEADER_MAX;
-  }
-  return USER_MAX;
-};
+    const { groups } = req.token;
+    if (RightService.hasGroup(groups, RightService.G.MODERATOR)) {
+      return moderator;
+    }
+    if (RightService.hasGroup(groups, RightService.G.LEADER)) {
+      return leader;
+    }
+    return user;
+  };
+
+const generalMax = tierMax({
+  visitor: VISITOR_MAX,
+  user: USER_MAX,
+  leader: LEADER_MAX,
+  moderator: MODERATOR_MAX,
+});
+
+const geolocMax = tierMax({
+  visitor: GEOLOC_VISITOR_MAX,
+  user: GEOLOC_USER_MAX,
+  leader: GEOLOC_LEADER_MAX,
+  moderator: GEOLOC_MODERATOR_MAX,
+});
+
+/**
+ * Whether a request belongs to the dedicated geoloc bucket: any GET (or HEAD)
+ * under /api/v1/geoloc/, which covers every declared geoloc route and its
+ * historical aliases (caves, grottos, countEntries, cavesCoordinates).
+ *
+ * MAINTENANCE: a test checks that every `GET /api/v1/geoloc/*` entry of
+ * config/routes.js matches this function.
+ */
+const GEOLOC_PATH = /^\/api\/v1\/geoloc\//i;
+const isGeolocRead = (req) =>
+  ['GET', 'HEAD'].includes(req.method.toUpperCase()) &&
+  GEOLOC_PATH.test(req.path);
+
+const isAdministrator = (req) =>
+  Boolean(
+    req.token &&
+    RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR)
+  );
 
 /**
  * Returns the DELETE rate limit for a request based on the caller's role.
@@ -182,6 +234,8 @@ const isRelationDelete = (path) =>
   RELATION_DELETE_PATTERNS.some((pattern) => pattern.test(path));
 
 module.exports = {
+  isGeolocRead,
+
   generalRateLimit: rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
     max: generalMax,
@@ -195,15 +249,34 @@ module.exports = {
       if (req.method.toUpperCase() === 'OPTIONS') return true;
       if (isTestOrDev()) return true;
 
-      // Administrators bypass general rate limiting
-      if (
-        req.token &&
-        RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR)
-      ) {
-        return true;
-      }
+      // Geoloc reads are governed by geolocRateLimit only
+      if (isGeolocRead(req)) return true;
 
-      return false;
+      // Administrators bypass general rate limiting
+      return isAdministrator(req);
+    },
+  }),
+
+  /**
+   * Dedicated limiter for GET /api/v1/geoloc/*, shared across every geoloc
+   * route by client IP. Requests it governs are skipped by `generalRateLimit`
+   * (and the reverse), so exhausting one budget never blocks the other.
+   */
+  geolocRateLimit: rateLimit({
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    max: geolocMax,
+    keyGenerator,
+    message: 'Too many map requests with the same IP, try again later.',
+    standardHeaders: true,
+    statusCode: 429,
+    validate: { keyGeneratorIpFallback: false },
+    handler: limitExceededHandler('geoloc'),
+    skip: (req) => {
+      if (!isGeolocRead(req)) return true;
+      if (isTestOrDev()) return true;
+
+      // Administrators bypass geoloc rate limiting
+      return isAdministrator(req);
     },
   }),
 

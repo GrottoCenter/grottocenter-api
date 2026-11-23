@@ -19,6 +19,29 @@ info:
     `<client UUID, lower-cased>.<generated UUID v7>`. Browsers may send the
     header (CORS allows it) and read it back from the response (CORS exposes
     it).
+
+
+    Rate limiting: requests are counted per client IP in 10-minute windows
+    and rejected with `429` and a `Retry-After` header once the quota is
+    spent. Signing in raises the quota, which depends on the caller's role.
+    Administrators are not limited. `GET /geoloc/*` (the map routes, aliases
+    included) has its own budget, independent of the general one, so map
+    browsing never blocks other requests.
+
+
+    | Caller | General quota | `GET /geoloc/*` quota |
+
+    |---|---:|---:|
+
+    | Anonymous visitor | 200 | 600 |
+
+    | Authenticated user | 400 | 1200 |
+
+    | Leader | 1000 | 2400 |
+
+    | Moderator | 10000 | 10000 |
+
+    | Administrator | none | none |
   title: 'Grottocenter API'
   version: 'v1 - 24.0.0'
   termsOfService: 'https://wiki.grottocenter.org/wiki/GrottoCenter:En/API'
@@ -7864,6 +7887,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Count'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/entrances':
     get:
@@ -7949,6 +7974,8 @@ paths:
                     type: string
         '404':
           description: Massif not found (when massif parameter is provided)
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/entrancesCoordinates':
     get:
@@ -8053,6 +8080,8 @@ paths:
           description: Massif not found (when massif parameter is provided)
         '500':
           description: Server error. No `Cache-Control` header.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/networks':
     get:
@@ -8114,6 +8143,8 @@ paths:
                             description: Entrance longitude
         '400':
           description: Missing or invalid bounding box parameters
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/caves':
     get:
@@ -8131,6 +8162,8 @@ paths:
       responses:
         '200':
           description: Same as `GET /geoloc/networks`.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/networksCoordinates':
     get:
@@ -8156,6 +8189,8 @@ paths:
                   type: array
                   items:
                     type: number
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/cavesCoordinates':
     get:
@@ -8173,6 +8208,8 @@ paths:
       responses:
         '200':
           description: Same as `GET /geoloc/networksCoordinates`.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/organizations':
     get:
@@ -8213,6 +8250,8 @@ paths:
                     type: number
                   latitude:
                     type: number
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/grottos':
     get:
@@ -8230,6 +8269,8 @@ paths:
       responses:
         '200':
           description: Same as `GET /geoloc/organizations`.
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/countEntrances':
     get:
@@ -8252,6 +8293,8 @@ paths:
                 $ref: '#/components/schemas/Count'
         '404':
           description: Resource not found
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/massifsCoordinates':
     get:
@@ -8288,6 +8331,8 @@ paths:
           description: Missing or invalid bounding box parameters
         '500':
           description: Internal server error
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/geoloc/massifs':
     get:
@@ -8337,6 +8382,8 @@ paths:
           description: Missing or invalid bounding box parameters
         '500':
           description: Internal server error
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   '/massifs/count':
     get:
@@ -11709,6 +11756,34 @@ components:
         type: string
       example: 50-100/137
   responses:
+    TooManyRequests:
+      description: >
+        Rate limit exceeded for this client IP. Wait for the delay given in
+        `Retry-After` (seconds), or sign in to get a higher quota. See "Rate
+        limiting" in the API description.
+      headers:
+        Retry-After:
+          description: Seconds to wait before sending the next request.
+          schema:
+            type: integer
+        RateLimit-Policy:
+          description: Quota and window of the budget that rejected the request, e.g. `600;w=600`.
+          schema:
+            type: string
+        RateLimit-Limit:
+          schema:
+            type: integer
+        RateLimit-Remaining:
+          schema:
+            type: integer
+        RateLimit-Reset:
+          description: Seconds until the budget resets.
+          schema:
+            type: integer
+      content:
+        text/html:
+          schema:
+            type: string
     DeletedListForbidden:
       description: >-
         `isDeleted=true` was requested by a caller holding neither the
