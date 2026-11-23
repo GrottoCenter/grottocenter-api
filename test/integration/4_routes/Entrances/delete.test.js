@@ -186,6 +186,69 @@ describe('Entrance features', () => {
       await TDocument.destroy({ id: [sharedDocument.id, ownDocument.id] });
       await TEntrance.destroy({ id: targetEntrance.id });
     });
+
+    describe('when j_document_entrance has no id column, as in production (#2014)', () => {
+      // Waterline builds the test table with an id column that the production
+      // table, keyed by (id_document, id_entrance), does not have.
+      before(() =>
+        CommonService.query('ALTER TABLE j_document_entrance DROP COLUMN id')
+      );
+      after(() =>
+        CommonService.query(
+          'ALTER TABLE j_document_entrance ADD COLUMN id serial PRIMARY KEY'
+        )
+      );
+
+      it('should merge an entrance with documents into another entrance', async () => {
+        const [targetEntrance, entrance] = await Promise.all(
+          [false, true].map((isDeleted) =>
+            TEntrance.create({
+              author: 1,
+              latitude: '0',
+              longitude: '0',
+              isDeleted,
+            }).fetch()
+          )
+        );
+        const [sharedDocument, ownDocument] = await Promise.all(
+          [1, 2].map(() =>
+            TDocument.create({ author: 1, type: 1, license: 1 }).fetch()
+          )
+        );
+        const documentIds = [sharedDocument.id, ownDocument.id];
+        await CommonService.query(
+          `INSERT INTO j_document_entrance (id_document, id_entrance)
+           VALUES ($1, $2), ($1, $3), ($4, $3)`,
+          [sharedDocument.id, targetEntrance.id, entrance.id, ownDocument.id]
+        );
+
+        await supertest(sails.hooks.http.app)
+          .delete(
+            `/api/v1/entrances/${entrance.id}?isPermanent=true&entityId=${targetEntrance.id}`
+          )
+          .set('Authorization', adminToken)
+          .set('Accept', 'application/json')
+          .expect(200);
+
+        should(await TEntrance.findOne(entrance.id)).be.undefined();
+        const { rows } = await CommonService.query(
+          `SELECT id_document, id_entrance FROM j_document_entrance
+           WHERE id_document = ANY($1) ORDER BY id_document`,
+          [documentIds]
+        );
+        should(rows.map((r) => [r.id_document, r.id_entrance])).eql([
+          [sharedDocument.id, targetEntrance.id],
+          [ownDocument.id, targetEntrance.id],
+        ]);
+
+        await CommonService.query(
+          'DELETE FROM j_document_entrance WHERE id_entrance = $1',
+          [targetEntrance.id]
+        );
+        await TDocument.destroy({ id: documentIds });
+        await TEntrance.destroy({ id: targetEntrance.id });
+      });
+    });
   });
 
   deleteIsPermanentCases({
