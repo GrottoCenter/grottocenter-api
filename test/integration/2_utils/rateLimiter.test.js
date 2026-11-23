@@ -10,6 +10,7 @@ const TEST_USER_LIMIT = 20;
 const TEST_MODERATOR_LIMIT = 40;
 const TEST_GEOLOC_VISITOR_LIMIT = 6;
 const TEST_GEOLOC_USER_LIMIT = 12;
+const TEST_GEOLOC_LEADER_LIMIT = 18;
 const TEST_GEOLOC_MODERATOR_LIMIT = 24;
 const TEST_DELETE_LIMIT = 5;
 const TEST_USER_DELETE_LIMIT = 1;
@@ -93,6 +94,7 @@ describe('Rate Limiter', () => {
       process.env.MODERATOR_RATE_LIMIT = TEST_MODERATOR_LIMIT;
       process.env.GEOLOC_VISITOR_RATE_LIMIT = TEST_GEOLOC_VISITOR_LIMIT;
       process.env.GEOLOC_USER_RATE_LIMIT = TEST_GEOLOC_USER_LIMIT;
+      process.env.GEOLOC_LEADER_RATE_LIMIT = TEST_GEOLOC_LEADER_LIMIT;
       process.env.GEOLOC_MODERATOR_RATE_LIMIT = TEST_GEOLOC_MODERATOR_LIMIT;
       process.env.DELETE_RATE_LIMIT = TEST_DELETE_LIMIT;
       process.env.USER_DELETE_RATE_LIMIT = TEST_USER_DELETE_LIMIT;
@@ -575,6 +577,25 @@ describe('Rate Limiter', () => {
           TEST_GEOLOC_USER_LIMIT
         );
         should(statuses[TEST_GEOLOC_USER_LIMIT]).equal(429);
+      });
+
+      it('should give leaders the leader geoloc limit', async () => {
+        const RightService = require('../../../api/services/RightService');
+        const { app } = buildApp({
+          groups: [{ name: RightService.G.LEADER }],
+          nickname: 'Leader',
+          id: 3,
+        });
+        const statuses = await hit(
+          supertest.agent(app),
+          GEOLOC,
+          TEST_GEOLOC_LEADER_LIMIT + 1
+        );
+
+        should(statuses.filter((s) => s === 200).length).equal(
+          TEST_GEOLOC_LEADER_LIMIT
+        );
+        should(statuses[TEST_GEOLOC_LEADER_LIMIT]).equal(429);
       });
 
       it('should give moderators the moderator geoloc limit', async () => {

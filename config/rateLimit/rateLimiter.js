@@ -75,8 +75,8 @@ const isTestOrDev = () =>
 /**
  * Builds the `handler` that express-rate-limit invokes when a limit is exceeded.
  *
- * `generalRateLimit`, `deleteRateLimit` and `authRateLimit` all run *before*
- * `requestLogger` in the middleware order (see config/http.js), and the
+ * `generalRateLimit`, `geolocRateLimit`, `deleteRateLimit` and `authRateLimit`
+ * all run *before* `requestLogger` in the middleware order (see config/http.js), and the
  * library's default handler responds without calling `next()`, so a 429 has no
  * `Req ::` line. `responseTimeLogger` runs earlier and still writes its
  * `Res ::` and `Access ::` lines (#1788), but only this one says which limiter
@@ -158,6 +158,11 @@ const geolocMax = tierMax({
  * Whether a request belongs to the dedicated geoloc bucket: any GET (or HEAD)
  * under /api/v1/geoloc/, which covers every declared geoloc route and its
  * historical aliases (caves, grottos, countEntries, cavesCoordinates).
+ *
+ * The prefix match is deliberate: a geoloc route added later is covered
+ * without touching this file. The trade-off is that an undeclared path such as
+ * `GET /api/v1/geoloc/foo` is counted in the geoloc bucket too; it only
+ * returns a cheap 404, so that is harmless.
  *
  * MAINTENANCE: a test checks that every `GET /api/v1/geoloc/*` entry of
  * config/routes.js matches this function.
