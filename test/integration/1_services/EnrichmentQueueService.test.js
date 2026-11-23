@@ -68,16 +68,16 @@ describe('EnrichmentQueueService', () => {
       ).equal('postgres://o:o@h:1/d?sslmode=require');
     });
 
-    it('should add sslmode=require to a full URI when the datastore uses ssl', () => {
+    it('should add sslmode=verify-full to a full URI when the datastore uses ssl', () => {
       should(
         withDatastore({ url: 'postgres://u:p@h:5432/d', ssl: true })
-      ).equal('postgres://u:p@h:5432/d?sslmode=require');
+      ).equal('postgres://u:p@h:5432/d?sslmode=verify-full');
     });
 
     it('should append with & when the URI already has a query string', () => {
       should(
         withDatastore({ url: 'postgres://u:p@h:5432/d?x=1', ssl: true })
-      ).equal('postgres://u:p@h:5432/d?x=1&sslmode=require');
+      ).equal('postgres://u:p@h:5432/d?x=1&sslmode=verify-full');
     });
 
     it('should use no-verify when the datastore skips certificate verification', () => {
@@ -114,7 +114,7 @@ describe('EnrichmentQueueService', () => {
           database: 'd',
           ssl: true,
         })
-      ).equal('postgres://u:p%40ss@h.example.com:5432/d?sslmode=require');
+      ).equal('postgres://u:p%40ss@h.example.com:5432/d?sslmode=verify-full');
     });
   });
 

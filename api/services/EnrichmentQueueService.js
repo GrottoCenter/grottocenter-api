@@ -51,9 +51,15 @@ module.exports = {
       // sees the string: without this it connects in clear text and a server
       // that requires TLS refuses it ("no pg_hba.conf entry ... no encryption").
       // A `rejectUnauthorized: false` datastore keeps skipping verification.
+      // `verify-full` is what node-pg applies for `ssl: true`; `require` is
+      // only an alias for it in pg-connection-string 2.x and warns. Only
+      // `rejectUnauthorized` is carried over: a `ca`, `cert` or `key` in the
+      // `ssl` object is dropped, since pg-boss only sees the string.
       if (dsConfig.ssl && !/[?&]sslmode=/.test(dsConfig.url)) {
         const mode =
-          dsConfig.ssl.rejectUnauthorized === false ? 'no-verify' : 'require';
+          dsConfig.ssl.rejectUnauthorized === false
+            ? 'no-verify'
+            : 'verify-full';
         const separator = dsConfig.url.includes('?') ? '&' : '?';
         return `${dsConfig.url}${separator}sslmode=${mode}`;
       }
@@ -66,7 +72,7 @@ module.exports = {
     const host = dsConfig.host || dsConfig.url || 'localhost';
     const port = dsConfig.port || 5432;
     const database = dsConfig.database || 'postgres';
-    const ssl = dsConfig.ssl ? '?sslmode=require' : '';
+    const ssl = dsConfig.ssl ? '?sslmode=verify-full' : '';
     return `postgres://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}${ssl}`;
   },
 
