@@ -80,13 +80,26 @@ describe('EnrichmentQueueService', () => {
       ).equal('postgres://u:p@h:5432/d?x=1&sslmode=verify-full');
     });
 
-    it('should use no-verify when the datastore skips certificate verification', () => {
+    it('should still verify the certificate when the datastore skips verification', () => {
       should(
         withDatastore({
           url: 'postgres://u:p@h:5432/d',
           ssl: { rejectUnauthorized: false },
         })
-      ).equal('postgres://u:p@h:5432/d?sslmode=no-verify');
+      ).equal('postgres://u:p@h:5432/d?sslmode=verify-full');
+    });
+
+    it('should verify on the bare-hostname path too when the datastore skips verification', () => {
+      should(
+        withDatastore({
+          url: 'h.example.com',
+          user: 'u',
+          password: 'p',
+          port: 5432,
+          database: 'd',
+          ssl: { rejectUnauthorized: false },
+        })
+      ).equal('postgres://u:p@h.example.com:5432/d?sslmode=verify-full');
     });
 
     it('should keep an sslmode already present in the URI', () => {
