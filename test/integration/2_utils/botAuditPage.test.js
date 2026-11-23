@@ -339,6 +339,20 @@ describe('botAuditPage - what the audit reads out of a page', () => {
       should(botAuditPage.scan('<!--->after').text).containEql('after');
     });
 
+    it('closes a comment at --!> as the HTML tokenizer does, so the link after it is read', () => {
+      const html = '<!-- x --!><a href="/ui/caves/5">y</a><!-- z -->';
+      const scanned = botAuditPage.scan(html);
+      should(scanned.hrefs).eql(['/ui/caves/5']);
+      should(scanned.unreadable).equal(false);
+      should(botAuditPage.scan('<!-- x --!>after').text).containEql('after');
+      // --> still wins when it comes first, and --!> alone is not an end at lt+3
+      should(
+        botAuditPage.scan('<!-- a --><a href="/ui/caves/6">y</a><!-- b --!>')
+          .hrefs
+      ).eql(['/ui/caves/6']);
+      should(botAuditPage.scan('<!---!> x').unreadable).equal(true);
+    });
+
     it('reads a script and a style as raw text up to their end tag, in any case', () => {
       const html =
         '<p>a</p><SCRIPT type="application/ld+json">{"x":"<a href=/ui/caves/7>"}</Script ><STYLE>b{}</STYLE><a href="/ui/caves/8">k</a>';
