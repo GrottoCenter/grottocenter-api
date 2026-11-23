@@ -50,18 +50,15 @@ module.exports = {
       // The datastore's `ssl` option is not part of the URI, and pg-boss only
       // sees the string: without this it connects in clear text and a server
       // that requires TLS refuses it ("no pg_hba.conf entry ... no encryption").
-      // A `rejectUnauthorized: false` datastore keeps skipping verification.
-      // `verify-full` is what node-pg applies for `ssl: true`; `require` is
-      // only an alias for it in pg-connection-string 2.x and warns. Only
-      // `rejectUnauthorized` is carried over: a `ca`, `cert` or `key` in the
+      // pg-boss always verifies the certificate, on both paths, whatever the
+      // datastore's `rejectUnauthorized` says: that is what the API's pg-boss
+      // does in production (bare hostname). `verify-full` is what node-pg
+      // applies for `ssl: true`; `require` is only an alias for it in
+      // pg-connection-string 2.x and warns. A `ca`, `cert` or `key` in the
       // `ssl` object is dropped, since pg-boss only sees the string.
       if (dsConfig.ssl && !/[?&]sslmode=/.test(dsConfig.url)) {
-        const mode =
-          dsConfig.ssl.rejectUnauthorized === false
-            ? 'no-verify'
-            : 'verify-full';
         const separator = dsConfig.url.includes('?') ? '&' : '?';
-        return `${dsConfig.url}${separator}sslmode=${mode}`;
+        return `${dsConfig.url}${separator}sslmode=verify-full`;
       }
       return dsConfig.url;
     }
