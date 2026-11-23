@@ -201,12 +201,17 @@ const scan = (html) => {
       // character of the comment body (lt+4). Searching from lt+4 misses them,
       // leaving the content after them buried in a comment that runs to the
       // next --> further down the page.
-      const end = html.indexOf('-->', lt + 2);
+      // A comment also ends at --!> (the incorrectly-closed-comment parse
+      // error), whichever of the two ends comes first.
+      const plain = html.indexOf('-->', lt + 2);
+      const bang = html.indexOf('--!>', lt + 4);
+      const end = plain === -1 || (bang !== -1 && bang < plain) ? bang : plain;
+      const endLength = end !== -1 && end === bang ? 4 : 3;
       text.push(
         `\n${html.slice(lt + 4, end === -1 ? n : Math.max(lt + 4, end))}\n`
       );
       if (end === -1) unreadable = true;
-      i = end === -1 ? n : end + 3;
+      i = end === -1 ? n : end + endLength;
     } else if (next !== undefined && /[a-zA-Z]/.test(next)) {
       let nameEnd = lt + 1;
       while (
