@@ -2,11 +2,15 @@
 const should = require('should');
 const express = require('express');
 const supertest = require('supertest');
+const sinon = require('sinon');
 
 // Use low limits in tests to avoid socket exhaustion from too many requests
 const TEST_VISITOR_LIMIT = 10;
 const TEST_USER_LIMIT = 20;
 const TEST_MODERATOR_LIMIT = 40;
+const TEST_GEOLOC_VISITOR_LIMIT = 6;
+const TEST_GEOLOC_USER_LIMIT = 12;
+const TEST_GEOLOC_MODERATOR_LIMIT = 24;
 const TEST_DELETE_LIMIT = 5;
 const TEST_USER_DELETE_LIMIT = 1;
 const TEST_AUTH_LIMIT = 3;
@@ -30,6 +34,10 @@ describe('Rate Limiter', () => {
       'USER_RATE_LIMIT',
       'LEADER_RATE_LIMIT',
       'MODERATOR_RATE_LIMIT',
+      'GEOLOC_VISITOR_RATE_LIMIT',
+      'GEOLOC_USER_RATE_LIMIT',
+      'GEOLOC_LEADER_RATE_LIMIT',
+      'GEOLOC_MODERATOR_RATE_LIMIT',
       'DELETE_RATE_LIMIT',
       'USER_DELETE_RATE_LIMIT',
       'AUTH_RATE_LIMIT',
@@ -83,6 +91,9 @@ describe('Rate Limiter', () => {
       process.env.VISITOR_RATE_LIMIT = TEST_VISITOR_LIMIT;
       process.env.USER_RATE_LIMIT = TEST_USER_LIMIT;
       process.env.MODERATOR_RATE_LIMIT = TEST_MODERATOR_LIMIT;
+      process.env.GEOLOC_VISITOR_RATE_LIMIT = TEST_GEOLOC_VISITOR_LIMIT;
+      process.env.GEOLOC_USER_RATE_LIMIT = TEST_GEOLOC_USER_LIMIT;
+      process.env.GEOLOC_MODERATOR_RATE_LIMIT = TEST_GEOLOC_MODERATOR_LIMIT;
       process.env.DELETE_RATE_LIMIT = TEST_DELETE_LIMIT;
       process.env.USER_DELETE_RATE_LIMIT = TEST_USER_DELETE_LIMIT;
       process.env.AUTH_RATE_LIMIT = TEST_AUTH_LIMIT;
@@ -509,6 +520,252 @@ describe('Rate Limiter', () => {
         for (let i = 0; i < TEST_MODERATOR_LIMIT + 10; i += 1) {
           await agent.get('/test').expect(200);
         }
+      });
+    });
+
+    describe('geolocRateLimit', () => {
+      const GEOLOC = '/api/v1/geoloc/entrances';
+
+      // Mounts both limiters in the order of config/http.js.
+      const buildApp = (token) => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use((req, res, next) => {
+          if (token) req.token = token;
+          next();
+        });
+        app.use(rateLimiter.generalRateLimit);
+        app.use(rateLimiter.geolocRateLimit);
+        app.use((req, res) => res.status(200).send('ok'));
+        return { app, rateLimiter };
+      };
+
+      // Returns the status codes of `count` GET requests to `path`.
+      const hit = async (agent, path, count) => {
+        const statuses = [];
+        for (let i = 0; i < count; i += 1) {
+          statuses.push((await agent.get(path)).status);
+        }
+        return statuses;
+      };
+
+      it('should allow exactly the visitor geoloc limit, then reject', async () => {
+        const { app } = buildApp();
+        const statuses = await hit(
+          supertest.agent(app),
+          GEOLOC,
+          TEST_GEOLOC_VISITOR_LIMIT + 2
+        );
+
+        should(statuses.slice(0, TEST_GEOLOC_VISITOR_LIMIT)).eql(
+          Array(TEST_GEOLOC_VISITOR_LIMIT).fill(200)
+        );
+        should(statuses.slice(TEST_GEOLOC_VISITOR_LIMIT)).eql([429, 429]);
+      });
+
+      it('should give users a higher geoloc limit than visitors', async () => {
+        const { app } = buildApp({ groups: [], nickname: 'User', id: 10 });
+        const statuses = await hit(
+          supertest.agent(app),
+          GEOLOC,
+          TEST_GEOLOC_USER_LIMIT + 1
+        );
+
+        should(statuses.filter((s) => s === 200).length).equal(
+          TEST_GEOLOC_USER_LIMIT
+        );
+        should(statuses[TEST_GEOLOC_USER_LIMIT]).equal(429);
+      });
+
+      it('should give moderators the moderator geoloc limit', async () => {
+        const RightService = require('../../../api/services/RightService');
+        const { app } = buildApp({
+          groups: [{ name: RightService.G.MODERATOR }],
+          nickname: 'Mod',
+          id: 2,
+        });
+        const statuses = await hit(
+          supertest.agent(app),
+          GEOLOC,
+          TEST_GEOLOC_MODERATOR_LIMIT + 1
+        );
+
+        should(statuses.filter((s) => s === 200).length).equal(
+          TEST_GEOLOC_MODERATOR_LIMIT
+        );
+        should(statuses[TEST_GEOLOC_MODERATOR_LIMIT]).equal(429);
+      });
+
+      it('should skip rate limiting for administrators', async () => {
+        const RightService = require('../../../api/services/RightService');
+        const { app } = buildApp({
+          groups: [{ name: RightService.G.ADMINISTRATOR }],
+          nickname: 'Admin',
+          id: 1,
+        });
+        const statuses = await hit(
+          supertest.agent(app),
+          GEOLOC,
+          TEST_GEOLOC_MODERATOR_LIMIT + 5
+        );
+
+        should(statuses.every((s) => s === 200)).be.true();
+      });
+
+      it('should not let exhausted geoloc budget block general routes', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        await hit(agent, GEOLOC, TEST_GEOLOC_VISITOR_LIMIT + 1);
+
+        // Same IP: login-like and other routes are untouched
+        await agent.post('/api/v1/login').expect(200);
+        await agent.get('/api/v1/entrances/1').expect(200);
+      });
+
+      it('should not let exhausted general budget block geoloc routes', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        await hit(agent, '/api/v1/entrances/1', TEST_VISITOR_LIMIT + 1);
+        await agent.get('/api/v1/entrances/1').expect(429);
+
+        await agent.get(GEOLOC).expect(200);
+      });
+
+      it('should not consume the general budget', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        await hit(agent, GEOLOC, TEST_GEOLOC_VISITOR_LIMIT);
+
+        const res = await agent.get('/api/v1/entrances/1').expect(200);
+        should(res.headers['ratelimit-policy']).equal(
+          `${TEST_VISITOR_LIMIT};w=600`
+        );
+        should(res.headers['ratelimit-remaining']).equal(
+          String(TEST_VISITOR_LIMIT - 1)
+        );
+      });
+
+      it('should expose the geoloc quota in the standard headers', async () => {
+        const { app } = buildApp();
+        const res = await supertest.agent(app).get(GEOLOC).expect(200);
+
+        should(res.headers['ratelimit-policy']).equal(
+          `${TEST_GEOLOC_VISITOR_LIMIT};w=600`
+        );
+        should(res.headers['ratelimit-remaining']).equal(
+          String(TEST_GEOLOC_VISITOR_LIMIT - 1)
+        );
+      });
+
+      it('should share one counter across geoloc routes and aliases', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        const paths = [
+          '/api/v1/geoloc/entrances',
+          '/api/v1/geoloc/entrancesCoordinates',
+          '/api/v1/geoloc/caves',
+          '/api/v1/geoloc/cavesCoordinates',
+          '/api/v1/geoloc/grottos',
+          '/api/v1/geoloc/countEntries',
+        ];
+        for (let i = 0; i < TEST_GEOLOC_VISITOR_LIMIT; i += 1) {
+          await agent.get(paths[i % paths.length]).expect(200);
+        }
+
+        await agent.get('/api/v1/geoloc/massifs').expect(429);
+      });
+
+      it('should keep non-GET geoloc requests in the general budget', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        await hit(agent, GEOLOC, TEST_GEOLOC_VISITOR_LIMIT);
+
+        const res = await agent.post(GEOLOC).expect(200);
+        should(res.headers['ratelimit-policy']).equal(
+          `${TEST_VISITOR_LIMIT};w=600`
+        );
+      });
+
+      it('should not rate limit OPTIONS requests', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_GEOLOC_VISITOR_LIMIT + 5; i += 1) {
+          await agent.options(GEOLOC).expect(200);
+        }
+      });
+
+      it('should give each IP its own geoloc counter', async () => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.set('trust proxy', 1);
+        app.use(rateLimiter.geolocRateLimit);
+        app.use((req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < TEST_GEOLOC_VISITOR_LIMIT; i += 1) {
+          await agent.get(GEOLOC).set('X-Forwarded-For', '1.1.1.1').expect(200);
+        }
+        await agent.get(GEOLOC).set('X-Forwarded-For', '1.1.1.1').expect(429);
+        await agent.get(GEOLOC).set('X-Forwarded-For', '2.2.2.2').expect(200);
+      });
+
+      it('should accept requests again once the window has elapsed', async () => {
+        const { app } = buildApp();
+        const agent = supertest.agent(app);
+        await hit(agent, GEOLOC, TEST_GEOLOC_VISITOR_LIMIT);
+        await agent.get(GEOLOC).expect(429);
+
+        // Only Date is faked: sockets and the store's own timers stay real.
+        const clock = sinon.useFakeTimers({
+          now: Date.now(),
+          toFake: ['Date'],
+        });
+        try {
+          clock.tick(10 * 60 * 1000 + 1000);
+          await agent.get(GEOLOC).expect(200);
+        } finally {
+          clock.restore();
+        }
+      });
+
+      it('should log rejections under the geoloc limiter name', async () => {
+        const { app } = buildApp();
+        await hit(supertest.agent(app), GEOLOC, TEST_GEOLOC_VISITOR_LIMIT + 1);
+
+        const [entry] = exceededLogs();
+        should(entry.limiter).equal('geoloc');
+        should(entry.limit).equal(TEST_GEOLOC_VISITOR_LIMIT);
+        should(entry.path).equal(GEOLOC);
+      });
+
+      it('should match every GET geoloc route declared in config/routes.js', () => {
+        const { routes } = require('../../../config/routes');
+        const { isGeolocRead } = freshRateLimiter();
+
+        const declared = Object.keys(routes)
+          .filter((key) => key.startsWith('GET /api/v1/geoloc/'))
+          .map((key) => key.slice('GET '.length));
+
+        should(declared.length).be.above(10);
+        declared.forEach((path) => {
+          should(isGeolocRead({ method: 'GET', path })).be.true(path);
+        });
+      });
+
+      it('should not match routes outside /api/v1/geoloc/', () => {
+        const { isGeolocRead } = freshRateLimiter();
+
+        [
+          '/api/v1/entrances/1',
+          '/api/v1/geolocation',
+          '/api/v1/login',
+          '/geoloc/entrances',
+        ].forEach((path) => {
+          should(isGeolocRead({ method: 'GET', path })).be.false(path);
+        });
+        should(
+          isGeolocRead({ method: 'POST', path: '/api/v1/geoloc/entrances' })
+        ).be.false();
       });
     });
 

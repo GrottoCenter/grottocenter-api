@@ -60,6 +60,7 @@ module.exports.http = {
   middleware: {
     // Requests limiter configuration
     generalRateLimit: rateLimiter.generalRateLimit,
+    geolocRateLimit: rateLimiter.geolocRateLimit,
     deleteRateLimit: rateLimiter.deleteRateLimit,
 
     // Stricter rate limiter for auth endpoints only.
@@ -88,6 +89,7 @@ module.exports.http = {
       'securityHeaders',
       'parseAuthToken',
       'generalRateLimit',
+      'geolocRateLimit',
       'deleteRateLimit',
       'authRateLimit',
       'requestLogger',
