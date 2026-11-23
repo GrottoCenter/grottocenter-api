@@ -23,16 +23,17 @@ info:
 
     Rate limiting: requests are counted per client IP in 10-minute windows
     and rejected with `429` and a `Retry-After` header once the quota is
-    spent. Signing in raises the general and geoloc quotas, which depend on the caller's role.
-    Administrators are not limited. `GET /geoloc/*` (the map routes, aliases
-    included) has its own budget, independent of the general one, so map
-    browsing never blocks other requests. Authentication endpoints (login,
-    signup, forgot and change password) have a separate, stricter quota of 10
-    attempts per 15 minutes per IP, the same for every role: signing in does
-    not raise it and administrators are not exempt. `DELETE` requests have a
-    per-hour quota (1 for users, 20 for leaders and moderators), and relation
-    deletes are exempt. `Retry-After` and `RateLimit-*` are not exposed through
-    CORS yet, so browser clients on another origin cannot read them for now.
+    spent. Signing in raises the general and geoloc quotas, which depend on
+    the caller's role. Administrators are exempt from the general, geoloc and
+    `DELETE` quotas. `GET /geoloc/*` (the map routes, aliases included) has
+    its own budget, independent of the general one, so map browsing never
+    blocks other requests. Authentication endpoints (login, signup, forgot and
+    change password, MFA enroll and verify) have a separate, stricter quota of
+    10 attempts per 15 minutes per IP: signing in does not raise it and
+    administrators are not exempt. `DELETE` requests have a per-hour quota (1
+    for users, 20 for leaders and moderators), and relation deletes are
+    exempt. `Retry-After` and `RateLimit-*` are not exposed through CORS yet,
+    so browser clients on another origin cannot read them for now.
 
 
     | Caller | General quota | `GET /geoloc/*` quota |
