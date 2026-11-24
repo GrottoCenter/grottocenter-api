@@ -161,7 +161,8 @@ module.exports.http = {
       return next();
     },
 
-    // Security headers: HSTS, X-Content-Type-Options, X-Frame-Options
+    // Security headers: HSTS, X-Content-Type-Options, X-Frame-Options,
+    // X-Robots-Tag
     securityHeaders(req, res, next) {
       // HSTS: instruct browsers to always use HTTPS (1 year, include subdomains)
       res.set(

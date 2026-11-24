@@ -26,14 +26,9 @@ describe('API host crawl posture (#1763)', () => {
     });
   });
 
-  describe('X-Robots-Tag', () => {
+  // The 200 case lives in security-headers.test.js, next to the other headers.
+  describe('X-Robots-Tag on custom responses', () => {
     const EXPECTED = 'noindex, nofollow';
-
-    it('should be set on a 200', async () => {
-      const res = await supertest(sails.hooks.http.app).get('/api/v1/licenses');
-      should(res.status).equal(200);
-      should(res.headers['x-robots-tag']).equal(EXPECTED);
-    });
 
     it('should be set on a 404', async () => {
       const res = await supertest(sails.hooks.http.app).get(
