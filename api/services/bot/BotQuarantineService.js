@@ -47,10 +47,12 @@ const QUARANTINED_SQL = `
     LEFT JOIN t_cave oc ON oc.id = d.id_cave
     LEFT JOIN t_entrance oe ON oe.id = d.id_entrance
     LEFT JOIN t_massif om ON om.id = d.id_massif
+    LEFT JOIN t_document od ON od.id = d.id_document
     WHERE d.is_deleted = false
       AND (d.id_cave IS NULL OR (oc.is_deleted = false AND oc.redirect_to IS NULL))
       AND (d.id_entrance IS NULL OR (oe.is_deleted = false AND oe.redirect_to IS NULL))
       AND (d.id_massif IS NULL OR (om.is_deleted = false AND om.redirect_to IS NULL))
+      AND (d.id_document IS NULL OR (od.is_deleted = false AND od.redirect_to IS NULL))
       AND (btrim(COALESCE(d.title, '')) <> '' OR btrim(COALESCE(d.body, '')) <> '')
     UNION ALL
     SELECT 't_name'::text, n.id,
@@ -189,7 +191,7 @@ module.exports = {
       language: r.language,
       patternId: r.pattern_id,
       matchExcerpt: r.match_excerpt,
-      scannedAt: r.scanned_at,
+      scannedAt: new Date(r.scanned_at),
     }));
     const names = await loadEntityNames(
       rawItems.map((i) => ({ entityType: i.type, entityId: i.id }))
