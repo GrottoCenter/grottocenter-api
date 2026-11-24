@@ -1,4 +1,7 @@
 const { getMetaFromRequest, toListFromController } = require('./mapping/utils');
+const {
+  EXPOSED_RESPONSE_HEADERS_VALUE,
+} = require('../../config/constants/cors');
 
 const treatRange = (parameters, req, res, converter, found) => {
   res.set('Accept-Range', `${parameters.searchedItem} ${parameters.maxRange}`);
@@ -45,7 +48,12 @@ const treatRange = (parameters, req, res, converter, found) => {
     `<${first}>; rel="first",  <${prev}>; rel="prev", <${next}>; rel="next",  <${last}>; rel="last"`
   );
 
-  res.set('Access-Control-Expose-Headers', 'Content-Range');
+  // Replaces the list set by the corsHeaders middleware: keep its headers
+  // (X-Trace-Id, Retry-After, RateLimit-*) readable on a 206 too.
+  res.set(
+    'Access-Control-Expose-Headers',
+    `${EXPOSED_RESPONSE_HEADERS_VALUE}, Content-Range`
+  );
   const meta = getMetaFromRequest(req);
   // Converters that declare a second parameter receive request metadata (meta).
   // Single-param converters (e.g., toMassif) are called without meta.
