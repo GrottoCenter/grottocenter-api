@@ -219,41 +219,45 @@ describe('Entrance features', () => {
           )
         );
         const documentIds = [sharedDocument.id, ownDocument.id];
-        await CommonService.query(
-          `INSERT INTO j_document_entrance (id_document, id_entrance)
-           VALUES ($1, $2), ($1, $3), ($4, $3)`,
-          [sharedDocument.id, targetEntrance.id, entrance.id, ownDocument.id]
-        );
+        try {
+          await CommonService.query(
+            `INSERT INTO j_document_entrance (id_document, id_entrance)
+             VALUES ($1, $2), ($1, $3), ($4, $3)`,
+            [sharedDocument.id, targetEntrance.id, entrance.id, ownDocument.id]
+          );
 
-        await supertest(sails.hooks.http.app)
-          .delete(
-            `/api/v1/entrances/${entrance.id}?isPermanent=true&entityId=${targetEntrance.id}`
-          )
-          .set('Authorization', adminToken)
-          .set('Accept', 'application/json')
-          .expect(200);
+          await supertest(sails.hooks.http.app)
+            .delete(
+              `/api/v1/entrances/${entrance.id}?isPermanent=true&entityId=${targetEntrance.id}`
+            )
+            .set('Authorization', adminToken)
+            .set('Accept', 'application/json')
+            .expect(200);
 
-        should(await TEntrance.findOne(entrance.id)).be.undefined();
-        const { rows } = await CommonService.query(
-          `SELECT id_document, id_entrance FROM j_document_entrance
-           WHERE id_document = ANY($1)`,
-          [documentIds]
-        );
-        should(
-          rows.map((r) => [r.id_document, r.id_entrance]).sort(byDocument)
-        ).eql(
-          [
-            [sharedDocument.id, targetEntrance.id],
-            [ownDocument.id, targetEntrance.id],
-          ].sort(byDocument)
-        );
-
-        await CommonService.query(
-          'DELETE FROM j_document_entrance WHERE id_entrance = $1',
-          [targetEntrance.id]
-        );
-        await TDocument.destroy({ id: documentIds });
-        await TEntrance.destroy({ id: targetEntrance.id });
+          should(await TEntrance.findOne(entrance.id)).be.undefined();
+          const { rows } = await CommonService.query(
+            `SELECT id_document, id_entrance FROM j_document_entrance
+             WHERE id_document = ANY($1)`,
+            [documentIds]
+          );
+          should(
+            rows.map((r) => [r.id_document, r.id_entrance]).sort(byDocument)
+          ).eql(
+            [
+              [sharedDocument.id, targetEntrance.id],
+              [ownDocument.id, targetEntrance.id],
+            ].sort(byDocument)
+          );
+        } finally {
+          // Runs even when an assertion fails, so that no link is left behind
+          // when after() restores the id column.
+          await CommonService.query(
+            'DELETE FROM j_document_entrance WHERE id_document = ANY($1)',
+            [documentIds]
+          );
+          await TDocument.destroy({ id: documentIds });
+          await TEntrance.destroy({ id: [targetEntrance.id, entrance.id] });
+        }
       });
     });
   });
