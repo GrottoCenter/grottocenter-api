@@ -308,7 +308,10 @@ describe('ControllerService', () => {
       );
 
       should(
-        res.set.calledWith('Access-Control-Expose-Headers', 'Content-Range')
+        res.set.calledWith(
+          'Access-Control-Expose-Headers',
+          'X-Trace-Id, Retry-After, RateLimit-Policy, RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, Content-Range'
+        )
       ).be.true();
     });
 

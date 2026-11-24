@@ -13,6 +13,8 @@
  * https://sailsjs.com/config/security
  */
 
+const { EXPOSED_RESPONSE_HEADERS_VALUE } = require('./constants/cors');
+
 module.exports.security = {
   /** *************************************************************************
    *                                                                          *
@@ -31,7 +33,7 @@ module.exports.security = {
     allowOrigins: '*',
     allowCredentials: false,
     allowRequestHeaders: 'content-type, authorization, x-trace-id',
-    allowResponseHeaders: 'X-Trace-Id',
+    allowResponseHeaders: EXPOSED_RESPONSE_HEADERS_VALUE,
   },
   /** **************************************************************************
    *                                                                           *

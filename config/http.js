@@ -14,6 +14,7 @@ const responseTime = require('response-time');
 const path = require('path');
 const fs = require('fs');
 const rateLimiter = require('./rateLimit/rateLimiter');
+const { EXPOSED_RESPONSE_HEADERS_VALUE } = require('./constants/cors');
 const { version: packageVersion } = require('../package.json');
 const TokenService = require('../api/services/TokenService');
 const RightService = require('../api/services/RightService');
@@ -137,7 +138,7 @@ module.exports.http = {
         'Access-Control-Allow-Headers',
         'content-type, authorization, x-trace-id'
       );
-      res.set('Access-Control-Expose-Headers', 'X-Trace-Id');
+      res.set('Access-Control-Expose-Headers', EXPOSED_RESPONSE_HEADERS_VALUE);
       res.set(
         'Access-Control-Allow-Methods',
         'GET, POST, PUT, PATCH, DELETE, OPTIONS'
