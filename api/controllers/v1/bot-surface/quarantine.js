@@ -15,7 +15,7 @@ const readFilter = (req, name, allowed) => {
 
 module.exports = async (req, res) => {
   // Two groups, not a hierarchy: an administrator is not a moderator
-  if (!RightService.canViewDeleted(req.token.groups)) {
+  if (!RightService.isModeratorOrAdministrator(req.token.groups)) {
     return res.forbidden(
       'You are not authorized to read the quarantine report.'
     );

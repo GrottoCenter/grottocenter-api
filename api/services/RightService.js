@@ -11,6 +11,21 @@ module.exports = {
   },
 
   /**
+   * Whether the caller is a moderator or an administrator. Roles are not
+   * hierarchical, so either one is enough on its own and neither implies the
+   * other.
+   *
+   * @param {Array} userGroups req.token?.groups
+   * @returns {boolean}
+   */
+  isModeratorOrAdministrator(userGroups) {
+    return (
+      module.exports.hasGroup(userGroups, module.exports.G.ADMINISTRATOR) ||
+      module.exports.hasGroup(userGroups, module.exports.G.MODERATOR)
+    );
+  },
+
+  /**
    * Whether the caller may list and inspect soft-deleted core content
    * (organizations, entrances, massifs, caves, guidelines, documents).
    *
@@ -23,9 +38,6 @@ module.exports = {
    * @returns {boolean}
    */
   canViewDeleted(userGroups) {
-    return (
-      module.exports.hasGroup(userGroups, module.exports.G.ADMINISTRATOR) ||
-      module.exports.hasGroup(userGroups, module.exports.G.MODERATOR)
-    );
+    return module.exports.isModeratorOrAdministrator(userGroups);
   },
 };

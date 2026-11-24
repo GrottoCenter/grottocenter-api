@@ -48,4 +48,19 @@ describe('RightService', () => {
       });
     });
   });
+
+  describe('isModeratorOrAdministrator()', () => {
+    [
+      ['an administrator only', [{ name: 'Administrator' }], true],
+      ['a moderator only', [{ name: 'Moderator' }], true],
+      ['a leader', [{ name: 'Leader' }], false],
+      ['an ordinary user', [{ name: 'User' }], false],
+      ['no group', [], false],
+      ['an anonymous caller', undefined, false],
+    ].forEach(([label, groups, expected]) => {
+      it(`should return ${expected} for ${label}`, () => {
+        should(RightService.isModeratorOrAdministrator(groups)).equal(expected);
+      });
+    });
+  });
 });

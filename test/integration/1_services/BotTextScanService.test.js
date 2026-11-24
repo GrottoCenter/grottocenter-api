@@ -154,7 +154,7 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
       should(verdict.pattern_id).equal('error');
     });
 
-    it('does not throw when the verdict cannot be written', async () => {
+    it('does not throw when the text cannot be read', async () => {
       const description = await mkDescription({});
       sinon.stub(CommonService, 'query').rejects(new Error('db down'));
 
@@ -162,6 +162,20 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
 
       should(result.quarantined).be.true();
       should(result.patternId).equal('error');
+    });
+
+    it('does not throw when the verdict cannot be written', async () => {
+      const description = await mkDescription({ body: POSITION });
+      const stub = sinon.stub(CommonService, 'query');
+      stub.callThrough();
+      stub.onSecondCall().rejects(new Error('db down'));
+
+      const result = await service.recheck('t_description', description.id);
+
+      should(stub.callCount).equal(2);
+      should(result.quarantined).be.true();
+      should(result.patternId).equal('error');
+      should(await verdictOf('t_description', description.id)).be.undefined();
     });
   });
 

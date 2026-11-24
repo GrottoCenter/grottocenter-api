@@ -24,7 +24,9 @@ const ENTITY_TYPES = [
 // 'error' is the pattern id recorded when the detector threw
 const PATTERN_IDS = [...coordinateDetector.PATTERN_IDS, 'error'];
 
-// One row per quarantined text: the owner of a description is the record it is
+// One row per quarantined text on a record that is neither deleted nor merged
+// (a text on a deleted or merged record never reaches a bot page, and would
+// inflate the backlog at every merge). The owner of a description is the record it is
 // attached to, the owner of a name is the record it names. Anything else
 // (a point, an observation) is 'other'.
 const QUARANTINED_SQL = `
@@ -42,7 +44,13 @@ const QUARANTINED_SQL = `
            d.id_language AS language,
            d.title AS own_title
     FROM t_description d
+    LEFT JOIN t_cave oc ON oc.id = d.id_cave
+    LEFT JOIN t_entrance oe ON oe.id = d.id_entrance
+    LEFT JOIN t_massif om ON om.id = d.id_massif
     WHERE d.is_deleted = false
+      AND (d.id_cave IS NULL OR (oc.is_deleted = false AND oc.redirect_to IS NULL))
+      AND (d.id_entrance IS NULL OR (oe.is_deleted = false AND oe.redirect_to IS NULL))
+      AND (d.id_massif IS NULL OR (om.is_deleted = false AND om.redirect_to IS NULL))
       AND (btrim(COALESCE(d.title, '')) <> '' OR btrim(COALESCE(d.body, '')) <> '')
     UNION ALL
     SELECT 't_name'::text, n.id,
@@ -55,7 +63,15 @@ const QUARANTINED_SQL = `
            n.id_language,
            n.name
     FROM t_name n
+    LEFT JOIN t_cave oc ON oc.id = n.id_cave
+    LEFT JOIN t_entrance oe ON oe.id = n.id_entrance
+    LEFT JOIN t_massif om ON om.id = n.id_massif
+    LEFT JOIN t_grotto og ON og.id = n.id_grotto
     WHERE n.is_deleted = false AND btrim(COALESCE(n.name, '')) <> ''
+      AND (n.id_cave IS NULL OR (oc.is_deleted = false AND oc.redirect_to IS NULL))
+      AND (n.id_entrance IS NULL OR (oe.is_deleted = false AND oe.redirect_to IS NULL))
+      AND (n.id_massif IS NULL OR (om.is_deleted = false AND om.redirect_to IS NULL))
+      AND (n.id_grotto IS NULL OR (og.is_deleted = false AND og.redirect_to IS NULL))
   ) o ON o.source_table = s.source_table AND o.source_id = s.source_id
   WHERE s.matched`;
 
@@ -93,9 +109,6 @@ const loadEntityNames = async (items) => {
   return names;
 };
 
-const countBy = (rows, key) =>
-  Object.fromEntries(rows.map((r) => [r[key], r.n]));
-
 module.exports = {
   ENTITY_TYPES,
   PATTERN_IDS,
@@ -131,35 +144,43 @@ module.exports = {
     if (language) add('q.language = ?', language);
     const filter = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    const [page, count, byPattern, byType, runs] = await Promise.all([
+    // One statement, so the quarantined set is computed once and takes one
+    // connection: the page, the filtered count and the aggregates share it.
+    const [
+      {
+        rows: [report],
+      },
+      runs,
+    ] = await Promise.all([
       query(
-        `SELECT * FROM (${QUARANTINED_SQL}) q ${filter}
-         ORDER BY q.scanned_at DESC, q.source_table, q.source_id
-         OFFSET $${params.length + 1} LIMIT $${params.length + 2}`,
+        `WITH q AS MATERIALIZED (${QUARANTINED_SQL}),
+              f AS (SELECT * FROM q ${filter})
+         SELECT
+           (SELECT count(*)::int FROM f) AS total_count,
+           (SELECT COALESCE(json_agg(p ORDER BY p.scanned_at DESC, p.source_table, p.source_id), '[]'::json)
+              FROM (SELECT * FROM f
+                    ORDER BY scanned_at DESC, source_table, source_id
+                    OFFSET $${params.length + 1} LIMIT $${params.length + 2}) p) AS items,
+           (SELECT COALESCE(json_object_agg(pattern_id, n), '{}'::json)
+              FROM (SELECT pattern_id, count(*)::int AS n FROM q GROUP BY 1) a) AS by_pattern,
+           (SELECT COALESCE(json_object_agg(entity_type, n), '{}'::json)
+              FROM (SELECT entity_type, count(*)::int AS n FROM q GROUP BY 1) a) AS by_type`,
         [...params, skip, limit]
       ),
-      query(
-        `SELECT count(*)::int AS n FROM (${QUARANTINED_SQL}) q ${filter}`,
-        params
-      ),
-      query(
-        `SELECT pattern_id, count(*)::int AS n FROM (${QUARANTINED_SQL}) q GROUP BY 1`
-      ),
-      query(
-        `SELECT entity_type, count(*)::int AS n FROM (${QUARANTINED_SQL}) q GROUP BY 1`
-      ),
-      // The two latest runs that recorded a total (runs before #1762 did not)
+      // The two latest runs that recorded a total (runs before #1762 did not,
+      // and a run whose count failed holds no value)
       query(
         `SELECT id, finished_at,
                 (counts->'scan'->>'patternVersion')::int AS pattern_version,
                 (counts->'scan'->>'quarantineTotal')::int AS total
          FROM t_bot_pipeline_run
-         WHERE status = 'succeeded' AND counts->'scan' ? 'quarantineTotal'
+         WHERE status = 'succeeded'
+           AND counts->'scan'->>'quarantineTotal' IS NOT NULL
          ORDER BY started_at DESC LIMIT 2`
       ),
     ]);
 
-    const rawItems = page.rows.map((r) => ({
+    const rawItems = report.items.map((r) => ({
       sourceTable: r.source_table,
       sourceId: r.source_id,
       type: r.entity_type,
@@ -190,8 +211,8 @@ module.exports = {
       scannedAt: i.scannedAt,
     }));
 
-    const byPatternId = countBy(byPattern.rows, 'pattern_id');
-    const byEntityType = countBy(byType.rows, 'entity_type');
+    const byPatternId = report.by_pattern;
+    const byEntityType = report.by_type;
     const toRun = (r) =>
       r && {
         runId: r.id,
@@ -202,7 +223,7 @@ module.exports = {
     const [latest, previous] = runs.rows.map(toRun);
 
     return {
-      totalCount: count.rows[0].n,
+      totalCount: report.total_count,
       skip,
       limit,
       items,
