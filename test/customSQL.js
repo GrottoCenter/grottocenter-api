@@ -1032,6 +1032,15 @@ const BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION = forTestDatabase(
   )
 );
 
+// Runs after BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION, whose v_bot_page it
+// redefines (#2022)
+const BOT_PAGE_VIEW_MASSIF_INDEX_MIGRATION = forTestDatabase(
+  fs.readFileSync(
+    path.join(__dirname, '../sql/9_43_2026_11_24_v_bot_page_massif_index.sql'),
+    'utf8'
+  )
+);
+
 // Independent of the other bot tables
 const BOT_PAGE_MANIFEST_MIGRATION = forTestDatabase(
   fs.readFileSync(
@@ -1206,6 +1215,7 @@ module.exports = {
   BOT_ADMIT_PAGES_MIGRATION,
   BOT_PAGE_VIEW_MIGRATION,
   BOT_PAGE_VIEW_MASSIFS_ORGANIZATIONS_MIGRATION,
+  BOT_PAGE_VIEW_MASSIF_INDEX_MIGRATION,
   BOT_PAGE_MANIFEST_MIGRATION,
   BOT_PAGE_MANIFEST_REDIRECT_MIGRATION,
   BOT_HUB_MIGRATION,
