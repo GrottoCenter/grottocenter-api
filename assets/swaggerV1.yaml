@@ -32,8 +32,15 @@ info:
     10 attempts per 15 minutes per IP: signing in does not raise it and
     administrators are not exempt. `DELETE` requests have a per-hour quota (1
     for users, 20 for leaders and moderators), and relation deletes are
-    exempt. `Retry-After` and `RateLimit-*` are not exposed through CORS yet,
-    so browser clients on another origin cannot read them for now.
+    exempt. A response counted against a quota carries `RateLimit-Policy`,
+    `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`, and a
+    `429` also carries `Retry-After`.
+
+
+    CORS: responses expose `X-Trace-Id`, `Retry-After`, `RateLimit-Policy`,
+    `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` through
+    `Access-Control-Expose-Headers`, so browser clients on another origin can
+    read them, on a `429` included.
 
 
     | Caller | General quota | `GET /geoloc/*` quota |

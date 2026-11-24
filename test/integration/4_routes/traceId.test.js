@@ -139,6 +139,19 @@ describe('Trace ID middleware', () => {
       );
     });
 
+    const EXPOSED = [
+      'X-Trace-Id',
+      'Retry-After',
+      'RateLimit-Policy',
+      'RateLimit-Limit',
+      'RateLimit-Remaining',
+      'RateLimit-Reset',
+    ];
+    const exposedList = (response) =>
+      response.headers['access-control-expose-headers']
+        .split(',')
+        .map((h) => h.trim());
+
     it('should expose X-Trace-Id on a cross-origin response', async () => {
       const response = await request(sails.hooks.http.app)
         .get('/api/v1/swagger.yaml')
@@ -147,6 +160,31 @@ describe('Trace ID middleware', () => {
       should(response.headers['access-control-expose-headers']).containEql(
         'X-Trace-Id'
       );
+    });
+
+    it('should expose Retry-After and RateLimit-* on a cross-origin response', async () => {
+      const response = await request(sails.hooks.http.app)
+        .get('/api/v1/swagger.yaml')
+        .set('Origin', 'https://www.grottocenter.org');
+
+      should(exposedList(response)).eql(EXPOSED);
+    });
+
+    it('should answer the preflight with the same CORS headers', async () => {
+      const response = await request(sails.hooks.http.app)
+        .options('/api/v1/geoloc/entrances')
+        .set('Origin', 'https://www.grottocenter.org')
+        .set('Access-Control-Request-Method', 'GET')
+        .expect(200);
+
+      should(response.headers['access-control-allow-origin']).equal('*');
+      should(response.headers['access-control-allow-headers']).equal(
+        'content-type, authorization, x-trace-id'
+      );
+      should(response.headers['access-control-allow-methods']).equal(
+        'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+      );
+      should(exposedList(response)).eql(EXPOSED);
     });
   });
 });

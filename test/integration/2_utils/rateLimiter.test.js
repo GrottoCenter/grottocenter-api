@@ -978,5 +978,77 @@ describe('Rate Limiter', () => {
         });
       });
     });
+
+    // A browser on another origin only reads the headers listed in
+    // Access-Control-Expose-Headers, on a 429 as on any response (#2019).
+    describe('CORS exposure of the 429 headers', () => {
+      const ORIGIN = 'https://www.grottocenter.org';
+      const RATE_LIMIT_HEADERS = [
+        'Retry-After',
+        'RateLimit-Policy',
+        'RateLimit-Limit',
+        'RateLimit-Remaining',
+        'RateLimit-Reset',
+      ];
+      let corsHeaders;
+
+      before(() => {
+        ({ corsHeaders } = require('../../../config/http').http.middleware);
+      });
+
+      // Mounts corsHeaders before the limiter, as config/http.js orders them,
+      // and returns the first 429 of up to `max` requests.
+      const firstRejection = async (limiterName, method, path, max) => {
+        const rateLimiter = freshRateLimiter();
+        const app = express();
+        app.use(corsHeaders);
+        app.use(rateLimiter[limiterName]);
+        app.use((req, res) => res.status(200).send('ok'));
+
+        const agent = supertest.agent(app);
+        for (let i = 0; i < max; i += 1) {
+          const res = await agent[method](path).set('Origin', ORIGIN);
+          if (res.status === 429) return res;
+        }
+        return null;
+      };
+
+      [
+        ['generalRateLimit', 'get', '/api/v1/entrances/1', TEST_VISITOR_LIMIT],
+        [
+          'geolocRateLimit',
+          'get',
+          '/api/v1/geoloc/entrances',
+          TEST_GEOLOC_VISITOR_LIMIT,
+        ],
+        [
+          'deleteRateLimit',
+          'delete',
+          '/api/v1/entrances/42',
+          TEST_DELETE_LIMIT,
+        ],
+        ['authRateLimit', 'post', '/api/v1/login', TEST_AUTH_LIMIT],
+        ['adminAuthRateLimit', 'post', '/api/v1/login', TEST_ADMIN_AUTH_LIMIT],
+      ].forEach(([limiterName, method, path, limit]) => {
+        it(`should expose Retry-After and RateLimit-* on the 429 of ${limiterName}`, async () => {
+          const res = await firstRejection(
+            limiterName,
+            method,
+            path,
+            limit + 2
+          );
+
+          should(res).be.ok();
+          const exposed = res.headers['access-control-expose-headers']
+            .split(',')
+            .map((h) => h.trim());
+          should(exposed).containDeep(['X-Trace-Id', ...RATE_LIMIT_HEADERS]);
+          RATE_LIMIT_HEADERS.forEach((header) => {
+            should(res.headers).have.property(header.toLowerCase());
+          });
+          should(res.headers['access-control-allow-origin']).equal('*');
+        });
+      });
+    });
   });
 });
