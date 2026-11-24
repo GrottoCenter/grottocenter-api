@@ -31,6 +31,10 @@ describe('v_bot_page - the massif lookup of a cave can use idx_t_massif_geog', (
       plan = rows.map((r) => r['QUERY PLAN']).join('\n');
     });
 
-    should(plan).match(/idx_t_massif_geog/);
+    // The index must serve the && lookup itself: the massif listed on the cave
+    // (m) is also read through this index, with no spatial condition
+    should(plan).match(
+      /idx_t_massif_geog[^\n]*\n\s*Index Cond: \(geog_polygon &&/
+    );
   });
 }).timeout(60000);
