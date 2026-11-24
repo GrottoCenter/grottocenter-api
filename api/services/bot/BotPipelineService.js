@@ -213,11 +213,22 @@ const steps = {
    */
   async scan() {
     const summary = await sails.services.bottextscanservice.run();
+    // A reporting metric: failing to count it must not stop the pipeline
+    // before publication, the scan itself having succeeded
+    let quarantineTotal = null;
+    try {
+      quarantineTotal = await BotQuarantineService.total();
+    } catch (error) {
+      sails.log.error(
+        'bot-pipeline: could not count the quarantine backlog',
+        error
+      );
+    }
     return {
       patternVersion: summary.patternVersion,
       scanned: summary.scanned,
       quarantined: summary.quarantined,
-      quarantineTotal: await BotQuarantineService.total(),
+      quarantineTotal,
       errors: summary.errors,
       passes: summary.passes,
     };

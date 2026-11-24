@@ -144,6 +144,29 @@ describe('GET /api/v1/bot-surface/quarantine', () => {
       should(res.body.aggregates.total).equal(0);
     });
 
+    it('leaves out texts on a deleted or merged record', async () => {
+      const live = await mkCave('Live');
+      const deleted = await mkCave('Deleted');
+      const merged = await mkCave('Merged');
+      await TCave.updateOne({ id: deleted.id }).set({ isDeleted: true });
+      await TCave.updateOne({ id: merged.id }).set({
+        isDeleted: true,
+        redirectTo: live.id,
+      });
+      for (const cave of [live, deleted, merged]) {
+        // eslint-disable-next-line no-await-in-loop
+        const d = await mkDescription({ cave: cave.id, body: POSITION });
+        // eslint-disable-next-line no-await-in-loop
+        await verdict('t_description', d.id, 'dms', 'x');
+      }
+
+      const res = await get(moderatorToken).expect(200);
+
+      should(res.body.totalCount).equal(1);
+      should(res.body.items[0].entity.id).equal(live.id);
+      should(res.body.aggregates.total).equal(1);
+    });
+
     it('lists quarantined names under their record', async () => {
       const cave = await mkCave('Name with 46.10222 6.51234');
       const [nameId] = created.name;
@@ -241,6 +264,19 @@ describe('GET /api/v1/bot-surface/quarantine', () => {
       );
       const res = await get(moderatorToken).expect(200);
       should(res.body.trend.latest).be.null();
+      should(res.body.trend.previous).be.null();
+    });
+
+    it('skips a run whose count failed', async () => {
+      await run(1, 10, 300);
+      await query(
+        `INSERT INTO t_bot_pipeline_run (status, counts)
+         VALUES ('succeeded', '{"scan":{"patternVersion":1,"quarantineTotal":null}}')`
+      );
+
+      const res = await get(moderatorToken).expect(200);
+
+      should(res.body.trend.latest.total).equal(10);
       should(res.body.trend.previous).be.null();
     });
 
