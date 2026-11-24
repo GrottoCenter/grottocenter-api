@@ -57,6 +57,9 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
+  // Crawl posture of the API host (#1763)
+  'GET /robots.txt': 'robots/get',
+
   // Swagger (API doc)
   'GET /api/v1/swagger.yaml': 'v1/swagger/get-yaml',
 

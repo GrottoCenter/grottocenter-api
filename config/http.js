@@ -172,6 +172,8 @@ module.exports.http = {
       res.set('X-Content-Type-Options', 'nosniff');
       // Prevent clickjacking — API responses should never be framed
       res.set('X-Frame-Options', 'DENY');
+      // Hygiene, not a privacy control: only crawlers that comply obey it (#1763)
+      res.set('X-Robots-Tag', 'noindex, nofollow');
       return next();
     },
 

@@ -560,3 +560,11 @@ BotOutboxQueueService: run failed pending=12 oldestSeconds=95 durationMs=40 <err
 - **Bing Webmaster Tools** → **Block URLs** (under _Configure my site_) → _Block URL_, with the page address, choosing _Remove from cache and search results_.
 
 Do both as soon as the page is withdrawn, and check that the public address now answers the not-found page first (a removal request for a page that still answers 200 is refused or reverted).
+
+## The API host's crawl posture
+
+The API host (`api.grottocenter.org`) tells crawlers to stay away (#1763): `GET /robots.txt` serves `assets/robots-api.txt` (`User-agent: *`, `Disallow: /`), and the `securityHeaders` middleware in `config/http.js` adds `X-Robots-Tag: noindex, nofollow` to every response, errors included. The bot pages are static files served at the main site's addresses (#1933), never by this app, so the API host needs no exemption.
+
+**This is hygiene, not a privacy control.** Only crawlers that choose to comply read either signal; unauthenticated endpoints still return the coordinates of non-sensitive entrances to anyone.
+
+**OAI-PMH harvesting is intended.** The bibliographic metadata endpoints (`api/controllers/v1/bibliographic-metadata/*`) feed the OAI-PMH interface and are open data on purpose. Harvesters don't read `X-Robots-Tag`, so the header doesn't affect them.
