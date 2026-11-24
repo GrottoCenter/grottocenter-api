@@ -127,7 +127,7 @@ describe('GET /api/v1/bot-surface/quarantine', () => {
       should(item.language).equal('fra');
       should(item.patternId).equal('dms');
       should(item.matchExcerpt).equal('46°06\'08"N');
-      should(item.scannedAt).be.a.String();
+      should(item.scannedAt).match(/^\d{4}-\d\d-\d\dT[\d:.]+Z$/);
     });
 
     it('leaves out clean and deleted texts', async () => {
@@ -160,7 +160,26 @@ describe('GET /api/v1/bot-surface/quarantine', () => {
         await verdict('t_description', d.id, 'dms', 'x');
       }
 
+      const documents = [];
+      for (const props of [
+        { isDeleted: true },
+        { isDeleted: true, redirectTo: 1 },
+      ]) {
+        // eslint-disable-next-line no-await-in-loop
+        const doc = await TDocument.create({
+          author: 1,
+          type: 1,
+          ...props,
+        }).fetch();
+        documents.push(doc.id);
+        // eslint-disable-next-line no-await-in-loop
+        const d = await mkDescription({ document: doc.id, body: POSITION });
+        // eslint-disable-next-line no-await-in-loop
+        await verdict('t_description', d.id, 'dms', 'x');
+      }
+
       const res = await get(moderatorToken).expect(200);
+      await TDocument.destroy({ id: documents });
 
       should(res.body.totalCount).equal(1);
       should(res.body.items[0].entity.id).equal(live.id);

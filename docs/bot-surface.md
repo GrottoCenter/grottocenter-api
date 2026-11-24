@@ -69,7 +69,7 @@ Admission is sticky, so a later edit that shrinks a text, or a record deleted af
 
 ## Quarantine report
 
-`GET /api/v1/bot-surface/quarantine` (#1762) lists the texts the scan withheld, so moderators can fix them. Moderators and administrators only, checked as two groups (`RightService.canViewDeleted`): roles are not hierarchical. A user with neither gets a 403 with no excerpt and no id.
+`GET /api/v1/bot-surface/quarantine` (#1762) lists the texts the scan withheld, so moderators can fix them. Moderators and administrators only, checked as two groups (`RightService.isModeratorOrAdministrator`): roles are not hierarchical. A user with neither gets a 403 with no excerpt and no id.
 
 - **Items:** a live text (not deleted, not blank) on a record that is neither deleted nor merged (`redirect_to` set), whose verdict matched, with `sourceTable`, `sourceId`, the owning record (`entity.type`, `id`, `name`: the main name, or the title for a document), `language`, `patternId`, `matchExcerpt` and `scannedAt`. Filters `entityType`, `patternId`, `language`; `skip` / `limit` (capped at 100); `totalCount` counts the filtered items. A text that is not a cave, entrance, massif, organization or document description or name (a point, an observation) is `other`.
 - **One statement.** The quarantined set is computed once per request (`WITH q AS MATERIALIZED`) and feeds the page, the count and the aggregates. Not yet measured with `EXPLAIN ANALYZE` on a production-sized copy.
