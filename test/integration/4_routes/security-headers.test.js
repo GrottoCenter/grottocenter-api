@@ -25,6 +25,10 @@ describe('Security headers middleware', () => {
     should(response.headers['x-frame-options']).equal('DENY');
   });
 
+  it('should include X-Robots-Tag header', () => {
+    should(response.headers['x-robots-tag']).equal('noindex, nofollow');
+  });
+
   it('should not include X-Powered-By header', () => {
     should(response.headers).not.have.property('x-powered-by');
   });

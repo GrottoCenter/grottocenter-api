@@ -354,6 +354,9 @@ module.exports.policies = {
   // Job (async batch operations)
   'v1/job/find': 'tokenAuth',
 
+  // Crawl posture of the API host (#1763)
+  'robots/get': true,
+
   // Miscellaneous
   'v1/convert/convert': true,
   'v1/file-format/find-all': true,
