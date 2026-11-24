@@ -81,6 +81,91 @@ const countPending = async (patternVersion) => {
 
 module.exports = {
   /**
+   * Records the verdict for one text right after it was written (#1762), so a
+   * moderator sees the result of an edit without waiting for the nightly scan.
+   *
+   * Not authoritative: publication still happens only in the pipeline, with the
+   * age gate. It never blocks a save: a detector error is recorded as matched
+   * with the pattern `error`, and so is a failed write of the verdict, which is
+   * reported as quarantined without a stored row (the next scan reads the text
+   * again, its hash being unknown).
+   *
+   * @param {string} sourceTable `t_description` or `t_name`
+   * @param {number} sourceId
+   * @param {object} [options]
+   * @param {Function} [options.detect] detector, for tests
+   * @returns {Promise<{ quarantined: boolean, patternId: ?string, matchExcerpt: ?string }>}
+   */
+  async recheck(sourceTable, sourceId, options = {}) {
+    const source = SOURCES.find((s) => s.table === sourceTable);
+    if (!source)
+      throw new Error(`bot-text-scan: unknown source ${sourceTable}`);
+    const detect = options.detect ?? coordinateDetector.detect;
+    const failed = {
+      quarantined: true,
+      patternId: 'error',
+      matchExcerpt: null,
+    };
+
+    try {
+      const { rows } = await CommonService.query(
+        `SELECT ${source.columns}, ${source.hash} AS body_hash
+         FROM ${source.table} t WHERE t.id = $1`,
+        [sourceId]
+      );
+      if (rows.length === 0)
+        return { quarantined: false, patternId: null, matchExcerpt: null };
+
+      let verdict;
+      try {
+        const result = detect(source.textOf(rows[0]));
+        verdict = result.matched
+          ? { matched: true, id: result.patternId, excerpt: result.match }
+          : { matched: false, id: null, excerpt: null };
+      } catch (error) {
+        sails.log.error(
+          `bot-text-scan: the detector failed on ${source.table} ${sourceId}, withholding it`,
+          error
+        );
+        verdict = { matched: true, id: 'error', excerpt: null };
+      }
+
+      await CommonService.query(
+        `INSERT INTO t_bot_text_scan
+           (source_table, source_id, body_hash, pattern_version, matched, pattern_id, match_excerpt, scanned_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, now())
+         ON CONFLICT (source_table, source_id) DO UPDATE SET
+           body_hash = EXCLUDED.body_hash,
+           pattern_version = EXCLUDED.pattern_version,
+           matched = EXCLUDED.matched,
+           pattern_id = EXCLUDED.pattern_id,
+           match_excerpt = EXCLUDED.match_excerpt,
+           scanned_at = EXCLUDED.scanned_at`,
+        [
+          sourceTable,
+          sourceId,
+          rows[0].body_hash,
+          options.patternVersion ?? coordinateDetector.PATTERN_SET_VERSION,
+          verdict.matched,
+          verdict.id,
+          verdict.excerpt,
+        ]
+      );
+      return {
+        quarantined: verdict.matched,
+        patternId: verdict.id,
+        matchExcerpt: verdict.excerpt,
+      };
+    } catch (error) {
+      sails.log.error(
+        `bot-text-scan: could not re-check ${sourceTable} ${sourceId}`,
+        error
+      );
+      return failed;
+    }
+  },
+
+  /**
    * Scans every text that has no up-to-date verdict.
    *
    * @param {object} [options]

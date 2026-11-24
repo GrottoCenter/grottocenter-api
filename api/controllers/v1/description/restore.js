@@ -28,6 +28,11 @@ module.exports = async (req, res) => {
   await TDescription.updateOne({ id: descriptionId }).set({ isDeleted: false });
   description.isDeleted = false;
 
+  const botSurface = await sails.services.bottextscanservice.recheck(
+    't_description',
+    Number(descriptionId)
+  );
+
   await RecentChangeService.setDeleteRestoreAuthor(
     'restore',
     'description',
@@ -48,6 +53,6 @@ module.exports = async (req, res) => {
     description,
     { controllerMethod: 'DescriptionController.restore' },
     res,
-    toSimpleDescription
+    (source) => ({ ...toSimpleDescription(source), botSurface })
   );
 };

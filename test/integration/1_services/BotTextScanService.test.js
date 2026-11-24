@@ -66,6 +66,105 @@ describe('BotTextScanService - coordinate scan of the published texts', () => {
     created.cave = [];
   });
 
+  describe('recheck (save-time verdict, #1762)', () => {
+    it('stores the verdict with the hash of the text and reports it', async () => {
+      const description = await mkDescription({ body: POSITION });
+
+      const result = await service.recheck('t_description', description.id, {
+        patternVersion: VERSION,
+      });
+
+      should(result.quarantined).be.true();
+      should(result.patternId).equal('dms');
+      should(result.matchExcerpt).be.a.String();
+      const verdict = await verdictOf('t_description', description.id);
+      should(verdict.matched).be.true();
+      should(verdict.pattern_version).equal(VERSION);
+      const { rows } = await query(
+        "SELECT md5(COALESCE(title, '') || E'\\n' || COALESCE(body, '')) AS h FROM t_description WHERE id = $1",
+        [description.id]
+      );
+      should(verdict.body_hash).equal(rows[0].h);
+    });
+
+    it('clears the flag when clean text replaces matching text', async () => {
+      const description = await mkDescription({ body: POSITION });
+      await service.recheck('t_description', description.id);
+      await TDescription.updateOne({ id: description.id }).set({
+        body: 'Nothing to see.',
+      });
+
+      const result = await service.recheck('t_description', description.id);
+
+      should(result).eql({
+        quarantined: false,
+        patternId: null,
+        matchExcerpt: null,
+      });
+      const verdict = await verdictOf('t_description', description.id);
+      should(verdict.matched).be.false();
+      should(verdict.pattern_id).be.null();
+    });
+
+    it('sets the flag when matching text replaces clean text', async () => {
+      const description = await mkDescription({});
+      await service.recheck('t_description', description.id);
+      await TDescription.updateOne({ id: description.id }).set({
+        body: POSITION,
+      });
+
+      const result = await service.recheck('t_description', description.id);
+
+      should(result.quarantined).be.true();
+      should(
+        (await verdictOf('t_description', description.id)).matched
+      ).be.true();
+    });
+
+    it('updates the pattern id when another family matches', async () => {
+      const description = await mkDescription({ body: POSITION });
+      await service.recheck('t_description', description.id);
+      await TDescription.updateOne({ id: description.id }).set({
+        body: 'N 46.10222 E 6.51234',
+      });
+
+      const result = await service.recheck('t_description', description.id);
+
+      should(result.patternId).equal('hemisphere-prefix');
+      should(
+        (await verdictOf('t_description', description.id)).pattern_id
+      ).equal('hemisphere-prefix');
+    });
+
+    it('reports quarantined with the pattern error when the detector throws', async () => {
+      const description = await mkDescription({});
+      const throwing = sinon.stub().throws(new Error('boom'));
+
+      const result = await service.recheck('t_description', description.id, {
+        detect: throwing,
+      });
+
+      should(result).eql({
+        quarantined: true,
+        patternId: 'error',
+        matchExcerpt: null,
+      });
+      const verdict = await verdictOf('t_description', description.id);
+      should(verdict.matched).be.true();
+      should(verdict.pattern_id).equal('error');
+    });
+
+    it('does not throw when the verdict cannot be written', async () => {
+      const description = await mkDescription({});
+      sinon.stub(CommonService, 'query').rejects(new Error('db down'));
+
+      const result = await service.recheck('t_description', description.id);
+
+      should(result.quarantined).be.true();
+      should(result.patternId).equal('error');
+    });
+  });
+
   it('records a clean verdict with the hash the admission function checks', async () => {
     const description = await mkDescription({});
 

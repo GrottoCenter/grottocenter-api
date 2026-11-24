@@ -67,6 +67,17 @@ Admission is sticky, so a later edit that shrinks a text, or a record deleted af
 - **Texts edited during the scan.** The scan runs again over what was created or edited while it was going on, up to 3 passes. If texts are still pending after that, the call rejects and the version stays where it was.
 - **Reporting.** The call returns, and logs, the number of distinct texts scanned and quarantined per source (a text read again in a later pass counts once, with its latest verdict), the number of detector errors and the number of passes.
 
+## Quarantine report
+
+`GET /api/v1/bot-surface/quarantine` (#1762) lists the texts the scan withheld, so moderators can fix them. Moderators and administrators only, checked as two groups (`RightService.canViewDeleted`): roles are not hierarchical. A user with neither gets a 403 with no excerpt and no id.
+
+- **Items:** a live text (not deleted, not blank) whose verdict matched, with `sourceTable`, `sourceId`, the owning record (`entity.type`, `id`, `name`: the main name, or the title for a document), `language`, `patternId`, `matchExcerpt` and `scannedAt`. Filters `entityType`, `patternId`, `language`; `skip` / `limit` (capped at 100); `totalCount` counts the filtered items. A text that is not a cave, entrance, massif, organization or document description or name (a point, an observation) is `other`.
+- **Aggregates** are always over the whole backlog, whatever the filters: `total`, `byPatternId`, `byEntityType`.
+- **Trend:** `trend.latest` and `trend.previous` are the last two successful runs that recorded `counts.scan.quarantineTotal`, each with its `patternVersion`, next to `currentPatternVersion`. `counts.scan.quarantined` is **not** the backlog: it counts the texts scanned that night, which is only the changed ones once the first scan is done. Runs from before #1762 have no total, so the trend is `null` until two runs have recorded one.
+- **No dismiss action.** The only way out is an edit: the next scan, or the re-check below, no longer matches.
+
+**Re-check on save.** `POST /descriptions`, `PATCH /descriptions/:id` and `POST /descriptions/:id/restore` call `BotTextScanService.recheck` and upsert the text's `t_bot_text_scan` row at the current `PATTERN_SET_VERSION`; the response gains `botSurface: { quarantined, patternId, matchExcerpt }`. It never blocks a save: a detector error, or a failed write of the verdict, is reported as `quarantined: true` with `patternId: 'error'`. The verdict is not authoritative, publication still happens only in the nightly pipeline, with the age gate. Names, and descriptions created inside another write (a new cave, entrance or document), are not re-checked on save: the nightly scan reads them.
+
 ## The page view
 
 `v_bot_page` is the one source the pages, the sitemaps and the withdrawal worker read: anything absent from it is not published. It is defined by `sql/9_30_2026_10_29_v_bot_page.sql` (caves) and redefined, whole, by `sql/9_31_2026_10_30_v_bot_page_massifs_organizations.sql` (caves unchanged, plus massifs and organizations, `UNION ALL`). Columns: `entity_type` (`cave`, `massif` or `organization`), `entity_id`, `language` (of the main name), `lastmod` (see below) and `page`, a jsonb document holding exactly the fields of `api/utils/botSurfaceWhitelist.js`. A test compares the two, at every level.

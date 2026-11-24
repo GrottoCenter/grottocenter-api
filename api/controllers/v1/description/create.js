@@ -35,6 +35,11 @@ module.exports = async (req, res) => {
     relevance,
   }).fetch();
 
+  const botSurface = await sails.services.bottextscanservice.recheck(
+    't_description',
+    newDescription.id
+  );
+
   const populatedDescription = await DescriptionService.getDescription(
     newDescription.id
   );
@@ -52,6 +57,6 @@ module.exports = async (req, res) => {
     populatedDescription,
     { controllerMethod: 'DescriptionController.create' },
     res,
-    toSimpleDescription
+    (source) => ({ ...toSimpleDescription(source), botSurface })
   );
 };

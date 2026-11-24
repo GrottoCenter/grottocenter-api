@@ -82,6 +82,8 @@ tags:
   - name: authentication
   - name: bibliographic metadata
     description: OAI-PMH endpoints for metadata harvesting
+  - name: bot surface
+    description: Moderation of the pages published for indexing bots
   - name: caves
   - name: cavers
   - name: changes
@@ -1863,6 +1865,84 @@ paths:
         '403':
           description: Forbidden — caller is not an administrator.
 
+  '/bot-surface/quarantine':
+    get:
+      tags:
+        - bot surface
+      summary: Quarantine report
+      description: >
+        The live descriptions and names the coordinate detector withheld from
+        the pages published for bots, each with the record that owns it, so
+        that moderators can fix them. The only way out of quarantine is to edit
+        the text (move the coordinate into the structured position fields, or
+        delete it from the prose): there is no dismiss action. Restricted to
+        moderators and administrators, checked as two groups (roles are not
+        hierarchical). `aggregates` always cover the whole backlog, whatever the
+        filters, and add up to `aggregates.total`; `totalCount` counts the
+        filtered items. The verdict of a text edited since the last nightly scan
+        is the one recorded at save time.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: entityType
+          in: query
+          description: Type of the record that owns the text.
+          schema:
+            type: string
+            enum: [cave, entrance, massif, organization, document, other]
+        - name: patternId
+          in: query
+          description: Family of coordinate notation that matched. `error` is a text the detector failed on.
+          schema:
+            type: string
+            enum:
+              [
+                dms,
+                hemisphere-prefix,
+                degrees-hemisphere,
+                decimal-pair,
+                lambert-xy,
+                lambert-label,
+                utm,
+                ngr,
+                labelled-coordinates,
+                labelled-axis,
+                error,
+              ]
+        - name: language
+          in: query
+          description: Language id of the text, e.g. `fra`.
+          schema:
+            type: string
+            pattern: '^[a-zA-Z]{3}$'
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Capped at 100.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: One page of the report, most recently scanned first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineReport'
+        '400':
+          description: An unknown `entityType` or `patternId`, or a malformed `language`.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Neither a moderator nor an administrator. The body holds no excerpt and no id.
+
   '/descriptions':
     post:
       tags:
@@ -1918,7 +1998,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Description'
+                $ref: '#/components/schemas/DescriptionWriteResult'
         '400':
           description: Some required information are missing (title, body, language or entityId).
         '401':
@@ -2005,7 +2085,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Description'
+                $ref: '#/components/schemas/DescriptionWriteResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -2030,7 +2110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Description'
+                $ref: '#/components/schemas/DescriptionWriteResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -11836,6 +11916,119 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    DescriptionWriteResult:
+      description: >
+        A description, as written by `POST /descriptions`, `PATCH /descriptions/{id}`
+        and `POST /descriptions/{id}/restore`, with the coordinate detector's
+        verdict on its text. The verdict is not authoritative: publication
+        happens only in the nightly pipeline, once the age gate is met. A save
+        is never blocked by it.
+      allOf:
+        - $ref: '#/components/schemas/Description'
+        - type: object
+          properties:
+            botSurface:
+              type: object
+              required: [quarantined, patternId, matchExcerpt]
+              properties:
+                quarantined:
+                  type: boolean
+                  description: >
+                    True when the text holds a coordinate (or the detector
+                    failed, `patternId` is then `error`). False when the text
+                    is clean, which clears an earlier quarantine.
+                patternId:
+                  type: string
+                  nullable: true
+                matchExcerpt:
+                  type: string
+                  nullable: true
+                  description: The matched text. Null when clean or on error.
+    QuarantineReport:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          description: Items matching the filters.
+        skip:
+          type: integer
+        limit:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sourceTable:
+                type: string
+                enum: [t_description, t_name]
+              sourceId:
+                type: integer
+              entity:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                      [cave, entrance, massif, organization, document, other]
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                    nullable: true
+              language:
+                type: string
+              patternId:
+                type: string
+              matchExcerpt:
+                type: string
+                nullable: true
+              scannedAt:
+                type: string
+                format: date-time
+        aggregates:
+          type: object
+          properties:
+            total:
+              type: integer
+            byPatternId:
+              type: object
+              additionalProperties:
+                type: integer
+            byEntityType:
+              type: object
+              additionalProperties:
+                type: integer
+        trend:
+          type: object
+          description: >
+            The quarantine total after the two latest successful nightly runs,
+            with the pattern set version each was computed under, so that a
+            rise caused by a version bump can be told apart from a regression.
+            A run from before this field existed has none.
+          properties:
+            currentPatternVersion:
+              type: integer
+            latest:
+              allOf:
+                - $ref: '#/components/schemas/QuarantineRun'
+              nullable: true
+            previous:
+              allOf:
+                - $ref: '#/components/schemas/QuarantineRun'
+              nullable: true
+    QuarantineRun:
+      type: object
+      properties:
+        runId:
+          type: integer
+        finishedAt:
+          type: string
+          format: date-time
+        patternVersion:
+          type: integer
+        total:
+          type: integer
     OrganizationListItem:
       description: A row of `GET /organizations`.
       allOf:
