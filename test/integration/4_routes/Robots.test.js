@@ -3,6 +3,7 @@ const path = require('path');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const should = require('should');
+const action = require('../../../api/controllers/robots/get');
 
 const ROBOTS_PATH = path.join(__dirname, '../../../assets/robots-api.txt');
 
@@ -44,6 +45,33 @@ describe('API host crawl posture (#1763)', () => {
       should(stub.callCount).be.above(0);
       should(res.status).equal(500);
       should(res.headers['x-robots-tag']).equal(EXPECTED);
+    });
+  });
+
+  // Called directly: neither branch is reachable through supertest.
+  describe('error path of the action', () => {
+    const fakeRes = (headersSent, error) => ({
+      headersSent,
+      serverError: sinon.spy(),
+      sendFile: (file, opts, cb) => cb(error),
+    });
+
+    it('should answer 500 when the file cannot be read', async () => {
+      const res = fakeRes(false, new Error('ENOENT'));
+      await action({}, res);
+      should(res.serverError.calledOnce).be.true();
+    });
+
+    it('should not answer again once the headers are sent', async () => {
+      const res = fakeRes(true, new Error('ECONNABORTED'));
+      await action({}, res);
+      should(res.serverError.called).be.false();
+    });
+
+    it('should not answer an error when the file was sent', async () => {
+      const res = fakeRes(true);
+      await action({}, res);
+      should(res.serverError.called).be.false();
     });
   });
 });
