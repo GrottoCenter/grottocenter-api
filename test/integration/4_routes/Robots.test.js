@@ -57,9 +57,11 @@ describe('API host crawl posture (#1763)', () => {
     });
 
     it('should answer 500 when the file cannot be read', async () => {
-      const res = fakeRes(false, new Error('ENOENT'));
+      const error = new Error('ENOENT');
+      const res = fakeRes(false, error);
       await action({}, res);
       should(res.serverError.calledOnce).be.true();
+      should(res.serverError.firstCall.args[0].error).equal(error);
     });
 
     it('should not answer again once the headers are sent', async () => {
@@ -69,7 +71,7 @@ describe('API host crawl posture (#1763)', () => {
     });
 
     it('should not answer an error when the file was sent', async () => {
-      const res = fakeRes(true);
+      const res = fakeRes(false);
       await action({}, res);
       should(res.serverError.called).be.false();
     });
