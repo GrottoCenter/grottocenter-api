@@ -205,6 +205,8 @@ describe('BotPipelineService - runs over real rows with the local adapter', () =
       should(counts.scan.scanned.t_name).be.aboveOrEqual(1);
       should(counts.scan.quarantined.t_description).be.aboveOrEqual(1);
       should(counts.scan.quarantined.t_name).be.aboveOrEqual(1);
+      // The backlog, not tonight's delta: the report's trend reads it (#1762)
+      should(counts.scan.quarantineTotal).be.aboveOrEqual(2);
       should(counts.scan.errors).equal(0);
       should(counts.invariant).eql({ violations: 0, overrides: 0 });
       should(counts.admission.total).be.a.Number();

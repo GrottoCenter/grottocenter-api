@@ -57,6 +57,7 @@ const {
 } = require('../../utils/botSurfaceConfig');
 const BotPageGeneratorService = require('./BotPageGeneratorService');
 const BotSurfaceStateService = require('./BotSurfaceStateService');
+const BotQuarantineService = require('./BotQuarantineService');
 
 // Any key no other advisory lock uses (1758 pages, 1871 search write lock)
 const PIPELINE_LOCK_KEY = 1760;
@@ -204,13 +205,19 @@ const steps = {
     return result;
   },
 
-  /** Step 2. Per-source scanned and quarantined counts, from the scan's summary. */
+  /**
+   * Step 2. Per-source scanned and quarantined counts, from the scan's summary,
+   * and the whole quarantine backlog after the scan. `quarantined` counts the
+   * texts scanned tonight, not the backlog: the report's trend (#1762) reads
+   * `quarantineTotal`.
+   */
   async scan() {
     const summary = await sails.services.bottextscanservice.run();
     return {
       patternVersion: summary.patternVersion,
       scanned: summary.scanned,
       quarantined: summary.quarantined,
+      quarantineTotal: await BotQuarantineService.total(),
       errors: summary.errors,
       passes: summary.passes,
     };

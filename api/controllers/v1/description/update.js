@@ -28,6 +28,11 @@ module.exports = async (req, res) => {
 
   await TDescription.updateOne({ id: descriptionId }).set(updatedFields);
 
+  const botSurface = await sails.services.bottextscanservice.recheck(
+    't_description',
+    descriptionId
+  );
+
   const populatedDescription =
     await DescriptionService.getDescription(descriptionId);
   await NotificationService.notifySubscribers(
@@ -43,6 +48,6 @@ module.exports = async (req, res) => {
     populatedDescription,
     { controllerMethod: 'DescriptionController.update' },
     res,
-    toSimpleDescription
+    (source) => ({ ...toSimpleDescription(source), botSurface })
   );
 };

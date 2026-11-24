@@ -318,6 +318,9 @@ module.exports.routes = {
   'DELETE /api/v1/descriptions/:id': 'v1/description/delete',
   'POST /api/v1/descriptions/:id/restore': 'v1/description/restore',
 
+  // Bot surface
+  'GET /api/v1/bot-surface/quarantine': 'v1/bot-surface/quarantine',
+
   // Name
   'PATCH /api/v1/names/:id': 'v1/name/update',
   'POST /api/v1/names/:id/setAsMain': 'v1/name/set-as-main',

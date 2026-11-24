@@ -46,6 +46,7 @@ module.exports.policies = {
   'v1/mfa/enroll': ['mfaEnrollmentAuth'],
   'v1/mfa/verify': ['mfaEnrollmentAuth'],
   'v1/mfa/reset': ['tokenAuth'],
+  'v1/bot-surface/quarantine': 'tokenAuth',
 
   // Caves
   'v1/cave/find': ['validateId'],
