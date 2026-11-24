@@ -3,6 +3,9 @@ const should = require('should');
 const AuthTokenService = require('../../AuthTokenService');
 const deleteIsPermanentCases = require('../../deleteIsPermanentCases');
 
+// The documents are created concurrently, so their ids come in any order.
+const byDocument = (a, b) => a[0] - b[0];
+
 describe('Entrance features', () => {
   let userToken;
   let moderatorToken;
@@ -175,12 +178,12 @@ describe('Entrance features', () => {
       const links = await JDocumentEntrance.find({
         document: [sharedDocument.id, ownDocument.id],
       });
-      should(
-        links.map((l) => [l.document, l.entrance]).sort((a, b) => a[0] - b[0])
-      ).eql([
-        [sharedDocument.id, targetEntrance.id],
-        [ownDocument.id, targetEntrance.id],
-      ]);
+      should(links.map((l) => [l.document, l.entrance]).sort(byDocument)).eql(
+        [
+          [sharedDocument.id, targetEntrance.id],
+          [ownDocument.id, targetEntrance.id],
+        ].sort(byDocument)
+      );
 
       await JDocumentEntrance.destroy({ entrance: targetEntrance.id });
       await TDocument.destroy({ id: [sharedDocument.id, ownDocument.id] });
@@ -233,13 +236,17 @@ describe('Entrance features', () => {
         should(await TEntrance.findOne(entrance.id)).be.undefined();
         const { rows } = await CommonService.query(
           `SELECT id_document, id_entrance FROM j_document_entrance
-           WHERE id_document = ANY($1) ORDER BY id_document`,
+           WHERE id_document = ANY($1)`,
           [documentIds]
         );
-        should(rows.map((r) => [r.id_document, r.id_entrance])).eql([
-          [sharedDocument.id, targetEntrance.id],
-          [ownDocument.id, targetEntrance.id],
-        ]);
+        should(
+          rows.map((r) => [r.id_document, r.id_entrance]).sort(byDocument)
+        ).eql(
+          [
+            [sharedDocument.id, targetEntrance.id],
+            [ownDocument.id, targetEntrance.id],
+          ].sort(byDocument)
+        );
 
         await CommonService.query(
           'DELETE FROM j_document_entrance WHERE id_entrance = $1',
