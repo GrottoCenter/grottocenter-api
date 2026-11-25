@@ -13,9 +13,11 @@ Every job that runs on a schedule reports to a [Better Stack](https://betterstac
 | `avatar-cleanup`                               | hourly at :23                              | `HEARTBEAT_AVATAR_CLEANUP_URL`   | 1 hour            | 15 min  |
 | `bot-surface-nightly`                          | `BOT_SURFACE_SCHEDULE` (prod `30 1 * * *`) | `HEARTBEAT_BOT_PIPELINE_URL`     | 1 day             | 2 hours |
 | `db-export`                                    | Sundays 03:00                              | `HEARTBEAT_DB_EXPORT_URL`        | 1 week            | 2 hours |
-| `search-reconcile`                             | 1st of the month 02:00                     | `HEARTBEAT_SEARCH_RECONCILE_URL` | 1 month           | 1 day   |
+| `search-reconcile`                             | 1st of the month 02:00                     | `HEARTBEAT_SEARCH_RECONCILE_URL` | 31 days           | 1 day   |
 
 The pg_cron jobs in `sql/1_cron.sql` cannot make HTTP calls and are not covered yet (#2029).
+
+Better Stack has no "month" period. For the monthly job use **31 days**: runs are 28 to 31 days apart, so a shorter period would alert on a healthy February. A missed run is noticed up to 4 days late (31 days from the last ping, plus the grace), which is acceptable for a safety net behind the outbox.
 
 ## How it works
 
