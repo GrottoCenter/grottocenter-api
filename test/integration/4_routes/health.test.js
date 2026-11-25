@@ -10,6 +10,7 @@ describe('Health endpoint', () => {
   let SearchService;
   let sendNativeQuery;
   let isAlive;
+  let checkIndexSchema;
   let originalTimeoutMs;
 
   before(() => {
@@ -27,6 +28,9 @@ describe('Health endpoint', () => {
       .stub(sails.getDatastore(), 'sendNativeQuery')
       .resolves({ rows: [{ '?column?': 1 }] });
     isAlive = sinon.stub(SearchService, 'isAlive').resolves(true);
+    checkIndexSchema = sinon
+      .stub(SearchService, 'checkIndexSchema')
+      .resolves({ upToDate: true, missing: {} });
   });
 
   afterEach(() => {
@@ -131,6 +135,72 @@ describe('Health endpoint', () => {
       should(res.body.services).deepEqual({
         database: { status: 'healthy', message: HEALTHY_DB },
         search: { status: 'unhealthy', message: 'Search check timed out' },
+      });
+    });
+
+    describe('when the search index is out of date', () => {
+      const OUT_OF_DATE = {
+        upToDate: false,
+        missing: { documents: ['validationStatus'] },
+      };
+
+      it('returns 200 with a degraded report and no internal detail', async () => {
+        checkIndexSchema.resolves(OUT_OF_DATE);
+
+        const res = await request.get('/api/v1/health').expect(200);
+
+        should(res.body.status).equal('degraded');
+        should(res.body.services).deepEqual({
+          database: { status: 'healthy', message: HEALTHY_DB },
+          search: { status: 'outOfDate', message: 'Search index out of date' },
+        });
+        should(JSON.stringify(res.body)).not.containEql('validationStatus');
+        should(JSON.stringify(res.body)).not.containEql('documents');
+      });
+
+      it('returns 503 when the database is down as well', async () => {
+        checkIndexSchema.resolves(OUT_OF_DATE);
+        sendNativeQuery.rejects(new Error('db down'));
+
+        const res = await request.get('/api/v1/health').expect(503);
+
+        should(res.body.status).equal('unhealthy');
+        should(res.body.services.database.status).equal('unhealthy');
+        should(res.body.services.search.status).equal('outOfDate');
+      });
+
+      it('does not check the schema when search is not alive', async () => {
+        isAlive.resolves(false);
+
+        await request.get('/api/v1/health').expect(503);
+
+        should(checkIndexSchema.called).be.false();
+      });
+
+      it('returns 503 with a generic message when the schema lookup throws', async () => {
+        checkIndexSchema.rejects(
+          new Error('connect ECONNREFUSED 10.0.0.9:8108')
+        );
+
+        const res = await request.get('/api/v1/health').expect(503);
+
+        should(res.body.services.search).deepEqual({
+          status: 'unhealthy',
+          message: 'Search connection failed',
+        });
+        should(JSON.stringify(res.body)).not.containEql('ECONNREFUSED');
+      });
+
+      it('returns 503 with a timeout message when the schema lookup hangs', async () => {
+        sails.config.custom.healthCheckTimeoutMs = 50;
+        checkIndexSchema.returns(new Promise(() => {}));
+
+        const res = await request.get('/api/v1/health').expect(503);
+
+        should(res.body.services.search).deepEqual({
+          status: 'unhealthy',
+          message: 'Search check timed out',
+        });
       });
     });
 

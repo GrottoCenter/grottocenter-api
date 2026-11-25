@@ -1125,3 +1125,104 @@ describe('SearchService', () => {
     });
   });
 });
+
+describe('SearchService.checkIndexSchema()', () => {
+  let ts;
+  let Search;
+  let searchDocuments;
+  let schemas;
+
+  before(() => {
+    // Resolve after the lift: a top-level require would be a stale copy.
+    // eslint-disable-next-line global-require
+    ts = require('../../../config/typesense');
+    // eslint-disable-next-line global-require
+    Search = require('../../../api/services/SearchService');
+    // eslint-disable-next-line global-require
+    searchDocuments = require('../../../api/dbSync/searchDocuments');
+    schemas = Object.values(searchDocuments.ENTITIES).map(
+      (e) => e.search.schema
+    );
+  });
+
+  const liveFields =
+    (overrides = {}) =>
+    async (name) =>
+      name in overrides
+        ? overrides[name]
+        : schemas
+            .find((s) => s.name === name)
+            .fields.map((f) => f.name)
+            // Typesense does not list the implicit `id` field.
+            .filter((n) => n !== 'id');
+
+  beforeEach(() => Search.clearIndexSchemaCache());
+  afterEach(() => {
+    Search.clearIndexSchemaCache();
+    sinon.restore();
+  });
+
+  it('is up to date when every collection declares every expected field', async () => {
+    sinon.stub(ts, 'retrieveFieldNames').callsFake(liveFields());
+
+    const result = await Search.checkIndexSchema();
+
+    should(result).deepEqual({ upToDate: true, missing: {} });
+  });
+
+  it('ignores extra fields on the live collection', async () => {
+    sinon
+      .stub(ts, 'retrieveFieldNames')
+      .callsFake(async (name) => [
+        ...(await liveFields()(name)),
+        'author.nickname',
+      ]);
+
+    should((await Search.checkIndexSchema()).upToDate).be.true();
+  });
+
+  it('names the missing fields of an outdated collection', async () => {
+    const documentFields = (await liveFields()('documents')).filter(
+      (n) => n !== 'validationStatus'
+    );
+    sinon
+      .stub(ts, 'retrieveFieldNames')
+      .callsFake(liveFields({ documents: documentFields }));
+
+    const result = await Search.checkIndexSchema();
+
+    should(result.upToDate).be.false();
+    should(result.missing).deepEqual({ documents: ['validationStatus'] });
+  });
+
+  it('reports every field of a collection that does not exist', async () => {
+    sinon
+      .stub(ts, 'retrieveFieldNames')
+      .callsFake(liveFields({ massifs: null }));
+
+    const result = await Search.checkIndexSchema();
+
+    should(result.upToDate).be.false();
+    should(Object.keys(result.missing)).deepEqual(['massifs']);
+    should(result.missing.massifs).containEql('dateInscription');
+  });
+
+  it('rejects when Typesense cannot be queried', async () => {
+    sinon.stub(ts, 'retrieveFieldNames').rejects(new Error('down'));
+
+    await Search.checkIndexSchema().should.be.rejectedWith('down');
+  });
+
+  it('serves a cached result until it is cleared', async () => {
+    const stub = sinon.stub(ts, 'retrieveFieldNames').callsFake(liveFields());
+
+    await Search.checkIndexSchema();
+    const calls = stub.callCount;
+    await Search.checkIndexSchema();
+    should(stub.callCount).equal(calls);
+
+    Search.clearIndexSchemaCache();
+    await Search.checkIndexSchema();
+    should(stub.callCount).be.above(calls);
+  });
+});

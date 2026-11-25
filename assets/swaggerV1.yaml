@@ -145,7 +145,7 @@ paths:
       description: 'Check the health of the API and its dependencies including database, search, and build information generated at build time.'
       responses:
         200:
-          description: API is healthy
+          description: 'API is healthy, or degraded: `status` is `degraded` and `services.search.status` is `outOfDate` when the search collections lack fields the API declares (a deploy that adds a field before `scripts/resync-search.js` has run). Search is then partly broken, but the instance is not restarted: monitors must check the body, see docs/health-monitoring.md.'
           content:
             application/json:
               schema:
@@ -13925,8 +13925,8 @@ components:
       properties:
         status:
           type: string
-          enum: [healthy, unhealthy]
-          description: Overall health status of the API
+          enum: [healthy, degraded, unhealthy]
+          description: 'Overall health status of the API. `unhealthy` (HTTP 503) wins over `degraded` (HTTP 200).'
         timestamp:
           type: string
           format: date-time
@@ -13951,11 +13951,12 @@ components:
               properties:
                 status:
                   type: string
-                  enum: [healthy, unhealthy]
+                  enum: [healthy, outOfDate, unhealthy]
                 message:
                   type: string
                   enum:
                     - Search connection successful
+                    - Search index out of date
                     - Search connection failed
                     - Search check timed out
         build:

@@ -25,6 +25,11 @@ const checkDatabase = async (timeoutMs) => {
   }
 };
 
+// A reachable Typesense whose collections lack fields the code uses cannot
+// serve every search. That is reported as `outOfDate`, not `unhealthy`: the
+// endpoint still answers 200 (a restart would not fix it, and App Service and
+// the Http5xx alert only react to non-2xx), and the BetterStack monitor fails
+// on the body instead. See docs/health-monitoring.md.
 const checkSearch = async (timeoutMs) => {
   try {
     const isSearchAlive = await withTimeout(
@@ -32,11 +37,23 @@ const checkSearch = async (timeoutMs) => {
       timeoutMs,
       'Search check'
     );
-    if (isSearchAlive) {
-      return { status: 'healthy', message: 'Search connection successful' };
+    if (!isSearchAlive) {
+      sails.log.error('Health check: search reported not alive');
+      return { status: 'unhealthy', message: 'Search connection failed' };
     }
-    sails.log.error('Health check: search reported not alive');
-    return { status: 'unhealthy', message: 'Search connection failed' };
+    const schema = await withTimeout(
+      SearchService.checkIndexSchema(),
+      timeoutMs,
+      'Search check'
+    );
+    if (!schema.upToDate) {
+      sails.log.error(
+        'Health check: search index out of date, run scripts/resync-search.js',
+        schema.missing
+      );
+      return { status: 'outOfDate', message: 'Search index out of date' };
+    }
+    return { status: 'healthy', message: 'Search connection successful' };
   } catch (error) {
     sails.log.error('Health check: search', error);
     return {
@@ -91,16 +108,23 @@ module.exports = {
       checkSearch(timeoutMs),
     ]);
 
-    const isHealthy =
-      database.status === 'healthy' && search.status === 'healthy';
+    const services = { database, search };
+    // unhealthy (503) wins over degraded (200), which wins over healthy.
+    const isUnhealthy = [database, search].some(
+      (s) => s.status === 'unhealthy'
+    );
+    const isDegraded = [database, search].some((s) => s.status === 'outOfDate');
+    let status = 'healthy';
+    if (isUnhealthy) status = 'unhealthy';
+    else if (isDegraded) status = 'degraded';
     const healthStatus = {
-      status: isHealthy ? 'healthy' : 'unhealthy',
+      status,
       timestamp,
-      services: { database, search },
+      services,
       build: readBuildInfo(),
     };
 
-    if (!isHealthy) {
+    if (isUnhealthy) {
       // App Service only takes action on a non-2xx probe response.
       throw { unhealthy: healthStatus }; // eslint-disable-line no-throw-literal
     }
