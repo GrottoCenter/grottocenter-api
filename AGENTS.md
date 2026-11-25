@@ -281,6 +281,7 @@ Read these only when the task touches the topic:
 | [`docs/point-svg-positions.md`](docs/point-svg-positions.md)                 | Points, SVG positions, location rules                                |
 | [`docs/scientific-data-lifecycle.md`](docs/scientific-data-lifecycle.md)     | Moving entrances, merging or deleting caves with points/observations |
 | [`docs/request-logging.md`](docs/request-logging.md)                         | Request log lines and their consumers                                |
+| [`docs/health-monitoring.md`](docs/health-monitoring.md)                     | `/health` statuses, the BetterStack condition, adding a search field |
 | [`docs/agents/scheduled-jobs.md`](docs/agents/scheduled-jobs.md)             | Adding or changing a scheduled job (pg-boss or pg_cron), heartbeats  |
 | [`docs/bot-surface.md`](docs/bot-surface.md)                                 | Bot pages for search engines: pipeline, sitemaps, audit, withdrawals |
 

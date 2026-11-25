@@ -92,6 +92,52 @@ async function isAlive() {
   return typesense.isAlive();
 }
 
+// The health check runs every 30 s from several probes; the schemas only
+// change at a deploy or a resync, so a few seconds of staleness is fine.
+const INDEX_SCHEMA_CACHE_MS = 10 * 1000;
+let indexSchemaCache = null;
+
+/**
+ * Compare the live search collections with the fields the code declares
+ * (the entity schemas in api/dbSync/entities). A field the API filters or
+ * sorts on but the collection lacks makes every search on it fail with a
+ * Typesense error, which happens after a deploy that adds a field until
+ * scripts/resync-search.js has run.
+ *
+ * Resolves `{ upToDate, missing }`, where `missing` maps a collection to the
+ * names of its missing fields (all of them when the collection does not
+ * exist). Rejects when Typesense cannot be queried.
+ */
+async function checkIndexSchema() {
+  if (indexSchemaCache && indexSchemaCache.expiresAt > Date.now()) {
+    return indexSchemaCache.result;
+  }
+  const missing = {};
+  const schemas = Object.values(allEntities).map((e) => e.schema);
+  const liveFields = await Promise.all(
+    schemas.map((schema) => typesense.retrieveFieldNames(schema.name))
+  );
+  schemas.forEach((schema, index) => {
+    const live = new Set(liveFields[index] ?? []);
+    // Typesense keeps `id` implicit: schemas declare it, collections do not
+    // list it.
+    const absent = schema.fields
+      .map((field) => field.name)
+      .filter((name) => name !== 'id' && !live.has(name));
+    if (absent.length > 0) missing[schema.name] = absent;
+  });
+  const result = { upToDate: Object.keys(missing).length === 0, missing };
+  indexSchemaCache = {
+    result,
+    expiresAt: Date.now() + INDEX_SCHEMA_CACHE_MS,
+  };
+  return result;
+}
+
+function clearIndexSchemaCache() {
+  indexSchemaCache = null;
+}
+
 /**
  * Bring the search documents of the given ids up to date from the database:
  * upsert those the full rebuild would index, remove the others.
@@ -326,6 +372,8 @@ module.exports = {
   DEFAULT_DOCUMENT_SCOPE,
 
   isAlive,
+  checkIndexSchema,
+  clearIndexSchemaCache,
 
   syncDocuments,
 

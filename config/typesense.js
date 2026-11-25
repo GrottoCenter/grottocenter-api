@@ -22,6 +22,21 @@ async function isAlive() {
   return rep?.ok === true;
 }
 
+// Names of the fields the live collection (or the collection an alias points
+// to) declares, or null when it does not exist. Health check only: same short
+// single attempt as isAlive.
+async function retrieveFieldNames(collectionName) {
+  try {
+    const collection = await healthClient
+      .collections(collectionName)
+      .retrieve();
+    return (collection.fields ?? []).map((field) => field.name);
+  } catch (error) {
+    if (error.httpStatus === 404) return null;
+    throw error;
+  }
+}
+
 async function isPopulated() {
   const rep = await client
     .aliases()
@@ -142,6 +157,7 @@ async function search(collection, params) {
 module.exports = {
   IMPORT_SIZE: 2000,
   isAlive,
+  retrieveFieldNames,
   isPopulated,
   deleteDocuments,
   exportIds,
