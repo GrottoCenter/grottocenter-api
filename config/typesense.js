@@ -23,8 +23,10 @@ async function isAlive() {
 }
 
 // Names of the fields the live collection (or the collection an alias points
-// to) declares, or null when it does not exist. Health check only: same short
-// single attempt as isAlive.
+// to) declares, or null when it does not exist. Used by the index schema
+// check (SearchService.checkIndexSchema), from the health check and from the
+// search error path: a single short attempt like isAlive, so a Typesense in
+// trouble is not hit with retries.
 async function retrieveFieldNames(collectionName) {
   try {
     const collection = await healthClient

@@ -108,10 +108,7 @@ let indexSchemaCache = null;
  * names of its missing fields (all of them when the collection does not
  * exist). Rejects when Typesense cannot be queried.
  */
-async function checkIndexSchema() {
-  if (indexSchemaCache && indexSchemaCache.expiresAt > Date.now()) {
-    return indexSchemaCache.result;
-  }
+async function computeIndexSchema() {
   const missing = {};
   const schemas = Object.values(allEntities).map((e) => e.schema);
   const liveFields = await Promise.all(
@@ -126,12 +123,24 @@ async function checkIndexSchema() {
       .filter((name) => name !== 'id' && !live.has(name));
     if (absent.length > 0) missing[schema.name] = absent;
   });
-  const result = { upToDate: Object.keys(missing).length === 0, missing };
-  indexSchemaCache = {
-    result,
-    expiresAt: Date.now() + INDEX_SCHEMA_CACHE_MS,
-  };
-  return result;
+  return { upToDate: Object.keys(missing).length === 0, missing };
+}
+
+// The in-flight promise is cached, not only the result: during a stale-index
+// incident, failing searches and health probes arrive together and must share
+// one round of lookups instead of each sending one per collection. A failure
+// is not kept.
+function checkIndexSchema() {
+  if (indexSchemaCache && indexSchemaCache.expiresAt > Date.now()) {
+    return indexSchemaCache.promise;
+  }
+  const promise = computeIndexSchema();
+  const entry = { promise, expiresAt: Date.now() + INDEX_SCHEMA_CACHE_MS };
+  indexSchemaCache = entry;
+  promise.catch(() => {
+    if (indexSchemaCache === entry) indexSchemaCache = null;
+  });
+  return promise;
 }
 
 function clearIndexSchemaCache() {
@@ -205,13 +214,28 @@ function assertUnionResponse(response) {
   throw error;
 }
 
-// Typesense answers a filter, sort or facet on a field its collection lacks
-// with a 4xx, which handleTypesenseError turns into a 400 for the caller. When
-// the cause is a stale index (a deploy that added a field before
+// Typesense answers a filter, sort, facet or query on a field its collection
+// lacks with a 4xx, which handleTypesenseError turns into a 400 for the
+// caller. When the cause is a stale index (a deploy that added a field before
 // scripts/resync-search.js ran, see /health), that is our fault: throw a plain
 // error instead, which the controllers let through as a 500, so it counts as a
 // server error and the caller is not told to fix its request.
-async function guardIndexDrift(search) {
+//
+// Only errors about the stale index are converted: a searched collection must
+// be out of date, and the message must name one of its missing fields
+// ("Could not find a filter field named `validationStatus` in the schema.")
+// or say the collection is not found. Other 4xx, even during a stale window,
+// stay 400. Typesense's messages are not a contract: if they change, the
+// guard falls back to the plain 400, never the other way round.
+const isAboutMissingFields = (message, missing, collections) =>
+  collections.some(
+    (collection) =>
+      missing[collection] &&
+      (/collection not found/i.test(message) ||
+        missing[collection].some((name) => message.includes(`\`${name}\``)))
+  );
+
+async function guardIndexDrift(collections, search) {
   try {
     return await search();
   } catch (error) {
@@ -232,7 +256,13 @@ async function guardIndexDrift(search) {
       sails.log.warn('Search index check failed', checkError);
       throw error;
     }
-    if (schema.upToDate) throw error;
+    const message = error.message ?? '';
+    if (
+      schema.upToDate ||
+      !isAboutMissingFields(message, schema.missing, collections)
+    ) {
+      throw error;
+    }
 
     sails.log.error(
       'Search failed on an out-of-date index, run scripts/resync-search.js',
@@ -267,7 +297,7 @@ async function multiCollectionsSearch({
     };
   });
 
-  const response = await guardIndexDrift(() =>
+  return guardIndexDrift(entities, () =>
     typesense
       .multiSearch(collections, {
         per_page: 20,
@@ -280,7 +310,6 @@ async function multiCollectionsSearch({
       })
       .then(assertUnionResponse)
   );
-  return response;
 }
 
 async function collectionSearch({
@@ -323,7 +352,7 @@ async function collectionSearch({
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
-  return guardIndexDrift(() => typesense.search(entity, params));
+  return guardIndexDrift([entity], () => typesense.search(entity, params));
 }
 
 async function fieldSearch({
@@ -374,7 +403,9 @@ async function fieldSearch({
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
-  const result = await guardIndexDrift(() => typesense.search(entity, params));
+  const result = await guardIndexDrift([entity], () =>
+    typesense.search(entity, params)
+  );
 
   // Transform facet response to match the grouped_hits format expected by
   // the controller. The controller reads: found, found_docs, grouped_hits, page.

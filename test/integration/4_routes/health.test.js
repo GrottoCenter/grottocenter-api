@@ -176,31 +176,54 @@ describe('Health endpoint', () => {
 
         should(checkIndexSchema.called).be.false();
       });
+    });
 
-      it('returns 503 with a generic message when the schema lookup throws', async () => {
+    // Only reachability drives a 503: once Typesense has answered, a failed
+    // or slow schema lookup is logged and search is reported healthy.
+    describe('when the schema lookup fails after search answered', () => {
+      it('returns 200 and a healthy search when the lookup throws', async () => {
         checkIndexSchema.rejects(
           new Error('connect ECONNREFUSED 10.0.0.9:8108')
         );
+        const warn = sinon.stub(sails.log, 'warn');
 
-        const res = await request.get('/api/v1/health').expect(503);
+        const res = await request.get('/api/v1/health').expect(200);
 
+        should(res.body.status).equal('healthy');
         should(res.body.services.search).deepEqual({
-          status: 'unhealthy',
-          message: 'Search connection failed',
+          status: 'healthy',
+          message: HEALTHY_SEARCH,
         });
+        should(
+          warn.calledWithMatch('Health check: search index check skipped')
+        ).be.true();
         should(JSON.stringify(res.body)).not.containEql('ECONNREFUSED');
       });
 
-      it('returns 503 with a timeout message when the schema lookup hangs', async () => {
+      it('returns 200 when the lookup hangs', async () => {
         sails.config.custom.healthCheckTimeoutMs = 50;
         checkIndexSchema.returns(new Promise(() => {}));
 
-        const res = await request.get('/api/v1/health').expect(503);
+        const res = await request.get('/api/v1/health').expect(200);
 
-        should(res.body.services.search).deepEqual({
-          status: 'unhealthy',
-          message: 'Search check timed out',
-        });
+        should(res.body.services.search.status).equal('healthy');
+      });
+
+      it('shares one budget between isAlive and the lookup', async () => {
+        sails.config.custom.healthCheckTimeoutMs = 300;
+        isAlive.callsFake(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => resolve(true), 250);
+            })
+        );
+        checkIndexSchema.returns(new Promise(() => {}));
+
+        const started = Date.now();
+        await request.get('/api/v1/health').expect(200);
+
+        // One budget: about 300 ms. Two separate ones: about 250 + 300 ms
+        should(Date.now() - started).be.below(450);
       });
     });
 

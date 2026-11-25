@@ -2,13 +2,22 @@
 const supertest = require('supertest');
 const sinon = require('sinon');
 const should = require('should');
-const { useLiveFields } = require('../../../helpers/searchIndex');
+const { fieldNames, useLiveFields } = require('../../../helpers/searchIndex');
 
 /**
  * A Typesense 4xx normally means the caller sent a bad request: 400. When it
  * comes from a stale index (the deploy added a field, the resync has not run),
  * it is our fault and must be a server error. See docs/health-monitoring.md.
+ *
+ * The messages below are the ones Typesense 29 sends (checked on a scratch
+ * collection): the guard only converts errors that name a missing field of a
+ * searched collection, or say that collection is not found.
  */
+const MISSING_FILTER_FIELD =
+  'Could not find a filter field named `validationStatus` in the schema.';
+const UNRELATED_FILTER_FIELD =
+  'Could not find a filter field named `colour` in the schema.';
+
 describe('Typesense 4xx on a stale search index', () => {
   let typesense;
   let SearchService;
@@ -19,11 +28,11 @@ describe('Typesense 4xx on a stale search index', () => {
     SearchService = require('../../../../api/services/SearchService');
   });
 
-  const staleIndex = () =>
-    useLiveFields(retrieveFieldNames, { documents: ['validationStatus'] });
+  const staleIndex = (missing = { documents: ['validationStatus'] }) =>
+    useLiveFields(retrieveFieldNames, missing);
 
-  const typesenseError = (status) =>
-    Object.assign(new Error(`Typesense ${status}`), { httpStatus: status });
+  const typesenseError = (status, message = MISSING_FILTER_FIELD) =>
+    Object.assign(new Error(message), { httpStatus: status });
 
   beforeEach(() => {
     SearchService.clearIndexSchemaCache();
@@ -48,28 +57,26 @@ describe('Typesense 4xx on a stale search index', () => {
       url: '/api/v1/search',
       body: { query: 'test', entities: ['documents'] },
       // A union multi-search answers 200 with the error in the body
-      stubTypesense: (code) =>
-        sinon
-          .stub(typesense, 'multiSearch')
-          .resolves({ code, error: `Typesense ${code}` }),
+      stubTypesense: (code, message = MISSING_FILTER_FIELD) =>
+        sinon.stub(typesense, 'multiSearch').resolves({ code, error: message }),
     },
     {
       url: '/api/v1/advanced-search',
       body: { query: 'test', entity: 'documents' },
-      stubTypesense: (code) =>
-        sinon.stub(typesense, 'search').rejects(typesenseError(code)),
+      stubTypesense: (code, message) =>
+        sinon.stub(typesense, 'search').rejects(typesenseError(code, message)),
     },
     {
       url: '/api/v1/field-search',
       body: { field: 'type', entity: 'documents', query: 'test' },
-      stubTypesense: (code) =>
-        sinon.stub(typesense, 'search').rejects(typesenseError(code)),
+      stubTypesense: (code, message) =>
+        sinon.stub(typesense, 'search').rejects(typesenseError(code, message)),
     },
   ];
 
   ENDPOINTS.forEach(({ url, body, stubTypesense }) => {
     describe(`POST ${url}`, () => {
-      it('returns 500 when the index is out of date', async () => {
+      it('returns 500 when the error names a missing field', async () => {
         staleIndex();
         stubTypesense(400);
 
@@ -85,7 +92,26 @@ describe('Typesense 4xx on a stale search index', () => {
         const res = await post(url, body);
 
         should(res.status).equal(400);
-        should(res.body).have.property('error', 'Typesense 400');
+        should(res.body).have.property('error', MISSING_FILTER_FIELD);
+      });
+
+      it('keeps the 400 for an unrelated error during a stale window', async () => {
+        staleIndex();
+        stubTypesense(400, UNRELATED_FILTER_FIELD);
+
+        const res = await post(url, body);
+
+        should(res.status).equal(400);
+        should(res.body).have.property('error', UNRELATED_FILTER_FIELD);
+      });
+
+      it('keeps the 400 when only another collection is stale', async () => {
+        staleIndex({ caves: ['validationStatus'] });
+        stubTypesense(400);
+
+        const res = await post(url, body);
+
+        should(res.status).equal(400);
       });
 
       it('keeps the 400 when the index cannot be checked', async () => {
@@ -97,6 +123,43 @@ describe('Typesense 4xx on a stale search index', () => {
         should(res.status).equal(400);
       });
     });
+  });
+
+  it('returns 500 when a searched collection does not exist', async () => {
+    retrieveFieldNames.callsFake(async (name) =>
+      name === 'documents' ? null : fieldNames(name)
+    );
+    sinon
+      .stub(typesense, 'multiSearch')
+      .resolves({ code: 404, error: '`documents` collection not found.' });
+
+    const res = await post('/api/v1/search', {
+      query: 'test',
+      entities: ['documents'],
+    });
+
+    should(res.status).equal(500);
+  });
+
+  // collectionSearch also backs the devices search and the export: the guard
+  // is not specific to documents.
+  it('GET /api/v1/devices/search returns 500 on a stale devices collection', async () => {
+    staleIndex({ devices: ['brandName'] });
+    sinon
+      .stub(typesense, 'search')
+      .rejects(
+        typesenseError(
+          400,
+          'Could not find a field named `brandName` in the schema for sorting.'
+        )
+      );
+
+    const res = await supertest(sails.hooks.http.app)
+      .get('/api/v1/devices/search')
+      .query({ query: 'test' })
+      .set('Accept', 'application/json');
+
+    should(res.status).equal(500);
   });
 
   it('does not check the index for a Typesense 5xx', async () => {
