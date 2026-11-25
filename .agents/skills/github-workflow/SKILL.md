@@ -62,6 +62,7 @@ If the working tree holds someone else's uncommitted work, do not switch over it
 - Link the issue in **What** (`Closes #1234`).
 - In **🧪 Testing**, write each check as a checklist item: `- [x]` only for checks that were actually run and passed, `- [ ]` for anything pending or not run.
 - If the PR includes a SQL migration, App Service setting or anything else production needs applied by hand, add a **Deployment** note saying what and in which order. Merging into `develop` deploys immediately.
+- If the PR adds a scheduled job, say which Better Stack heartbeat monitor must be created and which App Service setting holds its URL (`docs/agents/scheduled-jobs.md`).
 - Delete the **📸 Previews** section when there is nothing visual to show.
 
 **2. Show and confirm.** Display the title and the actual content of `pr_body.md`. Wait for explicit approval unless the user has already authorized pushing and creating the PR.

@@ -22,6 +22,8 @@
  *   one is queued or running is refused by pg-boss (send() returns null).
  */
 
+const { withHeartbeat } = require('../utils/heartbeat');
+
 const QUEUE_NAME = 'bot-surface-nightly';
 const QUEUE_OPTIONS = {
   policy: 'exclusive',
@@ -57,8 +59,14 @@ const checkConfigured = () => {
   return { configured: true, reason: null };
 };
 
+const HEARTBEAT = {
+  name: 'bot-surface-nightly',
+  getUrl: () => sails.config.custom.heartbeats.botPipeline,
+};
+
 module.exports = {
   QUEUE_NAME,
+  HEARTBEAT,
   QUEUE_OPTIONS,
   checkConfigured,
 
@@ -146,3 +154,10 @@ module.exports = {
     });
   },
 };
+
+// Report each run to the job's heartbeat monitor (docs/agents/scheduled-jobs.md).
+// Wrapped after the definition so that start() registers the wrapped handler.
+module.exports.processJob = withHeartbeat(
+  module.exports.processJob,
+  module.exports.HEARTBEAT
+);

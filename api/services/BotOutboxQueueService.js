@@ -12,6 +12,8 @@
  *   `sails.config.custom.botSurface.storage`.
  */
 
+const { withHeartbeat } = require('../utils/heartbeat');
+
 const QUEUE_NAME = 'bot-outbox';
 const CRON = '* * * * *';
 const QUEUE_OPTIONS = {
@@ -23,8 +25,16 @@ const QUEUE_OPTIONS = {
   retryLimit: 0,
 };
 
+const HEARTBEAT = {
+  name: 'bot-outbox',
+  getUrl: () => sails.config.custom.heartbeats.botOutbox,
+  // Runs every minute: report once per 5 minutes (set the monitor's period to match)
+  minIntervalMs: 300000,
+};
+
 module.exports = {
   QUEUE_NAME,
+  HEARTBEAT,
   CRON,
   QUEUE_OPTIONS,
 
@@ -124,3 +134,10 @@ module.exports = {
     );
   },
 };
+
+// Report each run to the job's heartbeat monitor (docs/agents/scheduled-jobs.md).
+// Wrapped after the definition so that start() registers the wrapped handler.
+module.exports.processJob = withHeartbeat(
+  module.exports.processJob,
+  module.exports.HEARTBEAT
+);

@@ -7,6 +7,8 @@
  *   running across all API instances.
  */
 
+const { withHeartbeat } = require('../utils/heartbeat');
+
 const QUEUE_NAME = 'search-reconcile';
 // The 1st of each month, 02:00 UTC
 const CRON = '0 2 1 * *';
@@ -20,8 +22,14 @@ const QUEUE_OPTIONS = {
   retryDelay: 15 * 60,
 };
 
+const HEARTBEAT = {
+  name: 'search-reconcile',
+  getUrl: () => sails.config.custom.heartbeats.searchReconcile,
+};
+
 module.exports = {
   QUEUE_NAME,
+  HEARTBEAT,
   CRON,
   QUEUE_OPTIONS,
 
@@ -60,3 +68,10 @@ module.exports = {
     await reconcile({ signal: job?.signal });
   },
 };
+
+// Report each run to the job's heartbeat monitor (docs/agents/scheduled-jobs.md).
+// Wrapped after the definition so that start() registers the wrapped handler.
+module.exports.processJob = withHeartbeat(
+  module.exports.processJob,
+  module.exports.HEARTBEAT
+);

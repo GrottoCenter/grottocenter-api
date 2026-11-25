@@ -9,6 +9,8 @@
  *   instances.
  */
 
+const { withHeartbeat } = require('../utils/heartbeat');
+
 const QUEUE_NAME = 'avatar-cleanup';
 // Every hour, at minute 23
 const CRON = '23 * * * *';
@@ -18,8 +20,14 @@ const QUEUE_OPTIONS = {
   retryLimit: 0,
 };
 
+const HEARTBEAT = {
+  name: 'avatar-cleanup',
+  getUrl: () => sails.config.custom.heartbeats.avatarCleanup,
+};
+
 module.exports = {
   QUEUE_NAME,
+  HEARTBEAT,
   CRON,
   QUEUE_OPTIONS,
 
@@ -53,3 +61,10 @@ module.exports = {
     return result;
   },
 };
+
+// Report each run to the job's heartbeat monitor (docs/agents/scheduled-jobs.md).
+// Wrapped after the definition so that start() registers the wrapped handler.
+module.exports.processJob = withHeartbeat(
+  module.exports.processJob,
+  module.exports.HEARTBEAT
+);
