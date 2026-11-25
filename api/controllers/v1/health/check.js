@@ -30,7 +30,18 @@ const checkDatabase = async (timeoutMs) => {
 // endpoint still answers 200 (a restart would not fix it, and App Service and
 // the Http5xx alert only react to non-2xx), and the BetterStack monitor fails
 // on the body instead. See docs/health-monitoring.md.
+//
+// Both steps share one `timeoutMs` budget. Only reachability (isAlive) drives
+// `unhealthy`: once Typesense has answered, a schema lookup that fails or
+// runs out of budget is logged and reported `healthy`, since a 503 would make
+// App Service restart an instance whose search is reachable.
+const SEARCH_HEALTHY = {
+  status: 'healthy',
+  message: 'Search connection successful',
+};
+
 const checkSearch = async (timeoutMs) => {
+  const deadline = Date.now() + timeoutMs;
   try {
     const isSearchAlive = await withTimeout(
       SearchService.isAlive(),
@@ -41,19 +52,6 @@ const checkSearch = async (timeoutMs) => {
       sails.log.error('Health check: search reported not alive');
       return { status: 'unhealthy', message: 'Search connection failed' };
     }
-    const schema = await withTimeout(
-      SearchService.checkIndexSchema(),
-      timeoutMs,
-      'Search check'
-    );
-    if (!schema.upToDate) {
-      sails.log.error(
-        'Health check: search index out of date, run scripts/resync-search.js',
-        schema.missing
-      );
-      return { status: 'outOfDate', message: 'Search index out of date' };
-    }
-    return { status: 'healthy', message: 'Search connection successful' };
   } catch (error) {
     sails.log.error('Health check: search', error);
     return {
@@ -64,6 +62,26 @@ const checkSearch = async (timeoutMs) => {
           : 'Search connection failed',
     };
   }
+
+  let schema;
+  try {
+    schema = await withTimeout(
+      SearchService.checkIndexSchema(),
+      Math.max(deadline - Date.now(), 1),
+      'Search index check'
+    );
+  } catch (error) {
+    sails.log.warn('Health check: search index check skipped', error);
+    return SEARCH_HEALTHY;
+  }
+  if (!schema.upToDate) {
+    sails.log.error(
+      'Health check: search index out of date, run scripts/resync-search.js',
+      schema.missing
+    );
+    return { status: 'outOfDate', message: 'Search index out of date' };
+  }
+  return SEARCH_HEALTHY;
 };
 
 const readBuildInfo = () => {

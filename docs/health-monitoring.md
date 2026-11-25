@@ -19,6 +19,18 @@
 `services.search.status` is `healthy`, `outOfDate` or `unhealthy`. These values are an
 alerting contract: `test/integration/4_routes/health.test.js` pins them.
 
+## Timeout budget
+
+`healthCheckTimeoutMs` (5 s) bounds each dependency check. The database check and the search
+check run in parallel. Within the search check, `isAlive` and the schema lookup share that one
+budget, so the whole probe stays under it.
+
+Only reachability drives `unhealthy`. If Typesense fails or times out on `isAlive`, search is
+`unhealthy` (503). Once `isAlive` has succeeded, a schema lookup that fails or runs out of
+budget is logged as a warning (`Health check: search index check skipped`) and search is
+reported `healthy`, because a 503 would make App Service restart an instance whose search is
+reachable.
+
 ## Why `degraded` answers 200
 
 A stale search index is fixed by `node scripts/resync-search.js`, not by restarting the
@@ -32,7 +44,9 @@ resync ran, `POST /api/v1/search` returned 500 for about 22 hours with a green `
 For each entity in `api/dbSync/entities`, `SearchService.checkIndexSchema()` reads the live
 collection behind the alias (`GET /collections/<alias>`) and lists the fields declared in
 `search.schema.fields` that it lacks (`id` is implicit in Typesense and ignored). Extra
-fields on the collection are fine. The result is cached for 10 s. It does not compare field
+fields on the collection are fine. The result is cached for 10 s, including while it is
+being computed, so concurrent callers (health probes, a burst of failing searches) share one
+round of lookups. A failed lookup is not cached. It does not compare field
 types or options, so a change of type or of `facet`/`sort`/`index` on an existing field is
 not detected: resync after those too.
 
@@ -41,12 +55,26 @@ the collections and fields. The response does not, since the endpoint is public.
 
 ## Searches on a stale index answer 500
 
-Typesense answers a filter, sort or facet on a missing field with a 4xx, which the search
-controllers turn into a 400 ("bad request"). `SearchService` checks the index when that
-happens (`guardIndexDrift`): if it is out of date, the search fails with a plain error and
-the caller gets a **500**, so it counts as a server error (and in the `Http5xx` alert)
-instead of looking like a client mistake. If the check itself fails, or the index is up to
-date, the original 4xx is kept. Typesense 5xx, 401 and 403 are never checked.
+Typesense answers a filter, sort, facet or query on a missing field with a 4xx, which the
+search controllers turn into a 400 ("bad request"). `SearchService` checks the index when
+that happens (`guardIndexDrift`, on every `multiCollectionsSearch`, `collectionSearch` and
+`fieldSearch`, so also the devices search and the export). The search fails with a plain
+error, and the caller gets a **500**, only when both hold:
+
+- a collection the search targets is out of date, and
+- the Typesense message names one of its missing fields in backticks
+  (``Could not find a filter field named `validationStatus` in the schema.``) or says the
+  collection is not found.
+
+That makes the failure count as a server error (and in the `Http5xx` alert) instead of
+looking like a client mistake. Every other 4xx keeps its 400 and message, even during a
+stale window. This includes a filter on a field that never existed, a bad value, or a search
+on a collection that is up to date while another one is stale. The original 4xx is also kept
+when the check itself fails. Typesense 5xx, 401 and 403 are never checked.
+
+Typesense's messages are not a contract. If their wording changes, the guard stops matching
+and falls back to the plain 400: it can miss a stale index, but never turns a client error
+into a 500.
 
 ## BetterStack setup (manual, not in the repo)
 

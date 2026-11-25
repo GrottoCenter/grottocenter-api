@@ -1229,4 +1229,26 @@ describe('SearchService.checkIndexSchema()', () => {
     await Search.checkIndexSchema();
     should(stub.callCount).be.above(calls);
   });
+
+  it('shares one round of lookups between concurrent calls', async () => {
+    const stub = sinon.stub(ts, 'retrieveFieldNames').callsFake(liveFields());
+
+    const results = await Promise.all([
+      Search.checkIndexSchema(),
+      Search.checkIndexSchema(),
+      Search.checkIndexSchema(),
+    ]);
+
+    should(stub.callCount).equal(schemas.length);
+    results.forEach((r) => should(r.upToDate).be.true());
+  });
+
+  it('does not keep a failure', async () => {
+    const stub = sinon.stub(ts, 'retrieveFieldNames');
+    stub.rejects(new Error('down'));
+    await Search.checkIndexSchema().should.be.rejectedWith('down');
+
+    stub.callsFake(liveFields());
+    should((await Search.checkIndexSchema()).upToDate).be.true();
+  });
 });
