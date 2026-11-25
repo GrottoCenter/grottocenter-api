@@ -187,6 +187,24 @@ module.exports.custom = {
 
   /** *************************************************************************
    *                                                                          *
+   * Heartbeat monitors of the scheduled jobs (docs/agents/scheduled-jobs.md).*
+   *                                                                          *
+   * Each value is the https URL of a Better Stack heartbeat monitor, read    *
+   * from its own optional env var. A job whose URL is unset is not monitored *
+   * (dev, tests). The URLs hold a secret token: App Service settings only.   *
+   *                                                                          *
+   ************************************************************************** */
+  heartbeats: {
+    searchOutbox: process.env.HEARTBEAT_SEARCH_OUTBOX_URL,
+    botOutbox: process.env.HEARTBEAT_BOT_OUTBOX_URL,
+    avatarCleanup: process.env.HEARTBEAT_AVATAR_CLEANUP_URL,
+    botPipeline: process.env.HEARTBEAT_BOT_PIPELINE_URL,
+    dbExport: process.env.HEARTBEAT_DB_EXPORT_URL,
+    searchReconcile: process.env.HEARTBEAT_SEARCH_RECONCILE_URL,
+  },
+
+  /** *************************************************************************
+   *                                                                          *
    * Health check settings.                                                   *
    *                                                                          *
    ************************************************************************** */

@@ -7,6 +7,8 @@
  *   running across all API instances.
  */
 
+const { withHeartbeat } = require('../utils/heartbeat');
+
 const QUEUE_NAME = 'db-export';
 // Sunday 03:00 UTC, away from the monthly search reconciliation (1st, 02:00)
 const CRON = '0 3 * * 0';
@@ -19,8 +21,14 @@ const QUEUE_OPTIONS = {
   retryDelay: 15 * 60,
 };
 
+const HEARTBEAT = {
+  name: 'db-export',
+  getUrl: () => sails.config.custom.heartbeats.dbExport,
+};
+
 module.exports = {
   QUEUE_NAME,
+  HEARTBEAT,
   CRON,
   QUEUE_OPTIONS,
 
@@ -52,3 +60,10 @@ module.exports = {
     await makeDbExport();
   },
 };
+
+// Report each run to the job's heartbeat monitor (docs/agents/scheduled-jobs.md).
+// Wrapped after the definition so that start() registers the wrapped handler.
+module.exports.processJob = withHeartbeat(
+  module.exports.processJob,
+  module.exports.HEARTBEAT
+);
