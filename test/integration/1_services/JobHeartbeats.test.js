@@ -1,47 +1,165 @@
 const should = require('should');
+const sinon = require('sinon');
 
 // Every scheduled pg-boss job reports to its own heartbeat monitor
-// (docs/agents/scheduled-jobs.md). The behaviour is tested in 2_utils/heartbeat;
-// this checks the wiring: each service's handler is wrapped, with its own config key.
+// (docs/agents/scheduled-jobs.md). The behaviour of the wrapper is tested in
+// 2_utils/heartbeat; this runs each real handler with its dependency stubbed
+// and checks that the monitor is called, so a handler that is no longer
+// wrapped, or wired to another job's config key, fails here.
+//
+// The dependencies are required inside the stubs, at run time, like the
+// handlers do (see "Testing" in AGENTS.md).
+/* eslint-disable global-require */
 const JOBS = [
-  ['SearchOutboxQueueService', 'search-outbox', 'searchOutbox', 300000],
-  ['BotOutboxQueueService', 'bot-outbox', 'botOutbox', 300000],
-  ['AvatarCleanupQueueService', 'avatar-cleanup', 'avatarCleanup', 0],
-  ['BotPipelineQueueService', 'bot-surface-nightly', 'botPipeline', 0],
-  ['DbExportQueueService', 'db-export', 'dbExport', 0],
-  ['SearchReconcileQueueService', 'search-reconcile', 'searchReconcile', 0],
+  {
+    service: 'SearchOutboxQueueService',
+    key: 'searchOutbox',
+    stub: (fails) => {
+      const outbox = require('../../../api/dbSync/searchOutbox');
+      const drain = sinon.stub(outbox, 'drain');
+      if (fails) drain.rejects(new Error('drain failed'));
+      else drain.resolves(0);
+      sinon.stub(outbox, 'backlog').resolves({ pending: 0, oldestSeconds: 0 });
+    },
+  },
+  {
+    service: 'BotOutboxQueueService',
+    key: 'botOutbox',
+    stub: (fails) => {
+      const BotOutboxService = require('../../../api/services/bot/BotOutboxService');
+      const run = sinon.stub(BotOutboxService, 'run');
+      if (fails) run.rejects(new Error('run failed'));
+      else run.resolves({ skipped: true });
+      sinon
+        .stub(BotOutboxService, 'backlog')
+        .resolves({ pending: 0, oldestSeconds: 0 });
+      sinon
+        .stub(
+          require('../../../api/services/bot/storage'),
+          'createStorageAdapter'
+        )
+        .returns({});
+    },
+  },
+  {
+    service: 'AvatarCleanupQueueService',
+    key: 'avatarCleanup',
+    stub: (fails) => {
+      const stub = sinon.stub(
+        sails.services.avatarservice,
+        'retryPendingDeletions'
+      );
+      if (fails) stub.rejects(new Error('storage down'));
+      else stub.resolves({ deleted: 0, failed: 0, kept: 0 });
+    },
+  },
+  {
+    service: 'BotPipelineQueueService',
+    key: 'botPipeline',
+    stub: (fails) => {
+      const run = sinon.stub(
+        require('../../../api/services/bot/BotPipelineService'),
+        'run'
+      );
+      if (fails) run.rejects(new Error('pipeline failed'));
+      else run.resolves();
+    },
+  },
+  {
+    service: 'DbExportQueueService',
+    key: 'dbExport',
+    retries: true,
+    stub: (fails) => {
+      const makeDbExport = sinon.stub(
+        require('../../../api/dbSync/dbExport'),
+        'makeDbExport'
+      );
+      if (fails) makeDbExport.rejects(new Error('export failed'));
+      else makeDbExport.resolves();
+    },
+  },
+  {
+    service: 'SearchReconcileQueueService',
+    key: 'searchReconcile',
+    retries: true,
+    stub: (fails) => {
+      const reconcile = sinon.stub(
+        require('../../../api/dbSync/reconcile'),
+        'reconcile'
+      );
+      if (fails) reconcile.rejects(new Error('reconcile failed'));
+      else reconcile.resolves();
+    },
+  },
 ];
+/* eslint-enable global-require */
 
 describe('Scheduled job heartbeats', () => {
   let heartbeats;
+  let fetchStub;
+  let counter = 0;
+  let url;
+  let original;
 
   before(() => {
     ({ heartbeats } = sails.config.custom);
   });
 
   it('declares one distinct key per job', () => {
-    should(Object.keys(heartbeats).sort()).eql(JOBS.map((j) => j[2]).sort());
+    should(Object.keys(heartbeats).sort()).eql(JOBS.map((j) => j.key).sort());
   });
 
-  JOBS.forEach(([service, name, key, minIntervalMs]) => {
+  JOBS.forEach(({ service, key, retries, stub }) => {
     describe(service, () => {
-      let original;
+      let processJob;
 
       beforeEach(() => {
+        // A new URL per test: the throttle of the per-minute jobs is keyed by URL
+        counter += 1;
+        url = `https://example.test/heartbeat/${key}-${counter}`;
         original = heartbeats[key];
-      });
-      afterEach(() => {
-        heartbeats[key] = original;
+        heartbeats[key] = url;
+        fetchStub = sinon.stub(global, 'fetch').resolves({ ok: true });
+        ({ processJob } = sails.services[service.toLowerCase()]);
       });
 
-      it(`reports as ${name}, from config.custom.heartbeats.${key}`, () => {
-        const { HEARTBEAT } = sails.services[service.toLowerCase()];
-        should(HEARTBEAT).be.an.Object();
-        should(HEARTBEAT.name).equal(name);
-        should(HEARTBEAT.minIntervalMs || 0).equal(minIntervalMs);
-        heartbeats[key] = 'https://example.test/hb';
-        should(HEARTBEAT.getUrl()).equal('https://example.test/hb');
+      afterEach(() => {
+        heartbeats[key] = original;
+        sinon.restore();
       });
+
+      it('pings its own monitor when a run succeeds', async () => {
+        stub(false);
+        await processJob([{ retryCount: 0 }]);
+        sinon.assert.calledOnce(fetchStub);
+        should(fetchStub.firstCall.args[0]).equal(url);
+      });
+
+      it('pings /fail and rethrows when the last attempt fails', async () => {
+        stub(true);
+        await processJob([
+          { retryCount: 1, retryLimit: 1 },
+        ]).should.be.rejected();
+        sinon.assert.calledOnce(fetchStub);
+        should(fetchStub.firstCall.args[0]).equal(`${url}/fail`);
+      });
+
+      it('sends nothing when no URL is configured', async () => {
+        heartbeats[key] = undefined;
+        stub(false);
+        await processJob([{ retryCount: 0 }]);
+        sinon.assert.notCalled(fetchStub);
+      });
+
+      if (retries) {
+        it('does not report a first failed attempt that pg-boss retries', async () => {
+          stub(true);
+          await processJob([
+            { retryCount: 0, retryLimit: 1 },
+          ]).should.be.rejected();
+          sinon.assert.notCalled(fetchStub);
+        });
+      }
     });
   });
 });

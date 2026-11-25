@@ -86,6 +86,15 @@ const ping = async (
  * @param {Function} [options.log] test seam
  * @param {Function} [options.now] test seam
  * @returns {Function} an async function with the handler's signature
+ *
+ * While pg-boss will retry the job, a failure is not reported: the retry's
+ * success clears the monitor, and only the last attempt failing is worth an
+ * alert. The decision uses the job's own `retryLimit`, the value pg-boss
+ * applies (copied from the queue when the job is created), which the handler
+ * only receives when the worker is registered with
+ * `{ includeMetadata: true }`. Without it every failure is reported. A
+ * failure also clears the throttle, so that the next success resolves the
+ * incident at once.
  */
 const withHeartbeat = (
   handler,
@@ -96,7 +105,16 @@ const withHeartbeat = (
     try {
       result = await handler(...args);
     } catch (err) {
-      await ping(getUrl(), { name, failed: true, fetchImpl, log });
+      const [job] = Array.isArray(args[0]) ? args[0] : [];
+      const willRetry =
+        Number.isInteger(job?.retryLimit) &&
+        job.retryLimit > 0 &&
+        job.retryCount < job.retryLimit;
+      if (!willRetry) {
+        const url = getUrl();
+        lastSuccess.delete(url);
+        await ping(url, { name, failed: true, fetchImpl, log });
+      }
       throw err;
     }
     const url = getUrl();
