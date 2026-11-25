@@ -21,6 +21,10 @@ const QUEUE_OPTIONS = {
   retryDelay: 15 * 60,
 };
 
+// The handler needs each job's own retryLimit and retryCount to tell a failed
+// attempt that pg-boss retries from the last one (see withHeartbeat)
+const WORK_OPTIONS = { includeMetadata: true };
+
 const HEARTBEAT = {
   name: 'db-export',
   getUrl: () => sails.config.custom.heartbeats.dbExport,
@@ -29,6 +33,7 @@ const HEARTBEAT = {
 module.exports = {
   QUEUE_NAME,
   HEARTBEAT,
+  WORK_OPTIONS,
   CRON,
   QUEUE_OPTIONS,
 
@@ -44,7 +49,7 @@ module.exports = {
     }
     await boss.createQueue(QUEUE_NAME, QUEUE_OPTIONS);
     await boss.schedule(QUEUE_NAME, CRON, null, { tz: 'UTC', missed: 'once' });
-    await boss.work(QUEUE_NAME, module.exports.processJob);
+    await boss.work(QUEUE_NAME, WORK_OPTIONS, module.exports.processJob);
     sails.log.info('DbExportQueueService: started and listening for jobs');
   },
 

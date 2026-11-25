@@ -50,7 +50,9 @@ describe('DbExportQueueService', () => {
 
       should(boss.work.calledOnce).be.true();
       should(boss.work.firstCall.args[0]).equal('db-export');
-      should(boss.work.firstCall.args[1]).equal(
+      // includeMetadata: the heartbeat needs the job's retryLimit and retryCount
+      should(boss.work.firstCall.args[1]).eql({ includeMetadata: true });
+      should(boss.work.firstCall.args[2]).equal(
         DbExportQueueService.processJob
       );
       // The queue exists before anything is scheduled or worked on it

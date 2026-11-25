@@ -46,7 +46,11 @@ describe('SearchReconcileQueueService', () => {
         ['search-reconcile', '0 2 1 * *', null, { tz: 'UTC', missed: 'once' }],
       ]);
       should(boss.work.args).eql([
-        ['search-reconcile', SearchReconcileQueueService.processJob],
+        [
+          'search-reconcile',
+          { includeMetadata: true },
+          SearchReconcileQueueService.processJob,
+        ],
       ]);
       should(boss.createQueue.calledBefore(boss.schedule)).be.true();
       should(boss.createQueue.calledBefore(boss.work)).be.true();

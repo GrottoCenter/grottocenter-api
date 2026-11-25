@@ -142,6 +142,80 @@ describe('heartbeat', () => {
       sinon.assert.calledThrice(fetchImpl);
     });
 
+    it('lets the success right after a failure through, whatever the throttle', async () => {
+      let time = 1000;
+      const handler = sinon.stub();
+      handler.onCall(0).resolves();
+      handler.onCall(1).rejects(new Error('x'));
+      handler.onCall(2).resolves();
+      handler.onCall(3).resolves();
+      const wrapped = wrap(handler, { minIntervalMs: 300000, now: () => time });
+      await wrapped(); // pinged
+      time += 60000;
+      await wrapped().should.be.rejected(); // /fail, throttle cleared
+      time += 60000;
+      await wrapped(); // pinged at once: it resolves the incident
+      sinon.assert.calledThrice(fetchImpl);
+      should(fetchImpl.thirdCall.args[0]).equal(URL);
+      time += 60000;
+      await wrapped(); // throttled again
+      sinon.assert.calledThrice(fetchImpl);
+    });
+
+    describe('with the retry metadata of the job', () => {
+      const failing = () => sinon.stub().rejects(new Error('x'));
+
+      it('does not report a failed attempt that pg-boss will retry', async () => {
+        const wrapped = wrap(failing());
+        await wrapped([
+          { retryCount: 0, retryLimit: 1 },
+        ]).should.be.rejectedWith('x');
+        sinon.assert.notCalled(fetchImpl);
+      });
+
+      it('reports the last attempt failing', async () => {
+        const wrapped = wrap(failing());
+        await wrapped([
+          { retryCount: 1, retryLimit: 1 },
+        ]).should.be.rejectedWith('x');
+        should(fetchImpl.firstCall.args[0]).equal(`${URL}/fail`);
+      });
+
+      it('follows the limit of the job, not a constant of the code', async () => {
+        const wrapped = wrap(failing());
+        await wrapped([
+          { retryCount: 1, retryLimit: 2 },
+        ]).should.be.rejectedWith('x');
+        sinon.assert.notCalled(fetchImpl);
+        await wrapped([
+          { retryCount: 2, retryLimit: 2 },
+        ]).should.be.rejectedWith('x');
+        sinon.assert.calledOnce(fetchImpl);
+      });
+
+      it('reports every failure when the job carries no metadata', async () => {
+        const wrapped = wrap(failing());
+        await wrapped([{ retryCount: 0 }]).should.be.rejectedWith('x');
+        await wrapped([{}]).should.be.rejectedWith('x');
+        await wrapped().should.be.rejectedWith('x');
+        sinon.assert.calledThrice(fetchImpl);
+      });
+
+      it('reports every failure when the queue does not retry', async () => {
+        const wrapped = wrap(failing());
+        await wrapped([
+          { retryCount: 0, retryLimit: 0 },
+        ]).should.be.rejectedWith('x');
+        should(fetchImpl.firstCall.args[0]).equal(`${URL}/fail`);
+      });
+
+      it('reports the success of the retry', async () => {
+        const wrapped = wrap(sinon.stub().resolves());
+        await wrapped([{ retryCount: 1, retryLimit: 1 }]);
+        should(fetchImpl.firstCall.args[0]).equal(URL);
+      });
+    });
+
     it('retries at the next run when a success ping was not acknowledged', async () => {
       fetchImpl.onFirstCall().rejects(new Error('down'));
       const wrapped = wrap(sinon.stub().resolves(), { minIntervalMs: 300000 });
