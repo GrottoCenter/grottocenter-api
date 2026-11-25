@@ -210,11 +210,13 @@ describe('Health endpoint', () => {
       });
 
       it('shares one budget between isAlive and the lookup', async () => {
-        sails.config.custom.healthCheckTimeoutMs = 300;
+        // The gap between one budget (about 1000 ms) and two (about 1800 ms)
+        // is far larger than the request overhead, even under shard contention.
+        sails.config.custom.healthCheckTimeoutMs = 1000;
         isAlive.callsFake(
           () =>
             new Promise((resolve) => {
-              setTimeout(() => resolve(true), 250);
+              setTimeout(() => resolve(true), 800);
             })
         );
         checkIndexSchema.returns(new Promise(() => {}));
@@ -222,9 +224,8 @@ describe('Health endpoint', () => {
         const started = Date.now();
         await request.get('/api/v1/health').expect(200);
 
-        // One budget: about 300 ms. Two separate ones: about 250 + 300 ms
-        should(Date.now() - started).be.below(450);
-      });
+        should(Date.now() - started).be.below(1400);
+      }).timeout(5000);
     });
 
     it('still reports build info when unhealthy', async () => {
