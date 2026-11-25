@@ -269,11 +269,15 @@ async function permanentlyDelete(
     if (shouldMergeInto) {
       // Skip documents the target already has: j_document_entrance is keyed
       // by (id_document, id_entrance), a second link would violate it (#1902).
+      // Raw SQL: the table has no id column, which JDocumentEntrance.find()
+      // always selects (#2014).
       const existingDocuments = (
-        await JDocumentEntrance.find({ entrance: mergeIntoId }).usingConnection(
+        await CommonService.query(
+          'SELECT id_document FROM j_document_entrance WHERE id_entrance = $1',
+          [mergeIntoId],
           db
         )
-      ).map((e) => e.document);
+      ).rows.map((r) => r.id_document);
       const documentsToAdd = entrance.documents
         .map((e) => e.id)
         .filter((e) => !existingDocuments.includes(e));
