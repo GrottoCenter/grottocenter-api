@@ -2,6 +2,7 @@
 const supertest = require('supertest');
 const sinon = require('sinon');
 const should = require('should');
+const { useLiveFields } = require('../../../helpers/searchIndex');
 
 /**
  * Typesense 4xx errors return HTTP 400 to the client.
@@ -111,6 +112,9 @@ describe('Typesense 4xx errors on search endpoints', () => {
       code: 404,
       error: '`documents` collection not found.',
     });
+    // An up-to-date index: the failure is the caller's
+    SearchService.clearIndexSchemaCache();
+    useLiveFields(sinon.stub(typesense, 'retrieveFieldNames'));
     sinon.stub(sails.log, 'error');
 
     const res = await supertest(sails.hooks.http.app)

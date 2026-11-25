@@ -39,6 +39,15 @@ not detected: resync after those too.
 The log line `Health check: search index out of date, run scripts/resync-search.js` names
 the collections and fields. The response does not, since the endpoint is public.
 
+## Searches on a stale index answer 500
+
+Typesense answers a filter, sort or facet on a missing field with a 4xx, which the search
+controllers turn into a 400 ("bad request"). `SearchService` checks the index when that
+happens (`guardIndexDrift`): if it is out of date, the search fails with a plain error and
+the caller gets a **500**, so it counts as a server error (and in the `Http5xx` alert)
+instead of looking like a client mistake. If the check itself fails, or the index is up to
+date, the original 4xx is kept. Typesense 5xx, 401 and 403 are never checked.
+
 ## BetterStack setup (manual, not in the repo)
 
 The existing `/health` monitor alerts on "URL becomes unavailable" (any non-2xx). It cannot

@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const SearchService = require('../../../api/services/SearchService');
 const typesense = require('../../../config/typesense');
+const { useLiveFields } = require('../../helpers/searchIndex');
 
 describe('SearchService', () => {
   let typesenseStub;
@@ -213,6 +214,9 @@ describe('SearchService', () => {
           code: 404,
           error: '`documents` collection not found.',
         });
+        // An up-to-date index: the failure is the caller's
+        SearchService.clearIndexSchemaCache();
+        useLiveFields(sinon.stub(typesense, 'retrieveFieldNames'));
         const logStub = sinon.stub(sails.log, 'error');
 
         const error = await SearchService.multiCollectionsSearch({

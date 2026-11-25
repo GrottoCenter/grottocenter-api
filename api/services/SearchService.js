@@ -205,6 +205,44 @@ function assertUnionResponse(response) {
   throw error;
 }
 
+// Typesense answers a filter, sort or facet on a field its collection lacks
+// with a 4xx, which handleTypesenseError turns into a 400 for the caller. When
+// the cause is a stale index (a deploy that added a field before
+// scripts/resync-search.js ran, see /health), that is our fault: throw a plain
+// error instead, which the controllers let through as a 500, so it counts as a
+// server error and the caller is not told to fix its request.
+async function guardIndexDrift(search) {
+  try {
+    return await search();
+  } catch (error) {
+    const status = error?.httpStatus;
+    const isClientError =
+      typeof status === 'number' &&
+      status >= 400 &&
+      status < 500 &&
+      status !== 401 &&
+      status !== 403;
+    if (!isClientError) throw error;
+
+    let schema;
+    try {
+      schema = await checkIndexSchema();
+    } catch (checkError) {
+      // Cannot tell: keep the original error
+      sails.log.warn('Search index check failed', checkError);
+      throw error;
+    }
+    if (schema.upToDate) throw error;
+
+    sails.log.error(
+      'Search failed on an out-of-date index, run scripts/resync-search.js',
+      schema.missing,
+      error
+    );
+    throw new Error('Search index out of date', { cause: error });
+  }
+}
+
 async function multiCollectionsSearch({
   query,
   entities = [],
@@ -229,16 +267,20 @@ async function multiCollectionsSearch({
     };
   });
 
-  const response = await typesense.multiSearch(collections, {
-    per_page: 20,
-    q,
-    max_candidates: MAX_CANDIDATES,
-    // Typesense defaults max_filter_by_candidates to 4, which is too low
-    // for prefix filters like datePublication:=2025* that can match many
-    // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
-    ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
-  });
-  return assertUnionResponse(response);
+  const response = await guardIndexDrift(() =>
+    typesense
+      .multiSearch(collections, {
+        per_page: 20,
+        q,
+        max_candidates: MAX_CANDIDATES,
+        // Typesense defaults max_filter_by_candidates to 4, which is too low
+        // for prefix filters like datePublication:=2025* that can match many
+        // distinct values (2025, 2025-01, …, 2025-12, 2025-01-15, etc.).
+        ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
+      })
+      .then(assertUnionResponse)
+  );
+  return response;
 }
 
 async function collectionSearch({
@@ -281,7 +323,7 @@ async function collectionSearch({
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
-  return typesense.search(entity, params);
+  return guardIndexDrift(() => typesense.search(entity, params));
 }
 
 async function fieldSearch({
@@ -332,7 +374,7 @@ async function fieldSearch({
     ...(hasPrefixFilter && { max_filter_by_candidates: 100 }),
   };
 
-  const result = await typesense.search(entity, params);
+  const result = await guardIndexDrift(() => typesense.search(entity, params));
 
   // Transform facet response to match the grouped_hits format expected by
   // the controller. The controller reads: found, found_docs, grouped_hits, page.
