@@ -157,6 +157,20 @@ const c = {
 
     if (meta?.isAdmin) {
       result.isBanned = Boolean(source.banned);
+      // Account details, mapped one by one: mail and pendingMail are only
+      // guarded by TCaver's PRIVATE_ATTRIBUTES backstop, and the secrets
+      // (password, activationCode, totpSecret, ...) must stay out.
+      result.mail = source.mail;
+      result.pendingMail = source.pendingMail ?? null;
+      result.mailIsValid = Boolean(source.mailIsValid);
+      result.activated = Boolean(source.activated);
+      result.mfaEnabled = Boolean(source.mfaEnabled);
+      result.dateInscription = source.dateInscription;
+      result.dateLastConnection = source.dateLastConnection ?? null;
+      result.connectionCounter = source.connectionCounter;
+      result.loginFailedAttempts = source.loginFailedAttempts;
+      result.lastFailedLoginAt = source.lastFailedLoginAt ?? null;
+      result.totpFailedAttempts = source.totpFailedAttempts;
     }
 
     return result;

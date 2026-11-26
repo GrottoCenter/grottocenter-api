@@ -12670,6 +12670,45 @@ components:
         isBanned:
           type: boolean
           description: Whether the caver is banned. Only present when the caller is an authenticated administrator.
+        mail:
+          type: string
+          description: Email address of the account. Only present when the caller is an authenticated administrator.
+        pendingMail:
+          type: string
+          nullable: true
+          description: Email address awaiting confirmation, null when none. Only present when the caller is an authenticated administrator.
+        mailIsValid:
+          type: boolean
+          description: Whether the email address has been validated. Only present when the caller is an authenticated administrator.
+        activated:
+          type: boolean
+          description: Whether the account has been activated. Only present when the caller is an authenticated administrator.
+        mfaEnabled:
+          type: boolean
+          description: Whether multi-factor authentication is enabled. Only present when the caller is an authenticated administrator.
+        dateInscription:
+          type: string
+          format: date-time
+          description: Registration date. Only present when the caller is an authenticated administrator.
+        dateLastConnection:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last successful login, null when the account never logged in. Only present when the caller is an authenticated administrator.
+        connectionCounter:
+          type: integer
+          description: Number of successful logins. Only present when the caller is an authenticated administrator.
+        loginFailedAttempts:
+          type: integer
+          description: Consecutive failed password attempts. Only present when the caller is an authenticated administrator.
+        lastFailedLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last failed login, null when none. Only present when the caller is an authenticated administrator.
+        totpFailedAttempts:
+          type: integer
+          description: Consecutive failed MFA code attempts. Only present when the caller is an authenticated administrator.
         language:
           type: string
         name:

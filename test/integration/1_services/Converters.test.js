@@ -78,6 +78,88 @@ describe('Converters Service', () => {
       const result = converters.toCaver(source);
       should(result.organizations).eql([{ id: 1 }, { id: 2 }]);
     });
+
+    describe('account details', () => {
+      const ACCOUNT_FIELDS = [
+        'mail',
+        'pendingMail',
+        'mailIsValid',
+        'activated',
+        'mfaEnabled',
+        'dateInscription',
+        'dateLastConnection',
+        'connectionCounter',
+        'loginFailedAttempts',
+        'lastFailedLoginAt',
+        'totpFailedAttempts',
+      ];
+      const SECRET_FIELDS = [
+        'password',
+        'activationCode',
+        'totpSecret',
+        'lastUsedTotp',
+        'lastUsedTotpAt',
+        'login',
+        'lastSuspiciousEmailAt',
+      ];
+      const lastLogin = new Date('2026-01-02T03:04:05Z');
+      const source = {
+        id: 1,
+        nickname: 'TestCaver',
+        mail: 'a@b.com',
+        pendingMail: 'new@b.com',
+        mailIsValid: true,
+        activated: true,
+        mfaEnabled: true,
+        dateInscription: new Date('2020-01-01T00:00:00Z'),
+        dateLastConnection: lastLogin,
+        connectionCounter: 7,
+        loginFailedAttempts: 2,
+        lastFailedLoginAt: new Date('2026-01-01T00:00:00Z'),
+        totpFailedAttempts: 1,
+        password: 'hash',
+        activationCode: 'code',
+        totpSecret: 'secret',
+        lastUsedTotp: '123456',
+        lastUsedTotpAt: new Date(),
+        login: 'login',
+        lastSuspiciousEmailAt: new Date(),
+      };
+
+      it('should return every account field to an administrator', () => {
+        const result = converters.toCaver(source, { isAdmin: true });
+        ACCOUNT_FIELDS.forEach((f) => should(result[f]).eql(source[f]));
+      });
+
+      it('should never return a secret, even to an administrator', () => {
+        const result = converters.toCaver(source, { isAdmin: true });
+        SECRET_FIELDS.forEach((f) => should(result).not.have.property(f));
+      });
+
+      it('should omit the account fields for a non-administrator', () => {
+        [undefined, { isAdmin: false }, { isAdmin: undefined }].forEach(
+          (meta) => {
+            const result = converters.toCaver(source, meta);
+            ACCOUNT_FIELDS.forEach((f) => should(result).not.have.property(f));
+          }
+        );
+      });
+
+      it('should return empty nullable fields as null to an administrator', () => {
+        const result = converters.toCaver(
+          {
+            ...source,
+            pendingMail: undefined,
+            dateLastConnection: null,
+            lastFailedLoginAt: undefined,
+          },
+          { isAdmin: true }
+        );
+        should(result.pendingMail).be.null();
+        should(result.dateLastConnection).be.null();
+        should(result.lastFailedLoginAt).be.null();
+      });
+    });
   });
 
   describe('toSimpleComment()', () => {
