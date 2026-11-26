@@ -52,11 +52,16 @@ module.exports = {
 
   /**
    * @param {Integer} caverId
+   * @param {Object} [options]
+   * @param {boolean} [options.withAccountDetails=false] also return the account
+   * fields (mail, login counters, ...). The result is a plain object, so
+   * `TCaver.customToJSON` does not protect them: only ask for them when the
+   * requester is an administrator.
    * @throws Sails ORM errors (see https://sailsjs.com/documentation/concepts/models-and-orm/errors)
    * @description Get a caver by his id and populate it according to the user rights (using req).
    * @returns {Object}
    */
-  getCaver: async (caverId) => {
+  getCaver: async (caverId, { withAccountDetails = false } = {}) => {
     const caver = await TCaver.findOne(caverId)
       // `authoredCount` below carries the real total. Deleted documents are
       // filtered in the query rather than afterwards, so they cannot consume
@@ -98,18 +103,6 @@ module.exports = {
       id: caver.id,
       type: caver.type,
       banned: caver.banned,
-      // Account details: toCaver only maps them for an administrator.
-      mail: caver.mail,
-      pendingMail: caver.pendingMail,
-      mailIsValid: caver.mailIsValid,
-      activated: caver.activated,
-      mfaEnabled: caver.mfaEnabled,
-      dateInscription: caver.dateInscription,
-      dateLastConnection: caver.dateLastConnection,
-      connectionCounter: caver.connectionCounter,
-      loginFailedAttempts: caver.loginFailedAttempts,
-      lastFailedLoginAt: caver.lastFailedLoginAt,
-      totpFailedAttempts: caver.totpFailedAttempts,
       name: caver.name,
       surname: caver.surname,
       nickname: caver.nickname,
@@ -124,6 +117,19 @@ module.exports = {
       subscribedToMassifs: caver.subscribedToMassifs,
       subscribedToCountries: caver.subscribedToCountries,
       subscribedToRegions: caver.subscribedToRegions,
+      ...(withAccountDetails && {
+        mail: caver.mail,
+        pendingMail: caver.pendingMail,
+        mailIsValid: caver.mailIsValid,
+        activated: caver.activated,
+        mfaEnabled: caver.mfaEnabled,
+        dateInscription: caver.dateInscription,
+        dateLastConnection: caver.dateLastConnection,
+        connectionCounter: caver.connectionCounter,
+        loginFailedAttempts: caver.loginFailedAttempts,
+        lastFailedLoginAt: caver.lastFailedLoginAt,
+        totpFailedAttempts: caver.totpFailedAttempts,
+      }),
     };
   },
 

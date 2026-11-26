@@ -109,6 +109,36 @@ describe('CaverService', () => {
       should(caver.type).equal('CAVER');
     });
 
+    const ACCOUNT_FIELDS = [
+      'mail',
+      'pendingMail',
+      'mailIsValid',
+      'activated',
+      'mfaEnabled',
+      'dateInscription',
+      'dateLastConnection',
+      'connectionCounter',
+      'loginFailedAttempts',
+      'lastFailedLoginAt',
+      'totpFailedAttempts',
+    ];
+
+    it('should leave out the account fields by default', async () => {
+      const caver = await CaverService.getCaver(6);
+      ACCOUNT_FIELDS.forEach((f) => should(caver).not.have.property(f));
+    });
+
+    it('should return the account fields when asked, but never a secret', async () => {
+      const caver = await CaverService.getCaver(6, {
+        withAccountDetails: true,
+      });
+      should(caver).have.properties(ACCOUNT_FIELDS);
+      should(caver.mail).equal('caver1@caver1.com');
+      ['password', 'activationCode', 'totpSecret', 'login'].forEach((f) =>
+        should(caver).not.have.property(f)
+      );
+    });
+
     it('should return an author with type AUTHOR', async () => {
       const author = await CaverService.createNonUserCaver({
         nickname: 'TestAuthor',
