@@ -43,6 +43,8 @@ describe('Rate Limiter', () => {
       'USER_DELETE_RATE_LIMIT',
       'AUTH_RATE_LIMIT',
       'ADMIN_AUTH_RATE_LIMIT',
+      'TRUSTED_SERVICE_IPS',
+      'TRUSTED_SERVICE_RATE_LIMIT',
     ].forEach((key) => {
       envBackup[key] = process.env[key];
     });
@@ -119,6 +121,55 @@ describe('Rate Limiter', () => {
       warnLogs
         .filter((l) => l.startsWith('Rate limit exceeded:'))
         .map((l) => JSON.parse(l.slice(l.indexOf('{'))));
+
+    describe('trusted services', () => {
+      const makeApp = (rateLimiter) => {
+        const app = express();
+        app.set('trust proxy', 1);
+        app.use(rateLimiter.generalRateLimit);
+        app.get('/test', (req, res) => res.status(200).send('ok'));
+        return app;
+      };
+      const get = (agent, ip) => agent.get('/test').set('X-Forwarded-For', ip);
+
+      it('should give a trusted IP its own, higher cap', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '10.0.0.5, 10.0.0.6';
+        process.env.TRUSTED_SERVICE_RATE_LIMIT = TEST_MODERATOR_LIMIT;
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 5; i += 1) {
+          await get(agent, '10.0.0.5:5555').expect(200);
+        }
+      });
+
+      it('should still limit a trusted IP at its own cap', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '10.0.0.5';
+        process.env.TRUSTED_SERVICE_RATE_LIMIT = TEST_VISITOR_LIMIT + 3;
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 3; i += 1) {
+          await get(agent, '10.0.0.5').expect(200);
+        }
+        await get(agent, '10.0.0.5').expect(429);
+      });
+
+      it('should keep the public limit for any other IP', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '10.0.0.5';
+        process.env.TRUSTED_SERVICE_RATE_LIMIT = TEST_MODERATOR_LIMIT;
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT; i += 1) {
+          await get(agent, '10.0.0.9').expect(200);
+        }
+        await get(agent, '10.0.0.9').expect(429);
+      });
+
+      it('should trust nobody when the list is empty', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '';
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT; i += 1) {
+          await get(agent, '10.0.0.5').expect(200);
+        }
+        await get(agent, '10.0.0.5').expect(429);
+      });
+    });
 
     describe('rate limit rejection logging', () => {
       it('should log a warning naming the limiter, IP, method and path', async () => {

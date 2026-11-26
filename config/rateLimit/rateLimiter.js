@@ -47,6 +47,22 @@ const LEADER_MAX = parseLimit(process.env.LEADER_RATE_LIMIT, 1000);
 const MODERATOR_MAX = parseLimit(process.env.MODERATOR_RATE_LIMIT, 10000);
 // Administrators are not rate-limited (skip returns true)
 
+// Trusted services (the OAI and Z39.50 servers) call the API from a fixed IP, so
+// the public limits would be shared by all their clients. Those IPs get their
+// own, higher cap on the general bucket; the servers limit their own clients
+// (Z39.50: per-IP limits in z3950/lib/Z3950/Limits.pm) and the edge does the rest.
+// TRUSTED_SERVICE_IPS is a comma-separated list; unset or empty trusts nobody.
+const TRUSTED_SERVICE_IPS = new Set(
+  (process.env.TRUSTED_SERVICE_IPS || '')
+    .split(',')
+    .map((ip) => normalizeClientIp(ip))
+    .filter(Boolean)
+);
+const TRUSTED_SERVICE_MAX = parseLimit(
+  process.env.TRUSTED_SERVICE_RATE_LIMIT,
+  10000
+);
+
 // Dedicated limits for GET /api/v1/geoloc/* (map browsing), per 10-minute
 // window, by role. These requests are counted here only, never in the general
 // bucket, so a busy map cannot lock an IP out of login or any other endpoint.
@@ -140,12 +156,24 @@ const tierMax =
     return user;
   };
 
-const generalMax = tierMax({
+const roleGeneralMax = tierMax({
   visitor: VISITOR_MAX,
   user: USER_MAX,
   leader: LEADER_MAX,
   moderator: MODERATOR_MAX,
 });
+
+/**
+ * Whether the request comes from one of the TRUSTED_SERVICE_IPS. Only the
+ * client IP is checked, never a header the caller controls: `req.ip` is the
+ * address Azure App Service appended (`trustProxy: 1`).
+ */
+const isTrustedService = (req) =>
+  TRUSTED_SERVICE_IPS.size > 0 &&
+  TRUSTED_SERVICE_IPS.has(normalizeClientIp(req.ip));
+
+const generalMax = (req) =>
+  isTrustedService(req) ? TRUSTED_SERVICE_MAX : roleGeneralMax(req);
 
 const geolocMax = tierMax({
   visitor: GEOLOC_VISITOR_MAX,
@@ -240,6 +268,7 @@ const isRelationDelete = (path) =>
 
 module.exports = {
   isGeolocRead,
+  isTrustedService,
 
   generalRateLimit: rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
