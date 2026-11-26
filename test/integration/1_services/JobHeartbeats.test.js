@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const should = require('should');
 const sinon = require('sinon');
 
@@ -94,6 +96,13 @@ const JOBS = [
 ];
 /* eslint-enable global-require */
 
+// A service that schedules a pg-boss job but is not in JOBS: its monitoring was
+// forgotten. CronHeartbeatQueueService reports the pg_cron jobs, not itself.
+const NOT_REPORTING = ['CronHeartbeatQueueService'];
+// The free Better Stack plan allows ten; the AI server backup uses one more
+const HEARTBEAT_LIMIT = 10;
+const OUTSIDE_THIS_API = 1;
+
 describe('Scheduled job heartbeats', () => {
   let heartbeats;
   let fetchStub;
@@ -105,8 +114,35 @@ describe('Scheduled job heartbeats', () => {
     ({ heartbeats } = sails.config.custom);
   });
 
+  it('covers every service that schedules a job', () => {
+    const dir = path.join(__dirname, '../../../api/services');
+    const scheduling = fs
+      .readdirSync(dir)
+      .filter((f) => /QueueService\.js$/.test(f))
+      .filter((f) =>
+        /boss\.schedule\(/.test(fs.readFileSync(path.join(dir, f), 'utf8'))
+      )
+      .map((f) => f.replace(/\.js$/, ''))
+      .filter((name) => !NOT_REPORTING.includes(name));
+    should(scheduling.sort()).eql(
+      JOBS.map((j) => j.service).sort(),
+      'a service schedules a job without a heartbeat test: see docs/agents/scheduled-jobs.md, "Adding a scheduled job"'
+    );
+  });
+
+  it('stays within the free plan heartbeat limit', () => {
+    const used = Object.keys(heartbeats).length + OUTSIDE_THIS_API;
+    should(used).be.belowOrEqual(
+      HEARTBEAT_LIMIT,
+      `${used} heartbeat monitors, the free Better Stack plan allows ${HEARTBEAT_LIMIT}: group jobs or upgrade, see docs/agents/scheduled-jobs.md`
+    );
+  });
+
   it('declares one distinct key per job', () => {
-    should(Object.keys(heartbeats).sort()).eql(JOBS.map((j) => j.key).sort());
+    // The pg_cron jobs share one monitor, reported by CronHeartbeatQueueService (tested in its own file)
+    should(Object.keys(heartbeats).sort()).eql(
+      [...JOBS.map((j) => j.key), 'cronJobs'].sort()
+    );
   });
 
   JOBS.forEach(({ service, key, retries, stub }) => {

@@ -201,6 +201,8 @@ module.exports.custom = {
     botPipeline: process.env.HEARTBEAT_BOT_PIPELINE_URL,
     dbExport: process.env.HEARTBEAT_DB_EXPORT_URL,
     searchReconcile: process.env.HEARTBEAT_SEARCH_RECONCILE_URL,
+    // All the pg_cron jobs of sql/1_cron.sql, reported by CronHeartbeatQueueService
+    cronJobs: process.env.HEARTBEAT_CRON_JOBS_URL,
   },
 
   /** *************************************************************************
