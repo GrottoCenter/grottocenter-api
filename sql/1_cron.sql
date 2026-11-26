@@ -6,6 +6,11 @@ CREATE EXTENSION pg_cron;
 -- that owner to hold TEMPORARY on grottoce — granted to gc_owner in
 -- sql/zz_ownership_and_grants.sql. Without it the job fails with 42501 and
 -- pg_cron only records it in cron.job_run_details. See issue #1839.
+--
+-- Adding, renaming or removing a job here also means updating CRON_JOBS in
+-- api/utils/cronHeartbeat.js (a test checks it) and the status page wording in
+-- the infrastructure repository: docs/agents/scheduled-jobs.md, "Adding a
+-- scheduled job". The job reports to the shared `cron-jobs` heartbeat monitor.
 
 SELECT cron.schedule_in_database(
     'Refresh data quality view daily',

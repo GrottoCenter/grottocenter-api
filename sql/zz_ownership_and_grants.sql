@@ -261,7 +261,9 @@ GRANT TEMPORARY ON DATABASE grottoce TO gc_owner;
 --
 -- What it deliberately does not get: SUPERUSER, CREATEDB, CREATEROLE, BYPASSRLS,
 -- REPLICATION, CREATE on schema public, membership in gc_owner or
--- azure_pg_admin, or any access to the postgres and superset_meta databases.
+-- azure_pg_admin, or any access to the superset_meta database. In the postgres
+-- database it only gets EXECUTE on gc_cron_latest_runs(), to read pg_cron's run
+-- history (sql/9_44_2026_11_26_cron_read_for_api.sql, issue #2029).
 --
 -- CREATE ON SCHEMA public is absent because nothing in the API issues DDL any
 -- more. PartitionManager was the last one, and it now goes through
