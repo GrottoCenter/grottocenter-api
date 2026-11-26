@@ -133,7 +133,8 @@ const c = {
         source,
         c.toSimpleMassif
       ),
-      // Mail and hashed password should never be returned (RGPD)
+      // Mail is only returned to administrators (isAdmin block below); the
+      // hashed password never is (RGPD).
     };
 
     const listParser = (srcField, converterFn, dstField) => {
@@ -157,9 +158,8 @@ const c = {
 
     if (meta?.isAdmin) {
       result.isBanned = Boolean(source.banned);
-      // Account details, mapped one by one: mail and pendingMail are only
-      // guarded by TCaver's PRIVATE_ATTRIBUTES backstop, and the secrets
-      // (password, activationCode, totpSecret, ...) must stay out.
+      // Mapped one by one so that no secret column (password, activationCode,
+      // totpSecret, ...) can slip in through a spread.
       result.mail = source.mail;
       result.pendingMail = source.pendingMail ?? null;
       result.mailIsValid = Boolean(source.mailIsValid);

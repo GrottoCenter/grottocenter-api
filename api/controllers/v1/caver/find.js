@@ -9,17 +9,19 @@ module.exports = async (req, res) => {
 
   const params = { searchedItem: `Caver of id ${caverId}` };
 
-  const caverFound = await CaverService.getCaver(caverId);
+  const isAdmin =
+    req.token &&
+    RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR);
+
+  const caverFound = await CaverService.getCaver(caverId, {
+    withAccountDetails: Boolean(isAdmin),
+  });
   if (!caverFound)
     return res.notFound({ error: `${params.searchedItem} not found` });
 
   caverFound.documents = await DocumentService.getDocumentsForCitation(
     caverFound.documents.map((d) => d.id)
   );
-
-  const isAdmin =
-    req.token &&
-    RightService.hasGroup(req.token.groups, RightService.G.ADMINISTRATOR);
 
   return ControllerService.treatAndConvert(
     req,
