@@ -16,10 +16,12 @@ module.exports = async (req, res) => {
     });
   }
 
-  const results = await BibliographicMetadataService.searchMetadata(body);
+  const { rows, total } =
+    await BibliographicMetadataService.searchMetadata(body);
 
   const response = {
-    data: results,
+    data: rows,
+    total,
   };
 
   const params = {

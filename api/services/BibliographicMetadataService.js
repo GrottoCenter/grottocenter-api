@@ -20,6 +20,9 @@ const METADATA_STATUS = {
   DELETED: 'deleted',
 };
 
+// Default ceiling on the rows a search returns; override with BIBLIO_SEARCH_MAX_ROWS
+const DEFAULT_SEARCH_MAX_ROWS = 10000;
+
 /**
  * Recursively search in tree structure for a specific field
  * the tree structure is expected to be an object with 'and', 'or', or 'not' properties
@@ -339,7 +342,9 @@ module.exports = {
   /**
    * Search bibliographic metadata with complex query structure
    * @param {Object} query - Search query object
-   * @returns {Object} Search results with id, title, author, publisher and date
+   * @returns {Promise<{rows: Object[], total: number}>} `rows` holds id, title, authors,
+   * publisher and publicationYear, ordered by id and capped by `getSearchMaxRows()`.
+   * `total` is the real number of matching records and can exceed `rows.length`.
    */
   async searchMetadata(query) {
     const titleFilter = findFieldInQuery(query, 'title');
@@ -395,10 +400,25 @@ module.exports = {
       const { sql, params } = this.buildSearchSQL(query, false, matchingIds);
 
       const { rows } = await sails.sendNativeQuery(sql, params);
-      return rows.map((r) => this.formatSearchResult(r));
+      return {
+        rows: rows.map((r) => this.formatSearchResult(r)),
+        total: rows.length > 0 ? Number(rows[0].total_count) : 0,
+      };
     }
 
-    return [];
+    return { rows: [], total: 0 };
+  },
+
+  /**
+   * Ceiling on the rows returned by a search, from `sails.config.custom.biblioSearchMaxRows`
+   * (env `BIBLIO_SEARCH_MAX_ROWS`). Falls back to the default if unset or not a positive integer.
+   * @returns {number}
+   */
+  getSearchMaxRows() {
+    const value = Number(sails.config.custom.biblioSearchMaxRows);
+    return Number.isInteger(value) && value > 0
+      ? value
+      : DEFAULT_SEARCH_MAX_ROWS;
   },
 
   /**
@@ -407,7 +427,12 @@ module.exports = {
    * @param {boolean} includeDeleted - Include deleted records
    * @returns {Object} SQL query and parameters
    */
-  buildSearchSQL(query, includeDeleted = false, ids = []) {
+  buildSearchSQL(
+    query,
+    includeDeleted = false,
+    ids = [],
+    maxRows = this.getSearchMaxRows()
+  ) {
     const baseWhere = includeDeleted
       ? "metadata_status = 'deleted'"
       : "metadata_status = 'registered'";
@@ -429,10 +454,11 @@ module.exports = {
     }
 
     const sql = `
-        SELECT *
+        SELECT *, COUNT(*) OVER() AS total_count
         FROM v_bibliographic_metadata
         WHERE ${whereClauses.join(' AND ')}
-        LIMIT 1500`;
+        ORDER BY id_document
+        LIMIT ${Number(maxRows)}`;
 
     return { sql, params };
   },

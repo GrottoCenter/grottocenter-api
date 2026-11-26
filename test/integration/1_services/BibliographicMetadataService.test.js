@@ -580,7 +580,9 @@ describe('BibliographicMetadataService', () => {
 
   describe('searchMetadata', () => {
     it('should search records by title', async () => {
-      const results = await service.searchMetadata({ title: 'Document 1' });
+      const { rows: results } = await service.searchMetadata({
+        title: 'Document 1',
+      });
       results.should.be.an.Array();
       results.length.should.be.greaterThan(0);
       results.forEach((result) => {
@@ -589,28 +591,59 @@ describe('BibliographicMetadataService', () => {
       });
     });
 
-    it('should return empty array for non-matching title', async () => {
-      const results = await service.searchMetadata({
+    it('should return empty rows and total 0 for non-matching title', async () => {
+      const { rows: results, total } = await service.searchMetadata({
         title: 'NonExistentTitle123456',
       });
       results.should.be.an.Array();
       results.length.should.equal(0);
+      total.should.equal(0);
+    });
+
+    it('should return a total equal to the number of rows under the ceiling', async () => {
+      const { rows, total } = await service.searchMetadata({
+        title: 'sound',
+      });
+      total.should.be.a.Number();
+      total.should.equal(rows.length);
+    });
+
+    it('should report the real total when the row ceiling is hit', async () => {
+      const full = await service.searchMetadata({ title: 'Document' });
+      full.total.should.be.greaterThan(1);
+
+      const original = sails.config.custom.biblioSearchMaxRows;
+      sails.config.custom.biblioSearchMaxRows = 1;
+      try {
+        const capped = await service.searchMetadata({ title: 'Document' });
+        capped.rows.length.should.equal(1);
+        capped.total.should.equal(full.total);
+        capped.total.should.be.greaterThan(capped.rows.length);
+        // deterministic order: the capped row is the first of the full result
+        capped.rows[0].id.should.equal(full.rows[0].id);
+      } finally {
+        sails.config.custom.biblioSearchMaxRows = original;
+      }
     });
 
     it('should handle empty query', async () => {
-      const results = await service.searchMetadata({});
+      const { rows: results } = await service.searchMetadata({});
       results.should.be.an.Array();
       results.length.should.equal(0);
     });
 
     it('should search with partial title match', async () => {
-      const results = await service.searchMetadata({ title: 'sound' });
+      const { rows: results } = await service.searchMetadata({
+        title: 'sound',
+      });
       results.should.be.an.Array();
       results.length.should.be.greaterThan(0);
     });
 
     it('should include children in search results', async () => {
-      const results = await service.searchMetadata({ title: 'collection' });
+      const { rows: results } = await service.searchMetadata({
+        title: 'collection',
+      });
       results.should.be.an.Array();
       // Should find collection records and potentially their children
     });
@@ -1046,7 +1079,7 @@ describe('BibliographicMetadataService', () => {
 
   describe('SQL building and search functionality', () => {
     it('should handle complex search queries with title', async () => {
-      const results = await service.searchMetadata({
+      const { rows: results } = await service.searchMetadata({
         title: 'Document 1',
       });
       results.should.be.an.Array();
@@ -1059,32 +1092,40 @@ describe('BibliographicMetadataService', () => {
     });
 
     it('should handle empty search metadata query', async () => {
-      const results = await service.searchMetadata(null);
+      const { rows: results } = await service.searchMetadata(null);
       results.should.be.an.Array();
       results.length.should.equal(0);
     });
 
     it('should handle search with very long title', async () => {
       const longTitle = 'a'.repeat(1000);
-      const results = await service.searchMetadata({ title: longTitle });
+      const { rows: results } = await service.searchMetadata({
+        title: longTitle,
+      });
       results.should.be.an.Array();
       results.length.should.equal(0);
     });
 
     it('should handle search with empty title string', async () => {
-      const results = await service.searchMetadata({ title: '' });
+      const { rows: results } = await service.searchMetadata({
+        title: '',
+      });
       results.should.be.an.Array();
       results.length.should.equal(0);
     });
 
     it('should handle search with whitespace-only title', async () => {
-      const results = await service.searchMetadata({ title: '   ' });
+      const { rows: results } = await service.searchMetadata({
+        title: '   ',
+      });
       results.should.be.an.Array();
       results.length.should.equal(0);
     });
 
     it('should handle search with numeric title', async () => {
-      const results = await service.searchMetadata({ title: '123' });
+      const { rows: results } = await service.searchMetadata({
+        title: '123',
+      });
       results.should.be.an.Array();
     });
   });
@@ -1404,6 +1445,25 @@ describe('BibliographicMetadataService', () => {
       sql.should.be.a.String();
       sql.should.containEql("metadata_status = 'deleted'");
       params.should.be.an.Array();
+    });
+
+    it('should order rows by id and use the configured ceiling', () => {
+      const { sql } = service.buildSearchSQL({}, false, [], 42);
+      sql.should.containEql('ORDER BY id_document');
+      sql.should.containEql('LIMIT 42');
+      sql.should.containEql('COUNT(*) OVER()');
+    });
+
+    it('should fall back to the default ceiling on an invalid config', () => {
+      const original = sails.config.custom.biblioSearchMaxRows;
+      try {
+        sails.config.custom.biblioSearchMaxRows = 'abc';
+        service.getSearchMaxRows().should.equal(10000);
+        sails.config.custom.biblioSearchMaxRows = 25;
+        service.getSearchMaxRows().should.equal(25);
+      } finally {
+        sails.config.custom.biblioSearchMaxRows = original;
+      }
     });
 
     it('should build SQL with IDs filter', () => {
