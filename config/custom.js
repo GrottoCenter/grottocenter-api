@@ -25,6 +25,9 @@ module.exports.custom = {
    ************************************************************************* */
   baseUrl: 'http://localhost:3000', // client URL
 
+  /** Ceiling on the rows POST /bibliographic-metadata/search returns (the `total` stays exact). */
+  biblioSearchMaxRows: Number(process.env.BIBLIO_SEARCH_MAX_ROWS) || 10000,
+
   /** *************************************************************************************
    *                                                                                      *
    * The TTL (time-to-live) for various sorts of tokens before they expire (in seconds).  *

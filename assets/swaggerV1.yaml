@@ -10067,7 +10067,7 @@ paths:
         - bibliographic metadata
       summary: Search the bibliographic metadata
       security: []
-      description: Search for bibliographic metadata using a query. (limit to 1500 results, accent insensitive, case insensitive)
+      description: Search for bibliographic metadata using a query. Accent and case insensitive. Rows are ordered by id and capped at `BIBLIO_SEARCH_MAX_ROWS` (default 10000); `total` is the real number of matches and can be larger than `data.length`.
       requestBody:
         content:
           application/json:
@@ -10083,22 +10083,28 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    title:
-                      type: string
-                    publisher:
-                      type: string
-                    authors:
-                      type: array
-                      items:
-                        type: string
-                    publicationYear:
-                      type: integer
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        publisher:
+                          type: string
+                        authors:
+                          type: array
+                          items:
+                            type: string
+                        publicationYear:
+                          type: integer
+                  total:
+                    type: integer
+                    description: Real number of matching records, not limited by the row ceiling.
         '404':
           description: Request body must be a valid JSON object
 
