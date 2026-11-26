@@ -183,7 +183,7 @@ try {
 ## 🗄️ Database & SQL Migrations
 
 - New migrations go in `sql/` as `9_<next-seq>_<date>_<description>.sql` (older files use other prefixes; `zz_ownership_and_grants.sql` runs last). Files with `mock` in the name are local seed data.
-- Every migration file starts with `\c grottoce;` (`00_roles.sql` and `1_cron.sql` are deliberate exceptions).
+- Every migration file starts with `\c grottoce;` (`00_roles.sql` and `1_cron.sql` are deliberate exceptions). So is any migration that touches pg_cron, which lives in the `postgres` database: it starts with `\c postgres;` (e.g. `9_44_2026_11_26_cron_read_for_api.sql`) and must be applied by the role that owns the cron jobs (pg_cron's tables only show a role the jobs it owns).
 - Make statements idempotent (`IF EXISTS` / `IF NOT EXISTS`). Drop a UNIQUE constraint with `ALTER TABLE ... DROP CONSTRAINT IF EXISTS`, not `DROP INDEX`.
 - **Ownership:** the API connects as `gc_app`, which owns nothing. Every table, view, materialized view, sequence and function you create must end with `ALTER ... OWNER TO gc_owner;`. Do **not** open a migration with `SET ROLE gc_owner;` — it fails on a fresh local volume, where ownership is only transferred later by `sql/zz_ownership_and_grants.sql`.
 - **Indexes:** the test DB is built by Waterline (`migrate: drop`) and never runs `sql/0_tables.sql`. Add every new `CREATE INDEX IF NOT EXISTS` to the `INDEX_OPTIMIZATION_MIGRATION` block in `test/customSQL.js` too.

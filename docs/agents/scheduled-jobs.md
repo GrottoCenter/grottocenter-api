@@ -41,15 +41,15 @@ The jobs it covers are listed in `CRON_JOBS` (`api/utils/cronHeartbeat.js`): dat
 
 - **Success ping:** every job's last finished run succeeded and is recent (12 hours for a daily job, so that yesterday's run is not taken for today's; 84 hours for an every-3-days job, so that a missed run is noticed up to a day late).
 - **`/fail` ping:** as soon as one job's last run failed, never ran, is too old, is not scheduled any more, or has been going for more than 3 hours. The monitor does not say which one: the API log does (`cron-heartbeat: "<job>" (fail): <reason>`, a warning).
-- **No ping:** every job is fine but a run is still in progress. The grace covers it. A job failing elsewhere still sends `/fail`.
-- **The check itself failing** (database unreachable, function missing) throws and is retried once after 10 minutes. It pings nothing, so the monitor alerts when its grace runs out. That is deliberate: the check does not report itself.
+- **A run still in progress** (the others are fine): nothing is sent yet. The check throws, and pg-boss runs it again every 10 minutes (`retryLimit` 11, so the last attempt is at about 07:20), which is inside the monitor's 2 hour grace after the 05:30 ping. A test keeps the retries shorter than the grace: raise the grace before lengthening them. When the run has finished, the next attempt sends the success ping. If it is still going on the last attempt, the check sends `/fail`. A job failing elsewhere still sends `/fail` at once.
+- **The check itself failing** (database unreachable, function missing) throws and is retried every 10 minutes until about 07:20. If every attempt fails it pings nothing, so the monitor alerts when its grace runs out. That is deliberate: the check does not report itself.
 - **Names matter.** A job is matched on the name given to `cron.schedule_in_database`. A test fails when `sql/1_cron.sql` and `CRON_JOBS` differ, so a new or renamed cron job needs a `CRON_JOBS` entry.
 - **Where the history comes from.** pg_cron lives in the `postgres` database, so the job opens a short-lived second connection to it (same server and credentials as the API). `cron.job` and `cron.job_run_details` have row-level security (`username = CURRENT_USER`): a role only sees the jobs it owns, and the jobs belong to the admin role (`grottoce` in prod), not to `gc_app`. A grant on the `cron` schema is therefore not enough: `gc_app` calls `public.gc_cron_latest_runs()`, a `SECURITY DEFINER` function in `postgres` that returns four columns of each job's latest run (`sql/9_44_2026_11_26_cron_read_for_api.sql`). It must be created by the role that owns the jobs.
 - **History size.** pg_cron never trims `cron.job_run_details`. Five jobs add about 2,000 rows a year, which the function's query handles without an index.
 
 ## Adding a scheduled job
 
-Whatever the kind of job, **its PR ships its monitoring**. Each of the places below is checked by a test, except the last two, which are outside this repository.
+Whatever the kind of job, **its PR ships its monitoring**. Tests catch a pg-boss job without a heartbeat test or config key, a drift between `sql/1_cron.sql` and `CRON_JOBS`, and going over the heartbeat limit; the other steps are on you.
 
 **Free plan: 10 heartbeats.** Better Stack's free plan allows ten, and 8 are used (the 6 pg-boss jobs above, the one for all the pg_cron jobs, and the AI VM backup). A new **pg-boss** job takes one. A new **pg_cron** job takes none: it joins the existing `cron-jobs` monitor. A test fails when the count goes over ten; if it does, group jobs (as the cron jobs are) or upgrade the plan.
 

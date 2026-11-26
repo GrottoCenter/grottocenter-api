@@ -1,7 +1,7 @@
 \c postgres;
 
 -- Lets the API role read the run history of the pg_cron jobs (issue #2029), so
--- that a pg-boss job can send one heartbeat per cron job
+-- that a pg-boss job can report them to one heartbeat monitor
 -- (api/services/CronHeartbeatQueueService.js).
 --
 -- pg_cron lives in the `postgres` database (cron.database_name), not in
