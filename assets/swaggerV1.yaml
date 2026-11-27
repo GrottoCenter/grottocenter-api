@@ -12607,6 +12607,15 @@ components:
           items:
             type: string
           description: 'Dublin Core rights information'
+        dcLicenseUrl:
+          type: string
+          nullable: true
+          description: 'URL of the licence of the document, null when it has none'
+          example: 'https://creativecommons.org/licenses/by-sa/3.0/'
+        landingPageUrl:
+          type: string
+          description: 'Public Grottocenter page of the document'
+          example: 'https://grottocenter.org/ui/documents/25022'
         dcTypeGrottocenter:
           type: string
           description: 'Grottocenter-specific document type'

@@ -170,10 +170,22 @@ module.exports = {
       ]);
     }
 
-    if (document.dcRights) {
-      marcRecord.addDataField('540', ' ', ' ', [
-        ['a', `Licence :${document.dcRights}`],
+    if (document.landingPageUrl) {
+      marcRecord.addDataField('856', ' ', ' ', [
+        ['u', document.landingPageUrl],
+        ['z', 'Grottocenter'],
       ]);
+    }
+
+    const licenceSubfields = [];
+    if (document.dcRights) {
+      licenceSubfields.push(['a', `Licence :${document.dcRights}`]);
+    }
+    if (document.dcLicenseUrl) {
+      licenceSubfields.push(['u', document.dcLicenseUrl]);
+    }
+    if (licenceSubfields.length > 0) {
+      marcRecord.addDataField('540', ' ', ' ', licenceSubfields);
     }
 
     if (document.dcPages) {

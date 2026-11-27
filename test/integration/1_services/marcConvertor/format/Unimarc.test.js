@@ -277,5 +277,52 @@ describe('marcConvertor/format/Unimarc', () => {
       const result = await Unimarc.transform(document);
       should.exist(result);
     });
+
+    describe('landing page and licence links', () => {
+      const base = {
+        id: 7,
+        parents: [],
+        dcTypeGrottocenter: 'article',
+        lastUpdate: new Date('2024-01-01'),
+        dcTitle: 'Test',
+      };
+      const fieldsOf = (result, tag) =>
+        result.getRecord().fields.filter((f) => f.tag === tag);
+      const sub = (field, code) =>
+        field.subfields.find((s) => s.code === code)?.value;
+
+      it('should add the landing page in 856 $u with $z Grottocenter', async () => {
+        const result = await Unimarc.transform({
+          ...base,
+          landingPageUrl: 'https://grottocenter.org/ui/documents/7',
+        });
+        const [field] = fieldsOf(result, '856');
+        should.exist(field);
+        should(sub(field, 'u')).equal(
+          'https://grottocenter.org/ui/documents/7'
+        );
+        should(sub(field, 'z')).equal('Grottocenter');
+      });
+
+      it('should add the licence name and URL in one 540', async () => {
+        const result = await Unimarc.transform({
+          ...base,
+          dcRights: 'CC-BY',
+          dcLicenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+        });
+        const fields = fieldsOf(result, '540');
+        fields.should.have.length(1);
+        should(sub(fields[0], 'a')).equal('Licence :CC-BY');
+        should(sub(fields[0], 'u')).equal(
+          'https://creativecommons.org/licenses/by/3.0/'
+        );
+      });
+
+      it('should add neither field when the links are missing', async () => {
+        const result = await Unimarc.transform(base);
+        fieldsOf(result, '856').should.have.length(0);
+        fieldsOf(result, '540').should.have.length(0);
+      });
+    });
   });
 });

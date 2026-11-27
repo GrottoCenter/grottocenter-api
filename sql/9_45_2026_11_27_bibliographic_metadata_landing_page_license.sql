@@ -1,0 +1,265 @@
+\c grottoce;
+
+-- =============================================================================
+-- #2052: link each exported record to its Grottocenter page and licence
+-- =============================================================================
+--
+-- v_bibliographic_metadata gets two columns at the end, so the OAI-PMH and
+-- Z39.50 exports can carry a link a browser can open:
+--   landing_page_url  https://grottocenter.org/ui/documents/<id>
+--   dc_license_url    the document's licence URL (t_license.url), NULL if none
+--
+-- A materialized view cannot gain a column in place, and a plain REFRESH or a
+-- DROP + CREATE would hold an exclusive lock for the whole rebuild (AGENTS.md):
+-- the replacement is built and populated under another name, indexed, given
+-- the same owner and grants, then swapped in by two renames in one short
+-- transaction.
+--
+-- Additive: the running API reads the columns it declares and ignores the new
+-- ones, so apply this BEFORE deploying the API that reads them. Production does
+-- not run migrations on deploy: apply it by hand, outside 04:20-05:10 UTC and
+-- Azure's Saturday 03:00 UTC window. If the lock_timeout of the swap fires, run
+-- the file again: the rebuild is repeated, the swap is skipped once done.
+
+DROP MATERIALIZED VIEW IF EXISTS v_bibliographic_metadata_new;
+
+CREATE MATERIALIZED VIEW v_bibliographic_metadata_new AS
+WITH RECURSIVE doc_children(root, child, level) AS (
+    -- Base case: direct children (level 1)
+    SELECT
+        id_parent as root,
+        id as child,
+        1 as level
+    FROM t_document
+    WHERE id_parent IS NOT NULL
+
+    UNION ALL
+
+    -- Recursive case: add level tracking and limit depth
+    SELECT
+        dc.root,
+        d.id,
+        dc.level + 1
+    FROM t_document d
+    JOIN doc_children dc ON d.id_parent = dc.child
+    WHERE dc.level < 100  -- Prevent infinite recursion and limit depth
+),
+doc_parents(child, parent, level) AS (
+    -- Base case: direct parents (level 1)
+    SELECT
+        id as child,
+        id_parent as parent,
+        1 as level
+    FROM t_document
+    WHERE id_parent IS NOT NULL
+
+    UNION ALL
+
+    -- Recursive case: add level tracking and limit depth
+    SELECT
+        dp.child,
+        d.id_parent,
+        dp.level + 1
+    FROM t_document d
+    JOIN doc_parents dp ON d.id = dp.parent
+    WHERE dp.level < 100 AND d.id_parent IS NOT NULL  -- Prevent infinite recursion and limit depth
+),
+children_agg AS (
+    SELECT
+        dc.root AS id_document,
+        ARRAY_AGG(
+            jsonb_build_object(
+                'id', dc.child,
+                'dcTitle', NULLIF(btrim(td_child.title), ''),
+                'dcTypeGrottocenter', lower(regexp_replace(tt_child.name, '\s+', '_', 'g'))
+            ) ORDER BY dc.level, dc.child
+        ) AS children
+    FROM doc_children dc
+    LEFT JOIN t_description td_child ON td_child.id_document = dc.child
+    LEFT JOIN t_document d_child ON d_child.id = dc.child
+    LEFT JOIN t_type tt_child ON tt_child.id = d_child.id_type
+    GROUP BY dc.root
+),
+parents_agg AS (
+    SELECT
+        dp.child AS id_document,
+        ARRAY_AGG(
+            jsonb_build_object(
+                'id', dp.parent,
+                'dcTitle', NULLIF(btrim(td_parent.title), ''),
+                'dcTypeGrottocenter', lower(regexp_replace(tt_parent.name, '\s+', '_', 'g'))
+            ) ORDER BY dp.level, dp.parent
+        ) AS parents
+    FROM doc_parents dp
+    LEFT JOIN t_description td_parent ON td_parent.id_document = dp.parent
+    LEFT JOIN t_document d_parent ON d_parent.id = dp.parent
+    LEFT JOIN t_type tt_parent ON tt_parent.id = d_parent.id_type
+    GROUP BY dp.child
+)
+SELECT
+    d.id as id_document,
+    COALESCE(ca.children, ARRAY[]::jsonb[]) AS children,
+    COALESCE(pa.parents, ARRAY[]::jsonb[]) AS parents,
+    'oai:grottocenter.org:' || d.id as oai_identifier,
+    d.date_validation as last_update,
+    ARRAY[
+      'grottocenter',
+      'grottocenter:' || lower(regexp_replace(tt.name, '\s+', '_', 'g'))
+    ] as list_sets,
+    NULLIF(MAX(btrim(td.title)), '') as dc_title,
+    COALESCE(
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(btrim(cav.nickname), '')), NULL),
+      ARRAY[]::text[]
+    ) as dc_creators,
+    NULLIF(btrim(author.nickname), '') as dc_contributor,
+    NULLIF(btrim(tn.name), '') as dc_publisher,
+    CASE
+      WHEN d.date_publication ~ '^\d{4}$' THEN TO_DATE(d.date_publication || '-01-01', 'YYYY-MM-DD')
+      WHEN d.date_publication ~ '^\d{4}-\d{2}-\d{2}$' THEN CAST(d.date_publication AS DATE)
+      ELSE NULL
+    END as dc_date,
+    COALESCE(
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT j_lang.id_language), NULL),
+      ARRAY[]::text[]
+    ) as dc_languages,
+    COALESCE(
+      ARRAY_REMOVE(
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(btrim(td.body), '')), NULL),
+        NULL
+      ),
+      ARRAY[]::text[]
+    ) as dc_descriptions,
+    COALESCE(
+      ARRAY_CAT(
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT iso.id_iso), NULL),
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT country.id_country), NULL)
+      ),
+      ARRAY[]::text[]
+    ) as dc_coverages,
+    COALESCE(
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(btrim(s.subject), '')), NULL),
+      ARRAY[]::text[]
+    ) as dc_subjects,
+    COALESCE(
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(f.path, '')), NULL),
+      ARRAY[]::text[]
+    ) as dc_formats,
+    COALESCE(
+      ARRAY_REMOVE(
+        ARRAY_CAT(
+          ARRAY[
+            CASE
+              WHEN idtype.code = 'doi' THEN 'doi:' || d.identifier
+              WHEN idtype.code = 'isbn' THEN 'isbn:' || d.identifier
+              WHEN idtype.code = 'issn' THEN 'issn:' || d.identifier
+              WHEN idtype.code = 'url' THEN d.identifier
+              ELSE NULL
+            END
+          ],
+          ARRAY_REMOVE(ARRAY_AGG(DISTINCT NULLIF(f.path, '')), NULL)
+        ),
+        NULL
+      ),
+      ARRAY[]::text[]
+    ) as dc_identifiers,
+    CASE
+      WHEN d.id_parent IS NOT NULL THEN ARRAY['oai:grottocenter.org:' || d.id_parent]
+      ELSE ARRAY[]::text[]
+    END as dc_relations,
+    ARRAY['Bulletin Bibliographique Spéléologique / Speleo Abstracts'] as dc_sources,
+    COALESCE(
+      ARRAY[NULLIF(lic.name, '')],
+      ARRAY[]::text[]
+    ) as dc_rights,
+    lower(regexp_replace(tt.name, '\s+', '_', 'g')) as dc_type_grottocenter,
+    CASE
+      WHEN tt.name ILIKE 'Image' THEN 'image'
+      WHEN tt.name ILIKE 'Still Image' THEN 'image'
+      WHEN tt.name ILIKE 'Map' THEN 'image'
+      WHEN tt.name ILIKE 'Topographic Drawing' THEN 'image'
+      WHEN tt.name ILIKE 'Moving Image' THEN 'moving image'
+      WHEN tt.name ILIKE 'Sound' THEN 'sound'
+      WHEN tt.name ILIKE 'Dataset' THEN 'dataset'
+      WHEN tt.name ILIKE 'Interactive Resource' THEN 'interactive resource'
+      WHEN tt.name ILIKE 'Physical Object' THEN 'physical object'
+      WHEN tt.name ILIKE 'Collection' THEN 'collection'
+      ELSE 'text'
+    END as dc_type_dcmi,
+    d.pages as dc_pages,
+    false as has_been_updated,
+    'registered'::e_metadata_status as metadata_status,
+    'https://grottocenter.org/ui/documents/' || d.id as landing_page_url,
+    NULLIF(lic.url, '') as dc_license_url
+  FROM t_document d
+  LEFT JOIN t_description td ON td.id_document = d.id
+  LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
+  LEFT JOIN t_caver cav ON cav.id = jca.id_caver
+  LEFT JOIN t_caver author ON author.id = d.id_author
+  LEFT JOIN t_grotto editor ON editor.id = d.id_editor
+  LEFT JOIN t_name tn ON tn.id_grotto = d.id_editor
+  LEFT JOIN j_document_language j_lang ON j_lang.id_document = d.id
+  LEFT JOIN j_document_iso3166_2 iso ON iso.id_document = d.id
+  LEFT JOIN j_document_country country ON country.id_document = d.id
+  LEFT JOIN j_document_subject js ON js.id_document = d.id
+  LEFT JOIN t_subject s ON s.code = js.code_subject
+  LEFT JOIN t_file f ON f.id_document = d.id
+  LEFT JOIN t_license lic ON lic.id = d.id_license
+  LEFT JOIN t_type tt ON tt.id = d.id_type
+  LEFT JOIN t_identifier_type idtype ON idtype.code = d.id_identifier_type
+  LEFT JOIN children_agg ca ON ca.id_document = d.id
+  LEFT JOIN parents_agg pa ON pa.id_document = d.id
+  WHERE d.id IS NOT NULL
+  GROUP BY
+    d.id,
+    d.date_validation,
+    d.date_publication,
+    d.identifier,
+    idtype.code,
+    d.id_parent,
+    author.nickname,
+    tn.name,
+    lic.name,
+    lic.url,
+    tt.name,
+    ca.children,
+    pa.parents,
+    d.pages
+WITH DATA;
+
+-- Index names are schema-wide: distinct names now, renamed in the swap.
+CREATE UNIQUE INDEX idx_v_biblio_new_id ON v_bibliographic_metadata_new(id_document);
+CREATE INDEX idx_v_biblio_new_status ON v_bibliographic_metadata_new(metadata_status);
+CREATE INDEX idx_v_biblio_new_oai_id ON v_bibliographic_metadata_new(oai_identifier);
+CREATE INDEX idx_v_biblio_new_last_update ON v_bibliographic_metadata_new(last_update);
+CREATE INDEX idx_v_biblio_new_sets ON v_bibliographic_metadata_new USING gin(list_sets);
+
+ALTER MATERIALIZED VIEW v_bibliographic_metadata_new OWNER TO gc_owner;
+GRANT SELECT, INSERT, UPDATE, DELETE ON v_bibliographic_metadata_new TO gc_app;
+GRANT SELECT ON v_bibliographic_metadata_new TO gc_readonly;
+
+BEGIN;
+SET LOCAL lock_timeout = '3s';
+
+DO $swap$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'v_bibliographic_metadata'
+      AND column_name = 'landing_page_url'
+  ) THEN
+    RAISE NOTICE 'v_bibliographic_metadata already has landing_page_url, swap skipped';
+    DROP MATERIALIZED VIEW v_bibliographic_metadata_new;
+  ELSE
+    ALTER MATERIALIZED VIEW v_bibliographic_metadata RENAME TO v_bibliographic_metadata_old;
+    ALTER MATERIALIZED VIEW v_bibliographic_metadata_new RENAME TO v_bibliographic_metadata;
+    DROP MATERIALIZED VIEW v_bibliographic_metadata_old;
+    ALTER INDEX idx_v_biblio_new_id RENAME TO idx_v_biblio_id;
+    ALTER INDEX idx_v_biblio_new_status RENAME TO idx_v_biblio_status;
+    ALTER INDEX idx_v_biblio_new_oai_id RENAME TO idx_v_biblio_oai_id;
+    ALTER INDEX idx_v_biblio_new_last_update RENAME TO idx_v_biblio_last_update;
+    ALTER INDEX idx_v_biblio_new_sets RENAME TO idx_v_biblio_sets;
+  END IF;
+END
+$swap$;
+
+COMMIT;

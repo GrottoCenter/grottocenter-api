@@ -171,6 +171,18 @@ module.exports = {
       defaultsTo: 'registered',
     },
 
+    landingPageUrl: {
+      type: 'string',
+      columnName: 'landing_page_url',
+      allowNull: true,
+    },
+
+    dcLicenseUrl: {
+      type: 'string',
+      columnName: 'dc_license_url',
+      allowNull: true,
+    },
+
     children: {
       type: 'ref',
       columnName: 'children',

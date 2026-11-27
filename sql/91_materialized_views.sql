@@ -279,7 +279,9 @@ SELECT
     END as dc_type_dcmi,
     d.pages as dc_pages,
     false as has_been_updated,
-    'registered'::e_metadata_status as metadata_status
+    'registered'::e_metadata_status as metadata_status,
+    'https://grottocenter.org/ui/documents/' || d.id as landing_page_url,
+    NULLIF(lic.url, '') as dc_license_url
   FROM t_document d
   LEFT JOIN t_description td ON td.id_document = d.id
   LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
@@ -309,6 +311,7 @@ SELECT
     author.nickname,
     tn.name,
     lic.name,
+    lic.url,
     tt.name,
     ca.children,
     pa.parents,
