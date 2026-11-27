@@ -703,8 +703,15 @@ describe('BibliographicMetadataService', () => {
 
     describe('with an accented record', () => {
       const ID = 900001;
+      let hasUnaccent = true;
 
       before(async () => {
+        // The service falls back to a plain ILIKE without the extension, so
+        // the accent-folding cases cannot hold there
+        const { rows } = await sails.sendNativeQuery(
+          "SELECT 1 FROM pg_extension WHERE extname = 'unaccent'"
+        );
+        hasUnaccent = rows.length > 0;
         await sails.sendNativeQuery(
           `INSERT INTO v_bibliographic_metadata
              (id_document, oai_identifier, dc_title, dc_creators, dc_publisher,
@@ -729,12 +736,13 @@ describe('BibliographicMetadataService', () => {
       });
 
       [
-        ['title', 'gouffre'],
-        ['author', 'genevieve eloi'],
-        ['publisher', 'speleo-club'],
-        ['ISBN', '978-2-0000-0000-0'],
-      ].forEach(([where, any]) => {
-        it(`should find it through the ${where} with an unaccented term`, async () => {
+        ['title', 'gouffre', false],
+        ['author', 'genevieve eloi', true],
+        ['publisher', 'speleo-club', true],
+        ['ISBN', '978-2-0000-0000-0', false],
+      ].forEach(([where, any, needsUnaccent]) => {
+        it(`should find it through the ${where} with an unaccented term`, async function accentFolding() {
+          if (needsUnaccent && !hasUnaccent) this.skip();
           const { rows } = await service.searchMetadata({ any });
           rows.map((r) => r.id).should.containEql(ID);
         });
