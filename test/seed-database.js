@@ -79,6 +79,7 @@ async function seedDatabase({ testUrl }) {
 
             CommonService.query(
               [
+                customSQL.CREATE_UNACCENT_EXTENSION,
                 customSQL.UPDATE_SEQUENCES_QUERY,
                 customSQL.POPULATE_ENTRANCE_POINT_GEOM,
                 customSQL.CONVERT_MEASUREMENT_TO_PARTITIONED,
