@@ -10081,6 +10081,25 @@ paths:
                   type: string
                 publisher:
                   type: string
+                id:
+                  type: string
+                  description: Exact document id.
+                date:
+                  type: string
+                  description: Publication year; matches dates within that year.
+                isbn:
+                  type: string
+                  description: Matches the ISBN among the record identifiers.
+                issn:
+                  type: string
+                  description: Matches the ISSN among the record identifiers.
+                ean:
+                  type: string
+                  description: Matches the EAN among the record identifiers.
+                bibliographiclevel:
+                  type: string
+                  enum: [s, a, m, c]
+                  description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches documents typed `other`.
                 and:
                   type: array
                   description: Nodes that must all match. Each node accepts the same fields as this object.
