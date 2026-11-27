@@ -679,7 +679,90 @@ describe('BibliographicMetadataService', () => {
       total.should.equal(0);
     });
 
-    it('should combine the any field with other fields and @not', async () => {
+    it('should search the any field in the publisher only', async () => {
+      const { rows } = await service.searchMetadata({ any: 'Publisher 2' });
+      // A substring: Publisher 20 and 21 match too
+      const ids = rows.map((r) => r.id);
+      ids.should.containEql(2);
+      ids.should.not.containEql(1);
+    });
+
+    it('should search the any field in the identifier values', async () => {
+      const { rows } = await service.searchMetadata({ any: '10.1000/gc2' });
+      const ids = rows.map((r) => r.id);
+      ids.should.containEql(2);
+      ids.should.not.containEql(1);
+    });
+
+    it('should not match the any field on URLs or file paths', async () => {
+      // Every fixture record has a https://grottocenter.org/doc/<id>.pdf entry
+      const { rows, total } = await service.searchMetadata({ any: 'pdf' });
+      rows.should.eql([]);
+      total.should.equal(0);
+    });
+
+    describe('with an accented record', () => {
+      const ID = 900001;
+
+      before(async () => {
+        await sails.sendNativeQuery(
+          `INSERT INTO v_bibliographic_metadata
+             (id_document, oai_identifier, dc_title, dc_creators, dc_publisher,
+              dc_identifiers, metadata_status)
+           VALUES ($1, $2, $3, $4, $5, $6, 'registered')`,
+          [
+            ID,
+            `oai:grottocenter.org:${ID}`,
+            'Gouffre de la Pierre-Saint-Martin',
+            ['Geneviève Éloi'],
+            'Spéléo-Club',
+            ['isbn:978-2-0000-0000-0'],
+          ]
+        );
+      });
+
+      after(async () => {
+        await sails.sendNativeQuery(
+          'DELETE FROM v_bibliographic_metadata WHERE id_document = $1',
+          [ID]
+        );
+      });
+
+      [
+        ['title', 'gouffre'],
+        ['author', 'genevieve eloi'],
+        ['publisher', 'speleo-club'],
+        ['ISBN', '978-2-0000-0000-0'],
+      ].forEach(([where, any]) => {
+        it(`should find it through the ${where} with an unaccented term`, async () => {
+          const { rows } = await service.searchMetadata({ any });
+          rows.map((r) => r.id).should.containEql(ID);
+        });
+      });
+
+      it('should find it through the author with an accented term', async () => {
+        const { rows } = await service.searchMetadata({ any: 'Geneviève' });
+        rows.map((r) => r.id).should.eql([ID]);
+      });
+    });
+
+    it('should AND the any field with another field of the same node', async () => {
+      const { rows } = await service.searchMetadata({
+        any: 'Document',
+        author: 'Author 2A',
+      });
+      rows.map((r) => r.id).should.eql([2]);
+    });
+
+    it('should combine the any field with another field under @and', async () => {
+      const { rows } = await service.searchMetadata({
+        and: [{ any: 'Document' }, { date: '2023' }],
+      });
+      rows.length.should.be.greaterThan(0);
+      rows.forEach((r) => r.publicationYear.should.equal(2023));
+    });
+
+    it('should exclude an any term under @not', async () => {
       const all = await service.searchMetadata({ any: 'Document' });
       const { rows } = await service.searchMetadata({
         and: [{ any: 'Document' }, { not: { any: 'Author 2A' } }],
@@ -701,6 +784,7 @@ describe('BibliographicMetadataService', () => {
       clause.should.containEql('dc_creators::text');
       clause.should.containEql('dc_publisher');
       clause.should.containEql('dc_identifiers::text');
+      clause.should.containEql("'doi:' || $1");
     });
 
     it('should search with @or across fields', async () => {

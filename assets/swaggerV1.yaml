@@ -11966,7 +11966,7 @@ components:
           description: Exact document id.
         any:
           type: string
-          description: Substring searched in the title, authors, publisher and identifiers; a record matches when any of them contains it.
+          description: Substring searched in the title, authors and publisher, and in the ISBN, ISSN and DOI values; a record matches when any of them contains it. Accent and case insensitive on the title, authors and publisher. URLs and file paths are not searched.
         title:
           type: string
           description: Substring of the title.
