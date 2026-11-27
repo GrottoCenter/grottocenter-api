@@ -52,10 +52,22 @@ const MODERATOR_MAX = parseLimit(process.env.MODERATOR_RATE_LIMIT, 10000);
 // own, higher cap on the general bucket; the servers limit their own clients
 // (Z39.50: per-IP limits in z3950/lib/Z3950/Limits.pm) and the edge does the rest.
 // TRUSTED_SERVICE_IPS is a comma-separated list; unset or empty trusts nobody.
+// Addresses are compared in canonical form, so equivalent IPv6 spellings
+// (`2001:db8::1`, `2001:0db8:0:0::1`) match. Trusted requests get their own
+// bucket key, so IPv6 neighbours in the same /56 never share their counter.
+const canonicalIp = (raw) => {
+  const ip = normalizeClientIp(raw);
+  if (!ip || !ip.includes(':')) return ip;
+  try {
+    return new URL(`http://[${ip}]`).hostname.slice(1, -1);
+  } catch (e) {
+    return ip;
+  }
+};
 const TRUSTED_SERVICE_IPS = new Set(
   (process.env.TRUSTED_SERVICE_IPS || '')
     .split(',')
-    .map((ip) => normalizeClientIp(ip))
+    .map(canonicalIp)
     .filter(Boolean)
 );
 const TRUSTED_SERVICE_MAX = parseLimit(
@@ -169,8 +181,10 @@ const roleGeneralMax = tierMax({
  * address Azure App Service appended (`trustProxy: 1`).
  */
 const isTrustedService = (req) =>
-  TRUSTED_SERVICE_IPS.size > 0 &&
-  TRUSTED_SERVICE_IPS.has(normalizeClientIp(req.ip));
+  TRUSTED_SERVICE_IPS.size > 0 && TRUSTED_SERVICE_IPS.has(canonicalIp(req.ip));
+
+const generalKey = (req) =>
+  isTrustedService(req) ? `trusted:${canonicalIp(req.ip)}` : keyGenerator(req);
 
 const generalMax = (req) =>
   isTrustedService(req) ? TRUSTED_SERVICE_MAX : roleGeneralMax(req);
@@ -273,7 +287,7 @@ module.exports = {
   generalRateLimit: rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
     max: generalMax,
-    keyGenerator,
+    keyGenerator: generalKey,
     message: 'Too many requests with the same IP, try again later.',
     standardHeaders: true,
     statusCode: 429,
