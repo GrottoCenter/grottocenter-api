@@ -724,6 +724,22 @@ describe('BibliographicMetadataService', () => {
         .should.be.rejectedWith({ code: 'UNSUPPORTED_SEARCH_FIELD' });
     });
 
+    [
+      ['an object @and', { author: 'Author 2A', and: { title: 'x' } }, 'and'],
+      ['an empty @or', { author: 'Author 2A', or: [] }, 'or'],
+      ['an empty @and', { author: 'Author 2A', and: [] }, 'and'],
+      ['a non-numeric id', { id: 'abc' }, 'id'],
+      ['an object title', { title: { a: 1 } }, 'title'],
+      ['an array author', { author: ['Author 2A'] }, 'author'],
+      ['an array body', ['x'], 'query'],
+    ].forEach(([label, query, field]) => {
+      it(`should reject ${label}`, async () => {
+        await service
+          .searchMetadata(query)
+          .should.be.rejectedWith({ code: 'UNSUPPORTED_SEARCH_FIELD', field });
+      });
+    });
+
     it('should keep an empty term inside @or from widening the query', async () => {
       const { rows } = await service.searchMetadata({
         or: [{ author: 'Author 2A' }, { title: '' }],
@@ -796,6 +812,33 @@ describe('BibliographicMetadataService', () => {
       await biblioService
         .searchMetadata({ title: 'x' })
         .should.be.rejectedWith('connection refused');
+      stub.callCount.should.equal(1);
+    });
+
+    it('should not take a validation error quoting "unaccent" for a missing extension', async () => {
+      stub = sinon.stub(sails, 'sendNativeQuery').resolves({ rows: [] });
+      const warn = sinon.stub(sails.log, 'warn');
+      try {
+        await biblioService
+          .searchMetadata({ unaccent: 'x' })
+          .should.be.rejectedWith({
+            code: 'UNSUPPORTED_SEARCH_FIELD',
+            field: 'unaccent',
+          });
+        warn.callCount.should.equal(0);
+        stub.callCount.should.equal(0);
+      } finally {
+        warn.restore();
+      }
+    });
+
+    it('should not retry on a database error that merely quotes "unaccent"', async () => {
+      stub = sinon.stub(sails, 'sendNativeQuery');
+      stub.rejects(new Error('invalid input syntax for type text: "unaccent"'));
+
+      await biblioService
+        .searchMetadata({ title: 'unaccent' })
+        .should.be.rejectedWith(/invalid input syntax/);
       stub.callCount.should.equal(1);
     });
   });

@@ -10102,7 +10102,13 @@ paths:
                     type: integer
                     description: Real number of matching records, not limited by the row ceiling.
         '400':
-          description: The body is not a JSON object, or a node uses an unsupported field or value. The response carries `error` (`UNSUPPORTED_SEARCH_FIELD`), the offending `field` and a `message`. Nothing is silently dropped from the query.
+          description: >
+            Two shapes. A body that is not a JSON object returns `error`
+            `Invalid request body` and a `message`. A node with an unsupported
+            field or value (unknown key, non-numeric `id` or `date`, non-scalar
+            term, empty or non-array `and`/`or`, empty nested node) returns
+            `error` `UNSUPPORTED_SEARCH_FIELD`, the offending `field` and a
+            `message`. Nothing is silently dropped from the query.
           content:
             application/json:
               schema:
@@ -10110,8 +10116,12 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum:
+                      - Invalid request body
+                      - UNSUPPORTED_SEARCH_FIELD
                   field:
                     type: string
+                    description: Only with `UNSUPPORTED_SEARCH_FIELD`.
                   message:
                     type: string
 

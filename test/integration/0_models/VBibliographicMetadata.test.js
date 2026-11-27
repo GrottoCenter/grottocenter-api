@@ -47,7 +47,9 @@ describe('VBibliographicMetadata', () => {
           doc.dcRelations.forEach((rel) => {
             const parentId = parseInt(rel.split(':').pop(), 10);
             if (byId[parentId]) {
-              byId[parentId].children.should.containEql(doc.id);
+              byId[parentId].children
+                .map((c) => c.id)
+                .should.containEql(doc.id);
             }
           });
         }
