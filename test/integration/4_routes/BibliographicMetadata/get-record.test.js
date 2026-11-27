@@ -127,7 +127,7 @@ describe('Bibliographic Metadata Get Record Controller', () => {
         );
         res.body.should.have.property('children');
         res.body.children.should.be.an.Array();
-        res.body.children.should.containEql(4);
+        res.body.children.map((c) => c.id).should.containEql(4);
 
         return done();
       });
@@ -152,7 +152,7 @@ describe('Bibliographic Metadata Get Record Controller', () => {
         res.body.listSets.should.containEql('grottocenter:collection');
         res.body.should.have.property('metadataStatus', 'registered');
         res.body.children.should.be.an.Array();
-        res.body.children.should.containEql(8);
+        res.body.children.map((c) => c.id).should.containEql(8);
 
         return done();
       });
@@ -176,8 +176,8 @@ describe('Bibliographic Metadata Get Record Controller', () => {
         res.body.should.have.property('dcTypeGrottocenter', 'collection');
         res.body.listSets.should.containEql('grottocenter:collection');
         res.body.children.should.be.an.Array();
-        res.body.children.should.containEql(3);
-        res.body.children.should.containEql(14);
+        res.body.children.map((c) => c.id).should.containEql(3);
+        res.body.children.map((c) => c.id).should.containEql(14);
 
         return done();
       });
@@ -356,7 +356,7 @@ describe('Bibliographic Metadata Get Record Controller', () => {
         res.body.should.have.property('dcTypeDcmi', 'dataset');
         res.body.listSets.should.containEql('grottocenter:dataset');
         res.body.children.should.be.an.Array();
-        res.body.children.should.containEql(12);
+        res.body.children.map((c) => c.id).should.containEql(12);
 
         return done();
       });

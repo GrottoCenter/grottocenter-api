@@ -421,7 +421,7 @@ describe('Bibliographic Metadata Get Records Controller', () => {
           'interactive_resource'
         );
         record3.children.should.be.an.Array();
-        record3.children.should.containEql(4);
+        record3.children.map((c) => c.id).should.containEql(4);
 
         return done();
       });

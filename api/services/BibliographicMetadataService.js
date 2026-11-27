@@ -330,8 +330,12 @@ module.exports = {
     try {
       return await this.runSearch(query, true);
     } catch (error) {
-      // If the unaccent extension is missing, fall back to a plain ILIKE
-      if (!(error.message && error.message.includes('unaccent'))) throw error;
+      // Validation errors quote the caller's input: never mistake them for a
+      // missing extension. Fall back to a plain ILIKE only for that.
+      if (error.code === 'UNSUPPORTED_SEARCH_FIELD') throw error;
+      if (!(error.message && error.message.includes('function unaccent('))) {
+        throw error;
+      }
       sails.log.warn(
         'unaccent extension not available, falling back to ILIKE search'
       );
@@ -446,20 +450,20 @@ module.exports = {
       return clause;
     };
 
-    const processChildren = (children, joiner, key) => {
-      if (children.length > 0) {
-        const subClauses = children.map((child) => processChild(child, key));
-        conditions.push(`(${subClauses.join(joiner)})`);
+    // `and` and `or` must hold at least one node: an empty disjunction is
+    // false, and ignoring a malformed one would widen the result set.
+    const processChildren = (key, joiner) => {
+      if (!(key in node)) return;
+      const children = node[key];
+      if (!Array.isArray(children) || children.length === 0) {
+        throw unsupportedSearchField(key);
       }
+      const subClauses = children.map((child) => processChild(child, key));
+      conditions.push(`(${subClauses.join(joiner)})`);
     };
 
-    if (node.and && Array.isArray(node.and)) {
-      processChildren(node.and, ' AND ', 'and');
-    }
-
-    if (node.or && Array.isArray(node.or)) {
-      processChildren(node.or, ' OR ', 'or');
-    }
+    processChildren('and', ' AND ');
+    processChildren('or', ' OR ');
 
     if ('not' in node) {
       // COALESCE keeps records whose field is NULL, which do not match
@@ -476,10 +480,16 @@ module.exports = {
       }
       const dbField = fieldMappings[searchField];
       const value = node[searchField];
+      // An object or array would be stringified into a meaningless term
+      if (typeof value !== 'string' && typeof value !== 'number') {
+        throw unsupportedSearchField(searchField);
+      }
 
       switch (searchField) {
         case 'id': {
-          params.push(`${value}`);
+          const id = Number(value);
+          if (!Number.isInteger(id)) throw unsupportedSearchField('id');
+          params.push(id);
           conditions.push(`${dbField} = $${currentParamIndex}`);
           currentParamIndex += 1;
           break;
