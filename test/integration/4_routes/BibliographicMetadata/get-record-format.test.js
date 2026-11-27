@@ -41,6 +41,17 @@ describe('Bibliographic Metadata features', () => {
       should(res.body.message).containEql('unimarc');
     });
 
+    it('should accept the format whatever its case', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get(
+          `/api/v1/bibliographic-metadata/${testDocumentId}/format/MARC21-IT`
+        )
+        .set('Accept', 'application/json')
+        .expect(200);
+      should(res.body).have.property('format', 'marc21');
+      should(res.body).have.property('country', 'it');
+    });
+
     it('should validate the format before looking up the documents', async () => {
       const res = await supertest(sails.hooks.http.app)
         .get('/api/v1/bibliographic-metadata/999999,999998/format/Default')

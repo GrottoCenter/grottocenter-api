@@ -15,13 +15,13 @@ module.exports = async (req, res) => {
     });
   }
 
-  // Transform by the format selected: <marc>[-<country>]
-  const [marcFormat, country] = format.split('-');
+  // Transform by the format selected: <marc>[-<country>], case-insensitive
+  const [marcFormat, country] = format.toLowerCase().split('-');
 
   const supportedFormats = MarcConvertorService.getSupportedFormats();
   if (!supportedFormats.includes(marcFormat)) {
     return res.badRequest({
-      message: `Unsupported format: ${marcFormat}. Supported formats: ${supportedFormats.join(
+      message: `Unsupported format: ${format.split('-')[0]}. Supported formats: ${supportedFormats.join(
         ', '
       )}`,
     });
