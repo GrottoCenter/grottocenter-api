@@ -153,7 +153,69 @@ function getTypeWithListSets(listSets) {
   return listSets[1].toLowerCase().replace('grottocenter:', '');
 }
 
+/**
+ * Format a date as YYYYMMDD (local time, as the database timestamps are read)
+ * @param {string|Date|null} date
+ * @returns {string|null} - null when the date is missing or invalid
+ */
+function formatDateYYYYMMDD(date) {
+  if (!date) return null;
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(
+    d.getDate()
+  ).padStart(2, '0')}`;
+}
+
+/**
+ * Trim a text value and drop it when nothing is left
+ * @param {*} value
+ * @returns {string|null}
+ */
+function cleanText(value) {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text === '' ? null : text;
+}
+
+/**
+ * Keep only real ISO 639-2 language codes: `000` is the "undefined" row of
+ * t_language, not a code a library system understands.
+ * @param {Array<string>} languages
+ * @returns {Array<string>}
+ */
+function cleanLanguages(languages) {
+  if (!Array.isArray(languages)) return [];
+  const codes = languages
+    .map((l) => cleanText(l))
+    .filter((l) => l && /^[a-zA-Z]{3}$/.test(l))
+    .map((l) => l.toLowerCase());
+  return [...new Set(codes)];
+}
+
+/**
+ * Split a name written "SURNAME Forename" into its two parts.
+ * Leading upper-case words are the surname, the rest is the forename.
+ * @param {string} name
+ * @returns {{surname: string, forename: string}|null} null when the name does not follow that pattern
+ */
+function splitName(name) {
+  const tokens = (cleanText(name) || '').split(/\s+/);
+  const isSurnameToken = (t) => /\p{L}/u.test(t) && t === t.toUpperCase();
+  let i = 0;
+  while (i < tokens.length && isSurnameToken(tokens[i])) i += 1;
+  if (i === 0 || i === tokens.length) return null;
+  return {
+    surname: tokens.slice(0, i).join(' '),
+    forename: tokens.slice(i).join(' '),
+  };
+}
+
 module.exports = {
+  formatDateYYYYMMDD,
+  cleanText,
+  cleanLanguages,
+  splitName,
   extractIdentifier,
   formatDateForMarc,
   getFileFormat,

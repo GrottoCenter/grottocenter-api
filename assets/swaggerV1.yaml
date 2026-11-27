@@ -12616,6 +12616,12 @@ components:
           type: string
           description: 'Public Grottocenter page of the document'
           example: 'https://grottocenter.org/ui/documents/25022'
+        creationDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: 'Date the record was entered in Grottocenter (written in UNIMARC 100 and MARC21 008)'
+          example: '2012-03-14T09:30:00.000Z'
         dcTypeGrottocenter:
           type: string
           description: 'Grottocenter-specific document type'
