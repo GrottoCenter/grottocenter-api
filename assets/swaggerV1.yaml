@@ -11961,6 +11961,8 @@ components:
           $ref: '#/components/schemas/BibliographicSearchNode'
         id:
           type: integer
+          minimum: 1
+          maximum: 2147483647
           description: Exact document id.
         title:
           type: string
@@ -11970,7 +11972,8 @@ components:
           description: Substring of the authors.
         date:
           type: string
-          description: Publication year, for example `1990`.
+          pattern: '^\d{1,4}$'
+          description: Publication year from 1 to 9999, for example `1990`. A range such as `1990-1995` or any other text is rejected.
         publisher:
           type: string
           description: Substring of the publisher.

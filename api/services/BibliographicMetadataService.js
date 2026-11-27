@@ -520,11 +520,12 @@ module.exports = {
           break;
         }
         case 'date': {
-          const year = parseInt(value, 10);
-          // Postgres rejects a date outside years 1 to 9999
-          if (Number.isNaN(year) || year < 1 || year > 9999) {
-            throw unsupportedSearchField('date');
-          }
+          // Only a plain year of 1 to 4 digits: parseInt would silently read
+          // '1990-1995' or '2020abc' as a year. Postgres rejects year 0.
+          const raw = String(value).trim();
+          if (!/^\d{1,4}$/.test(raw)) throw unsupportedSearchField('date');
+          const year = Number(raw);
+          if (year < 1) throw unsupportedSearchField('date');
           params.push(`${year}-01-01`, `${year}-12-31`);
           conditions.push(
             `${dbField} BETWEEN $${currentParamIndex}::date` +
