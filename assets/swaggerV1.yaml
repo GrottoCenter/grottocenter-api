@@ -3721,11 +3721,14 @@ paths:
             example: '25022'
         - name: format
           in: path
-          description: 'MARC format specification with optional country code'
+          description: >
+            MARC format, optionally followed by a country code: `<format>[-<country>]`.
+            Supported formats: `marc21`, `unimarc`. Supported countries: `it`; any other
+            country falls back to the default conversion. Case-insensitive.
           required: true
           schema:
             type: string
-            example: 'marc21-US'
+            example: 'marc21-it'
       responses:
         '200':
           description: Successful operation
@@ -3740,15 +3743,25 @@ paths:
                   format:
                     type: string
                     description: 'Applied MARC format'
-                    example: 'Unimarc'
+                    example: 'unimarc'
                   country:
                     type: string
                     description: 'Applied country code'
-                    example: 'IT'
+                    example: 'it'
         '400':
           description: 'ID and format parameters are required, or the MARC format is not supported (supported formats: marc21, unimarc). The format is checked before any record is fetched.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Unsupported format: Default. Supported formats: marc21, unimarc'
         '404':
           description: 'Record not found'
+        '500':
+          description: 'Internal server error'
 
   '/bibliographic-metadata/records':
     get:
