@@ -512,6 +512,24 @@ module.exports = {
           currentParamIndex += 1;
           break;
         }
+        case 'any': {
+          // One parameter shared by every field: the term matches a record
+          // when it is found in any of them
+          params.push(`%${value}%`);
+          const p = `$${currentParamIndex}`;
+          conditions.push(
+            `(${[
+              useUnaccent
+                ? `unaccent(dc_title) ILIKE unaccent(${p})`
+                : `dc_title ILIKE ${p}`,
+              `dc_creators::text ILIKE ${p}`,
+              `dc_publisher ILIKE ${p}`,
+              `dc_identifiers::text ILIKE ${p}`,
+            ].join(' OR ')})`
+          );
+          currentParamIndex += 1;
+          break;
+        }
         case 'author':
         case 'publisher': {
           params.push(`%${value}%`);
@@ -609,6 +627,8 @@ module.exports = {
       issn: 'dc_identifiers::text',
       isbn: 'dc_identifiers::text',
       bibliographiclevel: 'list_sets::text[]',
+      // Not a column: matches several of the fields above (Bib-1 use 1016)
+      any: 'any',
     };
   },
 
