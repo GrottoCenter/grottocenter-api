@@ -649,7 +649,7 @@ describe('BibliographicMetadataService', () => {
     });
 
     ['5', '50', '999', 5].forEach((date) => {
-      it(`should read the short year ${date} as that year, not a later one`, async () => {
+      it(`should read the short year ${JSON.stringify(date)} as that year, not a later one`, async () => {
         const { rows, total } = await service.searchMetadata({ date });
         rows.should.eql([]);
         total.should.equal(0);
