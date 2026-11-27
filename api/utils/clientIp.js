@@ -58,4 +58,33 @@ const rateLimitKey = (raw) => {
   return ip ? ipKeyGenerator(ip) : 'unknown';
 };
 
-module.exports = { normalizeClientIp, rateLimitKey };
+const V4_MAPPED_HEX = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/;
+
+/**
+ * Canonical form of a client IP, for comparing addresses.
+ *
+ * Builds on `normalizeClientIp` (port stripped, lower-cased, dotted
+ * IPv4-mapped IPv6 turned into IPv4), then writes IPv6 in its shortest form so
+ * equivalent spellings compare equal (`2001:0db8:0:0::1` and `2001:db8::1`),
+ * and turns an IPv4-mapped address in hex form (`::ffff:a00:5`) into IPv4.
+ * Unparsable input is returned as normalized.
+ *
+ * @param {*} raw - typically `req.ip` or a configured address
+ * @returns {string|undefined}
+ */
+const canonicalIp = (raw) => {
+  const ip = normalizeClientIp(raw);
+  if (!ip || !ip.includes(':')) return ip;
+  let canonical;
+  try {
+    canonical = new URL(`http://[${ip}]`).hostname.slice(1, -1);
+  } catch (e) {
+    return ip;
+  }
+  const mapped = canonical.match(V4_MAPPED_HEX);
+  if (!mapped) return canonical;
+  const [high, low] = mapped.slice(1).map((h) => parseInt(h, 16));
+  return [high >> 8, high & 255, low >> 8, low & 255].join('.'); // eslint-disable-line no-bitwise
+};
+
+module.exports = { normalizeClientIp, canonicalIp, rateLimitKey };
