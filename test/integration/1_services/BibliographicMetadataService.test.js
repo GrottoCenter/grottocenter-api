@@ -720,7 +720,7 @@ describe('BibliographicMetadataService', () => {
           [
             ID,
             `oai:grottocenter.org:${ID}`,
-            'Gouffre de la Pierre-Saint-Martin',
+            "Gouffre de l'Église",
             ['Geneviève Éloi'],
             'Spéléo-Club',
             ['isbn:978-2-0000-0000-0'],
@@ -736,7 +736,7 @@ describe('BibliographicMetadataService', () => {
       });
 
       [
-        ['title', 'gouffre', false],
+        ['title', 'eglise', true],
         ['author', 'genevieve eloi', true],
         ['publisher', 'speleo-club', true],
         ['ISBN', '978-2-0000-0000-0', false],

@@ -363,6 +363,13 @@ CREATE INDEX IF NOT EXISTS idx_t_comment_entrance ON t_comment(id_entrance);
 CREATE INDEX IF NOT EXISTS idx_t_comment_cave ON t_comment(id_cave);
 `;
 
+// The accent-insensitive searches call unaccent(). Production and the local
+// containers get the extension from sql/0_initDatabase.sql; the CI database is
+// a bare postgis/postgis image, which ships it but does not create it.
+const CREATE_UNACCENT_EXTENSION = `
+CREATE EXTENSION IF NOT EXISTS unaccent;
+`;
+
 // Create t_bibliographic_metadata table (no Waterline model exists for this
 // table, so migrate:drop does not create it). Required for testing permanent
 // document deletion which must clean up bibliographic metadata FK references.
@@ -1183,6 +1190,7 @@ const DETACH_ENTRANCE_HISTO_TRIGGER =
 
 module.exports = {
   forTestDatabase,
+  CREATE_UNACCENT_EXTENSION,
   UPDATE_SEQUENCES_QUERY,
   ALTER_MASSIF_COLUMN_GEOG_POLYGON,
   ALTER_ENTRANCE_COLUMN_POINT_GEOM,
