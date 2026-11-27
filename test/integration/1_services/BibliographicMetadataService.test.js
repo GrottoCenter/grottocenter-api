@@ -1122,12 +1122,38 @@ describe('BibliographicMetadataService', () => {
       results.length.should.equal(0);
     });
 
-    it('should not fail on a negated bibliographiclevel', async () => {
-      const { rows } = await service.searchMetadata({
+    it('should exclude the negated bibliographiclevel from the results', async () => {
+      const all = await service.searchMetadata({ title: 'Document' });
+      const { rows, total } = await service.searchMetadata({
         title: 'Document',
         not: { bibliographiclevel: 'a' },
       });
-      rows.should.be.an.Array();
+      // id 12 is the only article
+      rows.map((r) => r.id).should.not.containEql(12);
+      total.should.equal(all.total - 1);
+    });
+
+    it('should match multi-word document types with bibliographiclevel m', async () => {
+      const { rows } = await service.searchMetadata({
+        title: 'Document',
+        bibliographiclevel: 'm',
+      });
+      const ids = rows.map((r) => r.id);
+      // interactive_resource fixtures
+      [3, 5, 10, 16, 19].forEach((id) => ids.should.containEql(id));
+      // a collection (7) and an article (12) are not monographs
+      ids.should.not.containEql(7);
+      ids.should.not.containEql(12);
+    });
+
+    it('should exclude multi-word document types when m is negated', async () => {
+      const { rows } = await service.searchMetadata({
+        title: 'Document',
+        not: { bibliographiclevel: 'm' },
+      });
+      const ids = rows.map((r) => r.id);
+      [3, 5, 10, 16, 19].forEach((id) => ids.should.not.containEql(id));
+      ids.should.containEql(7);
     });
 
     it('should handle search with numeric title', async () => {
