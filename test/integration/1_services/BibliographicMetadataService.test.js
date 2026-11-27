@@ -1454,6 +1454,13 @@ describe('BibliographicMetadataService', () => {
       sql.should.containEql('COUNT(*) OVER()');
     });
 
+    it('should select only the columns formatSearchResult reads', () => {
+      const { sql } = service.buildSearchSQL({});
+      sql.should.not.containEql('SELECT *');
+      sql.should.not.match(/\bchildren\b|\bparents\b/);
+      sql.should.containEql('dc_title');
+    });
+
     it('should fall back to the default ceiling on an invalid config', () => {
       const original = sails.config.custom.biblioSearchMaxRows;
       try {
