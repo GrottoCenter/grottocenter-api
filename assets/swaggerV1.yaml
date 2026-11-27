@@ -10098,7 +10098,7 @@ paths:
                   description: Matches the EAN among the record identifiers.
                 bibliographiclevel:
                   type: string
-                  enum: [s, a, m, c]
+                  example: m
                   description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches documents typed `other`.
                 and:
                   type: array

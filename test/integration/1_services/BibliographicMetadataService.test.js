@@ -1122,6 +1122,14 @@ describe('BibliographicMetadataService', () => {
       results.length.should.equal(0);
     });
 
+    it('should not fail on a negated bibliographiclevel', async () => {
+      const { rows } = await service.searchMetadata({
+        title: 'Document',
+        not: { bibliographiclevel: 'a' },
+      });
+      rows.should.be.an.Array();
+    });
+
     it('should handle search with numeric title', async () => {
       const { rows: results } = await service.searchMetadata({
         title: '123',
@@ -1563,6 +1571,16 @@ describe('BibliographicMetadataService', () => {
       clause.should.be.a.String();
       params[0].should.be.an.Array();
       params[0].length.should.be.greaterThan(5);
+    });
+
+    it('should negate a bibliographiclevel condition with valid SQL', () => {
+      const { clause } = service.processQueryNode(
+        { not: { bibliographiclevel: 'a' } },
+        [],
+        1
+      );
+      clause.should.containEql('NOT (list_sets::text[] && $1::text[])');
+      clause.should.not.match(/NOTlist_sets/);
     });
 
     it('should process AND logic', () => {
