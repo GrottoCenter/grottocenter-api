@@ -632,6 +632,69 @@ describe('BibliographicMetadataService', () => {
       results.length.should.equal(0);
     });
 
+    it('should search by author only', async () => {
+      const { rows, total } = await service.searchMetadata({
+        author: 'Author 2A',
+      });
+      rows.map((r) => r.id).should.eql([2]);
+      total.should.equal(1);
+    });
+
+    it('should search by year only', async () => {
+      const { rows } = await service.searchMetadata({ date: '2023' });
+      rows.length.should.be.greaterThan(0);
+      rows.forEach((r) => r.publicationYear.should.equal(2023));
+      rows.map((r) => r.id).should.containEql(2);
+    });
+
+    it('should search with @or across fields', async () => {
+      const { rows } = await service.searchMetadata({
+        or: [{ title: 'Document 4 on' }, { author: 'Author 2A' }],
+      });
+      rows
+        .map((r) => r.id)
+        .sort((a, b) => a - b)
+        .should.eql([2, 4]);
+    });
+
+    it('should search with @and across fields', async () => {
+      const { rows } = await service.searchMetadata({
+        and: [{ title: 'Document' }, { author: 'Author 2A' }],
+      });
+      rows.map((r) => r.id).should.eql([2]);
+    });
+
+    it('should exclude records matching a @not', async () => {
+      const all = await service.searchMetadata({ title: 'Document' });
+      const { rows } = await service.searchMetadata({
+        and: [{ title: 'Document' }, { not: { author: 'Author 2A' } }],
+      });
+      all.rows.map((r) => r.id).should.containEql(2);
+      rows.map((r) => r.id).should.not.containEql(2);
+      rows.length.should.equal(all.rows.length - 1);
+    });
+
+    it('should not use a title under @not as a positive filter', async () => {
+      const { rows } = await service.searchMetadata({
+        and: [{ author: 'Author 2A' }, { not: { title: 'Document 99' } }],
+      });
+      rows.map((r) => r.id).should.eql([2]);
+    });
+
+    it('should not return the children of the matching records', async () => {
+      const { rows } = await service.searchMetadata({
+        title: 'Document 7 on',
+      });
+      rows.forEach((r) => r.title.should.containEql('Document 7 on'));
+    });
+
+    it('should search by bibliographic level with underscore sets', async () => {
+      const { rows } = await service.searchMetadata({
+        bibliographiclevel: 'm',
+      });
+      rows.map((r) => r.id).should.containEql(3); // interactive_resource
+    });
+
     it('should search with partial title match', async () => {
       const { rows: results } = await service.searchMetadata({
         title: 'sound',
@@ -1482,7 +1545,7 @@ describe('BibliographicMetadataService', () => {
     });
 
     it('should order rows by id and use the configured ceiling', () => {
-      const { sql } = service.buildSearchSQL({}, false, [], 42);
+      const { sql } = service.buildSearchSQL({}, false, 42);
       sql.should.containEql('ORDER BY id_document');
       sql.should.containEql('LIMIT 42');
       sql.should.containEql('COUNT(*) OVER()');
@@ -1507,13 +1570,23 @@ describe('BibliographicMetadataService', () => {
       }
     });
 
-    it('should build SQL with IDs filter', () => {
-      const { sql, params } = service.buildSearchSQL({}, false, [1, 2, 3]);
-      sql.should.be.a.String();
-      sql.should.containEql('id_document = ANY');
-      params.should.be.an.Array();
-      params.length.should.equal(1);
-      params[0].should.deepEqual([1, 2, 3]);
+    it('should build one clause from the whole tree without a title', () => {
+      const { sql, params, empty } = service.buildSearchSQL({
+        or: [{ author: 'martel' }, { date: '1990' }],
+      });
+      empty.should.equal(false);
+      sql.should.containEql('(dc_creators::text ILIKE $1 OR dc_date BETWEEN');
+      params.should.eql(['%martel%', '1990-01-01', '1990-12-31']);
+    });
+
+    it('should flag a query with no usable criterion as empty', () => {
+      service.buildSearchSQL({}).empty.should.equal(true);
+    });
+
+    it('should use the underscore set names for the type sets', () => {
+      const { params } = service.buildSearchSQL({ bibliographiclevel: 'm' });
+      params[0].should.containEql('grottocenter:topographic_drawing');
+      params[0].should.not.containEql('grottocenter:topographic drawing');
     });
   });
 
@@ -1605,7 +1678,9 @@ describe('BibliographicMetadataService', () => {
         [],
         1
       );
-      clause.should.containEql('NOT (list_sets::text[] && $1::text[])');
+      clause.should.containEql(
+        'NOT COALESCE(list_sets::text[] && $1::text[], false)'
+      );
       clause.should.not.match(/NOTlist_sets/);
     });
 
@@ -1637,11 +1712,10 @@ describe('BibliographicMetadataService', () => {
       const { clause } = service.processQueryNode(
         { not: { id: 1 } },
         params,
-        1,
-        false
+        1
       );
       clause.should.be.a.String();
-      clause.should.containEql('!=');
+      clause.should.containEql('NOT COALESCE(id_document = $1, false)');
     });
   });
 

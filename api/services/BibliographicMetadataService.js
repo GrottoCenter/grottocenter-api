@@ -24,41 +24,6 @@ const METADATA_STATUS = {
 const DEFAULT_SEARCH_MAX_ROWS = 10000;
 
 /**
- * Recursively search in tree structure for a specific field
- * the tree structure is expected to be an object with 'and', 'or', or 'not' properties
- * if the field is found, the function returns directly its value
- * @param {Object} node – the current node in the tree structure
- * @param {string} fieldName – ex. 'title'
- * @returns {any|null} – the value of the first field corresponding to fieldName if found, otherwise null
- */
-function findFieldInQuery(node, fieldName) {
-  if (!node || typeof node !== 'object') return null;
-  // simple case : direct field access
-  if (node[fieldName] !== undefined) {
-    return node[fieldName];
-  }
-  // and logic
-  if (Array.isArray(node.and)) {
-    for (const child of node.and) {
-      const v = findFieldInQuery(child, fieldName);
-      if (v != null) return v;
-    }
-  }
-  // or logic
-  if (Array.isArray(node.or)) {
-    for (const child of node.or) {
-      const v = findFieldInQuery(child, fieldName);
-      if (v != null) return v;
-    }
-  }
-  // not logic
-  if (node.not) {
-    return findFieldInQuery(node.not, fieldName);
-  }
-  return null;
-}
-
-/**
  * Builds criteria for filtering bibliographic metadata records using OAI-PMH parameters.
  *
  * @param {Object} parameters - OAI parameters (from, until, set)
@@ -347,66 +312,37 @@ module.exports = {
    * `total` is the real number of matching records and can exceed `rows.length`.
    */
   async searchMetadata(query) {
-    const titleFilter = findFieldInQuery(query, 'title');
-
-    let matchingIds = [];
-
-    if (titleFilter) {
-      // search by title - use unaccent if available, otherwise fall back to simple ILIKE
-      const titleParam = `%${titleFilter}%`;
-      let sqlTitle;
-      try {
-        // Try with unaccent first
-        sqlTitle = `SELECT id_document AS id, children
-              FROM v_bibliographic_metadata
-              WHERE metadata_status = 'registered'
-              AND unaccent(dc_title) ILIKE unaccent($1)`;
-        const { rows } = await sails.sendNativeQuery(sqlTitle, [titleParam]);
-        const ids = rows.map((m) => m.id);
-        const childrenIds = rows.flatMap((m) => {
-          if (!m.children || !Array.isArray(m.children)) return [];
-          return m.children
-            .map((child) => {
-              if (typeof child === 'object' && child.id) {
-                return child.id;
-              }
-              return null;
-            })
-            .filter((id) => id !== null);
-        });
-
-        matchingIds = Array.from(new Set([...ids, ...childrenIds]));
-      } catch (error) {
-        // If unaccent function doesn't exist, fall back to simple ILIKE
-        if (error.message && error.message.includes('unaccent')) {
-          sails.log.warn(
-            'unaccent extension not available, falling back to ILIKE search'
-          );
-          sqlTitle = `SELECT id_document AS id, children
-                FROM v_bibliographic_metadata
-                WHERE metadata_status = 'registered'
-                AND dc_title ILIKE $1`;
-          const { rows } = await sails.sendNativeQuery(sqlTitle, [titleParam]);
-          const ids = rows.map((m) => m.id);
-          const children = rows.flatMap((m) => m.children || []);
-          matchingIds = Array.from(new Set([...ids, ...children]));
-        } else {
-          throw error;
-        }
-      }
+    try {
+      return await this.runSearch(query, true);
+    } catch (error) {
+      // If the unaccent extension is missing, fall back to a plain ILIKE
+      if (!(error.message && error.message.includes('unaccent'))) throw error;
+      sails.log.warn(
+        'unaccent extension not available, falling back to ILIKE search'
+      );
+      return this.runSearch(query, false);
     }
+  },
 
-    if (matchingIds.length > 0) {
-      const { sql, params } = this.buildSearchSQL(query, false, matchingIds);
-
-      const { rows } = await sails.sendNativeQuery(sql, params);
-      return {
-        rows: rows.map((r) => this.formatSearchResult(r)),
-        total: rows.length > 0 ? Number(rows[0].total_count) : 0,
-      };
-    }
-
-    return { rows: [], total: 0 };
+  /**
+   * Run the search built from the whole query tree, with no pre-filter.
+   * @param {Object} query - Search query tree
+   * @param {boolean} useUnaccent - Match titles ignoring accents
+   * @returns {Promise<{rows: Object[], total: number}>}
+   */
+  async runSearch(query, useUnaccent) {
+    const { sql, params, empty } = this.buildSearchSQL(
+      query,
+      false,
+      this.getSearchMaxRows(),
+      useUnaccent
+    );
+    if (empty) return { rows: [], total: 0 };
+    const { rows } = await sails.sendNativeQuery(sql, params);
+    return {
+      rows: rows.map((r) => this.formatSearchResult(r)),
+      total: rows.length > 0 ? Number(rows[0].total_count) : 0,
+    };
   },
 
   /**
@@ -425,66 +361,57 @@ module.exports = {
    * Build SQL query from Z39.50 query format
    * @param {Object} query - Query object
    * @param {boolean} includeDeleted - Include deleted records
-   * @returns {Object} SQL query and parameters
+   * @param {number} maxRows - Ceiling on the rows returned
+   * @param {boolean} useUnaccent - Match titles ignoring accents
+   * @returns {Object} SQL query and parameters; `empty` is true when the query
+   * holds no usable criterion, in which case nothing must be run
    */
   buildSearchSQL(
     query,
     includeDeleted = false,
-    ids = [],
-    maxRows = this.getSearchMaxRows()
+    maxRows = this.getSearchMaxRows(),
+    useUnaccent = true
   ) {
     const baseWhere = includeDeleted
       ? "metadata_status = 'deleted'"
       : "metadata_status = 'registered'";
-    const whereClauses = [baseWhere];
     const params = [];
-    let paramIndex = 1;
 
-    if (Array.isArray(ids) && ids.length > 0) {
-      whereClauses.push(`id_document = ANY($${paramIndex}::int[])`);
-      params.push(ids);
-      paramIndex += 1;
-    }
-
-    if (query) {
-      const { clause } = this.processQueryNode(query, params, paramIndex);
-      if (clause) {
-        whereClauses.push(clause);
-      }
-    }
+    const { clause } = query
+      ? this.processQueryNode(query, params, 1, useUnaccent)
+      : { clause: '' };
 
     const sql = `
         SELECT id_document, dc_title, dc_publisher, dc_creators, dc_date,
                COUNT(*) OVER() AS total_count
         FROM v_bibliographic_metadata
-        WHERE ${whereClauses.join(' AND ')}
+        WHERE ${baseWhere}${clause ? ` AND ${clause}` : ''}
         ORDER BY id_document
         LIMIT ${Number(maxRows)}`;
 
-    return { sql, params };
+    return { sql, params, empty: !clause };
   },
 
   /**
-   * Process query node recursively to build SQL
-   * @param {Object} node - Query node
+   * Process query node recursively to build one SQL clause for the whole tree
+   * @param {Object} node - Query node (`and`, `or`, `not` or field keys)
    * @param {Array} params - Parameters array
    * @param {number} paramIndex - Current parameter index
-   * @param {boolean} isNot - Whether this is a NOT condition
-   * @returns {Object} SQL clause and parameters
+   * @param {boolean} useUnaccent - Match titles ignoring accents
+   * @returns {Object} SQL clause and next parameter index
    */
-  processQueryNode(node, params = [], paramIndex = 1, isNot = false) {
+  processQueryNode(node, params = [], paramIndex = 1, useUnaccent = true) {
     const conditions = [];
     let currentParamIndex = paramIndex;
 
-    // process logical operator
-    if (node.and && Array.isArray(node.and)) {
+    const processChildren = (children, joiner) => {
       const subClauses = [];
-      node.and.forEach((condition) => {
+      children.forEach((condition) => {
         const { clause, nextParamIndex } = this.processQueryNode(
           condition,
           params,
           currentParamIndex,
-          isNot
+          useUnaccent
         );
         if (clause) {
           subClauses.push(clause);
@@ -492,27 +419,16 @@ module.exports = {
         }
       });
       if (subClauses.length > 0) {
-        conditions.push(`(${subClauses.join(' AND ')})`);
+        conditions.push(`(${subClauses.join(joiner)})`);
       }
+    };
+
+    if (node.and && Array.isArray(node.and)) {
+      processChildren(node.and, ' AND ');
     }
 
     if (node.or && Array.isArray(node.or)) {
-      const subClauses = [];
-      node.or.forEach((condition) => {
-        const { clause, nextParamIndex } = this.processQueryNode(
-          condition,
-          params,
-          currentParamIndex,
-          isNot
-        );
-        if (clause) {
-          subClauses.push(clause);
-          currentParamIndex = nextParamIndex;
-        }
-      });
-      if (subClauses.length > 0) {
-        conditions.push(`(${subClauses.join(' OR ')})`);
-      }
+      processChildren(node.or, ' OR ');
     }
 
     if (node.not) {
@@ -520,121 +436,106 @@ module.exports = {
         node.not,
         params,
         currentParamIndex,
-        !isNot
+        useUnaccent
       );
       if (clause) {
-        conditions.push(clause);
+        // COALESCE keeps records whose field is NULL, which do not match
+        conditions.push(`NOT COALESCE(${clause}, false)`);
         currentParamIndex = nextParamIndex;
       }
     }
 
-    // process the search field
+    // process the search fields
     const fieldMappings = this.getFieldMappings();
     Object.keys(fieldMappings).forEach((searchField) => {
-      if (node[searchField]) {
-        const dbField = fieldMappings[searchField];
-        const value = node[searchField];
+      if (!node[searchField]) return;
+      const dbField = fieldMappings[searchField];
+      const value = node[searchField];
 
-        switch (searchField) {
-          case 'id': {
-            params.push(`${value}`);
-            const titleOperator = isNot ? '!=' : '=';
-            conditions.push(
-              `${dbField} ${titleOperator} $${currentParamIndex}`
-            );
-            currentParamIndex += 1;
-            break;
-          }
-          case 'author': {
-            params.push(`%${value}%`);
-            const authorOperator = isNot ? 'NOT ILIKE' : 'ILIKE';
-            conditions.push(
-              `${dbField} ${authorOperator} $${currentParamIndex}`
-            );
-            currentParamIndex += 1;
-            break;
-          }
-          case 'publisher': {
-            params.push(`%${value}%`);
-            const publisherOperator = isNot ? 'NOT ILIKE' : 'ILIKE';
-            conditions.push(
-              `${dbField} ${publisherOperator} $${currentParamIndex}`
-            );
-            currentParamIndex += 1;
-            break;
-          }
-          case 'date': {
-            const year = parseInt(value, 10);
-            if (!Number.isNaN(year)) {
-              const start = `${year}-01-01`;
-              const end = `${year}-12-31`;
-              params.push(start, end);
-              const dateOperator = isNot ? 'NOT BETWEEN' : 'BETWEEN';
-              conditions.push(
-                `${dbField} ${dateOperator} $${currentParamIndex}::date` +
-                  ` AND $${currentParamIndex + 1}::date`
-              );
-              currentParamIndex += 2;
-            }
-            break;
-          }
-          case 'ean':
-          case 'isbn':
-          case 'issn': {
-            params.push(`%${searchField}:${value}%`);
-            const identifierOperator = isNot ? 'NOT ILIKE' : 'ILIKE';
-            conditions.push(
-              `${dbField} ${identifierOperator} $${currentParamIndex}`
-            );
-            currentParamIndex += 1;
-            break;
-          }
-          case 'bibliographiclevel': {
-            let searchTypes = [];
-            switch (value) {
-              case 's':
-                searchTypes = ['grottocenter:collection'];
-                break;
-              case 'a':
-                searchTypes = ['grottocenter:article'];
-                break;
-              case 'm':
-                searchTypes = [
-                  'grottocenter:text',
-                  'grottocenter:book',
-                  'grottocenter:report',
-                  'grottocenter:map',
-                  'grottocenter:topographic_drawing',
-                  'grottocenter:topographic_data',
-                  'grottocenter:moving_image',
-                  'grottocenter:sound',
-                  'grottocenter:image',
-                  'grottocenter:interactive_resource',
-                  'grottocenter:dataset',
-                  'grottocenter:physical_object',
-                  'grottocenter:authorization_to_publish',
-                ];
-                break;
-              case 'c':
-                searchTypes = ['grottocenter:issue'];
-                break;
-              default:
-                searchTypes = ['grottocenter:other'];
-                break;
-            }
-            if (searchTypes.length > 0) {
-              params.push(searchTypes);
-              const levelNegation = isNot ? 'NOT ' : '';
-              conditions.push(
-                `${levelNegation}(${dbField} && $${currentParamIndex}::text[])`
-              );
-              currentParamIndex += 1;
-            }
-            break;
-          }
-          default:
-            break;
+      switch (searchField) {
+        case 'id': {
+          params.push(`${value}`);
+          conditions.push(`${dbField} = $${currentParamIndex}`);
+          currentParamIndex += 1;
+          break;
         }
+        case 'title': {
+          params.push(`%${value}%`);
+          conditions.push(
+            useUnaccent
+              ? `unaccent(${dbField}) ILIKE unaccent($${currentParamIndex})`
+              : `${dbField} ILIKE $${currentParamIndex}`
+          );
+          currentParamIndex += 1;
+          break;
+        }
+        case 'author':
+        case 'publisher': {
+          params.push(`%${value}%`);
+          conditions.push(`${dbField} ILIKE $${currentParamIndex}`);
+          currentParamIndex += 1;
+          break;
+        }
+        case 'date': {
+          const year = parseInt(value, 10);
+          if (!Number.isNaN(year)) {
+            params.push(`${year}-01-01`, `${year}-12-31`);
+            conditions.push(
+              `${dbField} BETWEEN $${currentParamIndex}::date` +
+                ` AND $${currentParamIndex + 1}::date`
+            );
+            currentParamIndex += 2;
+          }
+          break;
+        }
+        case 'ean':
+        case 'isbn':
+        case 'issn': {
+          params.push(`%${searchField}:${value}%`);
+          conditions.push(`${dbField} ILIKE $${currentParamIndex}`);
+          currentParamIndex += 1;
+          break;
+        }
+        case 'bibliographiclevel': {
+          let searchTypes = [];
+          switch (value) {
+            case 's':
+              searchTypes = ['grottocenter:collection'];
+              break;
+            case 'a':
+              searchTypes = ['grottocenter:article'];
+              break;
+            case 'm':
+              searchTypes = [
+                'grottocenter:text',
+                'grottocenter:book',
+                'grottocenter:report',
+                'grottocenter:map',
+                'grottocenter:topographic_drawing',
+                'grottocenter:topographic_data',
+                'grottocenter:moving_image',
+                'grottocenter:sound',
+                'grottocenter:image',
+                'grottocenter:interactive_resource',
+                'grottocenter:dataset',
+                'grottocenter:physical_object',
+                'grottocenter:authorization_to_publish',
+              ];
+              break;
+            case 'c':
+              searchTypes = ['grottocenter:issue'];
+              break;
+            default:
+              searchTypes = ['grottocenter:other'];
+              break;
+          }
+          params.push(searchTypes);
+          conditions.push(`${dbField} && $${currentParamIndex}::text[]`);
+          currentParamIndex += 1;
+          break;
+        }
+        default:
+          break;
       }
     });
 
