@@ -35,9 +35,9 @@ pg_cron cannot make HTTP calls (and Azure Flexible Server has no `pg_net`), so t
 
 | Job                      | Schedule (UTC)                 | Env var                   | Monitor period | Grace   |
 | ------------------------ | ------------------------------ | ------------------------- | -------------- | ------- |
-| `cron-heartbeat` (all 5) | every day at 05:30 (the check) | `HEARTBEAT_CRON_JOBS_URL` | 1 day          | 2 hours |
+| `cron-heartbeat` (all 6) | every day at 05:30 (the check) | `HEARTBEAT_CRON_JOBS_URL` | 1 day          | 2 hours |
 
-The jobs it covers are listed in `CRON_JOBS` (`api/utils/cronHeartbeat.js`): data quality view (daily 04:20), bot outbox trim (daily 04:30), massif, country and region info views (every 3 days, 04:40 / 04:45 / 04:50).
+The jobs it covers are listed in `CRON_JOBS` (`api/utils/cronHeartbeat.js`): bibliographic metadata view (daily 03:40), data quality view (daily 04:20), bot outbox trim (daily 04:30), massif, country and region info views (every 3 days, 04:40 / 04:45 / 04:50).
 
 - **Success ping:** every job's last finished run succeeded and is recent (12 hours for a daily job, so that yesterday's run is not taken for today's; 84 hours for an every-3-days job, so that a missed run is noticed up to a day late).
 - **`/fail` ping:** as soon as one job's last run failed, never ran, is too old, is not scheduled any more, or has been going for more than 3 hours. The monitor does not say which one: the API log does (`cron-heartbeat: "<job>" (fail): <reason>`, a warning).
@@ -45,7 +45,7 @@ The jobs it covers are listed in `CRON_JOBS` (`api/utils/cronHeartbeat.js`): dat
 - **The check itself failing** (database unreachable, function missing) throws and is retried every 10 minutes until about 07:20. If every attempt fails it pings nothing, so the monitor alerts when its grace runs out. That is deliberate: the check does not report itself.
 - **Names matter.** A job is matched on the name given to `cron.schedule_in_database`. A test fails when `sql/1_cron.sql` and `CRON_JOBS` differ, so a new or renamed cron job needs a `CRON_JOBS` entry.
 - **Where the history comes from.** pg_cron lives in the `postgres` database, so the job opens a short-lived second connection to it (same server and credentials as the API). `cron.job` and `cron.job_run_details` have row-level security (`username = CURRENT_USER`): a role only sees the jobs it owns, and the jobs belong to the admin role (`grottoce` in prod), not to `gc_app`. A grant on the `cron` schema is therefore not enough: `gc_app` calls `public.gc_cron_latest_runs()`, a `SECURITY DEFINER` function in `postgres` that returns four columns of each job's latest run (`sql/9_44_2026_11_26_cron_read_for_api.sql`). It must be created by the role that owns the jobs.
-- **History size.** pg_cron never trims `cron.job_run_details`. Five jobs add about 2,000 rows a year, which the function's query handles without an index.
+- **History size.** pg_cron never trims `cron.job_run_details`. Six jobs add about 2,200 rows a year, which the function's query handles without an index.
 
 ## Adding a scheduled job
 

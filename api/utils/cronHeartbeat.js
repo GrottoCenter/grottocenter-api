@@ -36,6 +36,10 @@ const CRON_JOBS = [
     maxAgeMs: 12 * HOUR_MS,
   },
   {
+    jobname: 'Refresh bibliographic metadata view daily',
+    maxAgeMs: 12 * HOUR_MS,
+  },
+  {
     jobname: 'Trim bot outbox daily',
     maxAgeMs: 12 * HOUR_MS,
   },
