@@ -604,15 +604,15 @@ module.exports = {
                   'grottocenter:book',
                   'grottocenter:report',
                   'grottocenter:map',
-                  'grottocenter:topographic drawing',
-                  'grottocenter:topographic data',
-                  'grottocenter:moving image',
+                  'grottocenter:topographic_drawing',
+                  'grottocenter:topographic_data',
+                  'grottocenter:moving_image',
                   'grottocenter:sound',
                   'grottocenter:image',
-                  'grottocenter:interactive resource',
+                  'grottocenter:interactive_resource',
                   'grottocenter:dataset',
-                  'grottocenter:physical object',
-                  'grottocenter:authorization to publish',
+                  'grottocenter:physical_object',
+                  'grottocenter:authorization_to_publish',
                 ];
                 break;
               case 'c':
