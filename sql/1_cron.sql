@@ -61,5 +61,18 @@ SELECT cron.schedule_in_database(
     'grottoce'
 );
 
+-- v_bibliographic_metadata backs the OAI-PMH and Z39.50 export. Before this job
+-- nothing refreshed it, so partners harvested a catalogue frozen at the last
+-- migration (#2061). Outside the 04:20-05:10 window and Azure's Saturday 03:00
+-- maintenance (about 11 min). Uses the unique index idx_v_biblio_id.
+SELECT cron.schedule_in_database(
+    'Refresh bibliographic metadata view daily',
+    '40 3 * * *', -- every day at 3h40
+    $$
+        REFRESH MATERIALIZED VIEW CONCURRENTLY v_bibliographic_metadata;
+    $$,
+    'grottoce'
+);
+
 -- To view all jobs: select * from cron.job;
 -- To remove a job: SELECT cron.unschedule('Refresh massif info view every 3 days');

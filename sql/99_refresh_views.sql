@@ -18,5 +18,5 @@ REFRESH MATERIALIZED VIEW v_region_info;
 -- refresh v_data_quality_compute_entrance
 REFRESH MATERIALIZED VIEW v_data_quality_compute_entrance;
 
--- refresh v_bibliographic_metadata
+-- refresh v_bibliographic_metadata (daily by pg_cron afterwards, see 1_cron.sql)
 REFRESH MATERIALIZED VIEW v_bibliographic_metadata;

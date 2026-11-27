@@ -12530,7 +12530,11 @@ components:
         lastUpdate:
           type: string
           format: date-time
-          description: 'Last modification timestamp'
+          description: >-
+            Last modification timestamp. Records are served from a materialized
+            view refreshed once a day at 03:40 UTC, so a new, edited or deleted
+            document can take up to about 24 hours to appear or to move this
+            timestamp.
         listSets:
           type: array
           items:
@@ -12636,7 +12640,11 @@ components:
         lastUpdate:
           type: string
           format: date-time
-          description: 'Last modification timestamp'
+          description: >-
+            Last modification timestamp. Records are served from a materialized
+            view refreshed once a day at 03:40 UTC, so a new, edited or deleted
+            document can take up to about 24 hours to appear or to move this
+            timestamp.
         listSets:
           type: array
           items:

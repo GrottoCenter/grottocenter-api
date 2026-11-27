@@ -106,6 +106,7 @@ describe('cronHeartbeat', () => {
         evaluateJobs(runs, NOW).map((r) => [r.jobname, r.outcome])
       );
       should(byName).eql({
+        'Refresh bibliographic metadata view daily': 'fail',
         'Refresh data quality view daily': 'ok',
         'Trim bot outbox daily': 'fail',
         'Refresh massif info view every 3 days': 'ok',
