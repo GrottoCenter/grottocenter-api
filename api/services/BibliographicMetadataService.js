@@ -23,6 +23,9 @@ const METADATA_STATUS = {
 // Default ceiling on the rows a search returns; override with BIBLIO_SEARCH_MAX_ROWS
 const DEFAULT_SEARCH_MAX_ROWS = 10000;
 
+// Largest value of a Postgres `integer` column such as `id_document`
+const MAX_INT4 = 2147483647;
+
 // Keys of a search node that combine other nodes instead of matching a field
 const LOGICAL_KEYS = ['and', 'or', 'not'];
 
@@ -473,22 +476,27 @@ module.exports = {
     // process the search fields
     Object.keys(fieldMappings).forEach((searchField) => {
       if (!(searchField in node)) return;
-      // An empty term matches nothing
-      if (!node[searchField]) {
-        conditions.push('false');
-        return;
-      }
       const dbField = fieldMappings[searchField];
       const value = node[searchField];
-      // An object or array would be stringified into a meaningless term
+      // null, a boolean, an object or an array would be stringified into a
+      // meaningless term
       if (typeof value !== 'string' && typeof value !== 'number') {
         throw unsupportedSearchField(searchField);
+      }
+      // An empty term matches nothing
+      if (value === '') {
+        conditions.push('false');
+        return;
       }
 
       switch (searchField) {
         case 'id': {
           const id = Number(value);
-          if (!Number.isInteger(id)) throw unsupportedSearchField('id');
+          // Bound to the range of the Postgres integer column, which rejects
+          // anything outside it
+          if (!Number.isInteger(id) || id < 1 || id > MAX_INT4) {
+            throw unsupportedSearchField('id');
+          }
           params.push(id);
           conditions.push(`${dbField} = $${currentParamIndex}`);
           currentParamIndex += 1;
@@ -513,7 +521,10 @@ module.exports = {
         }
         case 'date': {
           const year = parseInt(value, 10);
-          if (Number.isNaN(year)) throw unsupportedSearchField('date');
+          // Postgres rejects a date outside years 1 to 9999
+          if (Number.isNaN(year) || year < 1 || year > 9999) {
+            throw unsupportedSearchField('date');
+          }
           params.push(`${year}-01-01`, `${year}-12-31`);
           conditions.push(
             `${dbField} BETWEEN $${currentParamIndex}::date` +
