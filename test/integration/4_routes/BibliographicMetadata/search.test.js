@@ -49,6 +49,17 @@ describe('BibliographicMetadata search', () => {
       res.body.should.have.property('field', 'publication_year');
     });
 
+    it('should accept the any field and return matching records', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/bibliographic-metadata/search')
+        .send({ any: 'Document' })
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200);
+      res.body.data.length.should.be.greaterThan(0);
+      res.body.total.should.equal(res.body.data.length);
+    });
+
     it('should return a total larger than data.length when truncated', async () => {
       const original = sails.config.custom.biblioSearchMaxRows;
       sails.config.custom.biblioSearchMaxRows = 1;

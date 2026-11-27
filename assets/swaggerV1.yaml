@@ -11964,6 +11964,9 @@ components:
           minimum: 1
           maximum: 2147483647
           description: Exact document id.
+        any:
+          type: string
+          description: Substring searched in the title, authors, publisher and identifiers; a record matches when any of them contains it.
         title:
           type: string
           description: Substring of the title.

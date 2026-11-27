@@ -661,6 +661,48 @@ describe('BibliographicMetadataService', () => {
       params.should.eql(['0005-01-01', '0005-12-31']);
     });
 
+    it('should search the any field in the title', async () => {
+      const { rows } = await service.searchMetadata({ any: 'Document 4 on' });
+      rows.map((r) => r.id).should.containEql(4);
+    });
+
+    it('should search the any field in the author', async () => {
+      const { rows } = await service.searchMetadata({ any: 'Author 2A' });
+      rows.map((r) => r.id).should.eql([2]);
+    });
+
+    it('should return no record for an any term found nowhere', async () => {
+      const { rows, total } = await service.searchMetadata({
+        any: 'zzz-no-such-term',
+      });
+      rows.should.eql([]);
+      total.should.equal(0);
+    });
+
+    it('should combine the any field with other fields and @not', async () => {
+      const all = await service.searchMetadata({ any: 'Document' });
+      const { rows } = await service.searchMetadata({
+        and: [{ any: 'Document' }, { not: { any: 'Author 2A' } }],
+      });
+      all.rows.map((r) => r.id).should.containEql(2);
+      rows.map((r) => r.id).should.not.containEql(2);
+    });
+
+    it('should build the any clause with a single shared parameter', () => {
+      const params = [];
+      const { clause, nextParamIndex } = service.processQueryNode(
+        { any: 'cave' },
+        params,
+        1
+      );
+      params.should.eql(['%cave%']);
+      nextParamIndex.should.equal(2);
+      clause.should.containEql('dc_title');
+      clause.should.containEql('dc_creators::text');
+      clause.should.containEql('dc_publisher');
+      clause.should.containEql('dc_identifiers::text');
+    });
+
     it('should search with @or across fields', async () => {
       const { rows } = await service.searchMetadata({
         or: [{ title: 'Document 4 on' }, { author: 'Author 2A' }],
