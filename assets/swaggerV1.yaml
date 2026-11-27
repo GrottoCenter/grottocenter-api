@@ -10099,7 +10099,7 @@ paths:
                 bibliographiclevel:
                   type: string
                   example: m
-                  description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches documents typed `other`.
+                  description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches no document.
                 and:
                   type: array
                   description: Nodes that must all match. Each node accepts the same fields as this object.
