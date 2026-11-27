@@ -1,6 +1,10 @@
 const rateLimit = require('express-rate-limit');
 const RightService = require('../../api/services/RightService');
-const { normalizeClientIp, rateLimitKey } = require('../../api/utils/clientIp');
+const {
+  canonicalIp,
+  normalizeClientIp,
+  rateLimitKey,
+} = require('../../api/utils/clientIp');
 
 /**
  * Keys every limiter on the client IP with its source port stripped.
@@ -52,18 +56,9 @@ const MODERATOR_MAX = parseLimit(process.env.MODERATOR_RATE_LIMIT, 10000);
 // own, higher cap on the general bucket; the servers limit their own clients
 // (Z39.50: per-IP limits in z3950/lib/Z3950/Limits.pm) and the edge does the rest.
 // TRUSTED_SERVICE_IPS is a comma-separated list; unset or empty trusts nobody.
-// Addresses are compared in canonical form, so equivalent IPv6 spellings
-// (`2001:db8::1`, `2001:0db8:0:0::1`) match. Trusted requests get their own
-// bucket key, so IPv6 neighbours in the same /56 never share their counter.
-const canonicalIp = (raw) => {
-  const ip = normalizeClientIp(raw);
-  if (!ip || !ip.includes(':')) return ip;
-  try {
-    return new URL(`http://[${ip}]`).hostname.slice(1, -1);
-  } catch (e) {
-    return ip;
-  }
-};
+// Addresses are compared in canonical form (see canonicalIp), so equivalent IPv6
+// spellings match. Trusted requests get their own bucket key, so IPv6
+// neighbours in the same /56 never share their counter.
 const TRUSTED_SERVICE_IPS = new Set(
   (process.env.TRUSTED_SERVICE_IPS || '')
     .split(',')
