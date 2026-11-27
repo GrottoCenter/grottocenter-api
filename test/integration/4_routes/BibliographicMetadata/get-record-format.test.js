@@ -31,6 +31,24 @@ describe('Bibliographic Metadata features', () => {
         .end(done);
     });
 
+    it('should return 400 listing the supported formats for an unknown format', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get(`/api/v1/bibliographic-metadata/${testDocumentId}/format/Default`)
+        .set('Accept', 'application/json')
+        .expect(400);
+      should(res.body.message).containEql('Default');
+      should(res.body.message).containEql('marc21');
+      should(res.body.message).containEql('unimarc');
+    });
+
+    it('should validate the format before looking up the documents', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .get('/api/v1/bibliographic-metadata/999999,999998/format/Default')
+        .set('Accept', 'application/json')
+        .expect(400);
+      should(res.body.message).containEql('Unsupported format');
+    });
+
     it('should return not found for non-existent document', (done) => {
       supertest(sails.hooks.http.app)
         .get('/api/v1/bibliographic-metadata/999999/format/marc21')
