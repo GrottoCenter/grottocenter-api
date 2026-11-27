@@ -23,6 +23,21 @@ const METADATA_STATUS = {
 // Default ceiling on the rows a search returns; override with BIBLIO_SEARCH_MAX_ROWS
 const DEFAULT_SEARCH_MAX_ROWS = 10000;
 
+// Keys of a search node that combine other nodes instead of matching a field
+const LOGICAL_KEYS = ['and', 'or', 'not'];
+
+/**
+ * Error for a search node the builder cannot turn into a criterion. Dropping it
+ * would silently change the meaning of the query, so the caller must report it.
+ * @param {string} field - Offending key
+ * @returns {Error} Error with `code` UNSUPPORTED_SEARCH_FIELD and `field`
+ */
+const unsupportedSearchField = (field) =>
+  Object.assign(new Error(`Unsupported search field or value: ${field}`), {
+    code: 'UNSUPPORTED_SEARCH_FIELD',
+    field,
+  });
+
 /**
  * Builds criteria for filtering bibliographic metadata records using OAI-PMH parameters.
  *
@@ -399,56 +414,66 @@ module.exports = {
    * @param {number} paramIndex - Current parameter index
    * @param {boolean} useUnaccent - Match titles ignoring accents
    * @returns {Object} SQL clause and next parameter index
+   * @throws {Error} `UNSUPPORTED_SEARCH_FIELD` on an unknown key, a non-numeric
+   * `date`, or a logical child that yields no criterion
    */
   processQueryNode(node, params = [], paramIndex = 1, useUnaccent = true) {
     const conditions = [];
     let currentParamIndex = paramIndex;
 
-    const processChildren = (children, joiner) => {
-      const subClauses = [];
-      children.forEach((condition) => {
-        const { clause, nextParamIndex } = this.processQueryNode(
-          condition,
-          params,
-          currentParamIndex,
-          useUnaccent
-        );
-        if (clause) {
-          subClauses.push(clause);
-          currentParamIndex = nextParamIndex;
-        }
-      });
-      if (subClauses.length > 0) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) {
+      throw unsupportedSearchField('query');
+    }
+
+    const fieldMappings = this.getFieldMappings();
+    Object.keys(node).forEach((key) => {
+      if (!LOGICAL_KEYS.includes(key) && !(key in fieldMappings)) {
+        throw unsupportedSearchField(key);
+      }
+    });
+
+    // A child that yields no clause must not vanish from its parent: that
+    // would change the meaning of the query.
+    const processChild = (condition, key) => {
+      const { clause, nextParamIndex } = this.processQueryNode(
+        condition,
+        params,
+        currentParamIndex,
+        useUnaccent
+      );
+      if (!clause) throw unsupportedSearchField(key);
+      currentParamIndex = nextParamIndex;
+      return clause;
+    };
+
+    const processChildren = (children, joiner, key) => {
+      if (children.length > 0) {
+        const subClauses = children.map((child) => processChild(child, key));
         conditions.push(`(${subClauses.join(joiner)})`);
       }
     };
 
     if (node.and && Array.isArray(node.and)) {
-      processChildren(node.and, ' AND ');
+      processChildren(node.and, ' AND ', 'and');
     }
 
     if (node.or && Array.isArray(node.or)) {
-      processChildren(node.or, ' OR ');
+      processChildren(node.or, ' OR ', 'or');
     }
 
-    if (node.not) {
-      const { clause, nextParamIndex } = this.processQueryNode(
-        node.not,
-        params,
-        currentParamIndex,
-        useUnaccent
-      );
-      if (clause) {
-        // COALESCE keeps records whose field is NULL, which do not match
-        conditions.push(`NOT COALESCE(${clause}, false)`);
-        currentParamIndex = nextParamIndex;
-      }
+    if ('not' in node) {
+      // COALESCE keeps records whose field is NULL, which do not match
+      conditions.push(`NOT COALESCE(${processChild(node.not, 'not')}, false)`);
     }
 
     // process the search fields
-    const fieldMappings = this.getFieldMappings();
     Object.keys(fieldMappings).forEach((searchField) => {
-      if (!node[searchField]) return;
+      if (!(searchField in node)) return;
+      // An empty term matches nothing
+      if (!node[searchField]) {
+        conditions.push('false');
+        return;
+      }
       const dbField = fieldMappings[searchField];
       const value = node[searchField];
 
@@ -478,14 +503,13 @@ module.exports = {
         }
         case 'date': {
           const year = parseInt(value, 10);
-          if (!Number.isNaN(year)) {
-            params.push(`${year}-01-01`, `${year}-12-31`);
-            conditions.push(
-              `${dbField} BETWEEN $${currentParamIndex}::date` +
-                ` AND $${currentParamIndex + 1}::date`
-            );
-            currentParamIndex += 2;
-          }
+          if (Number.isNaN(year)) throw unsupportedSearchField('date');
+          params.push(`${year}-01-01`, `${year}-12-31`);
+          conditions.push(
+            `${dbField} BETWEEN $${currentParamIndex}::date` +
+              ` AND $${currentParamIndex + 1}::date`
+          );
+          currentParamIndex += 2;
           break;
         }
         case 'ean':

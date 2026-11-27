@@ -142,7 +142,7 @@
     "dcTypeDcmi": "interactive resource",
     "hasBeenUpdated": false,
     "metadataStatus": "registered",
-    "children": [4]
+    "children": [{ "id": 4 }]
   },
   {
     "id": 4,
@@ -341,7 +341,7 @@
     "dcTypeDcmi": "collection",
     "hasBeenUpdated": false,
     "metadataStatus": "registered",
-    "children": [8]
+    "children": [{ "id": 8 }]
   },
   {
     "id": 8,
@@ -540,7 +540,7 @@
     "dcTypeDcmi": "dataset",
     "hasBeenUpdated": false,
     "metadataStatus": "registered",
-    "children": [12]
+    "children": [{ "id": 12 }]
   },
   {
     "id": 12,
@@ -640,10 +640,7 @@
     "dcTypeDcmi": "collection",
     "hasBeenUpdated": false,
     "metadataStatus": "deleted",
-    "children": [
-      3,
-      14
-    ]
+    "children": [{ "id": 3 }, { "id": 14 }]
   },
   {
     "id": 14,
@@ -742,7 +739,7 @@
     "dcTypeDcmi": "sound",
     "hasBeenUpdated": false,
     "metadataStatus": "registered",
-    "children": [16]
+    "children": [{ "id": 16 }]
   },
   {
     "id": 16,
@@ -940,7 +937,7 @@
     "dcTypeDcmi": "interactive resource",
     "hasBeenUpdated": false,
     "metadataStatus": "registered",
-    "children": [20]
+    "children": [{ "id": 20 }]
   },
   {
     "id": 20,
