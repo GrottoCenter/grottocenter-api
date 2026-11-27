@@ -10072,47 +10072,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                  description: Title to search for. A search returns results only when a `title` is present, at the top level or inside `and`/`or`/`not`.
-                author:
-                  type: string
-                publisher:
-                  type: string
-                id:
-                  type: string
-                  description: Exact document id.
-                date:
-                  type: string
-                  description: Publication year; matches dates within that year.
-                isbn:
-                  type: string
-                  description: Matches the ISBN among the record identifiers.
-                issn:
-                  type: string
-                  description: Matches the ISSN among the record identifiers.
-                ean:
-                  type: string
-                  description: Matches the EAN among the record identifiers.
-                bibliographiclevel:
-                  type: string
-                  example: m
-                  description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches no document.
-                and:
-                  type: array
-                  description: Nodes that must all match. Each node accepts the same fields as this object.
-                  items:
-                    type: object
-                or:
-                  type: array
-                  description: Nodes of which at least one must match. Each node accepts the same fields as this object.
-                  items:
-                    type: object
-                not:
-                  type: object
-                  description: A node that must not match. Accepts the same fields as this object.
+              $ref: '#/components/schemas/BibliographicSearchNode'
       responses:
         '200':
           description: Successful operation, returns the search results.
@@ -10142,7 +10102,18 @@ paths:
                     type: integer
                     description: Real number of matching records, not limited by the row ceiling.
         '400':
-          description: Request body must be a valid JSON object
+          description: The body is not a JSON object, or a node uses an unsupported field or value. The response carries `error` (`UNSUPPORTED_SEARCH_FIELD`), the offending `field` and a `message`. Nothing is silently dropped from the query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  field:
+                    type: string
+                  message:
+                    type: string
 
   '/messages':
     post:
@@ -11958,6 +11929,54 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    BibliographicSearchNode:
+      type: object
+      description: >
+        A node of the search tree. Field keys on one node are combined with AND,
+        and `and`, `or` and `not` nest other nodes, so a query can hold only an
+        author, only a year, or any combination. Matching ignores case, and
+        accents for `title`. An unknown key, a non-numeric `date` or a nested
+        node with no criterion is rejected with a 400 instead of being dropped.
+        An empty term matches nothing. An empty object returns no result.
+      properties:
+        and:
+          type: array
+          items:
+            $ref: '#/components/schemas/BibliographicSearchNode'
+        or:
+          type: array
+          items:
+            $ref: '#/components/schemas/BibliographicSearchNode'
+        not:
+          $ref: '#/components/schemas/BibliographicSearchNode'
+        id:
+          type: integer
+          description: Exact document id.
+        title:
+          type: string
+          description: Substring of the title.
+        author:
+          type: string
+          description: Substring of the authors.
+        date:
+          type: string
+          description: Publication year, for example `1990`.
+        publisher:
+          type: string
+          description: Substring of the publisher.
+        ean:
+          type: string
+          description: Matches the EAN among the record identifiers.
+        isbn:
+          type: string
+          description: Matches the ISBN among the record identifiers.
+        issn:
+          type: string
+          description: Matches the ISSN among the record identifiers.
+        bibliographiclevel:
+          type: string
+          example: m
+          description: Document level. `s` collection, `a` article, `m` monograph (books, reports, maps, media and other single documents), `c` issue. Any other value matches no document.
     DescriptionWriteResult:
       description: >
         A description, as written by `POST /descriptions`, `PATCH /descriptions/{id}`

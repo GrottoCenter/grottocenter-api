@@ -16,8 +16,21 @@ module.exports = async (req, res) => {
     });
   }
 
-  const { rows, total } =
-    await BibliographicMetadataService.searchMetadata(body);
+  let result;
+  try {
+    result = await BibliographicMetadataService.searchMetadata(body);
+  } catch (error) {
+    // Let the caller report a diagnostic instead of returning a different result set
+    if (error.code === 'UNSUPPORTED_SEARCH_FIELD') {
+      return res.badRequest({
+        error: error.code,
+        field: error.field,
+        message: error.message,
+      });
+    }
+    throw error;
+  }
+  const { rows, total } = result;
 
   const response = {
     data: rows,

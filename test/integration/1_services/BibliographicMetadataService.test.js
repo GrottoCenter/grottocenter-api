@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const service = require('../../../api/services/BibliographicMetadataService');
 
 describe('BibliographicMetadataService', () => {
@@ -682,10 +683,52 @@ describe('BibliographicMetadataService', () => {
     });
 
     it('should not return the children of the matching records', async () => {
+      // Document 7 has document 8 as a child, as an object like in the view
       const { rows } = await service.searchMetadata({
         title: 'Document 7 on',
       });
-      rows.forEach((r) => r.title.should.containEql('Document 7 on'));
+      rows.map((r) => r.id).should.eql([7]);
+    });
+
+    it('should reject a leaf with an unknown key', async () => {
+      await service
+        .searchMetadata({
+          and: [{ title: 'Document' }, { publication_year: 1990 }],
+        })
+        .should.be.rejectedWith({
+          code: 'UNSUPPORTED_SEARCH_FIELD',
+          field: 'publication_year',
+        });
+    });
+
+    it('should reject a non-numeric date instead of dropping it', async () => {
+      await service
+        .searchMetadata({
+          and: [{ date: 'abc' }, { not: { title: 'Document 99' } }],
+        })
+        .should.be.rejectedWith({
+          code: 'UNSUPPORTED_SEARCH_FIELD',
+          field: 'date',
+        });
+    });
+
+    it('should reject an @or with an unusable branch', async () => {
+      await service
+        .searchMetadata({ or: [{ author: 'Author 2A' }, { foo: 'bar' }] })
+        .should.be.rejectedWith({ code: 'UNSUPPORTED_SEARCH_FIELD' });
+    });
+
+    it('should reject an empty node nested in a logical operator', async () => {
+      await service
+        .searchMetadata({ and: [{ author: 'Author 2A' }, {}] })
+        .should.be.rejectedWith({ code: 'UNSUPPORTED_SEARCH_FIELD' });
+    });
+
+    it('should keep an empty term inside @or from widening the query', async () => {
+      const { rows } = await service.searchMetadata({
+        or: [{ author: 'Author 2A' }, { title: '' }],
+      });
+      rows.map((r) => r.id).should.eql([2]);
     });
 
     it('should search by bibliographic level with underscore sets', async () => {
@@ -709,6 +752,51 @@ describe('BibliographicMetadataService', () => {
       });
       results.should.be.an.Array();
       // Should find collection records and potentially their children
+    });
+  });
+
+  describe('searchMetadata unaccent fallback', () => {
+    let biblioService;
+    let stub;
+
+    before(() => {
+      biblioService = sails.services.bibliographicmetadataservice;
+    });
+
+    afterEach(() => {
+      if (stub) stub.restore();
+      stub = null;
+    });
+
+    it('should retry with a plain ILIKE when unaccent is missing', async () => {
+      stub = sinon.stub(sails, 'sendNativeQuery');
+      stub
+        .onFirstCall()
+        .rejects(new Error('function unaccent(text) does not exist'));
+      stub.onSecondCall().resolves({
+        rows: [{ id_document: 5, dc_title: 'Fallback', total_count: '1' }],
+      });
+
+      const { rows, total } = await biblioService.searchMetadata({
+        title: 'fallback',
+      });
+
+      stub.callCount.should.equal(2);
+      stub.firstCall.args[0].should.containEql('unaccent(');
+      stub.secondCall.args[0].should.containEql('dc_title ILIKE $1');
+      stub.secondCall.args[0].should.not.containEql('unaccent(');
+      rows.map((r) => r.id).should.eql([5]);
+      total.should.equal(1);
+    });
+
+    it('should rethrow any other error without retrying', async () => {
+      stub = sinon.stub(sails, 'sendNativeQuery');
+      stub.rejects(new Error('connection refused'));
+
+      await biblioService
+        .searchMetadata({ title: 'x' })
+        .should.be.rejectedWith('connection refused');
+      stub.callCount.should.equal(1);
     });
   });
 

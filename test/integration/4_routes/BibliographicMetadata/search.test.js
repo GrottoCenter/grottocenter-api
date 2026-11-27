@@ -38,6 +38,17 @@ describe('BibliographicMetadata search', () => {
       }
     });
 
+    it('should return 400 with a diagnostic on an unsupported field', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/api/v1/bibliographic-metadata/search')
+        .send({ and: [{ title: 'Document' }, { publication_year: 1990 }] })
+        .set('Content-type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(400);
+      res.body.should.have.property('error', 'UNSUPPORTED_SEARCH_FIELD');
+      res.body.should.have.property('field', 'publication_year');
+    });
+
     it('should return a total larger than data.length when truncated', async () => {
       const original = sails.config.custom.biblioSearchMaxRows;
       sails.config.custom.biblioSearchMaxRows = 1;
