@@ -11945,7 +11945,8 @@ components:
         A node of the search tree. Field keys on one node are combined with AND,
         and `and`, `or` and `not` nest other nodes, so a query can hold only an
         author, only a year, or any combination. Matching ignores case, and
-        accents for `title`. An unknown key, a non-numeric `date` or a nested
+        accents for `title` and for `any` (title, authors and publisher);
+        `author` and `publisher` are accent sensitive. An unknown key, a non-numeric `date` or a nested
         node with no criterion is rejected with a 400 instead of being dropped.
         An empty term matches nothing. An empty object returns no result.
       properties:

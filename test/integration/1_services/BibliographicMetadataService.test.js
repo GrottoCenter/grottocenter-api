@@ -755,11 +755,13 @@ describe('BibliographicMetadataService', () => {
     });
 
     it('should combine the any field with another field under @and', async () => {
+      const byYear = await service.searchMetadata({ date: '2023' });
       const { rows } = await service.searchMetadata({
-        and: [{ any: 'Document' }, { date: '2023' }],
+        and: [{ any: 'Author 2A' }, { date: '2023' }],
       });
-      rows.length.should.be.greaterThan(0);
-      rows.forEach((r) => r.publicationYear.should.equal(2023));
+      // Both sides apply: the year alone matches more records than the pair
+      rows.map((r) => r.id).should.eql([2]);
+      byYear.rows.length.should.be.greaterThan(rows.length);
     });
 
     it('should exclude an any term under @not', async () => {
@@ -784,6 +786,7 @@ describe('BibliographicMetadataService', () => {
       clause.should.containEql('dc_creators::text');
       clause.should.containEql('dc_publisher');
       clause.should.containEql('unnest(dc_identifiers)');
+      clause.should.not.containEql('dc_identifiers::text');
       clause.should.containEql("'doi:' || $1");
     });
 
