@@ -22,7 +22,9 @@ module.exports = async (req, res) => {
     }
 
     // Retrieve the specific bibliographic metadata record by its ID
-    // Note: No status filter - returns both registered and deleted records
+    // Note: no status filter. A deleted record is a content-free tombstone
+    // (see the v_bibliographic_metadata migration), which OAI-PMH GetRecord
+    // must still serve with its deleted status.
     let record = await BibliographicMetadataService.getRecordById(id);
 
     // Localize parent descriptions if record has parents

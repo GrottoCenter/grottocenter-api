@@ -3685,7 +3685,10 @@ paths:
         - bibliographic metadata
       summary: Get a bibliographic record (GetRecord)
       security: []
-      description: 'Retrieve a single bibliographic metadata record by numeric ID (GetRecord operation).'
+      description: >-
+        Retrieve a single bibliographic metadata record by numeric ID (GetRecord operation).
+        A deleted or merged document is returned as a tombstone (`metadataStatus` is `deleted`, content fields empty);
+        a pending or refused document is not found.
       parameters:
         - name: id
           in: path
@@ -12637,7 +12640,11 @@ components:
         metadataStatus:
           type: string
           enum: ['registered', 'deleted']
-          description: 'Current metadata status'
+          description: >-
+            `registered` for a published document. `deleted` for a document
+            that was deleted or merged: a tombstone that keeps only the
+            identifier, sets, dates and landing page, with every content field
+            empty. Pending and refused documents are not exported.
           default: 'registered'
 
     BibliographicMetadataIdentifier:
