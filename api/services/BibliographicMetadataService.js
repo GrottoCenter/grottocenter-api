@@ -624,9 +624,9 @@ module.exports = {
             }
             if (searchTypes.length > 0) {
               params.push(searchTypes);
-              const levelOperator = isNot ? 'NOT' : '';
+              const levelNegation = isNot ? 'NOT ' : '';
               conditions.push(
-                `${levelOperator}${dbField} && $${currentParamIndex}::text[]`
+                `${levelNegation}(${dbField} && $${currentParamIndex}::text[])`
               );
               currentParamIndex += 1;
             }
