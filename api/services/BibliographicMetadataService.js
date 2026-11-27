@@ -526,7 +526,10 @@ module.exports = {
           if (!/^\d{1,4}$/.test(raw)) throw unsupportedSearchField('date');
           const year = Number(raw);
           if (year < 1) throw unsupportedSearchField('date');
-          params.push(`${year}-01-01`, `${year}-12-31`);
+          // Pad to four digits: Postgres reads '5-01-01' as May 2001 and
+          // rejects '50-01-01'
+          const yyyy = String(year).padStart(4, '0');
+          params.push(`${yyyy}-01-01`, `${yyyy}-12-31`);
           conditions.push(
             `${dbField} BETWEEN $${currentParamIndex}::date` +
               ` AND $${currentParamIndex + 1}::date`
