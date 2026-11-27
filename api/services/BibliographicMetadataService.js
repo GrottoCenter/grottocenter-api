@@ -514,17 +514,31 @@ module.exports = {
         }
         case 'any': {
           // One parameter shared by every field: the term matches a record
-          // when it is found in any of them
+          // when it is found in any of them. Columns come from the mappings
+          // so `any` follows them.
           params.push(`%${value}%`);
           const p = `$${currentParamIndex}`;
+          const like = (column) =>
+            useUnaccent
+              ? `unaccent(${column}) ILIKE unaccent(${p})`
+              : `${column} ILIKE ${p}`;
+          // dc_identifiers also holds URLs and every file path of the
+          // document, which a bare term like `pdf` or `http` would match.
+          // Only the identifier values are searched: the isbn:, issn: and
+          // doi: entries, as the dedicated fields do. Each entry is matched on
+          // its own: on the array cast to text, `%doi:%pdf%` would span entries.
+          const identifiers = `EXISTS (
+            SELECT 1 FROM unnest(dc_identifiers) AS id(value)
+            WHERE id.value ILIKE 'isbn:' || ${p}
+              OR id.value ILIKE 'issn:' || ${p}
+              OR id.value ILIKE 'doi:' || ${p}
+          )`;
           conditions.push(
             `(${[
-              useUnaccent
-                ? `unaccent(dc_title) ILIKE unaccent(${p})`
-                : `dc_title ILIKE ${p}`,
-              `dc_creators::text ILIKE ${p}`,
-              `dc_publisher ILIKE ${p}`,
-              `dc_identifiers::text ILIKE ${p}`,
+              like(fieldMappings.title),
+              like(fieldMappings.author),
+              like(fieldMappings.publisher),
+              identifiers,
             ].join(' OR ')})`
           );
           currentParamIndex += 1;
@@ -627,7 +641,8 @@ module.exports = {
       issn: 'dc_identifiers::text',
       isbn: 'dc_identifiers::text',
       bibliographiclevel: 'list_sets::text[]',
-      // Not a column: matches several of the fields above (Bib-1 use 1016)
+      // Whitelist entry only, not a column: `any` matches title, author,
+      // publisher and identifiers (Bib-1 use 1016)
       any: 'any',
     };
   },
