@@ -214,7 +214,7 @@ base AS (
   LEFT JOIN j_document_country country ON country.id_document = d.id
   LEFT JOIN j_document_subject js ON js.id_document = d.id
   LEFT JOIN t_subject s ON s.code = js.code_subject
-  LEFT JOIN t_file f ON f.id_document = d.id
+  LEFT JOIN t_file f ON f.id_document = d.id AND f.is_validated
   LEFT JOIN t_license lic ON lic.id = d.id_license
   LEFT JOIN t_type tt ON tt.id = d.id_type
   LEFT JOIN t_identifier_type idtype ON idtype.code = d.id_identifier_type

@@ -21,6 +21,7 @@ const extractSelect = () => {
 
 describe('v_bibliographic_metadata SQL (#2056)', () => {
   const ids = {};
+  const fileIds = [];
   let rows;
 
   const create = async (key, attributes) => {
@@ -65,6 +66,20 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
     await create('childLive', { parent: ids.live });
     await create('childDeleted', { parent: ids.live, isDeleted: true });
     await create('childPending', { parent: ids.live, isValidated: false });
+    await create('withFiles', {});
+    const createFile = (filePath, isValidated) =>
+      TFile.create({
+        dateInscription: new Date(),
+        fileName: filePath,
+        path: filePath,
+        fileFormat: 1,
+        document: ids.withFiles,
+        isValidated,
+      }).fetch();
+    fileIds.push(
+      (await createFile('validated-blob.pdf', true)).id,
+      (await createFile('pending-blob.pdf', false)).id
+    );
 
     await sails.sendNativeQuery(`DROP MATERIALIZED VIEW IF EXISTS ${SCRATCH}`);
     await sails.sendNativeQuery(
@@ -82,6 +97,7 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
 
   after(async () => {
     await sails.sendNativeQuery(`DROP MATERIALIZED VIEW IF EXISTS ${SCRATCH}`);
+    await TFile.destroy({ id: fileIds });
     await TDescription.destroy({ document: Object.values(ids) });
     await TDocument.destroy({ id: Object.values(ids) });
   });
@@ -124,6 +140,11 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
 
   it('leaves out a deleted document that was never validated', () => {
     should(rows.neverValidatedDeleted).be.undefined();
+  });
+
+  it('does not export the path of a file waiting for moderation (#2057)', () => {
+    rows.withFiles.dc_formats.should.deepEqual(['validated-blob.pdf']);
+    rows.withFiles.dc_identifiers.should.deepEqual(['validated-blob.pdf']);
   });
 
   it('lists only live documents as children', () => {
