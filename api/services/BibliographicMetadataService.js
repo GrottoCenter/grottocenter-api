@@ -454,7 +454,8 @@ module.exports = {
     }
 
     const sql = `
-        SELECT *, COUNT(*) OVER() AS total_count
+        SELECT id_document, dc_title, dc_publisher, dc_creators, dc_date,
+               COUNT(*) OVER() AS total_count
         FROM v_bibliographic_metadata
         WHERE ${whereClauses.join(' AND ')}
         ORDER BY id_document

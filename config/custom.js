@@ -25,8 +25,11 @@ module.exports.custom = {
    ************************************************************************* */
   baseUrl: 'http://localhost:3000', // client URL
 
-  /** Ceiling on the rows POST /bibliographic-metadata/search returns (the `total` stays exact). */
-  biblioSearchMaxRows: Number(process.env.BIBLIO_SEARCH_MAX_ROWS) || 10000,
+  /**
+   * Ceiling on the rows POST /bibliographic-metadata/search returns (the `total` stays exact).
+   * Raw value: BibliographicMetadataService.getSearchMaxRows() validates it and owns the default.
+   */
+  biblioSearchMaxRows: process.env.BIBLIO_SEARCH_MAX_ROWS,
 
   /** *************************************************************************************
    *                                                                                      *
