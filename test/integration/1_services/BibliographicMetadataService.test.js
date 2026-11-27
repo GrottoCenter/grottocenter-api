@@ -783,7 +783,7 @@ describe('BibliographicMetadataService', () => {
       clause.should.containEql('dc_title');
       clause.should.containEql('dc_creators::text');
       clause.should.containEql('dc_publisher');
-      clause.should.containEql('dc_identifiers::text');
+      clause.should.containEql('unnest(dc_identifiers)');
       clause.should.containEql("'doi:' || $1");
     });
 
