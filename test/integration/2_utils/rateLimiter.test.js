@@ -102,6 +102,8 @@ describe('Rate Limiter', () => {
       process.env.USER_DELETE_RATE_LIMIT = TEST_USER_DELETE_LIMIT;
       process.env.AUTH_RATE_LIMIT = TEST_AUTH_LIMIT;
       process.env.ADMIN_AUTH_RATE_LIMIT = TEST_ADMIN_AUTH_LIMIT;
+      delete process.env.TRUSTED_SERVICE_IPS;
+      delete process.env.TRUSTED_SERVICE_RATE_LIMIT;
 
       // Mock the sails global used by deleteRateLimit.skip for origin checks
       // and by the limit-exceeded handler for logging.
@@ -159,6 +161,41 @@ describe('Rate Limiter', () => {
           await get(agent, '10.0.0.9').expect(200);
         }
         await get(agent, '10.0.0.9').expect(429);
+      });
+
+      it('should limit the trimmed second entry of the list at its own cap', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '10.0.0.5, 10.0.0.6';
+        process.env.TRUSTED_SERVICE_RATE_LIMIT = TEST_MODERATOR_LIMIT;
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 5; i += 1) {
+          await get(agent, '10.0.0.6').expect(200);
+        }
+      });
+
+      it('should keep IPv6 neighbours of a trusted service apart', async () => {
+        process.env.TRUSTED_SERVICE_IPS = '2001:db8::1';
+        process.env.TRUSTED_SERVICE_RATE_LIMIT = TEST_MODERATOR_LIMIT;
+        const agent = supertest.agent(makeApp(freshRateLimiter()));
+        for (let i = 0; i < TEST_VISITOR_LIMIT + 2; i += 1) {
+          await get(agent, '2001:db8::1').expect(200);
+        }
+        await get(agent, '2001:db8::2').expect(200);
+      });
+
+      it('should match equivalent IPv6 spellings', () => {
+        process.env.TRUSTED_SERVICE_IPS = '2001:0db8:0:0::1';
+        const { isTrustedService } = freshRateLimiter();
+        isTrustedService({ ip: '2001:db8::1' }).should.equal(true);
+        isTrustedService({ ip: '2001:db8::2' }).should.equal(false);
+      });
+
+      it('isTrustedService should handle a port, an IPv4-mapped address and a spaced list', () => {
+        process.env.TRUSTED_SERVICE_IPS = '10.0.0.5, 10.0.0.6';
+        const { isTrustedService } = freshRateLimiter();
+        isTrustedService({ ip: '10.0.0.5:4321' }).should.equal(true);
+        isTrustedService({ ip: '::ffff:10.0.0.5' }).should.equal(true);
+        isTrustedService({ ip: '10.0.0.6' }).should.equal(true);
+        isTrustedService({ ip: '10.0.0.7' }).should.equal(false);
       });
 
       it('should trust nobody when the list is empty', async () => {
