@@ -10074,9 +10074,26 @@ paths:
             schema:
               type: object
               properties:
-                query:
+                title:
                   type: string
-                  description: The search query to find bibliographic metadata.
+                  description: Title to search for. A search returns results only when a `title` is present, at the top level or inside `and`/`or`/`not`.
+                author:
+                  type: string
+                publisher:
+                  type: string
+                and:
+                  type: array
+                  description: Nodes that must all match. Each node accepts the same fields as this object.
+                  items:
+                    type: object
+                or:
+                  type: array
+                  description: Nodes of which at least one must match. Each node accepts the same fields as this object.
+                  items:
+                    type: object
+                not:
+                  type: object
+                  description: A node that must not match. Accepts the same fields as this object.
       responses:
         '200':
           description: Successful operation, returns the search results.
@@ -10105,7 +10122,7 @@ paths:
                   total:
                     type: integer
                     description: Real number of matching records, not limited by the row ceiling.
-        '404':
+        '400':
           description: Request body must be a valid JSON object
 
   '/messages':
