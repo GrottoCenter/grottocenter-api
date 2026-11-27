@@ -3746,7 +3746,7 @@ paths:
                     description: 'Applied country code'
                     example: 'IT'
         '400':
-          description: 'ID and format parameters are required'
+          description: 'ID and format parameters are required, or the MARC format is not supported (supported formats: marc21, unimarc). The format is checked before any record is fetched.'
         '404':
           description: 'Record not found'
 

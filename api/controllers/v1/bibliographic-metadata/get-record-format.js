@@ -15,6 +15,18 @@ module.exports = async (req, res) => {
     });
   }
 
+  // Transform by the format selected: <marc>[-<country>]
+  const [marcFormat, country] = format.split('-');
+
+  const supportedFormats = MarcConvertorService.getSupportedFormats();
+  if (!supportedFormats.includes(marcFormat)) {
+    return res.badRequest({
+      message: `Unsupported format: ${marcFormat}. Supported formats: ${supportedFormats.join(
+        ', '
+      )}`,
+    });
+  }
+
   const ids = id.includes(',') ? id.split(',').map((i) => i.trim()) : [id];
   const isMultipleIds = id.includes(',');
   const bibliographicMetadata =
@@ -28,9 +40,6 @@ module.exports = async (req, res) => {
       message: `Record with ID ${id} not found`,
     });
   }
-  // Transform by the format selected
-  const [marcFormat, country] = format.split('-');
-
   if (Array.isArray(bibliographicMetadata)) {
     const response = await Promise.all(
       bibliographicMetadata.map(async (document) => {
