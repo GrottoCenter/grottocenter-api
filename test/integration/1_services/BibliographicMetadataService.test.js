@@ -648,6 +648,19 @@ describe('BibliographicMetadataService', () => {
       rows.map((r) => r.id).should.containEql(2);
     });
 
+    ['5', '50', '999', 5].forEach((date) => {
+      it(`should read the short year ${date} as that year, not a later one`, async () => {
+        const { rows, total } = await service.searchMetadata({ date });
+        rows.should.eql([]);
+        total.should.equal(0);
+      });
+    });
+
+    it('should pad a short year to four digits', () => {
+      const { params } = service.buildSearchSQL({ date: '5' });
+      params.should.eql(['0005-01-01', '0005-12-31']);
+    });
+
     it('should search with @or across fields', async () => {
       const { rows } = await service.searchMetadata({
         or: [{ title: 'Document 4 on' }, { author: 'Author 2A' }],
