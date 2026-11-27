@@ -13,6 +13,8 @@ const METADATA_STATUS = {
   DELETED: 'deleted',
 };
 
+const stripControlChars = require('../utils/stripControlChars');
+
 module.exports = {
   tableName: 'v_bibliographic_metadata',
   primaryKey: 'id',
@@ -184,6 +186,11 @@ module.exports = {
       columnType: 'json[]',
       defaultsTo: [],
     },
+  },
+
+  // The OAI server turns this JSON into XML, which cannot hold control characters.
+  customToJSON() {
+    return stripControlChars({ ...this });
   },
 
   METADATA_STATUS,

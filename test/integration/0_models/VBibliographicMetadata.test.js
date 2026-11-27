@@ -56,4 +56,19 @@ describe('VBibliographicMetadata', () => {
       });
     });
   });
+
+  describe('JSON serialization', () => {
+    it('strips control characters XML cannot hold', async () => {
+      const target = fixtures.vbibliographicmetadata[0];
+      const result = await sails.models.vbibliographicmetadata.findOne({
+        id: target.id,
+      });
+      result.dcTitle = 'Ti\x1ftle\x00';
+      result.dcCreators = ['A\x1eB'];
+      const json = JSON.parse(JSON.stringify(result));
+      json.dcTitle.should.equal('Title');
+      json.dcCreators.should.eql(['AB']);
+      json.id.should.equal(target.id);
+    });
+  });
 });
