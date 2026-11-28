@@ -42,7 +42,6 @@
     ],
     "dcTypeGrottocenter": "sound",
     "dcTypeDcmi": "sound",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "landingPageUrl": "https://grottocenter.org/ui/documents/1",
     "dcLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
@@ -95,7 +94,6 @@
     ],
     "dcTypeGrottocenter": "image",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -142,7 +140,6 @@
     ],
     "dcTypeGrottocenter": "interactive_resource",
     "dcTypeDcmi": "interactive resource",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": [{ "id": 4 }]
   },
@@ -195,7 +192,6 @@
     ],
     "dcTypeGrottocenter": "sound",
     "dcTypeDcmi": "sound",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -243,7 +239,6 @@
     ],
     "dcTypeGrottocenter": "interactive_resource",
     "dcTypeDcmi": "interactive resource",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -294,7 +289,6 @@
     ],
     "dcTypeGrottocenter": "map",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -341,7 +335,6 @@
     ],
     "dcTypeGrottocenter": "collection",
     "dcTypeDcmi": "collection",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": [{ "id": 8 }]
   },
@@ -394,7 +387,6 @@
     ],
     "dcTypeGrottocenter": "image",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -441,7 +433,6 @@
     ],
     "dcTypeGrottocenter": "image",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -493,7 +484,6 @@
     ],
     "dcTypeGrottocenter": "interactive_resource",
     "dcTypeDcmi": "interactive resource",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -540,7 +530,6 @@
     ],
     "dcTypeGrottocenter": "dataset",
     "dcTypeDcmi": "dataset",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": [{ "id": 12 }]
   },
@@ -593,7 +582,6 @@
     ],
     "dcTypeGrottocenter": "article",
     "dcTypeDcmi": "text",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -640,7 +628,6 @@
     ],
     "dcTypeGrottocenter": "collection",
     "dcTypeDcmi": "collection",
-    "hasBeenUpdated": false,
     "metadataStatus": "deleted",
     "children": [{ "id": 3 }, { "id": 14 }]
   },
@@ -691,7 +678,6 @@
     ],
     "dcTypeGrottocenter": "sound",
     "dcTypeDcmi": "sound",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -739,7 +725,6 @@
     ],
     "dcTypeGrottocenter": "sound",
     "dcTypeDcmi": "sound",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": [{ "id": 16 }]
   },
@@ -792,7 +777,6 @@
     ],
     "dcTypeGrottocenter": "interactive_resource",
     "dcTypeDcmi": "interactive resource",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -839,7 +823,6 @@
     ],
     "dcTypeGrottocenter": "sound",
     "dcTypeDcmi": "sound",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -890,7 +873,6 @@
     ],
     "dcTypeGrottocenter": "image",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -937,7 +919,6 @@
     ],
     "dcTypeGrottocenter": "interactive_resource",
     "dcTypeDcmi": "interactive resource",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": [{ "id": 20 }]
   },
@@ -991,7 +972,6 @@
     ],
     "dcTypeGrottocenter": "dataset",
     "dcTypeDcmi": "dataset",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   },
@@ -1038,7 +1018,6 @@
     ],
     "dcTypeGrottocenter": "map",
     "dcTypeDcmi": "image",
-    "hasBeenUpdated": false,
     "metadataStatus": "registered",
     "children": []
   }

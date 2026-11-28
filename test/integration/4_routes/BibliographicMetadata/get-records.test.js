@@ -233,7 +233,6 @@ describe('Bibliographic Metadata Get Records Controller', () => {
         record.should.have.property('dcRights');
         record.should.have.property('dcTypeGrottocenter');
         record.should.have.property('dcTypeDcmi');
-        record.should.have.property('hasBeenUpdated');
         record.should.have.property('children');
 
         // Validate array fields are arrays

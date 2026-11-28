@@ -12633,10 +12633,6 @@ components:
           type: string
           description: 'DCMI type vocabulary'
           example: 'Text'
-        hasBeenUpdated:
-          type: boolean
-          description: 'Indicates if the record has been updated'
-          default: false
         metadataStatus:
           type: string
           enum: ['registered', 'deleted']
