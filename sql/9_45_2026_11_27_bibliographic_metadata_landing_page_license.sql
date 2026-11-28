@@ -19,7 +19,23 @@
 -- ones, so apply this BEFORE deploying the API that reads them. Production does
 -- not run migrations on deploy: apply it by hand, outside 04:20-05:10 UTC and
 -- Azure's Saturday 03:00 UTC window. If the lock_timeout of the swap fires, run
--- the file again: the rebuild is repeated, the swap is skipped once done.
+-- the file again. Once the swap is done, a re-run changes nothing: the check
+-- below sees the new column and skips the rebuild and the swap altogether.
+--
+-- The check reads pg_attribute: information_schema.columns never lists
+-- materialized views. It must be run with psql (\gset, \if): another client
+-- would ignore the guard and run the rebuild and the swap unconditionally.
+
+SELECT EXISTS (
+  SELECT 1 FROM pg_attribute
+  WHERE attrelid = 'public.v_bibliographic_metadata'::regclass
+    AND attname = 'landing_page_url'
+    AND NOT attisdropped
+) AS already_done \gset
+
+\if :already_done
+\echo 'v_bibliographic_metadata already has landing_page_url: nothing to do'
+\else
 
 DROP MATERIALIZED VIEW IF EXISTS v_bibliographic_metadata_new;
 
@@ -240,26 +256,15 @@ GRANT SELECT ON v_bibliographic_metadata_new TO gc_readonly;
 BEGIN;
 SET LOCAL lock_timeout = '3s';
 
-DO $swap$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'v_bibliographic_metadata'
-      AND column_name = 'landing_page_url'
-  ) THEN
-    RAISE NOTICE 'v_bibliographic_metadata already has landing_page_url, swap skipped';
-    DROP MATERIALIZED VIEW v_bibliographic_metadata_new;
-  ELSE
-    ALTER MATERIALIZED VIEW v_bibliographic_metadata RENAME TO v_bibliographic_metadata_old;
-    ALTER MATERIALIZED VIEW v_bibliographic_metadata_new RENAME TO v_bibliographic_metadata;
-    DROP MATERIALIZED VIEW v_bibliographic_metadata_old;
-    ALTER INDEX idx_v_biblio_new_id RENAME TO idx_v_biblio_id;
-    ALTER INDEX idx_v_biblio_new_status RENAME TO idx_v_biblio_status;
-    ALTER INDEX idx_v_biblio_new_oai_id RENAME TO idx_v_biblio_oai_id;
-    ALTER INDEX idx_v_biblio_new_last_update RENAME TO idx_v_biblio_last_update;
-    ALTER INDEX idx_v_biblio_new_sets RENAME TO idx_v_biblio_sets;
-  END IF;
-END
-$swap$;
+ALTER MATERIALIZED VIEW v_bibliographic_metadata RENAME TO v_bibliographic_metadata_old;
+ALTER MATERIALIZED VIEW v_bibliographic_metadata_new RENAME TO v_bibliographic_metadata;
+DROP MATERIALIZED VIEW v_bibliographic_metadata_old;
+ALTER INDEX idx_v_biblio_new_id RENAME TO idx_v_biblio_id;
+ALTER INDEX idx_v_biblio_new_status RENAME TO idx_v_biblio_status;
+ALTER INDEX idx_v_biblio_new_oai_id RENAME TO idx_v_biblio_oai_id;
+ALTER INDEX idx_v_biblio_new_last_update RENAME TO idx_v_biblio_last_update;
+ALTER INDEX idx_v_biblio_new_sets RENAME TO idx_v_biblio_sets;
 
 COMMIT;
+
+\endif

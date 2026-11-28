@@ -258,6 +258,20 @@ describe('marcConvertor/format/Marc21', () => {
         );
       });
 
+      it('should ignore an empty licence name and keep the URL', () => {
+        const result = Marc21.transform({
+          ...base,
+          dcRights: [null],
+          dcLicenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+        });
+        const fields = fieldsOf(result, '540');
+        fields.should.have.length(1);
+        should(sub(fields[0], 'a')).be.undefined();
+        should(sub(fields[0], 'u')).equal(
+          'https://creativecommons.org/licenses/by/3.0/'
+        );
+      });
+
       it('should add neither field when the links are missing', () => {
         const result = Marc21.transform(base);
         fieldsOf(result, '856').should.have.length(0);

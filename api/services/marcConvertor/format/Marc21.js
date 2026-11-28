@@ -186,8 +186,10 @@ module.exports = {
     }
 
     const licenceSubfields = [];
-    if (document.dcRights && document.dcRights.length > 0) {
-      licenceSubfields.push(['a', `Licence: ${document.dcRights.join(', ')}`]);
+    // dcRights is `{NULL}` when the licence name is empty: ignore empty values
+    const rights = [].concat(document.dcRights || []).filter(Boolean);
+    if (rights.length > 0) {
+      licenceSubfields.push(['a', `Licence: ${rights.join(', ')}`]);
     }
     if (document.dcLicenseUrl) {
       licenceSubfields.push(['u', document.dcLicenseUrl]);

@@ -178,14 +178,17 @@ module.exports = {
     }
 
     const licenceSubfields = [];
-    if (document.dcRights) {
-      licenceSubfields.push(['a', `Licence :${document.dcRights}`]);
+    // dcRights is `{NULL}` when the licence name is empty: ignore empty values
+    const rights = [].concat(document.dcRights || []).filter(Boolean);
+    if (rights.length > 0) {
+      licenceSubfields.push(['a', rights.join(', ')]);
     }
     if (document.dcLicenseUrl) {
       licenceSubfields.push(['u', document.dcLicenseUrl]);
     }
     if (licenceSubfields.length > 0) {
-      marcRecord.addDataField('540', ' ', ' ', licenceSubfields);
+      // first indicator 1: policy on use and reproduction
+      marcRecord.addDataField('371', '1', ' ', licenceSubfields);
     }
 
     if (document.dcPages) {
