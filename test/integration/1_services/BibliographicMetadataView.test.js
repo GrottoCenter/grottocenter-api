@@ -1,13 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 const should = require('should');
+const {
+  ATTACH_DOCUMENT_HISTO_TRIGGER,
+  DETACH_DOCUMENT_HISTO_TRIGGER,
+} = require('../../customSQL');
 
 // Builds the SELECT of the latest v_bibliographic_metadata migration over real
 // t_document rows, in a scratch view: the test database does not run the
 // migrations, so the VBibliographicMetadata fixtures never exercise this SQL.
+// The latest migration is the highest-numbered sql/9_*.sql that builds
+// v_bibliographic_metadata_new.
+const SQL_DIR = path.join(__dirname, '../../../sql');
+const sequence = (file) => parseInt(file.split('_')[1], 10);
 const MIGRATION = path.join(
-  __dirname,
-  '../../../sql/9_47_2026_11_27_bibliographic_metadata_hide_deleted.sql'
+  SQL_DIR,
+  fs
+    .readdirSync(SQL_DIR)
+    .filter(
+      (file) =>
+        /^9_\d+_.*\.sql$/.test(file) &&
+        fs
+          .readFileSync(path.join(SQL_DIR, file), 'utf8')
+          .includes('CREATE MATERIALIZED VIEW v_bibliographic_metadata_new')
+    )
+    .sort((a, b) => sequence(a) - sequence(b))
+    .pop()
 );
 const SCRATCH = 'v_bibliographic_metadata_sql_test';
 
@@ -66,6 +84,52 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
     await create('childLive', { parent: ids.live });
     await create('childDeleted', { parent: ids.live, isDeleted: true });
     await create('childPending', { parent: ids.live, isValidated: false });
+    await create('grandchild', { parent: ids.childDeleted });
+    await create('childOfDeleted', { parent: ids.childDeleted });
+    await create('childOfPending', { parent: ids.pending });
+    await create('modificationPending', {
+      isValidated: false,
+      dateValidation: null,
+      modifiedDocJson: { wasValidated: true },
+    });
+    await create('modificationPendingDeleted', {
+      isValidated: false,
+      dateValidation: null,
+      isDeleted: true,
+      dateReviewed: '2026-03-06T00:00:00.000Z',
+      modifiedDocJson: { wasValidated: true },
+    });
+    await create('submissionWithModification', {
+      isValidated: false,
+      dateValidation: null,
+      modifiedDocJson: { wasValidated: false },
+    });
+    // Documents validated, then edited: the history trigger copies the
+    // validated row into h_document, as in production (DocumentService
+    // .updateDocument).
+    await create('editedFlag', { dateReviewed: '2026-01-03T00:00:00.000Z' });
+    await create('editedLegacy', { dateReviewed: '2026-01-03T00:00:00.000Z' });
+    await create('submissionLegacy', {
+      isValidated: false,
+      dateValidation: null,
+      dateReviewed: '2026-01-03T00:00:00.000Z',
+    });
+    await sails.sendNativeQuery(ATTACH_DOCUMENT_HISTO_TRIGGER);
+    try {
+      const pending = (modifiedDocJson) => ({
+        isValidated: false,
+        dateValidation: null,
+        dateReviewed: '2026-02-01T00:00:00.000Z',
+        modifiedDocJson,
+      });
+      await TDocument.updateOne({ id: ids.editedFlag }).set(
+        pending({ wasValidated: true })
+      );
+      await TDocument.updateOne({ id: ids.editedLegacy }).set(pending({}));
+      await TDocument.updateOne({ id: ids.submissionLegacy }).set(pending({}));
+    } finally {
+      await sails.sendNativeQuery(DETACH_DOCUMENT_HISTO_TRIGGER);
+    }
     await create('withFiles', {});
     const createFile = (filePath, isValidated) =>
       TFile.create({
@@ -99,6 +163,9 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
     await sails.sendNativeQuery(`DROP MATERIALIZED VIEW IF EXISTS ${SCRATCH}`);
     await TFile.destroy({ id: fileIds });
     await TDescription.destroy({ document: Object.values(ids) });
+    await sails.sendNativeQuery('DELETE FROM h_document WHERE id = ANY($1)', [
+      Object.values(ids),
+    ]);
     await TDocument.destroy({ id: Object.values(ids) });
   });
 
@@ -149,6 +216,51 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
 
   it('lists only live documents as children', () => {
     rows.live.children.map((c) => c.id).should.deepEqual([ids.childLive]);
+  });
+
+  it('stops the hierarchy at a hidden document', () => {
+    rows.live.children.map((c) => c.id).should.not.containEql(ids.grandchild);
+    rows.grandchild.parents.should.deepEqual([]);
+  });
+
+  it('points dc_relations only to a parent that is exported', () => {
+    rows.childOfDeleted.dc_relations.should.deepEqual([
+      `oai:grottocenter.org:${ids.childDeleted}`,
+    ]);
+    rows.childOfPending.dc_relations.should.deepEqual([]);
+    rows.childLive.dc_relations.should.deepEqual([
+      `oai:grottocenter.org:${ids.live}`,
+    ]);
+  });
+
+  it('keeps an accepted document registered while a modification is pending', () => {
+    rows.modificationPending.metadata_status.should.equal('registered');
+    rows.modificationPending.dc_title.should.equal('title modificationPending');
+    // No validated history row: the last_update fallback chain must hold.
+    should(rows.modificationPending.last_update).not.be.null();
+  });
+
+  it('dates a document with a pending modification by its last validation', () => {
+    [rows.editedFlag, rows.editedLegacy].forEach((row) => {
+      row.metadata_status.should.equal('registered');
+      new Date(row.last_update)
+        .toISOString()
+        .should.equal('2026-01-02T00:00:00.000Z');
+    });
+  });
+
+  it('reads the history for a modification stored without the wasValidated flag', () => {
+    rows.editedLegacy.metadata_status.should.equal('registered');
+    should(rows.submissionLegacy).be.undefined();
+  });
+
+  it('gives a tombstone to an accepted document deleted with a pending modification', () => {
+    rows.modificationPendingDeleted.metadata_status.should.equal('deleted');
+    should(rows.modificationPendingDeleted.dc_title).be.null();
+  });
+
+  it('leaves out a never accepted submission with a pending modification', () => {
+    should(rows.submissionWithModification).be.undefined();
   });
 
   it('lists a live document as the parent of a live child', () => {
