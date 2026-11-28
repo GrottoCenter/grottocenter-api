@@ -188,15 +188,20 @@ function cleanLanguages(languages) {
  */
 function splitName(name) {
   const tokens = (cleanText(name) || '').split(/\s+/);
-  // An initial (`E.-A.`, `J.`) is upper-case too, but it starts the forename
-  const isInitial = (t) => /^\p{Lu}\./u.test(t);
+  // An initial (`J.`, `E.-A.`, `J.P.`) is upper-case too, but it starts the
+  // forename. Not `C.A.F.`: a longer dotted acronym is not an initial.
+  const isInitial = (t) => /^\p{Lu}\.(-?\p{Lu}\.)?$/u.test(t);
   const isSurnameToken = (t) =>
     /\p{L}/u.test(t) && t === t.toUpperCase() && !isInitial(t);
   let i = 0;
   while (i < tokens.length && isSurnameToken(tokens[i])) i += 1;
   // The forename must look like one (`Serge`, `J.`), otherwise this is probably
-  // an acronym or an organization (`CDS 74 Comité`).
-  if (i === 0 || i === tokens.length || !/^\p{Lu}(\p{Ll}|\.)/u.test(tokens[i]))
+  // an acronym or an organization (`CDS 74 Comité`, `GSM C.A.F.`).
+  if (
+    i === 0 ||
+    i === tokens.length ||
+    !(/^\p{Lu}\p{Ll}/u.test(tokens[i]) || isInitial(tokens[i]))
+  )
     return null;
   return {
     surname: tokens.slice(0, i).join(' '),

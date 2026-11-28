@@ -246,6 +246,15 @@ describe('marcConvertor/Utils', () => {
         forename: 'J.',
       });
     });
+    it('should accept two initials such as J.P.', () => {
+      should(Utils.splitName('DUPONT J.P.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.P.',
+      });
+    });
+    it('should not treat a dotted acronym as initials', () => {
+      should(Utils.splitName('GSM C.A.F.')).be.null();
+    });
     it('should keep a compound upper-case surname', () => {
       should(Utils.splitName('DE LA TOUR Jean Paul')).eql({
         surname: 'DE LA TOUR',
