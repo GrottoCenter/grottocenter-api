@@ -252,6 +252,16 @@ describe('marcConvertor/Utils', () => {
         forename: 'J.P.',
       });
     });
+    it('should accept abbreviated hyphenated forenames', () => {
+      should(Utils.splitName('DUPONT J.-Cl.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.-Cl.',
+      });
+      should(Utils.splitName('DUPONT J.-P.-M.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.-P.-M.',
+      });
+    });
     it('should not treat a dotted acronym as initials', () => {
       should(Utils.splitName('GSM C.A.F.')).be.null();
     });

@@ -188,9 +188,13 @@ function cleanLanguages(languages) {
  */
 function splitName(name) {
   const tokens = (cleanText(name) || '').split(/\s+/);
-  // An initial (`J.`, `E.-A.`, `J.P.`) is upper-case too, but it starts the
-  // forename. Not `C.A.F.`: a longer dotted acronym is not an initial.
-  const isInitial = (t) => /^\p{Lu}\.(-?\p{Lu}\.)?$/u.test(t);
+  // An initial (`J.`, `E.-A.`, `J.-P.-M.`, `J.P.`) is upper-case too, but it
+  // starts the forename. Not `C.A.F.`: a longer unhyphenated dotted acronym is
+  // not an initial.
+  const isInitial = (t) =>
+    /^\p{Lu}\.(-\p{Lu}\.)*$/u.test(t) || /^\p{Lu}\.\p{Lu}\.$/u.test(t);
+  // A first initial followed by a hyphenated forename (`J.-Cl.`, `J.-Ch.`)
+  const isMixedInitial = (t) => /^\p{Lu}\.-\p{Lu}\p{Ll}/u.test(t);
   const isSurnameToken = (t) =>
     /\p{L}/u.test(t) && t === t.toUpperCase() && !isInitial(t);
   let i = 0;
@@ -200,7 +204,11 @@ function splitName(name) {
   if (
     i === 0 ||
     i === tokens.length ||
-    !(/^\p{Lu}\p{Ll}/u.test(tokens[i]) || isInitial(tokens[i]))
+    !(
+      /^\p{Lu}\p{Ll}/u.test(tokens[i]) ||
+      isInitial(tokens[i]) ||
+      isMixedInitial(tokens[i])
+    )
   )
     return null;
   return {
