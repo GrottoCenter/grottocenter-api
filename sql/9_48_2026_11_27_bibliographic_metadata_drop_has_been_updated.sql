@@ -16,20 +16,51 @@
 -- selects a column that is gone and every bibliographic endpoint returns 500.
 -- Production does not run migrations on deploy: apply it by hand, outside
 -- 04:20-05:10 UTC and Azure's Saturday 03:00 UTC window. If the lock_timeout of
--- the swap fires, run the file again: the rebuild is repeated, the swap is
--- skipped once done.
+-- the swap fires, run the file again: it always rebuilds and swaps, so the live
+-- view ends on this definition whatever an earlier run left.
 
 DROP MATERIALIZED VIEW IF EXISTS v_bibliographic_metadata_new;
 
 CREATE MATERIALIZED VIEW v_bibliographic_metadata_new AS
-WITH RECURSIVE doc_children(root, child, level) AS (
+WITH RECURSIVE doc_status AS (
+    -- What each document is in the export. was_accepted: the document was
+    -- validated, even when a pending modification has set is_validated to false
+    -- and date_validation to NULL (DocumentService.updateDocument): the flag
+    -- stored in modified_doc_json, or for a snapshot older than the flag the
+    -- history, as in DocumentService.wasValidatedBeforeModification.
+    SELECT
+        id,
+        (is_deleted OR redirect_to IS NOT NULL) AS gone,
+        wa.was_accepted
+          AND NOT (is_deleted OR redirect_to IS NOT NULL) AS live,
+        CASE
+          WHEN is_deleted OR redirect_to IS NOT NULL
+            THEN wa.was_accepted OR date_validation IS NOT NULL
+          ELSE wa.was_accepted
+        END AS exported
+    FROM t_document d
+    CROSS JOIN LATERAL (
+      SELECT
+        is_validated
+        OR (
+          date_validation IS NULL
+          AND modified_doc_json IS NOT NULL
+          AND COALESCE(
+            (modified_doc_json->>'wasValidated')::boolean,
+            EXISTS (SELECT 1 FROM h_document h WHERE h.id = d.id AND h.is_validated)
+          )
+        ) AS was_accepted
+    ) wa
+),
+doc_children(root, child, level) AS (
     -- Base case: direct children (level 1)
     SELECT
-        id_parent as root,
-        id as child,
+        d.id_parent as root,
+        d.id as child,
         1 as level
-    FROM t_document
-    WHERE id_parent IS NOT NULL
+    FROM t_document d
+    JOIN doc_status s ON s.id = d.id AND s.live
+    WHERE d.id_parent IS NOT NULL
 
     UNION ALL
 
@@ -40,16 +71,18 @@ WITH RECURSIVE doc_children(root, child, level) AS (
         dc.level + 1
     FROM t_document d
     JOIN doc_children dc ON d.id_parent = dc.child
+    JOIN doc_status s ON s.id = d.id AND s.live
     WHERE dc.level < 100  -- Prevent infinite recursion and limit depth
 ),
 doc_parents(child, parent, level) AS (
     -- Base case: direct parents (level 1)
     SELECT
-        id as child,
-        id_parent as parent,
+        d.id as child,
+        d.id_parent as parent,
         1 as level
-    FROM t_document
-    WHERE id_parent IS NOT NULL
+    FROM t_document d
+    JOIN doc_status s ON s.id = d.id_parent AND s.live
+    WHERE d.id_parent IS NOT NULL
 
     UNION ALL
 
@@ -60,6 +93,7 @@ doc_parents(child, parent, level) AS (
         dp.level + 1
     FROM t_document d
     JOIN doc_parents dp ON d.id = dp.parent
+    JOIN doc_status s ON s.id = d.id_parent AND s.live
     WHERE dp.level < 100 AND d.id_parent IS NOT NULL  -- Prevent infinite recursion and limit depth
 ),
 children_agg AS (
@@ -74,8 +108,7 @@ children_agg AS (
         ) AS children
     FROM doc_children dc
     LEFT JOIN t_description td_child ON td_child.id_document = dc.child
-    JOIN t_document d_child ON d_child.id = dc.child
-      AND d_child.is_validated AND NOT d_child.is_deleted AND d_child.redirect_to IS NULL
+    LEFT JOIN t_document d_child ON d_child.id = dc.child
     LEFT JOIN t_type tt_child ON tt_child.id = d_child.id_type
     GROUP BY dc.root
 ),
@@ -91,20 +124,25 @@ parents_agg AS (
         ) AS parents
     FROM doc_parents dp
     LEFT JOIN t_description td_parent ON td_parent.id_document = dp.parent
-    JOIN t_document d_parent ON d_parent.id = dp.parent
-      AND d_parent.is_validated AND NOT d_parent.is_deleted AND d_parent.redirect_to IS NULL
+    LEFT JOIN t_document d_parent ON d_parent.id = dp.parent
     LEFT JOIN t_type tt_parent ON tt_parent.id = d_parent.id_type
     GROUP BY dp.child
 ),
 base AS (
   SELECT
-      (d.is_deleted OR d.redirect_to IS NOT NULL) AS is_gone,
+      ds.gone AS is_gone,
       GREATEST(d.date_validation, d.date_reviewed) AS date_change,
       d.id as id_document,
       COALESCE(ca.children, ARRAY[]::jsonb[]) AS children,
       COALESCE(pa.parents, ARRAY[]::jsonb[]) AS parents,
       'oai:grottocenter.org:' || d.id as oai_identifier,
-      d.date_validation as last_update_live,
+      COALESCE(
+        d.date_validation,
+        (SELECT MAX(h.date_validation) FROM h_document h
+          WHERE h.id = d.id AND h.is_validated),
+        d.date_reviewed,
+        d.date_inscription
+      ) as last_update_live,
       ARRAY[
         'grottocenter',
         'grottocenter:' || lower(regexp_replace(tt.name, '\s+', '_', 'g'))
@@ -166,7 +204,9 @@ base AS (
         ARRAY[]::text[]
       ) as dc_identifiers,
       CASE
-        WHEN d.id_parent IS NOT NULL THEN ARRAY['oai:grottocenter.org:' || d.id_parent]
+        WHEN EXISTS (
+        SELECT 1 FROM doc_status ps WHERE ps.id = d.id_parent AND ps.exported
+      ) THEN ARRAY['oai:grottocenter.org:' || d.id_parent]
         ELSE ARRAY[]::text[]
       END as dc_relations,
       ARRAY['Bulletin Bibliographique Spéléologique / Speleo Abstracts'] as dc_sources,
@@ -193,6 +233,7 @@ base AS (
       NULLIF(lic.url, '') as dc_license_url,
       d.date_inscription as creation_date
   FROM t_document d
+  JOIN doc_status ds ON ds.id = d.id AND ds.exported
   LEFT JOIN t_description td ON td.id_document = d.id
   LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
   LEFT JOIN t_caver cav ON cav.id = jca.id_caver
@@ -211,16 +252,11 @@ base AS (
   LEFT JOIN children_agg ca ON ca.id_document = d.id
   LEFT JOIN parents_agg pa ON pa.id_document = d.id
   WHERE d.id IS NOT NULL
-    AND (
-      (d.is_validated AND NOT d.is_deleted AND d.redirect_to IS NULL)
-      OR ((d.is_deleted OR d.redirect_to IS NOT NULL) AND d.date_validation IS NOT NULL)
-    )
   GROUP BY
     d.id,
     d.date_validation,
     d.date_reviewed,
-    d.is_deleted,
-    d.redirect_to,
+    ds.gone,
     d.date_inscription,
     d.date_publication,
     d.identifier,
@@ -280,26 +316,13 @@ GRANT SELECT ON v_bibliographic_metadata_new TO gc_readonly;
 BEGIN;
 SET LOCAL lock_timeout = '3s';
 
-DO $swap$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_matviews
-    WHERE schemaname = 'public' AND matviewname = 'v_bibliographic_metadata'
-      AND definition NOT LIKE '%has_been_updated%'
-  ) THEN
-    RAISE NOTICE 'v_bibliographic_metadata has no has_been_updated column, swap skipped';
-    DROP MATERIALIZED VIEW v_bibliographic_metadata_new;
-  ELSE
-    ALTER MATERIALIZED VIEW v_bibliographic_metadata RENAME TO v_bibliographic_metadata_old;
-    ALTER MATERIALIZED VIEW v_bibliographic_metadata_new RENAME TO v_bibliographic_metadata;
-    DROP MATERIALIZED VIEW v_bibliographic_metadata_old;
-    ALTER INDEX idx_v_biblio_new_id RENAME TO idx_v_biblio_id;
-    ALTER INDEX idx_v_biblio_new_status RENAME TO idx_v_biblio_status;
-    ALTER INDEX idx_v_biblio_new_oai_id RENAME TO idx_v_biblio_oai_id;
-    ALTER INDEX idx_v_biblio_new_last_update RENAME TO idx_v_biblio_last_update;
-    ALTER INDEX idx_v_biblio_new_sets RENAME TO idx_v_biblio_sets;
-  END IF;
-END
-$swap$;
+ALTER MATERIALIZED VIEW v_bibliographic_metadata RENAME TO v_bibliographic_metadata_old;
+ALTER MATERIALIZED VIEW v_bibliographic_metadata_new RENAME TO v_bibliographic_metadata;
+DROP MATERIALIZED VIEW v_bibliographic_metadata_old;
+ALTER INDEX idx_v_biblio_new_id RENAME TO idx_v_biblio_id;
+ALTER INDEX idx_v_biblio_new_status RENAME TO idx_v_biblio_status;
+ALTER INDEX idx_v_biblio_new_oai_id RENAME TO idx_v_biblio_oai_id;
+ALTER INDEX idx_v_biblio_new_last_update RENAME TO idx_v_biblio_last_update;
+ALTER INDEX idx_v_biblio_new_sets RENAME TO idx_v_biblio_sets;
 
 COMMIT;
