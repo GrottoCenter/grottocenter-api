@@ -281,7 +281,8 @@ SELECT
     false as has_been_updated,
     'registered'::e_metadata_status as metadata_status,
     'https://grottocenter.org/ui/documents/' || d.id as landing_page_url,
-    NULLIF(lic.url, '') as dc_license_url
+    NULLIF(lic.url, '') as dc_license_url,
+    d.date_inscription as creation_date
   FROM t_document d
   LEFT JOIN t_description td ON td.id_document = d.id
   LEFT JOIN j_document_caver_author jca ON jca.id_document = d.id
@@ -304,6 +305,7 @@ SELECT
   GROUP BY
     d.id,
     d.date_validation,
+    d.date_inscription,
     d.date_publication,
     d.identifier,
     idtype.code,

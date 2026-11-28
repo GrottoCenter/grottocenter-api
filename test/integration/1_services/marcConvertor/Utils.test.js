@@ -71,13 +71,6 @@ describe('marcConvertor/Utils', () => {
     });
   });
 
-  describe('getCurrentDateYYYYMMDD', () => {
-    it('should return date in YYYYMMDD format', () => {
-      const result = Utils.getCurrentDateYYYYMMDD();
-      should(result).match(/^\d{8}$/);
-    });
-  });
-
   describe('determineIsoCode3166', () => {
     it('should return 1 for 3-letter codes', () => {
       should(Utils.determineIsoCode3166('USA')).equal(1);
@@ -197,6 +190,94 @@ describe('marcConvertor/Utils', () => {
     it('should handle uppercase in listSets', () => {
       const listSets = ['set1', 'grottocenter:ARTICLE'];
       should(Utils.getTypeWithListSets(listSets)).equal('article');
+    });
+  });
+
+  describe('formatDateYYYYMMDD', () => {
+    it('should format a date', () => {
+      should(Utils.formatDateYYYYMMDD(new Date(2012, 2, 14))).equal('20120314');
+    });
+    it('should return null for a missing or invalid date', () => {
+      should(Utils.formatDateYYYYMMDD(null)).be.null();
+      should(Utils.formatDateYYYYMMDD('not a date')).be.null();
+    });
+  });
+
+  describe('cleanText', () => {
+    it('should trim, including trailing blank lines', () => {
+      should(Utils.cleanText('text\n\n  ')).equal('text');
+    });
+    it('should return null when nothing is left', () => {
+      should(Utils.cleanText(' \n ')).be.null();
+      should(Utils.cleanText(null)).be.null();
+    });
+  });
+
+  describe('cleanLanguages', () => {
+    it('should drop the undefined language 000 and invalid codes', () => {
+      should(Utils.cleanLanguages(['000', 'fre', 'FRE', 'x', ' eng '])).eql([
+        'fre',
+        'eng',
+      ]);
+    });
+    it('should return an empty array for a non-array', () => {
+      should(Utils.cleanLanguages(undefined)).eql([]);
+    });
+  });
+
+  describe('splitName', () => {
+    it('should split SURNAME Forename', () => {
+      should(Utils.splitName('CAILLAULT Serge')).eql({
+        surname: 'CAILLAULT',
+        forename: 'Serge',
+      });
+    });
+    it('should accept a forename written as initials', () => {
+      should(Utils.splitName('MARTEL E.-A.')).eql({
+        surname: 'MARTEL',
+        forename: 'E.-A.',
+      });
+      should(Utils.splitName('DE JOLY R.')).eql({
+        surname: 'DE JOLY',
+        forename: 'R.',
+      });
+      should(Utils.splitName('DUPONT J.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.',
+      });
+    });
+    it('should accept two initials such as J.P.', () => {
+      should(Utils.splitName('DUPONT J.P.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.P.',
+      });
+    });
+    it('should accept abbreviated hyphenated forenames', () => {
+      should(Utils.splitName('DUPONT J.-Cl.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.-Cl.',
+      });
+      should(Utils.splitName('DUPONT J.-P.-M.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.-P.-M.',
+      });
+    });
+    it('should not treat a dotted acronym as initials', () => {
+      should(Utils.splitName('GSM C.A.F.')).be.null();
+    });
+    it('should keep a compound upper-case surname', () => {
+      should(Utils.splitName('DE LA TOUR Jean Paul')).eql({
+        surname: 'DE LA TOUR',
+        forename: 'Jean Paul',
+      });
+    });
+    it('should return null when the name has no such pattern', () => {
+      should(Utils.splitName('speleo42')).be.null();
+      should(Utils.splitName('SPELEO CLUB')).be.null();
+      should(Utils.splitName('Serge Caillault')).be.null();
+    });
+    it('should not split an acronym followed by something that is not a forename', () => {
+      should(Utils.splitName('CDS 74 Comité')).be.null();
     });
   });
 });

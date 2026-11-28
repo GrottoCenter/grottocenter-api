@@ -1,7 +1,10 @@
 const Marc = require('../MarcRecord');
 const {
   determineIsoCode3166,
-  getCurrentDateYYYYMMDD,
+  formatDateYYYYMMDD,
+  cleanText,
+  cleanLanguages,
+  splitName,
   formatDateForMarc,
   extractIdentifier,
   determineBibliographicLevel,
@@ -35,6 +38,48 @@ function generateLeader(type) {
   return leader;
 }
 
+/**
+ * Add a 7XX name field, with the second indicator matching how the name is
+ * written (1: entered under the surname, 0: under the forename).
+ */
+function addNameField(marcRecord, tag, name) {
+  const parts = splitName(name);
+  if (parts) {
+    marcRecord.addDataField(tag, ' ', '1', [
+      ['a', parts.surname],
+      ['b', parts.forename],
+    ]);
+  } else {
+    marcRecord.addDataField(tag, ' ', '0', [['a', cleanText(name)]]);
+  }
+}
+
+/**
+ * Generate the UNIMARC 100 $a general processing data (36 characters)
+ * The date of entry is the creation date of the record, so it does not change
+ * from one fetch to the next.
+ */
+function generate100(document) {
+  const entered =
+    formatDateYYYYMMDD(document.creationDate || document.lastUpdate) ||
+    '        ';
+  const year = document.dcDate
+    ? String(new Date(document.dcDate).getFullYear())
+    : null;
+  // A year that is not 4 digits long would shift every later position
+  const hasYear = year !== null && /^\d{4}$/.test(year);
+
+  let field = entered; // 0-7 date entered on file
+  field += hasYear ? `d${year}    ` : 'u        '; // 8 type of date, 9-12 date 1, 13-16 date 2
+  field += '   '; // 17-19 target audience
+  field += 'y'; // 20 government publication: not
+  field += '0'; // 21 modified record: not
+  field += 'fre'; // 22-24 cataloguing language
+  field += 'y'; // 25 transliteration: none
+  field += '50      ba'; // 26-35 character sets (UTF-8), script of title (Latin)
+  return field;
+}
+
 module.exports = {
   /**
    * Transform normalized document data to UNIMARC format
@@ -51,10 +96,10 @@ module.exports = {
       .addControlField('001', document.id)
       .addControlField('005', formatDateForMarc(document.lastUpdate));
 
-    if (document.dcTitle) {
-      const titleField = [['a', document.dcTitle]];
-      if (document.Responsability) {
-        titleField.push(['f', document.Responsability]);
+    if (cleanText(document.dcTitle)) {
+      const titleField = [['a', cleanText(document.dcTitle)]];
+      if (cleanText(document.Responsability)) {
+        titleField.push(['f', cleanText(document.Responsability)]);
       }
       marcRecord.addDataField('200', ' ', ' ', titleField);
     }
@@ -64,10 +109,10 @@ module.exports = {
       document.dcCreators.length > 0 &&
       document.dcCreators[0] !== 'Unknown'
     ) {
-      marcRecord.addDataField('700', ' ', ' ', [['a', document.dcCreators[0]]]); // Assuming first creator is the main author
+      addNameField(marcRecord, '700', document.dcCreators[0]); // Assuming first creator is the main author
       if (document.dcCreators.length > 1) {
         document.dcCreators.slice(1).forEach((creator) => {
-          marcRecord.addDataField('701', ' ', ' ', [['a', creator]]); // Additional authors
+          addNameField(marcRecord, '701', creator); // Additional authors
         });
       }
     }
@@ -80,35 +125,28 @@ module.exports = {
       marcRecord.addDataField('210', ' ', ' ', [['c', document.dcPublisher]]);
     }
 
-    let field100 = getCurrentDateYYYYMMDD(); // Character 0-7
-    field100 += document.dcDate
-      ? `a${document.dcDate.getFullYear()}`
-      : '         '; // Character 8-16
-    field100 += '    a'; // Character 17-21
-    field100 +=
-      document.dcLanguages && document.dcLanguages > 0
-        ? document.dcLanguages[0]
-        : 'fre'; // Character 22-24
-    field100 += 'y'; // Character 25
-    field100 += '50      ba'; // Character 26-35
-    marcRecord.addDataField('100', ' ', ' ', [['a', field100]]);
+    marcRecord.addDataField('100', ' ', ' ', [['a', generate100(document)]]);
 
-    if (document.dcLanguages && document.dcLanguages.length > 0) {
-      document.dcLanguages.forEach((lang) => {
-        marcRecord.addDataField('101', ' ', ' ', [['a', lang]]);
-      });
-    }
+    // 101 only when a language is known; `000` is not a language code
+    cleanLanguages(document.dcLanguages).forEach((lang) => {
+      marcRecord.addDataField('101', ' ', ' ', [['a', lang]]);
+    });
 
     if (document.dcDescriptions) {
       document.dcDescriptions.forEach((description) => {
-        marcRecord.addDataField('330', ' ', ' ', [['a', description]]);
+        if (cleanText(description)) {
+          marcRecord.addDataField('330', ' ', ' ', [
+            ['a', cleanText(description)],
+          ]);
+        }
       });
     }
 
     if (document.dcSources) {
       document.dcSources.forEach((sources) => {
+        if (!cleanText(sources)) return;
         marcRecord.addDataField('330', ' ', ' ', [
-          ['a', `Source : ${sources}`],
+          ['a', `Source : ${cleanText(sources)}`],
         ]);
       });
     }
@@ -126,7 +164,9 @@ module.exports = {
 
     if (document.dcSubjects && document.dcSubjects.length > 0) {
       document.dcSubjects.forEach((subject) => {
-        marcRecord.addDataField('606', ' ', ' ', [['a', subject]]);
+        if (cleanText(subject)) {
+          marcRecord.addDataField('606', ' ', ' ', [['a', cleanText(subject)]]);
+        }
       });
     }
 

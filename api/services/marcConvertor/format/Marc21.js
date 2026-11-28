@@ -2,34 +2,51 @@ const Marc = require('../MarcRecord');
 const {
   determineIsoCode3166,
   formatDateForMarc,
+  formatDateYYYYMMDD,
   extractIdentifier,
+  cleanText,
+  cleanLanguages,
+  splitName,
 } = require('../Utils');
+
+// MARC21 leader/06, which is not the UNIMARC table: everything else
+// (article, book, issue, collection, ...) is language material.
+const LEADER_TYPE_OF_RECORD = {
+  map: 'e',
+  'topographic drawing': 'e',
+  'topographic data': 'e',
+  'moving image': 'g',
+  sound: 'i',
+  image: 'k',
+  dataset: 'm',
+  'interactive resource': 'm',
+  'physical object': 'r',
+};
+
+const LEADER_BIBLIOGRAPHIC_LEVEL = {
+  article: 'a', // monographic component part
+  collection: 'c',
+};
+
+/** Leader/06 for a Grottocenter document type. */
+function getTypeOfRecord(type) {
+  const normalizedType = (type || '').replace(/_/g, ' ').toLowerCase();
+  return LEADER_TYPE_OF_RECORD[normalizedType] || 'a';
+}
 
 /**
  * Generate MARC21 leader
  * link : https://www.loc.gov/marc/bibliographic/bdleader.html
- * @param {string} type - The type of document (e.g., 'article', 'book')
+ * @param {string} type - The Grottocenter type of the document (e.g., 'article', 'book')
  * @returns {string} - The MARC-21 leader string
  */
 function generateLeader(type) {
+  const normalizedType = (type || '').replace(/_/g, ' ');
+
   let leader = '00000';
-  leader += 'n';
-
-  switch (type) {
-    case 'article':
-      leader += 'a';
-      break;
-    case 'book':
-      leader += 'a';
-      break;
-    case 'issue':
-      leader += 'a';
-      break;
-    default:
-      leader += 'a';
-  }
-
-  leader += 'm'; // monographic
+  leader += 'n'; // 05 status: new
+  leader += getTypeOfRecord(type); // 06 type of record
+  leader += LEADER_BIBLIOGRAPHIC_LEVEL[normalizedType.toLowerCase()] || 'm'; // 07 bibliographic level
   leader += ' '; // position 08
   leader += 'a'; // position 09
   leader += '2'; // 10
@@ -46,6 +63,62 @@ function generateLeader(type) {
   return leader;
 }
 
+/**
+ * Generate the MARC21 008 field (40 characters, books layout)
+ * link : https://www.loc.gov/marc/bibliographic/bd008a.html
+ * @param {Object} document - Document data
+ * @returns {string}
+ */
+function generate008(document) {
+  const entered = formatDateYYYYMMDD(
+    document.creationDate || document.lastUpdate
+  );
+  const year = document.dcDate
+    ? String(new Date(document.dcDate).getFullYear())
+    : null;
+  const languages = cleanLanguages(document.dcLanguages);
+
+  let field = entered ? entered.slice(2) : '000000'; // 00-05 date entered on file
+  field += year && /^\d{4}$/.test(year) ? `s${year}    ` : 'nuuuuuuuu'; // 06 type of date, 07-10 date 1, 11-14 date 2
+  field += 'xx '; // 15-17 place of publication: unknown
+  if (getTypeOfRecord(document.dcTypeGrottocenter) === 'a') {
+    // books layout
+    field += '    '; // 18-21 illustrations
+    field += '       '; // 22-28 audience, form, nature, government publication
+    field += '00'; // 29-30 conference, festschrift
+    field += '0'; // 31 index
+    field += ' '; // 32 undefined
+    field += '|'; // 33 literary form: no attempt to code
+    field += ' '; // 34 biography
+  } else {
+    // maps, visual materials, sounds...: other layouts, no meaning asserted
+    field += '|'.repeat(17); // 18-34
+  }
+  field += languages[0] || 'und'; // 35-37 language
+  field += ' '; // 38 modified record
+  field += 'd'; // 39 cataloging source: other
+  return field;
+}
+
+/**
+ * Add a name field, with the indicators matching how the name is written.
+ * @param {Object} marcRecord
+ * @param {string} tag - 100 or 700
+ * @param {string} name
+ */
+function addNameField(marcRecord, tag, name) {
+  const parts = splitName(name);
+  if (parts) {
+    // ind1 = 1: surname entry
+    marcRecord.addDataField(tag, '1', ' ', [
+      ['a', `${parts.surname}, ${parts.forename}`],
+    ]);
+  } else {
+    // ind1 = 0: forename (or a name that cannot be inverted)
+    marcRecord.addDataField(tag, '0', ' ', [['a', cleanText(name)]]);
+  }
+}
+
 module.exports = {
   /**
    * Transform normalized document data to MARC 21 format
@@ -56,22 +129,20 @@ module.exports = {
   transform: (document) => {
     const marcRecord = new Marc();
 
-    const docType =
-      document.dcTypes && document.dcTypes.length > 0
-        ? document.dcTypes[0]
-        : 'unknown';
-    marcRecord.addLeader(generateLeader(docType));
+    marcRecord.addLeader(generateLeader(document.dcTypeGrottocenter));
 
     marcRecord
       .addControlField('001', document.id)
-      .addControlField('005', formatDateForMarc(document.lastUpdate));
+      .addControlField('005', formatDateForMarc(document.lastUpdate))
+      .addControlField('008', generate008(document));
 
-    if (document.dcTitle) {
-      const titleField = [['a', document.dcTitle]];
-      if (document.Responsability) {
-        titleField.push(['f', document.Responsability]);
+    if (cleanText(document.dcTitle)) {
+      const titleField = [['a', cleanText(document.dcTitle)]];
+      if (cleanText(document.Responsability)) {
+        titleField.push(['f', cleanText(document.Responsability)]);
       }
-      marcRecord.addDataField('245', '0', '0', titleField);
+      // ind1 = 1: a 100 is always written, so the title has an added entry
+      marcRecord.addDataField('245', '1', '0', titleField);
     }
 
     if (
@@ -79,46 +150,57 @@ module.exports = {
       document.dcCreators.length > 0 &&
       document.dcCreators[0] !== 'Unknown'
     ) {
-      marcRecord.addDataField('100', ' ', ' ', [['a', document.dcCreators[0]]]);
+      addNameField(marcRecord, '100', document.dcCreators[0]);
 
       if (document.dcCreators.length > 1) {
         document.dcCreators.slice(1).forEach((creator) => {
-          marcRecord.addDataField('700', ' ', ' ', [['a', creator]]);
+          addNameField(marcRecord, '700', creator);
         });
       }
     } else {
-      marcRecord.addDataField('100', ' ', ' ', [['a', 'Unknown Author']]);
+      marcRecord.addDataField('100', '0', ' ', [['a', 'Unknown Author']]);
     }
 
-    if (document.dcContributor && document.dcContributor !== 'Unknown') {
-      marcRecord.addDataField('700', ' ', ' ', [['a', document.dcContributor]]);
+    if (
+      cleanText(document.dcContributor) &&
+      document.dcContributor !== 'Unknown'
+    ) {
+      addNameField(marcRecord, '700', document.dcContributor);
     }
 
-    if (document.dcPublisher && document.dcPublisher !== 'Unknown') {
-      const publisherField = [['b', document.dcPublisher]];
-
-      if (document.dcDate) {
-        publisherField.push(['c', document.dcDate.getFullYear().toString()]);
-      }
-
-      marcRecord.addDataField('260', ' ', ' ', publisherField);
+    const publisher = cleanText(document.dcPublisher);
+    const publicationYear = document.dcDate
+      ? new Date(document.dcDate).getFullYear()
+      : null;
+    const publicationSubfields = [];
+    if (publisher && publisher !== 'Unknown') {
+      publicationSubfields.push(['b', publisher]);
+    }
+    if (Number.isInteger(publicationYear)) {
+      publicationSubfields.push(['c', publicationYear.toString()]);
+    }
+    if (publicationSubfields.length > 0) {
+      marcRecord.addDataField('260', ' ', ' ', publicationSubfields);
     }
 
-    if (document.dcLanguages && document.dcLanguages.length > 0) {
-      marcRecord.addDataField('041', '0', ' ', [
-        ['a', document.dcLanguages[0]],
-      ]);
-
-      if (document.dcLanguages.length > 1) {
-        document.dcLanguages.slice(1).forEach((lang) => {
-          marcRecord.addDataField('041', '0', ' ', [['a', lang]]);
-        });
-      }
+    // 041 only when a language is known; `und` and `000` are not language codes
+    const languages = cleanLanguages(document.dcLanguages);
+    if (languages.length > 0) {
+      marcRecord.addDataField(
+        '041',
+        '0',
+        ' ',
+        languages.map((lang) => ['a', lang])
+      );
     }
 
     if (document.dcDescriptions && document.dcDescriptions.length > 0) {
       document.dcDescriptions.forEach((description) => {
-        marcRecord.addDataField('520', ' ', ' ', [['a', description]]);
+        if (cleanText(description)) {
+          marcRecord.addDataField('520', ' ', ' ', [
+            ['a', cleanText(description)],
+          ]);
+        }
       });
     }
 
@@ -135,7 +217,9 @@ module.exports = {
 
     if (document.dcSubjects && document.dcSubjects.length > 0) {
       document.dcSubjects.forEach((subject) => {
-        marcRecord.addDataField('653', ' ', ' ', [['a', subject]]);
+        if (cleanText(subject)) {
+          marcRecord.addDataField('653', ' ', ' ', [['a', cleanText(subject)]]);
+        }
       });
     }
 
@@ -204,7 +288,8 @@ module.exports = {
       ]);
     }
 
-    marcRecord.addDataField('040', ' ', ' ', [['a', 'GrottoCenterAgencyCode']]);
+    // No 040: Grottocenter has no MARC organization code, and a placeholder
+    // would be imported as the cataloguing agency.
     marcRecord.addDataField('042', ' ', ' ', [['a', 'dc']]); // derivate of the dublin core format
 
     return marcRecord;

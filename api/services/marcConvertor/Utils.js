@@ -44,19 +44,6 @@ function getFileFormat(url) {
   return formatMap[extension] || null;
 }
 
-/**
- * Get current date in YYYYMMDD format
- * @returns {string}
- */
-function getCurrentDateYYYYMMDD() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}${month}${day}`;
-}
-
 /** * Determine ISO 3166 country code format
  * @param {string} countryCode - The country code to check
  * @returns {number} - Returns 1 for 3-letter codes, 2 for longer codes, and 0 for shorter codes
@@ -153,11 +140,91 @@ function getTypeWithListSets(listSets) {
   return listSets[1].toLowerCase().replace('grottocenter:', '');
 }
 
+/**
+ * Format a date as YYYYMMDD (local time, as the database timestamps are read)
+ * @param {string|Date|null} date
+ * @returns {string|null} - null when the date is missing or invalid
+ */
+function formatDateYYYYMMDD(date) {
+  if (!date) return null;
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(
+    d.getDate()
+  ).padStart(2, '0')}`;
+}
+
+/**
+ * Trim a text value and drop it when nothing is left
+ * @param {*} value
+ * @returns {string|null}
+ */
+function cleanText(value) {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  return text === '' ? null : text;
+}
+
+/**
+ * Keep only real ISO 639-2 language codes: `000` is the "undefined" row of
+ * t_language, not a code a library system understands.
+ * @param {Array<string>} languages
+ * @returns {Array<string>}
+ */
+function cleanLanguages(languages) {
+  if (!Array.isArray(languages)) return [];
+  const codes = languages
+    .map((l) => cleanText(l))
+    .filter((l) => l && /^[a-zA-Z]{3}$/.test(l))
+    .map((l) => l.toLowerCase());
+  return [...new Set(codes)];
+}
+
+/**
+ * Split a name written "SURNAME Forename" into its two parts.
+ * Leading upper-case words are the surname, the rest is the forename.
+ * @param {string} name
+ * @returns {{surname: string, forename: string}|null} null when the name does not follow that pattern
+ */
+function splitName(name) {
+  const tokens = (cleanText(name) || '').split(/\s+/);
+  // An initial (`J.`, `E.-A.`, `J.-P.-M.`, `J.P.`) is upper-case too, but it
+  // starts the forename. Not `C.A.F.`: a longer unhyphenated dotted acronym is
+  // not an initial.
+  const isInitial = (t) =>
+    /^\p{Lu}\.(-\p{Lu}\.)*$/u.test(t) || /^\p{Lu}\.\p{Lu}\.$/u.test(t);
+  // A first initial followed by a hyphenated forename (`J.-Cl.`, `J.-Ch.`)
+  const isMixedInitial = (t) => /^\p{Lu}\.-\p{Lu}\p{Ll}/u.test(t);
+  const isSurnameToken = (t) =>
+    /\p{L}/u.test(t) && t === t.toUpperCase() && !isInitial(t);
+  let i = 0;
+  while (i < tokens.length && isSurnameToken(tokens[i])) i += 1;
+  // The forename must look like one (`Serge`, `J.`), otherwise this is probably
+  // an acronym or an organization (`CDS 74 Comité`, `GSM C.A.F.`).
+  if (
+    i === 0 ||
+    i === tokens.length ||
+    !(
+      /^\p{Lu}\p{Ll}/u.test(tokens[i]) ||
+      isInitial(tokens[i]) ||
+      isMixedInitial(tokens[i])
+    )
+  )
+    return null;
+  return {
+    surname: tokens.slice(0, i).join(' '),
+    forename: tokens.slice(i).join(' '),
+  };
+}
+
 module.exports = {
+  formatDateYYYYMMDD,
+  cleanText,
+  cleanLanguages,
+  splitName,
   extractIdentifier,
   formatDateForMarc,
   getFileFormat,
-  getCurrentDateYYYYMMDD,
   determineIsoCode3166,
   determineBibliographicLevel,
   determineTypeDocument,

@@ -183,6 +183,12 @@ module.exports = {
       allowNull: true,
     },
 
+    creationDate: {
+      type: 'ref',
+      columnName: 'creation_date',
+      columnType: 'timestamp',
+    },
+
     children: {
       type: 'ref',
       columnName: 'children',
