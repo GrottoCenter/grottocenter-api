@@ -63,8 +63,11 @@ function generate100(document) {
   const entered =
     formatDateYYYYMMDD(document.creationDate || document.lastUpdate) ||
     '        ';
-  const year = document.dcDate ? new Date(document.dcDate).getFullYear() : null;
-  const hasYear = Number.isInteger(year);
+  const year = document.dcDate
+    ? String(new Date(document.dcDate).getFullYear())
+    : null;
+  // A year that is not 4 digits long would shift every later position
+  const hasYear = year !== null && /^\d{4}$/.test(year);
 
   let field = entered; // 0-7 date entered on file
   field += hasYear ? `d${year}    ` : 'u        '; // 8 type of date, 9-12 date 1, 13-16 date 2

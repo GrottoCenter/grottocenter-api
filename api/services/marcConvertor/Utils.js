@@ -44,19 +44,6 @@ function getFileFormat(url) {
   return formatMap[extension] || null;
 }
 
-/**
- * Get current date in YYYYMMDD format
- * @returns {string}
- */
-function getCurrentDateYYYYMMDD() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}${month}${day}`;
-}
-
 /** * Determine ISO 3166 country code format
  * @param {string} countryCode - The country code to check
  * @returns {number} - Returns 1 for 3-letter codes, 2 for longer codes, and 0 for shorter codes
@@ -204,7 +191,10 @@ function splitName(name) {
   const isSurnameToken = (t) => /\p{L}/u.test(t) && t === t.toUpperCase();
   let i = 0;
   while (i < tokens.length && isSurnameToken(tokens[i])) i += 1;
-  if (i === 0 || i === tokens.length) return null;
+  // The forename must look like one (`Serge`), otherwise this is probably an
+  // acronym or an organization (`GS Vulcain`, `CDS 74 Comité`).
+  if (i === 0 || i === tokens.length || !/^\p{Lu}\p{Ll}/u.test(tokens[i]))
+    return null;
   return {
     surname: tokens.slice(0, i).join(' '),
     forename: tokens.slice(i).join(' '),
@@ -219,7 +209,6 @@ module.exports = {
   extractIdentifier,
   formatDateForMarc,
   getFileFormat,
-  getCurrentDateYYYYMMDD,
   determineIsoCode3166,
   determineBibliographicLevel,
   determineTypeDocument,

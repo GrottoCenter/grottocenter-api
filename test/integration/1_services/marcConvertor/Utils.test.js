@@ -71,13 +71,6 @@ describe('marcConvertor/Utils', () => {
     });
   });
 
-  describe('getCurrentDateYYYYMMDD', () => {
-    it('should return date in YYYYMMDD format', () => {
-      const result = Utils.getCurrentDateYYYYMMDD();
-      should(result).match(/^\d{8}$/);
-    });
-  });
-
   describe('determineIsoCode3166', () => {
     it('should return 1 for 3-letter codes', () => {
       should(Utils.determineIsoCode3166('USA')).equal(1);
@@ -249,6 +242,9 @@ describe('marcConvertor/Utils', () => {
       should(Utils.splitName('speleo42')).be.null();
       should(Utils.splitName('SPELEO CLUB')).be.null();
       should(Utils.splitName('Serge Caillault')).be.null();
+    });
+    it('should not split an acronym followed by something that is not a forename', () => {
+      should(Utils.splitName('CDS 74 Comité')).be.null();
     });
   });
 });

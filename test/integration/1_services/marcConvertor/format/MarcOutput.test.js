@@ -52,6 +52,16 @@ describe('marcConvertor record content', () => {
       subfield(a, '100', 'a').should.eql(subfield(b, '100', 'a'));
     });
 
+    it('should keep 100 at 36 characters for a year under 4 digits', async () => {
+      const record = await Unimarc.transform({
+        ...document,
+        dcDate: new Date(950, 0, 1),
+      });
+      const [f100] = subfield(record, '100', 'a');
+      f100.should.have.length(36);
+      f100.slice(8, 9).should.equal('u');
+    });
+
     it('should omit 101 when the language is unknown (000)', async () => {
       const record = await Unimarc.transform({ ...document });
       record.getRecord().get('101').should.have.length(0);
@@ -96,6 +106,26 @@ describe('marcConvertor record content', () => {
       f008.slice(35, 38).should.equal('und');
     });
 
+    it('should not assert the books layout in 008 for other record types', () => {
+      const record = Marc21.transform({
+        ...document,
+        dcTypeGrottocenter: 'image',
+      });
+      const [f008] = record
+        .getRecord()
+        .get('008')
+        .map((f) => f.value);
+      f008.should.have.length(40);
+      f008.slice(18, 35).should.equal('|'.repeat(17));
+    });
+
+    it('should set 245 first indicator to 1 as a 100 is always written', () => {
+      const record = Marc21.transform({ ...document });
+      record.getRecord().get('245')[0].ind1.should.equal('1');
+      const anonymous = Marc21.transform({ ...document, dcCreators: [] });
+      anonymous.getRecord().get('245')[0].ind1.should.equal('1');
+    });
+
     it('should use the language of the document in 008 and 041', () => {
       const record = Marc21.transform({ ...document, dcLanguages: ['fre'] });
       const [f008] = record
@@ -118,6 +148,10 @@ describe('marcConvertor record content', () => {
       leader('article').slice(5, 8).should.equal('naa');
       leader('book').slice(5, 8).should.equal('nam');
       leader('topographic_drawing').slice(5, 8).should.equal('nem');
+      leader('issue').slice(5, 8).should.equal('nam');
+      leader('collection').slice(5, 8).should.equal('nac');
+      leader('image').slice(5, 8).should.equal('nkm');
+      leader('dataset').slice(5, 8).should.equal('nmm');
     });
 
     it('should write 260 with the year even without a publisher', () => {

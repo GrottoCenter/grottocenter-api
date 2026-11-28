@@ -1,7 +1,6 @@
 const Marc = require('../MarcRecord');
 const {
   determineIsoCode3166,
-  determineTypeDocument,
   formatDateForMarc,
   formatDateYYYYMMDD,
   extractIdentifier,
@@ -10,10 +9,30 @@ const {
   splitName,
 } = require('../Utils');
 
+// MARC21 leader/06, which is not the UNIMARC table: everything else
+// (article, book, issue, collection, ...) is language material.
+const LEADER_TYPE_OF_RECORD = {
+  map: 'e',
+  'topographic drawing': 'e',
+  'topographic data': 'e',
+  'moving image': 'g',
+  sound: 'i',
+  image: 'k',
+  dataset: 'm',
+  'interactive resource': 'm',
+  'physical object': 'r',
+};
+
 const LEADER_BIBLIOGRAPHIC_LEVEL = {
   article: 'a', // monographic component part
   collection: 'c',
 };
+
+/** Leader/06 for a Grottocenter document type. */
+function getTypeOfRecord(type) {
+  const normalizedType = (type || '').replace(/_/g, ' ').toLowerCase();
+  return LEADER_TYPE_OF_RECORD[normalizedType] || 'a';
+}
 
 /**
  * Generate MARC21 leader
@@ -26,7 +45,7 @@ function generateLeader(type) {
 
   let leader = '00000';
   leader += 'n'; // 05 status: new
-  leader += determineTypeDocument([normalizedType]) || 'a'; // 06 type of record
+  leader += getTypeOfRecord(type); // 06 type of record
   leader += LEADER_BIBLIOGRAPHIC_LEVEL[normalizedType.toLowerCase()] || 'm'; // 07 bibliographic level
   leader += ' '; // position 08
   leader += 'a'; // position 09
@@ -62,13 +81,19 @@ function generate008(document) {
   let field = entered ? entered.slice(2) : '000000'; // 00-05 date entered on file
   field += year && /^\d{4}$/.test(year) ? `s${year}    ` : 'nuuuuuuuu'; // 06 type of date, 07-10 date 1, 11-14 date 2
   field += 'xx '; // 15-17 place of publication: unknown
-  field += '    '; // 18-21 illustrations
-  field += '       '; // 22-28 audience, form, nature, government publication
-  field += '00'; // 29-30 conference, festschrift
-  field += '0'; // 31 index
-  field += ' '; // 32 undefined
-  field += '|'; // 33 literary form: no attempt to code
-  field += ' '; // 34 biography
+  if (getTypeOfRecord(document.dcTypeGrottocenter) === 'a') {
+    // books layout
+    field += '    '; // 18-21 illustrations
+    field += '       '; // 22-28 audience, form, nature, government publication
+    field += '00'; // 29-30 conference, festschrift
+    field += '0'; // 31 index
+    field += ' '; // 32 undefined
+    field += '|'; // 33 literary form: no attempt to code
+    field += ' '; // 34 biography
+  } else {
+    // maps, visual materials, sounds...: other layouts, no meaning asserted
+    field += '|'.repeat(17); // 18-34
+  }
   field += languages[0] || 'und'; // 35-37 language
   field += ' '; // 38 modified record
   field += 'd'; // 39 cataloging source: other
@@ -116,7 +141,8 @@ module.exports = {
       if (cleanText(document.Responsability)) {
         titleField.push(['f', cleanText(document.Responsability)]);
       }
-      marcRecord.addDataField('245', '0', '0', titleField);
+      // ind1 = 1: a 100 is always written, so the title has an added entry
+      marcRecord.addDataField('245', '1', '0', titleField);
     }
 
     if (
