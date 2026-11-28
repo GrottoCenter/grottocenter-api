@@ -29,7 +29,7 @@ jobs:
       - run: npm run build:info
       - run: npm run lint
       # yaz-marcdump validates the MARC output in the marcConvertor tests
-      - run: sudo apt-get install -y yaz
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends yaz
       - run: npm run coverage
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2

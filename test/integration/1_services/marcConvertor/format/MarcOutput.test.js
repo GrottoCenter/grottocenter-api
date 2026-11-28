@@ -187,7 +187,10 @@ describe('marcConvertor record content', () => {
   describe('ISO 2709 validation with yaz-marcdump', () => {
     // eslint-disable-next-line prefer-arrow-callback
     before(function skipWithoutYaz() {
-      if (!hasYaz) this.skip();
+      if (hasYaz) return;
+      // In CI a missing binary must fail, not silently drop the validation
+      if (process.env.CI) throw new Error('yaz-marcdump is required in CI');
+      this.skip();
     });
 
     const dump = (iso, format) => {

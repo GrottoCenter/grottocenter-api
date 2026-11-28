@@ -232,6 +232,20 @@ describe('marcConvertor/Utils', () => {
         forename: 'Serge',
       });
     });
+    it('should accept a forename written as initials', () => {
+      should(Utils.splitName('MARTEL E.-A.')).eql({
+        surname: 'MARTEL',
+        forename: 'E.-A.',
+      });
+      should(Utils.splitName('DE JOLY R.')).eql({
+        surname: 'DE JOLY',
+        forename: 'R.',
+      });
+      should(Utils.splitName('DUPONT J.')).eql({
+        surname: 'DUPONT',
+        forename: 'J.',
+      });
+    });
     it('should keep a compound upper-case surname', () => {
       should(Utils.splitName('DE LA TOUR Jean Paul')).eql({
         surname: 'DE LA TOUR',
