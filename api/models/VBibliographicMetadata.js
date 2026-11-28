@@ -158,12 +158,6 @@ module.exports = {
       allowNull: true,
     },
 
-    hasBeenUpdated: {
-      type: 'boolean',
-      columnName: 'has_been_updated',
-      defaultsTo: false,
-    },
-
     metadataStatus: {
       type: 'string',
       columnName: 'metadata_status',
