@@ -169,6 +169,10 @@ describe('v_bibliographic_metadata SQL (#2056)', () => {
     await TDocument.destroy({ id: Object.values(ids) });
   });
 
+  it('no longer exports has_been_updated (#2056)', () => {
+    rows.live.should.not.have.property('has_been_updated');
+  });
+
   it('exports a validated document in full, as registered', () => {
     rows.live.metadata_status.should.equal('registered');
     rows.live.dc_title.should.equal('title live');
