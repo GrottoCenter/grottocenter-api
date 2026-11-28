@@ -15,6 +15,14 @@ describe('marcConvertor/country/It', () => {
       should(result.dcRights).be.null();
     });
 
+    it('should set dcLicenseUrl to null', async () => {
+      const document = {
+        dcLicenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+      };
+      const result = await ItConvertor.normalizeMarc(document);
+      should(result.dcLicenseUrl).be.null();
+    });
+
     it('should set Responsability from dcCreators', async () => {
       const document = { dcCreators: ['Author1', 'Author2'] };
       const result = await ItConvertor.normalizeMarc(document);

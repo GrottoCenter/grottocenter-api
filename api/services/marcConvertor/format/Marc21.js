@@ -178,10 +178,24 @@ module.exports = {
       });
     }
 
-    if (document.dcRights && document.dcRights.length > 0) {
-      marcRecord.addDataField('540', ' ', ' ', [
-        ['a', `Licence: ${document.dcRights.join(', ')}`],
+    if (document.landingPageUrl) {
+      marcRecord.addDataField('856', '4', '0', [
+        ['u', document.landingPageUrl],
+        ['y', 'Grottocenter'],
       ]);
+    }
+
+    const licenceSubfields = [];
+    // dcRights is `{NULL}` when the licence name is empty: ignore empty values
+    const rights = [].concat(document.dcRights || []).filter(Boolean);
+    if (rights.length > 0) {
+      licenceSubfields.push(['a', `Licence: ${rights.join(', ')}`]);
+    }
+    if (document.dcLicenseUrl) {
+      licenceSubfields.push(['u', document.dcLicenseUrl]);
+    }
+    if (licenceSubfields.length > 0) {
+      marcRecord.addDataField('540', ' ', ' ', licenceSubfields);
     }
 
     if (document.dcTypeGrottocenter) {

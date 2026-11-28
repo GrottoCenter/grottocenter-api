@@ -170,10 +170,25 @@ module.exports = {
       ]);
     }
 
-    if (document.dcRights) {
-      marcRecord.addDataField('540', ' ', ' ', [
-        ['a', `Licence :${document.dcRights}`],
+    if (document.landingPageUrl) {
+      marcRecord.addDataField('856', ' ', ' ', [
+        ['u', document.landingPageUrl],
+        ['z', 'Grottocenter'],
       ]);
+    }
+
+    const licenceSubfields = [];
+    // dcRights is `{NULL}` when the licence name is empty: ignore empty values
+    const rights = [].concat(document.dcRights || []).filter(Boolean);
+    if (rights.length > 0) {
+      licenceSubfields.push(['a', rights.join(', ')]);
+    }
+    if (document.dcLicenseUrl) {
+      licenceSubfields.push(['u', document.dcLicenseUrl]);
+    }
+    if (licenceSubfields.length > 0) {
+      // first indicator 1: policy on use and reproduction
+      marcRecord.addDataField('371', '1', ' ', licenceSubfields);
     }
 
     if (document.dcPages) {

@@ -70,6 +70,16 @@ describe('Bibliographic Metadata Get Record Controller', () => {
         res.body.listSets.should.containEql('grottocenter');
         res.body.listSets.should.containEql('grottocenter:sound');
 
+        // Links back to Grottocenter
+        res.body.should.have.property(
+          'landingPageUrl',
+          'https://grottocenter.org/ui/documents/1'
+        );
+        res.body.should.have.property(
+          'dcLicenseUrl',
+          'https://creativecommons.org/licenses/by/4.0/'
+        );
+
         return done();
       });
   });

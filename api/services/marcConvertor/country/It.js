@@ -10,6 +10,8 @@ module.exports = {
     if (document.dcRights) {
       newBibliographicMetadata.dcRights = null;
     }
+    // The licence link goes with the licence name, which Italy leaves out.
+    newBibliographicMetadata.dcLicenseUrl = null;
 
     if (
       document.dcCreators &&
