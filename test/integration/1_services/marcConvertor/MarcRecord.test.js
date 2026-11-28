@@ -131,4 +131,23 @@ describe('marcConvertor/MarcRecord', () => {
       should(valid).be.a.Boolean();
     });
   });
+
+  describe('hostile values', () => {
+    const hostile = 'Title\x1fzINJECTED\x1e856  \x1fuhttp://evil\x1d';
+
+    it('cannot add subfields or fields once serialized and re-parsed', () => {
+      // eslint-disable-next-line global-require
+      const { ISO2709 } = require('@natlibfi/marc-record-serializers');
+      const marc = new Marc();
+      marc.addLeader('00000nam a2200000 i 4500');
+      marc.addControlField('001', `12\x1e3${hostile}`);
+      marc.addDataField('245', '1', '0', [['a', hostile]]);
+
+      const parsed = ISO2709.from(marc.toIso2709());
+      should(parsed.fields.map((f) => f.tag)).eql(['001', '245']);
+      should(parsed.get('245')[0].subfields).eql([
+        { code: 'a', value: 'TitlezINJECTED856  uhttp://evil' },
+      ]);
+    });
+  });
 });

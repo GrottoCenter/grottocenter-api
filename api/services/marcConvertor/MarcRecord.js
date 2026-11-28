@@ -1,5 +1,6 @@
 const { MarcRecord } = require('@natlibfi/marc-record');
 const { ISO2709 } = require('@natlibfi/marc-record-serializers');
+const stripControlChars = require('../../utils/stripControlChars');
 
 /**
  * Class representing a MARC record.
@@ -21,7 +22,7 @@ class Marc {
   addDataField(tag, ind1, ind2, subfields, skipValidation = false) {
     const subfieldObjects = subfields.map((sf) => ({
       code: sf[0],
-      value: sf[1],
+      value: stripControlChars(sf[1]),
     }));
 
     const field = {
@@ -47,7 +48,7 @@ class Marc {
   addControlField(tag, value) {
     const field = {
       tag,
-      value: value.toString(),
+      value: stripControlChars(value.toString()),
     };
 
     this.record.insertField(field);
