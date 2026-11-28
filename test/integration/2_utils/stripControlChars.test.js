@@ -3,7 +3,9 @@ const stripControlChars = require('../../../api/utils/stripControlChars');
 
 describe('stripControlChars', () => {
   it('removes MARC delimiters and other control characters', () => {
-    should(stripControlChars('a\x1fb\x1ec\x1dd\x00e\x7ff')).equal('abcdef');
+    should(stripControlChars('a\x1fb\x1ec\x1dd\x00e\x7ff\uFFFEg\uFFFFh')).equal(
+      'abcdefgh'
+    );
   });
 
   it('keeps tab, line feed and carriage return', () => {
