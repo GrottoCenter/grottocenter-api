@@ -3767,7 +3767,7 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -3775,7 +3775,7 @@ paths:
             example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -3835,7 +3835,7 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -3843,7 +3843,7 @@ paths:
             example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -3922,7 +3922,7 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -3930,7 +3930,7 @@ paths:
             example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -4026,7 +4026,7 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -4034,7 +4034,7 @@ paths:
             example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -4136,7 +4136,7 @@ paths:
             example: 'grottocenter'
         - name: from
           in: query
-          description: 'Filter records modified from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated from this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
@@ -4144,7 +4144,7 @@ paths:
             example: '2023-01-25'
         - name: until
           in: query
-          description: 'Filter records modified until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
+          description: 'Filter records validated until this date (inclusive, filters on lastUpdate field) - YYYY-MM-DD format'
           required: false
           schema:
             type: string
